@@ -1,5 +1,8 @@
+import axios from 'axios';
+import { useAuthStore, User as UserType } from '../../store/authStore';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Lock, Phone, User } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, Phone, User } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -33,11 +36,11 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
   // Animaciones principales
-  const logoScale = useSharedValue(0);
-  const logoGlow = useSharedValue(0);
-  const formOpacity = useSharedValue(0);
-  const formTranslateY = useSharedValue(50);
+const logoScale = useSharedValue(1);
+const formOpacity = useSharedValue(1);
+const formTranslateY = useSharedValue(0);
   const backgroundShift = useSharedValue(0);
   const orb1 = useSharedValue(0);
   const orb2 = useSharedValue(0);
@@ -83,14 +86,25 @@ const Login = () => {
         await AsyncStorage.setItem('savedPassword', password);
         await AsyncStorage.setItem('rememberMe', 'true');
       } else {
-        await AsyncStorage.removeItem('savedUser');
-        await AsyncStorage.removeItem('savedPassword');
-        await AsyncStorage.removeItem('rememberMe');
+             await clearCredentials();
+
       }
     } catch (error) {
       console.log('Error saving credentials:', error);
     }
   };
+
+
+  // Función para limpiar credenciales (solo cuando el usuario desmarca "recordar")
+const clearCredentials = async () => {
+  try {
+    await AsyncStorage.removeItem('savedUser');
+    await AsyncStorage.removeItem('savedPassword');
+    await AsyncStorage.removeItem('rememberMe');
+  } catch (error) {
+    console.log('Error clearing credentials:', error);
+  }
+};
 
   // Función para abrir la aplicación de teléfono
   const makePhoneCall = () => {
@@ -111,12 +125,125 @@ const Login = () => {
       });
   };
 
+  const { setUser, setServer, setToken, setLoading } = useAuthStore();
+ 
   // Función para manejar el login
-  const handleLogin = () => {
-    saveCredentials();
-    // Aquí iría tu lógica de login
-    console.log('Login attempted with:', { usuario, password, rememberMe });
-  };
+const handleLogin = async () => {
+  // Validaciones básicas
+  if (!usuario.trim()) {
+    Alert.alert('Error', 'Por favor ingresa tu usuario');
+    return;
+  }
+  
+  if (!password.trim()) {
+    Alert.alert('Error', 'Por favor ingresa tu contraseña');
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // PASO 1: Obtener el servidor
+    console.log('Obteniendo servidor para usuario:', usuario);
+    
+    const serverResponse = await axios.get(
+      `https://velsat.pe:2096/api/Server/${usuario}`,
+      {
+        timeout: 10000, // 10 segundos timeout
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+
+    const serverData = serverResponse.data;
+    console.log('Respuesta del servidor:', serverData);
+
+    if (!serverData.servidor) {
+      Alert.alert('Error', 'No se pudo obtener la configuración del servidor');
+      setLoading(false);
+      return;
+    }
+
+    // Guardar servidor en Zustand
+    setServer(serverData.servidor);
+
+    // PASO 2: Hacer login con el servidor obtenido
+    console.log('Intentando login en servidor:', serverData.servidor);
+    
+    const loginResponse = await axios.post(
+      `${serverData.servidor}/api/Login/login`,
+      {
+        login: usuario,
+        clave: password
+      },
+      {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+
+    const loginData = loginResponse.data;
+    console.log('Respuesta del login:', loginData);
+
+    if (loginData.token && loginData.username) {
+      // Guardar credenciales si el usuario lo desea
+      await saveCredentials();
+
+      // Guardar token en Zustand
+      setToken(loginData.token);
+
+      // Crear objeto usuario
+      const userObj: UserType = {
+        id: loginData.username,
+        username: loginData.username,
+        email: `${loginData.username}@velsat.com`,
+        name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
+      };
+
+      // Guardar usuario en Zustand - esto navegará automáticamente a Home
+      setUser(userObj);
+
+      console.log('Login exitoso para usuario:', loginData.username);
+      
+    } else {
+      Alert.alert('Error', 'Respuesta de login inválida');
+      setLoading(false);
+    }
+    
+  } catch (error) {
+    console.error('Error durante el login:', error);
+    
+    let errorMessage = 'Error de conexión';
+    
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        // Error del servidor
+        const status = error.response.status;
+        if (status === 401 || status === 400) {
+          errorMessage = 'Usuario o contraseña incorrectos';
+        } else if (status >= 500) {
+          errorMessage = 'Error del servidor. Intenta más tarde';
+        } else {
+          errorMessage = `Error del servidor (${status})`;
+        }
+      } else if (error.request) {
+        // Error de red
+        errorMessage = 'Sin conexión a internet. Verifica tu conexión';
+      } else {
+        // Error de configuración
+        errorMessage = 'Error de configuración';
+      }
+    }
+    
+    Alert.alert('Error de Login', errorMessage);
+    setLoading(false);
+  }
+};
+
+
 
   // Función para reiniciar el carro cuando sale de pantalla
   const resetCarPosition = () => {
@@ -127,31 +254,10 @@ const Login = () => {
     // Cargar credenciales guardadas al iniciar
     loadSavedCredentials();
 
-    // Animación de entrada del logo
-    logoScale.value = withDelay(300, 
-      withTiming(1, { 
-        duration: 1200, 
-        easing: Easing.out(Easing.back(1.5)) 
-      })
-    );
 
     // Glow pulsante del logo
-    logoGlow.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 2000, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      false
-    );
 
-    // Animación de entrada del formulario
-    formOpacity.value = withDelay(800,
-      withTiming(1, { duration: 1000, easing: Easing.out(Easing.cubic) })
-    );
-    formTranslateY.value = withDelay(800,
-      withTiming(0, { duration: 1000, easing: Easing.out(Easing.back(1.2)) })
-    );
+
 
     // Fondo dinámico con gradiente
     backgroundShift.value = withRepeat(
@@ -518,19 +624,28 @@ const Login = () => {
                 />
               </View>
               
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIconContainer}>
-                  <Lock color="white" size={24} />
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Contraseña"
-                  placeholderTextColor="rgba(255,255,255,0.7)"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                />
-              </View>
+       <View style={styles.inputContainer}>
+  <View style={styles.inputIconContainer}>
+    <Lock color="white" size={24} />
+  </View>
+  <TextInput
+    style={styles.input}
+    placeholder="Contraseña"
+    placeholderTextColor="rgba(255,255,255,0.7)"
+    value={password}
+    onChangeText={setPassword}
+    secureTextEntry={!showPassword}
+  />
+  <TouchableOpacity 
+    style={styles.eyeIconContainer}
+    onPress={() => setShowPassword(!showPassword)}
+  >
+    {showPassword ? 
+      <EyeOff color="rgba(255,255,255,0.7)" size={20} /> : 
+      <Eye color="rgba(255,255,255,0.7)" size={20} />
+    }
+  </TouchableOpacity>
+</View>
             </View>
 
             {/* Checkbox para recordar contraseña */}
@@ -565,7 +680,7 @@ const Login = () => {
         <View style={styles.footer}>
           <View style={styles.statusContainer}>
             <View style={styles.statusDot} />
-            <Text style={styles.statusText}>Sistema móvil • GPS en línea</Text>
+            <Text style={styles.statusText}>Aplicativo móvil • GPS en línea</Text>
           </View>
         </View>
       </View>
@@ -596,6 +711,10 @@ const Login = () => {
     </View>
   );
 };
+
+
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -815,7 +934,7 @@ const styles = StyleSheet.create({
   },
 
   logoText: {
-    fontSize: 38,
+    fontSize: 40,
     fontWeight: 'bold',
     color: '#ffffff',
     letterSpacing: 3,
@@ -840,11 +959,8 @@ const styles = StyleSheet.create({
   },
 
   formCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 24,
-    padding: 32,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.25,
@@ -1105,7 +1221,7 @@ const styles = StyleSheet.create({
 
   logoImage: {
     width: 180,
-    height: 80,
+    height: 90,
   },
 
   road: {

@@ -1,3 +1,5 @@
+import RNBootSplash
+
 import UIKit
 import React
 import React_RCTAppDelegate
@@ -21,13 +23,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
-    window = UIWindow(frame: UIScreen.main.bounds)
+window = UIWindow(frame: UIScreen.main.bounds)
+window?.backgroundColor = UIColor(red: 30/255, green: 58/255, blue: 138/255, alpha: 1) // #1e3a8a
 
     factory.startReactNative(
       withModuleName: "VelsatMobile",
       in: window,
       launchOptions: launchOptions
     )
+
+RNBootSplash.init()
 
     return true
   }
