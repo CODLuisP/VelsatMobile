@@ -28,10 +28,12 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-  logout();
-};
+    logout();
+  };
 
-
+  const handleSettings = () => {
+    navigation.navigate('Setting');
+  };
 
   return (
     <View style={styles.container}>
@@ -53,9 +55,8 @@ const Profile = () => {
         {/* Company Name */}
         <Text style={styles.companyName}>
           {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : ''}
-
         </Text>      
-        </View>
+      </View>
 
       {/* Information Section - Posicionada absolutamente sobre el header */}
       <View style={styles.infoSection}>
@@ -90,7 +91,7 @@ const Profile = () => {
       <ScrollView style={styles.scrollContent}>
         {/* Menu Options */}
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
             <View style={styles.menuItemLeft}>
               <Settings size={20} color="#e36414" />
               <Text style={styles.menuText}>Configuración</Text>

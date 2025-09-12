@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, ActivityIndicator, StatusBar } from 'react-native';
 import Profile from './src/screens/screenhome/Profile';
+import Setting from './src/screens/screenhome/Setting'; 
 
 // Importar pantallas
 import Login from './src/components/login/Login';
@@ -16,6 +17,7 @@ export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Profile: undefined;
+  Setting: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -79,6 +81,7 @@ const App = () => {
             <>
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="Profile" component={Profile} />
+              <Stack.Screen name="Setting" component={Setting} />
             </>
           ) : (
             <Stack.Screen name="Login" component={Login} />
