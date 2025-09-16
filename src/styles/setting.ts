@@ -13,6 +13,9 @@ export const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
+            marginTop: 10,
+
+  
   },
   
   backButton: {
@@ -25,7 +28,6 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  // Navigation styles
   navigationContainer: {
     paddingHorizontal: 20,
     marginBottom: 20,
@@ -95,7 +97,7 @@ export const styles = StyleSheet.create({
   },
   
   infoTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 10,

@@ -35,6 +35,15 @@ const Profile = () => {
     navigation.navigate('Setting');
   };
 
+    const handlePin = () => {
+    navigation.navigate('Pin');
+  };
+
+      const handleNotifications = () => {
+    navigation.navigate('Notifications');
+  };
+
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -99,7 +108,7 @@ const Profile = () => {
             <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handlePin}>
             <View style={styles.menuItemLeft}>
               <Pin size={20} color="#e36414" />
               <Text style={styles.menuText}>Marcadores</Text>
@@ -107,10 +116,10 @@ const Profile = () => {
             <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
             <View style={styles.menuItemLeft}>
               <Megaphone size={20} color="#e36414" />
-              <Text style={styles.menuText}>Alertas</Text>
+              <Text style={styles.menuText}>Notificaciones</Text>
             </View>
             <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
           </TouchableOpacity>

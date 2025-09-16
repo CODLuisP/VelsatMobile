@@ -211,15 +211,15 @@ const Setting = () => {
                     ]}
                     onPress={() => handleFormChange('update')}
                 >
-               <Settings size={20} color={activeForm === 'update' ? '#e36414' : '#999'} />
-<Text style={[
-  styles.navOptionText,
-  activeForm === 'update' 
-    ? styles.navOptionTextActive 
-    : { color: '#999' }  // Color cuando NO está activo
-]}>
-  Actualizar datos
-</Text>
+                    <Settings size={20} color={activeForm === 'update' ? '#e36414' : '#999'} />
+                    <Text style={[
+                        styles.navOptionText,
+                        activeForm === 'update'
+                            ? styles.navOptionTextActive
+                            : { color: '#999' }  // Color cuando NO está activo
+                    ]}>
+                        Actualizar datos
+                    </Text>
                     <ChevronLeft
                         size={20}
                         color={activeForm === 'update' ? '#e36414' : '#999'}
