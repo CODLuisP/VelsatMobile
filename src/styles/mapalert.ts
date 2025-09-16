@@ -11,6 +11,7 @@ export const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 16,
+    
   },
   // Contenedor para el botón y título
   headerTop: {
