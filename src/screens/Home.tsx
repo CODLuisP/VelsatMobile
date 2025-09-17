@@ -13,7 +13,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
 import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
-import { RootStackParamList } from '../../App'; // Ajustar ruta según tu estructura
+import { RootStackParamList } from '../../App'; 
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -83,6 +83,10 @@ const Home: React.FC = () => {
 
   const handleNavigateToProfile = () => {
     navigation.navigate('Profile');
+  };
+
+   const handleNavigateToDevice = () => {
+    navigation.navigate('Devices');
   };
 
   // Función para obtener el saludo según la hora
@@ -411,7 +415,7 @@ const Home: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={homeStyles.optionCard}>
+            <TouchableOpacity style={homeStyles.optionCard} onPress={handleNavigateToDevice}>
               <View style={homeStyles.optionIcon}>
                 <Car size={24} color="#e36414" />
               </View>

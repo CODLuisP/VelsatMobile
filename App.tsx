@@ -8,6 +8,7 @@ import Setting from './src/screens/screenhome/Setting';
 import Pin from './src/screens/screenhome/Pin';
 import Notifications from './src/screens/screenhome/Notifications';
 import MapAlert from './src/screens/screenhome/MapAlert';
+import Devices from './src/screens/screenhome/devices/Devices';
 
 // Importar pantallas
 import Login from './src/components/login/Login';
@@ -32,8 +33,11 @@ export type RootStackParamList = {
       timestamp: string;
       iconName: string;
     };
+
   };
-}; // <-- Aquí estaba el problema: faltaba cerrar la interfaz correctamente
+  Devices: undefined;
+
+};
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -48,7 +52,7 @@ const App = () => {
   useEffect(() => {
     // Configurar StatusBar desde el inicio
     StatusBar.setBarStyle('light-content', true);
-        
+
     // Simula carga de sesión
     setLoading(true);
     const timer = setTimeout(() => {
@@ -100,6 +104,7 @@ const App = () => {
               <Stack.Screen name="Pin" component={Pin} />
               <Stack.Screen name="Notifications" component={Notifications} />
               <Stack.Screen name="MapAlert" component={MapAlert} />
+              <Stack.Screen name="Devices" component={Devices} />
             </>
           ) : (
             <Stack.Screen name="Login" component={Login} />
