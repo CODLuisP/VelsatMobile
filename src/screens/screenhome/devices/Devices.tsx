@@ -18,6 +18,11 @@ const Devices = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [searchText, setSearchText] = useState('');
 
+  // Función modificada para recibir el device como parámetro
+  const handleDetailDevice = (device: Device) => {
+    navigation.navigate('DetailDevice', { device });
+  };
+
   // Datos de ejemplo basados en la imagen
   const [devices] = useState<Device[]>([
     {
@@ -38,7 +43,7 @@ const Devices = () => {
     },
     {
       id: '3',
-      name: 'M2L-777',
+      name: 'M2L-779',
       status: 'Movimiento',
       speed: 25,
       location: 'Av. Miguel de Cervantes Cd. 1',
@@ -46,7 +51,7 @@ const Devices = () => {
     },
     {
       id: '4',
-      name: 'M2L-777',
+      name: 'M2L-771',
       status: 'Movimiento',
       speed: 75,
       location: 'Av. Miguel de Cervantes Cd. 1',
@@ -54,7 +59,23 @@ const Devices = () => {
     },
     {
       id: '5',
-      name: 'M2L-777',
+      name: 'M2L-767',
+      status: 'Detenido',
+      speed: 0,
+      location: 'Av. Miguel de Cervantes Cd. 1',
+      isOnline: true
+    },
+    {
+      id: '6',
+      name: 'M2L-867',
+      status: 'Detenido',
+      speed: 0,
+      location: 'Av. Miguel de Cervantes Cd. 1',
+      isOnline: true
+    },
+    {
+      id: '7',
+      name: 'M2L-967',
       status: 'Detenido',
       speed: 0,
       location: 'Av. Miguel de Cervantes Cd. 1',
@@ -84,8 +105,9 @@ const Devices = () => {
     device.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
+  // Modificamos el renderItem para pasar el device completo al hacer click
   const renderDeviceItem = ({ item }: { item: Device }) => (
-    <TouchableOpacity style={styles.deviceItem}>
+    <TouchableOpacity style={styles.deviceItem} onPress={() => handleDetailDevice(item)}>
       <View style={styles.deviceContent}>
         {/* Imagen del vehículo */}
         <View style={styles.vehicleImageContainer}>
@@ -93,7 +115,6 @@ const Devices = () => {
             <Image
               source={require('../../../../assets/Car.jpg')}
               style={styles.carImage}
-
             />
           </View>
           {/* Indicador de velocidad */}
@@ -111,14 +132,12 @@ const Devices = () => {
               <View style={styles.temperatureBadge}>
                 <Text style={styles.temperatureText}>
                   <BatteryFull size={12} color="#2E7D32" />
-
                 </Text>
               </View>
               {/* Badge de combustible */}
               <View style={styles.fuelBadge}>
                 <Text style={styles.fuelIcon}>
                   <MapPinned size={12} color="#2E7D32" />
-
                 </Text>
               </View>
               {/* Badge online */}
@@ -138,8 +157,6 @@ const Devices = () => {
           <Text style={styles.locationLabel}>Ubicación más reciente:</Text>
           <Text style={styles.locationText}>{item.location}</Text>
         </View>
-
-
       </View>
     </TouchableOpacity>
   );

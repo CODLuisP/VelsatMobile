@@ -9,6 +9,7 @@ import Pin from './src/screens/screenhome/Pin';
 import Notifications from './src/screens/screenhome/Notifications';
 import MapAlert from './src/screens/screenhome/MapAlert';
 import Devices from './src/screens/screenhome/devices/Devices';
+import DetailDevice from './src/screens/screenhome/devices/DetailDevice';
 
 // Importar pantallas
 import Login from './src/components/login/Login';
@@ -16,6 +17,16 @@ import Home from './src/screens/Home';
 import SplashScreen from './src/components/SplashScreen';
 
 import { useAuthStore } from './src/store/authStore';
+
+// Interfaz para el dispositivo
+interface Device {
+  id: string;
+  name: string;
+  status: 'Detenido' | 'Movimiento';
+  speed: number;
+  location: string;
+  isOnline: boolean;
+}
 
 export type RootStackParamList = {
   Login: undefined;
@@ -33,10 +44,11 @@ export type RootStackParamList = {
       timestamp: string;
       iconName: string;
     };
-
   };
   Devices: undefined;
-
+  DetailDevice: {
+    device: Device; // Agregamos los parámetros del dispositivo
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -105,6 +117,7 @@ const App = () => {
               <Stack.Screen name="Notifications" component={Notifications} />
               <Stack.Screen name="MapAlert" component={MapAlert} />
               <Stack.Screen name="Devices" component={Devices} />
+              <Stack.Screen name="DetailDevice" component={DetailDevice} />
             </>
           ) : (
             <Stack.Screen name="Login" component={Login} />
