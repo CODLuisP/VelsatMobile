@@ -38,14 +38,14 @@ const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   // Animaciones principales
-const logoScale = useSharedValue(1);
-const formOpacity = useSharedValue(1);
-const formTranslateY = useSharedValue(0);
+  const logoScale = useSharedValue(1);
+  const formOpacity = useSharedValue(1);
+  const formTranslateY = useSharedValue(0);
   const backgroundShift = useSharedValue(0);
   const orb1 = useSharedValue(0);
   const orb2 = useSharedValue(0);
   const orb3 = useSharedValue(0);
-  
+
   // Animaciones GPS específicas
   const satellite1 = useSharedValue(0);
   const satellite2 = useSharedValue(0);
@@ -56,7 +56,7 @@ const formTranslateY = useSharedValue(0);
   const radarSweep = useSharedValue(0);
   const antennaSignal = useSharedValue(0);
   const networkPulse = useSharedValue(0);
-  
+
   // Animación del carro en carretera (footer)
   const carPosition = useSharedValue(-100);
   const roadOffset = useSharedValue(0);
@@ -67,7 +67,7 @@ const formTranslateY = useSharedValue(0);
       const savedUser = await AsyncStorage.getItem('savedUser');
       const savedPassword = await AsyncStorage.getItem('savedPassword');
       const rememberFlag = await AsyncStorage.getItem('rememberMe');
-      
+
       if (rememberFlag === 'true' && savedUser && savedPassword) {
         setUsuario(savedUser);
         setPassword(savedPassword);
@@ -86,164 +86,163 @@ const formTranslateY = useSharedValue(0);
         await AsyncStorage.setItem('savedPassword', password);
         await AsyncStorage.setItem('rememberMe', 'true');
       } else {
-             await clearCredentials();
-
+        await clearCredentials();
       }
     } catch (error) {
       console.log('Error saving credentials:', error);
     }
   };
 
-
   // Función para limpiar credenciales (solo cuando el usuario desmarca "recordar")
-const clearCredentials = async () => {
-  try {
-    await AsyncStorage.removeItem('savedUser');
-    await AsyncStorage.removeItem('savedPassword');
-    await AsyncStorage.removeItem('rememberMe');
-  } catch (error) {
-    console.log('Error clearing credentials:', error);
-  }
-};
+  const clearCredentials = async () => {
+    try {
+      await AsyncStorage.removeItem('savedUser');
+      await AsyncStorage.removeItem('savedPassword');
+      await AsyncStorage.removeItem('rememberMe');
+    } catch (error) {
+      console.log('Error clearing credentials:', error);
+    }
+  };
 
   // Función para abrir la aplicación de teléfono
   const makePhoneCall = () => {
     const phoneNumber = '91290330';
     const phoneUrl = `tel:${phoneNumber}`;
-    
+
     Linking.canOpenURL(phoneUrl)
-      .then((supported) => {
+      .then(supported => {
         if (supported) {
           return Linking.openURL(phoneUrl);
         } else {
           Alert.alert('Error', 'No se pudo abrir la aplicación de teléfono');
         }
       })
-      .catch((err) => {
+      .catch(err => {
         Alert.alert('Error', 'No se pudo realizar la llamada');
         console.error('Error making phone call:', err);
       });
   };
 
   const { setUser, setServer, setToken, setLoading } = useAuthStore();
- 
+
   // Función para manejar el login
-const handleLogin = async () => {
-  // Validaciones básicas
-  if (!usuario.trim()) {
-    Alert.alert('Error', 'Por favor ingresa tu usuario');
-    return;
-  }
-  
-  if (!password.trim()) {
-    Alert.alert('Error', 'Por favor ingresa tu contraseña');
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    // PASO 1: Obtener el servidor
-    console.log('Obteniendo servidor para usuario:', usuario);
-    
-    const serverResponse = await axios.get(
-      `https://velsat.pe:2096/api/Server/${usuario}`,
-      {
-        timeout: 10000, // 10 segundos timeout
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      }
-    );
-
-    const serverData = serverResponse.data;
-    console.log('Respuesta del servidor:', serverData);
-
-    if (!serverData.servidor) {
-      Alert.alert('Error', 'No se pudo obtener la configuración del servidor');
-      setLoading(false);
+  const handleLogin = async () => {
+    // Validaciones básicas
+    if (!usuario.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu usuario');
       return;
     }
 
-    // Guardar servidor en Zustand
-    setServer(serverData.servidor);
+    if (!password.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu contraseña');
+      return;
+    }
 
-    // PASO 2: Hacer login con el servidor obtenido
-    console.log('Intentando login en servidor:', serverData.servidor);
-    
-    const loginResponse = await axios.post(
-      `${serverData.servidor}/api/Login/login`,
-      {
-        login: usuario,
-        clave: password
-      },
-      {
-        timeout: 10000,
-        headers: {
-          'Content-Type': 'application/json',
+    try {
+      setLoading(true);
+
+      // PASO 1: Obtener el servidor
+      console.log('Obteniendo servidor para usuario:', usuario);
+
+      const serverResponse = await axios.get(
+        `https://velsat.pe:2096/api/Server/${usuario}`,
+        {
+          timeout: 10000, // 10 segundos timeout
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const serverData = serverResponse.data;
+      console.log('Respuesta del servidor:', serverData);
+
+      if (!serverData.servidor) {
+        Alert.alert(
+          'Error',
+          'No se pudo obtener la configuración del servidor',
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Guardar servidor en Zustand
+      setServer(serverData.servidor);
+
+      // PASO 2: Hacer login con el servidor obtenido
+      console.log('Intentando login en servidor:', serverData.servidor);
+
+      const loginResponse = await axios.post(
+        `${serverData.servidor}/api/Login/login`,
+        {
+          login: usuario,
+          clave: password,
+        },
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const loginData = loginResponse.data;
+      console.log('Respuesta del login:', loginData);
+
+      if (loginData.token && loginData.username) {
+        // Guardar credenciales si el usuario lo desea
+        await saveCredentials();
+
+        // Guardar token en Zustand
+        setToken(loginData.token);
+
+        // Crear objeto usuario
+        const userObj: UserType = {
+          id: loginData.username,
+          username: loginData.username,
+          email: `${loginData.username}@velsat.com`,
+          name:
+            loginData.username.charAt(0).toUpperCase() +
+            loginData.username.slice(1),
+        };
+
+        // Guardar usuario en Zustand - esto navegará automáticamente a Home
+        setUser(userObj);
+
+        console.log('Login exitoso para usuario:', loginData.username);
+      } else {
+        Alert.alert('Error', 'Respuesta de login inválida');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error durante el login:', error);
+
+      let errorMessage = 'Error de conexión';
+
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // Error del servidor
+          const status = error.response.status;
+          if (status === 401 || status === 400) {
+            errorMessage = 'Usuario o contraseña incorrectos';
+          } else if (status >= 500) {
+            errorMessage = 'Error del servidor. Intenta más tarde';
+          } else {
+            errorMessage = `Error del servidor (${status})`;
+          }
+        } else if (error.request) {
+          // Error de red
+          errorMessage = 'Sin conexión a internet. Verifica tu conexión';
+        } else {
+          // Error de configuración
+          errorMessage = 'Error de configuración';
         }
       }
-    );
 
-    const loginData = loginResponse.data;
-    console.log('Respuesta del login:', loginData);
-
-    if (loginData.token && loginData.username) {
-      // Guardar credenciales si el usuario lo desea
-      await saveCredentials();
-
-      // Guardar token en Zustand
-      setToken(loginData.token);
-
-      // Crear objeto usuario
-      const userObj: UserType = {
-        id: loginData.username,
-        username: loginData.username,
-        email: `${loginData.username}@velsat.com`,
-        name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
-      };
-
-      // Guardar usuario en Zustand - esto navegará automáticamente a Home
-      setUser(userObj);
-
-      console.log('Login exitoso para usuario:', loginData.username);
-      
-    } else {
-      Alert.alert('Error', 'Respuesta de login inválida');
+      Alert.alert('Error de Login', errorMessage);
       setLoading(false);
     }
-    
-  } catch (error) {
-    console.error('Error durante el login:', error);
-    
-    let errorMessage = 'Error de conexión';
-    
-    if (axios.isAxiosError(error)) {
-      if (error.response) {
-        // Error del servidor
-        const status = error.response.status;
-        if (status === 401 || status === 400) {
-          errorMessage = 'Usuario o contraseña incorrectos';
-        } else if (status >= 500) {
-          errorMessage = 'Error del servidor. Intenta más tarde';
-        } else {
-          errorMessage = `Error del servidor (${status})`;
-        }
-      } else if (error.request) {
-        // Error de red
-        errorMessage = 'Sin conexión a internet. Verifica tu conexión';
-      } else {
-        // Error de configuración
-        errorMessage = 'Error de configuración';
-      }
-    }
-    
-    Alert.alert('Error de Login', errorMessage);
-    setLoading(false);
-  }
-};
-
-
+  };
 
   // Función para reiniciar el carro cuando sale de pantalla
   const resetCarPosition = () => {
@@ -254,99 +253,100 @@ const handleLogin = async () => {
     // Cargar credenciales guardadas al iniciar
     loadSavedCredentials();
 
-
     // Glow pulsante del logo
-
-
 
     // Fondo dinámico con gradiente
     backgroundShift.value = withRepeat(
       withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true
+      true,
     );
 
     // Orbes flotantes decorativos
     orb1.value = withRepeat(
       withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true
+      true,
     );
-    
+
     orb2.value = withRepeat(
       withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true
+      true,
     );
-    
+
     orb3.value = withRepeat(
       withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true
+      true,
     );
 
     // ANIMACIONES GPS ESPECÍFICAS
-    
+
     // Satélites en órbita
     satellite1.value = withRepeat(
       withTiming(1, { duration: 12000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
-    
-    satellite2.value = withDelay(4000,
+
+    satellite2.value = withDelay(
+      4000,
       withRepeat(
         withTiming(1, { duration: 15000, easing: Easing.linear }),
         -1,
-        false
-      )
+        false,
+      ),
     );
-    
-    satellite3.value = withDelay(8000,
+
+    satellite3.value = withDelay(
+      8000,
       withRepeat(
         withTiming(1, { duration: 18000, easing: Easing.linear }),
         -1,
-        false
-      )
+        false,
+      ),
     );
 
     // Señales GPS pulsantes
     gpsSignal1.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) })
+        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
       ),
       -1,
-      false
+      false,
     );
 
-    gpsSignal2.value = withDelay(800,
+    gpsSignal2.value = withDelay(
+      800,
       withRepeat(
         withSequence(
           withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) })
+          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
         ),
         -1,
-        false
-      )
+        false,
+      ),
     );
 
-    gpsSignal3.value = withDelay(1600,
+    gpsSignal3.value = withDelay(
+      1600,
       withRepeat(
         withSequence(
           withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) })
+          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
         ),
         -1,
-        false
-      )
+        false,
+      ),
     );
 
     // Radar sweep (barrido de radar)
     radarSweep.value = withRepeat(
       withTiming(1, { duration: 4000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
 
     // Señal de antena
@@ -355,17 +355,17 @@ const handleLogin = async () => {
         withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
         withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
         withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-        withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) })
+        withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
       ),
       -1,
-      false
+      false,
     );
 
     // Pulso de red/conexión
     networkPulse.value = withRepeat(
       withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true
+      true,
     );
 
     // Animación del carro
@@ -376,12 +376,12 @@ const handleLogin = async () => {
           duration: 8000,
           easing: Easing.linear,
         },
-        (finished) => {
+        finished => {
           if (finished) {
             runOnJS(resetCarPosition)();
             runOnJS(startCarAnimation)();
           }
-        }
+        },
       );
     };
 
@@ -389,14 +389,13 @@ const handleLogin = async () => {
 
     // Animación de las líneas de carretera
     roadOffset.value = withRepeat(
-      withTiming(80, { 
+      withTiming(80, {
         duration: 800,
-        easing: Easing.linear 
+        easing: Easing.linear,
       }),
       -1,
-      false
+      false,
     );
-
   }, []);
 
   // Estilos animados existentes
@@ -405,7 +404,7 @@ const handleLogin = async () => {
       backgroundColor: interpolateColor(
         backgroundShift.value,
         [0, 1],
-        ['#1e3a8a', '#1e40af']
+        ['#1e3a8a', '#1e40af'],
       ),
     };
   });
@@ -446,12 +445,15 @@ const handleLogin = async () => {
     const radius = 150;
     const centerX = width * 0.8;
     const centerY = height * 0.15;
-    
+
     return {
       transform: [
-        { translateX: centerX + Math.cos(angle * Math.PI / 180) * radius },
-        { translateY: centerY + Math.sin(angle * Math.PI / 180) * radius * 0.3 },
-        { rotate: `${angle}deg` }
+        { translateX: centerX + Math.cos((angle * Math.PI) / 180) * radius },
+        {
+          translateY:
+            centerY + Math.sin((angle * Math.PI) / 180) * radius * 0.3,
+        },
+        { rotate: `${angle}deg` },
       ],
     };
   });
@@ -461,12 +463,15 @@ const handleLogin = async () => {
     const radius = 120;
     const centerX = width * 0.2;
     const centerY = height * 0.25;
-    
+
     return {
       transform: [
-        { translateX: centerX + Math.cos(angle * Math.PI / 180) * radius },
-        { translateY: centerY + Math.sin(angle * Math.PI / 180) * radius * 0.4 },
-        { rotate: `${-angle}deg` }
+        { translateX: centerX + Math.cos((angle * Math.PI) / 180) * radius },
+        {
+          translateY:
+            centerY + Math.sin((angle * Math.PI) / 180) * radius * 0.4,
+        },
+        { rotate: `${-angle}deg` },
       ],
     };
   });
@@ -476,49 +481,50 @@ const handleLogin = async () => {
     const radius = 100;
     const centerX = width * 0.9;
     const centerY = height * 0.4;
-    
+
     return {
       transform: [
-        { translateX: centerX + Math.cos(angle * Math.PI / 180) * radius },
-        { translateY: centerY + Math.sin(angle * Math.PI / 180) * radius * 0.2 },
-        { rotate: `${angle * 0.5}deg` }
+        { translateX: centerX + Math.cos((angle * Math.PI) / 180) * radius },
+        {
+          translateY:
+            centerY + Math.sin((angle * Math.PI) / 180) * radius * 0.2,
+        },
+        { rotate: `${angle * 0.5}deg` },
       ],
     };
   });
 
   const gpsSignal2Style = useAnimatedStyle(() => ({
     opacity: interpolate(gpsSignal2.value, [0, 1], [0.1, 0.6]),
-    transform: [
-      { scale: interpolate(gpsSignal2.value, [0, 1], [0.3, 2.0]) }
-    ],
+    transform: [{ scale: interpolate(gpsSignal2.value, [0, 1], [0.3, 2.0]) }],
   }));
 
   const gpsSignal3Style = useAnimatedStyle(() => ({
     opacity: interpolate(gpsSignal3.value, [0, 1], [0.1, 0.7]),
-    transform: [
-      { scale: interpolate(gpsSignal3.value, [0, 1], [0.4, 2.2]) }
-    ],
+    transform: [{ scale: interpolate(gpsSignal3.value, [0, 1], [0.4, 2.2]) }],
   }));
 
   const radarSweepStyle = useAnimatedStyle(() => ({
     transform: [
-      { rotate: `${interpolate(radarSweep.value, [0, 1], [0, 360])}deg` }
+      { rotate: `${interpolate(radarSweep.value, [0, 1], [0, 360])}deg` },
     ],
-    opacity: interpolate(radarSweep.value, [0, 0.1, 0.9, 1], [0.8, 0.3, 0.3, 0.8]),
+    opacity: interpolate(
+      radarSweep.value,
+      [0, 0.1, 0.9, 1],
+      [0.8, 0.3, 0.3, 0.8],
+    ),
   }));
 
   const antennaSignalStyle = useAnimatedStyle(() => ({
     opacity: antennaSignal.value,
     transform: [
-      { scale: interpolate(antennaSignal.value, [0, 1], [0.8, 1.3]) }
+      { scale: interpolate(antennaSignal.value, [0, 1], [0.8, 1.3]) },
     ],
   }));
 
   const networkPulseStyle = useAnimatedStyle(() => ({
     opacity: interpolate(networkPulse.value, [0, 1], [0.2, 0.8]),
-    transform: [
-      { scale: interpolate(networkPulse.value, [0, 1], [0.9, 1.1]) }
-    ],
+    transform: [{ scale: interpolate(networkPulse.value, [0, 1], [0.9, 1.1]) }],
   }));
 
   const carStyle = useAnimatedStyle(() => ({
@@ -526,23 +532,21 @@ const handleLogin = async () => {
   }));
 
   const roadStyle = useAnimatedStyle(() => ({
-    transform: [{ 
-      translateX: interpolate(
-        roadOffset.value, 
-        [0, 80], 
-        [0, -80]
-      ) 
-    }],
+    transform: [
+      {
+        translateX: interpolate(roadOffset.value, [0, 80], [0, -80]),
+      },
+    ],
   }));
 
   return (
     <View style={styles.container}>
-      <StatusBar 
-        barStyle="light-content" 
+      <StatusBar
+        barStyle="light-content"
         backgroundColor="transparent"
         translucent
       />
-      
+
       {/* Fondo gradiente animado */}
       <Animated.View style={[styles.backgroundGradient, backgroundStyle]} />
 
@@ -552,23 +556,27 @@ const handleLogin = async () => {
       <Animated.View style={[styles.orb, styles.orb3, orb3Style]} />
 
       {/* ELEMENTOS GPS ANIMADOS */}
-      
+
       {/* Satélites en órbita */}
       <Animated.View style={[styles.satellite, satellite1Style]}>
         <Text style={styles.satelliteIcon}>🛰️</Text>
       </Animated.View>
-      
+
       <Animated.View style={[styles.satellite, satellite2Style]}>
         <Text style={styles.satelliteIcon}>🛰️</Text>
       </Animated.View>
-      
+
       <Animated.View style={[styles.satellite, satellite3Style]}>
         <Text style={styles.satelliteIcon}>🛰️</Text>
       </Animated.View>
 
       {/* Señales GPS pulsantes */}
-      <Animated.View style={[styles.gpsSignal, styles.gpsSignal2Pos, gpsSignal2Style]} />
-      <Animated.View style={[styles.gpsSignal, styles.gpsSignal3Pos, gpsSignal3Style]} />
+      <Animated.View
+        style={[styles.gpsSignal, styles.gpsSignal2Pos, gpsSignal2Style]}
+      />
+      <Animated.View
+        style={[styles.gpsSignal, styles.gpsSignal3Pos, gpsSignal3Style]}
+      />
 
       {/* Radar sweep */}
       <View style={styles.radarContainer}>
@@ -585,19 +593,22 @@ const handleLogin = async () => {
       </View>
 
       {/* Indicadores de red */}
-      <Animated.View style={[styles.networkPulse, styles.networkPulse1, networkPulseStyle]} />
-      <Animated.View style={[styles.networkPulse, styles.networkPulse2, networkPulseStyle]} />
+      <Animated.View
+        style={[styles.networkPulse, styles.networkPulse1, networkPulseStyle]}
+      />
+      <Animated.View
+        style={[styles.networkPulse, styles.networkPulse2, networkPulseStyle]}
+      />
 
       {/* Contenido principal */}
       <View style={styles.mainContent}>
-        
         {/* Logo con glow effect */}
         <Animated.View style={[styles.logoContainer, logoStyle]}>
           <View style={styles.logoMain}>
-            <Image 
+            <Image
               source={require('../../../assets/logob.png')}
               style={styles.logoImage}
-              resizeMode="contain" 
+              resizeMode="contain"
             />
             <Text style={styles.logoText}>VELSAT</Text>
           </View>
@@ -607,7 +618,7 @@ const handleLogin = async () => {
         <Animated.View style={[styles.formContainer, formStyle]}>
           <View style={styles.formCard}>
             <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
-            
+
             {/* Inputs con diseño moderno */}
             <View style={styles.inputGroup}>
               <View style={styles.inputContainer}>
@@ -623,37 +634,40 @@ const handleLogin = async () => {
                   autoCapitalize="none"
                 />
               </View>
-              
-       <View style={styles.inputContainer}>
-  <View style={styles.inputIconContainer}>
-    <Lock color="white" size={24} />
-  </View>
-  <TextInput
-    style={styles.input}
-    placeholder="Contraseña"
-    placeholderTextColor="rgba(255,255,255,0.7)"
-    value={password}
-    onChangeText={setPassword}
-    secureTextEntry={!showPassword}
-  />
-  <TouchableOpacity 
-    style={styles.eyeIconContainer}
-    onPress={() => setShowPassword(!showPassword)}
-  >
-    {showPassword ? 
-      <EyeOff color="rgba(255,255,255,0.7)" size={20} /> : 
-      <Eye color="rgba(255,255,255,0.7)" size={20} />
-    }
-  </TouchableOpacity>
-</View>
+
+              <View style={styles.inputContainer}>
+                <View style={styles.inputIconContainer}>
+                  <Lock color="white" size={24} />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Contraseña"
+                  placeholderTextColor="rgba(255,255,255,0.7)"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeIconContainer}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff color="rgba(255,255,255,0.7)" size={20} />
+                  ) : (
+                    <Eye color="rgba(255,255,255,0.7)" size={20} />
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Checkbox para recordar contraseña */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.rememberContainer}
               onPress={() => setRememberMe(!rememberMe)}
             >
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              <View
+                style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
+              >
                 {rememberMe && <Text style={styles.checkmark}>✓</Text>}
               </View>
               <Text style={styles.rememberText}>Recordar mi contraseña</Text>
@@ -669,9 +683,18 @@ const handleLogin = async () => {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.forgotPassword} onPress={makePhoneCall}>
-              <Phone color="rgba(255,255,255,0.8)" size={16} style={{ marginRight: 8 }} />
-              <Text style={styles.forgotPasswordText}>Contáctanos por teléfono</Text>
+            <TouchableOpacity
+              style={styles.forgotPassword}
+              onPress={makePhoneCall}
+            >
+              <Phone
+                color="rgba(255,255,255,0.8)"
+                size={16}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.forgotPasswordText}>
+                Contáctanos por teléfono
+              </Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -680,7 +703,9 @@ const handleLogin = async () => {
         <View style={styles.footer}>
           <View style={styles.statusContainer}>
             <View style={styles.statusDot} />
-            <Text style={styles.statusText}>Aplicativo móvil • GPS en línea</Text>
+            <Text style={styles.statusText}>
+              Aplicativo móvil • GPS en línea
+            </Text>
           </View>
         </View>
       </View>
@@ -699,9 +724,9 @@ const handleLogin = async () => {
             ))}
           </Animated.View>
         </View>
-        
+
         <Animated.View style={[styles.carContainer, carStyle]}>
-          <Image 
+          <Image
             source={require('../../../assets/carlogin.png')}
             style={styles.carImage}
             resizeMode="contain"
@@ -711,10 +736,6 @@ const handleLogin = async () => {
     </View>
   );
 };
-
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -762,7 +783,7 @@ const styles = StyleSheet.create({
   },
 
   // NUEVOS ESTILOS GPS
-  
+
   // Satélites
   satellite: {
     position: 'absolute',
@@ -961,11 +982,6 @@ const styles = StyleSheet.create({
   formCard: {
     borderRadius: 24,
     padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.25,
-    shadowRadius: 25,
-    elevation: 15,
   },
 
   welcomeText: {
