@@ -58,11 +58,10 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     optionCard: {
-        backgroundColor: '#d2d6d9ff',
+        backgroundColor: '#F8F9FA',
         borderRadius: 12,
         marginBottom: 20,
         padding: 15,
-        shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
