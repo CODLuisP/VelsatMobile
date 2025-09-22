@@ -78,18 +78,18 @@ export const useAuthStore = create<AuthState>()(
 
       // Actions existentes
       setUser: (user: User) => {
-        const state = get();
-        
-        // Guardar credenciales biométricas si está habilitada
-        if (state.biometric.isEnabled && state.token && state.server) {
-          get().saveBiometricCredentials(user.username, state.token, state.server);
-        }
-        
         set({
           user,
           isAuthenticated: true,
           isLoading: false,
         });
+        
+        // ARREGLADO: Guardar credenciales biométricas después de setear el usuario
+        // Usamos get() para obtener el estado más reciente
+        const currentState = get();
+        if (currentState.biometric.isEnabled && currentState.token && currentState.server) {
+          currentState.saveBiometricCredentials(user.username, currentState.token, currentState.server);
+        }
       },
 
       setServer: (server: string) => {
@@ -163,6 +163,16 @@ export const useAuthStore = create<AuthState>()(
                 lastConfigured: new Date(),
               },
             }));
+            
+            // NUEVO: Guardar credenciales inmediatamente si ya hay sesión activa
+            const currentState = get();
+            if (currentState.user && currentState.token && currentState.server) {
+              currentState.saveBiometricCredentials(
+                currentState.user.username, 
+                currentState.token, 
+                currentState.server
+              );
+            }
             
             console.log('Biometric enabled successfully');
             return true;
@@ -250,7 +260,7 @@ export const useAuthStore = create<AuthState>()(
               server,
             },
           }));
-          console.log('Biometric credentials saved');
+          console.log('Biometric credentials saved for user:', username);
         }
       },
 
@@ -280,13 +290,21 @@ export const useAuthStore = create<AuthState>()(
       // Verificar si se puede usar login biométrico
       canUseBiometricLogin: (): boolean => {
         const state = get();
-        return (
+        const canUse = (
           state.biometric.isEnabled &&
           state.biometric.isAvailable &&
           !!state.biometricCredentials.username &&
           !!state.biometricCredentials.token &&
           !!state.biometricCredentials.server
         );
+        
+        console.log('Can use biometric login:', canUse, {
+          isEnabled: state.biometric.isEnabled,
+          isAvailable: state.biometric.isAvailable,
+          hasCredentials: !!state.biometricCredentials.username
+        });
+        
+        return canUse;
       },
     }),
     {
