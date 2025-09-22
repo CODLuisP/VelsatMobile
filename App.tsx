@@ -10,6 +10,16 @@ import Notifications from './src/screens/screenhome/Notifications';
 import MapAlert from './src/screens/screenhome/MapAlert';
 import Devices from './src/screens/screenhome/devices/Devices';
 import DetailDevice from './src/screens/screenhome/devices/DetailDevice';
+import InfoDevice from './src/screens/screenhome/devices/InfoDevice';
+import Events from './src/screens/screenhome/devices/Events';
+import MapEvent from './src/screens/screenhome/devices/MapEvent';
+import Reports from './src/screens/screenhome/reports/Reports';
+import GeneralReport from './src/screens/screenhome/reports/GeneralReport';
+import StopReport from './src/screens/screenhome/reports/StopReport';
+import SpeedReport from './src/screens/screenhome/reports/SpeedReport';
+import MileageReport from './src/screens/screenhome/reports/MileageReport';
+import TourReport from './src/screens/screenhome/reports/TourReport';
+import Security from './src/screens/screenhome/security/Security';
 
 // Importar pantallas
 import Login from './src/components/login/Login';
@@ -47,8 +57,32 @@ export type RootStackParamList = {
   };
   Devices: undefined;
   DetailDevice: {
-    device: Device; // Agregamos los parámetros del dispositivo
+    device: Device; 
   };
+
+  InfoDevice: {
+    deviceName: string; 
+  };
+  Events: undefined;
+  MapEvent: {
+     notificationData: {
+      id: number;
+      type: string;
+      title: string;
+      device: string;
+      timestamp: string;
+      iconName: string;
+    };
+  
+  };
+  Reports: undefined;
+  GeneralReport: undefined;
+  StopReport: undefined;
+  SpeedReport: undefined;
+  MileageReport: undefined;
+  TourReport: undefined;
+  Security: undefined;
+
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -118,6 +152,17 @@ const App = () => {
               <Stack.Screen name="MapAlert" component={MapAlert} />
               <Stack.Screen name="Devices" component={Devices} />
               <Stack.Screen name="DetailDevice" component={DetailDevice} />
+              <Stack.Screen name="InfoDevice" component={InfoDevice} />
+              <Stack.Screen name="Events" component={Events} />
+              <Stack.Screen name="MapEvent" component={MapEvent} />
+              <Stack.Screen name="Reports" component={Reports} />
+              <Stack.Screen name="GeneralReport" component={GeneralReport} />
+              <Stack.Screen name="StopReport" component={StopReport} />
+              <Stack.Screen name="SpeedReport" component={SpeedReport} />
+              <Stack.Screen name="MileageReport" component={MileageReport} />
+              <Stack.Screen name="TourReport" component={TourReport} />
+              <Stack.Screen name="Security" component={Security} />
+
             </>
           ) : (
             <Stack.Screen name="Login" component={Login} />

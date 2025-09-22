@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
     },
     headerMainTitle: {
         color: '#fff',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         letterSpacing: 1,
         flex: 1,

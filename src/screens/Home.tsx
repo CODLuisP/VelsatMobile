@@ -89,6 +89,16 @@ const Home: React.FC = () => {
     navigation.navigate('Devices');
   };
 
+    const handleNavigateToReports = () => {
+    navigation.navigate('Reports');
+  };
+
+      const handleNavigateToSecurity = () => {
+    navigation.navigate('Security');
+  };
+  
+  
+
   // Función para obtener el saludo según la hora
   const obtenerSaludo = (): string => {
     const hora = new Date().getHours();
@@ -425,7 +435,7 @@ const Home: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={homeStyles.optionCard}>
+            <TouchableOpacity style={homeStyles.optionCard} onPress={handleNavigateToReports}>
               <View style={homeStyles.optionIcon}>
                 <BarChart3 size={24} color="#e36414" />
               </View>
@@ -435,7 +445,7 @@ const Home: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={homeStyles.optionCard}>
+            <TouchableOpacity style={homeStyles.optionCard} onPress={handleNavigateToSecurity}>
               <View style={homeStyles.optionIcon}>
                 <Shield size={24} color="#e36414" />
               </View>

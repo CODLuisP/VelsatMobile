@@ -31,6 +31,12 @@ const DetailDevice = () => {
   // Extraer los datos del dispositivo desde los parámetros de la ruta
   const { device } = route.params;
 
+
+ const handleInfiDevice = () => {
+  navigation.navigate('InfoDevice', {
+    deviceName: device.name
+  });
+};
   // Coordenadas de Lima, Perú (ejemplo)
   const latitude = -12.0464;
   const longitude = -77.0428;
@@ -351,7 +357,7 @@ backgroundColor: animatedHeight.interpolate({
             </View>
 
             {/* Ver más button */}
-            <TouchableOpacity style={styles.verMasButton}>
+            <TouchableOpacity style={styles.verMasButton} onPress={handleInfiDevice}>
               <Text style={styles.verMasText}>Ver más</Text>
               <Text style={styles.arrowText}>→</Text>
             </TouchableOpacity>

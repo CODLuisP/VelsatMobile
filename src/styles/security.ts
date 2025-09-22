@@ -1,0 +1,440 @@
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+
+export const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f8f9fa',
+    },
+    
+    // Header mejorado con gradiente
+    header: {
+        backgroundColor: '#1e3a8a',
+        paddingTop: 50,
+        paddingBottom: 30,
+        paddingHorizontal: 20,
+        borderBottomLeftRadius: 35,
+        borderBottomRightRadius: 35,
+        shadowColor: '#1e3a8a',
+        shadowOffset: {
+            width: 0,
+            height: 10,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 15,
+    },
+    headerTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        marginTop: 10,
+    },
+    backButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerMainTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+        flex: 1,
+        marginLeft: 15,
+    },
+    
+    // Status badge
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 15,
+    },
+    statusText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#fff',
+        marginLeft: 8,
+        opacity: 0.9,
+    },
+    
+    scrollContainer: {
+        flex: 1,
+    },
+    mainContent: {
+        flex: 1,
+        paddingHorizontal: 20,
+        marginTop: -15,
+    },
+    
+    // Card container
+    cardContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        padding: 25,
+        marginTop: 30,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 10,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 25,
+        elevation: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(99, 102, 241, 0.1)',
+    },
+    
+    // Phone illustration mejorada
+    phoneContainer: {
+        alignItems: 'center',
+        marginBottom: 25,
+    },
+    phoneWrapper: {
+        position: 'relative',
+        alignItems: 'center',
+    },
+    phone: {
+        width: 180,
+        height: 320,
+        backgroundColor: '#1a1a1a',
+        borderRadius: 30,
+        padding: 6,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 15,
+        },
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+        elevation: 15,
+    },
+    phoneScreen: {
+        flex: 1,
+        backgroundColor: '#667eea',
+        borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    
+    // Background circles para efecto
+    backgroundCircles: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+    },
+    circle: {
+        position: 'absolute',
+        borderRadius: 50,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    circle1: {
+        width: 80,
+        height: 80,
+        top: 20,
+        right: -20,
+    },
+    circle2: {
+        width: 60,
+        height: 60,
+        bottom: 40,
+        left: -15,
+    },
+    circle3: {
+        width: 40,
+        height: 40,
+        top: 120,
+        left: 20,
+    },
+    
+    scanFrame: {
+        width: 120,
+        height: 120,
+        position: 'relative',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
+    },
+    
+    // Corner frames mejorados
+    cornerTL: {
+        position: 'absolute',
+        top: -15,
+        left: -15,
+        width: 35,
+        height: 35,
+        borderTopWidth: 4,
+        borderLeftWidth: 4,
+        borderColor: '#10D9C4',
+        borderTopLeftRadius: 10,
+    },
+    cornerTR: {
+        position: 'absolute',
+        top: -15,
+        right: -15,
+        width: 35,
+        height: 35,
+        borderTopWidth: 4,
+        borderRightWidth: 4,
+        borderColor: '#10D9C4',
+        borderTopRightRadius: 10,
+    },
+    cornerBL: {
+        position: 'absolute',
+        bottom: -15,
+        left: -15,
+        width: 35,
+        height: 35,
+        borderBottomWidth: 4,
+        borderLeftWidth: 4,
+        borderColor: '#10D9C4',
+        borderBottomLeftRadius: 10,
+    },
+    cornerBR: {
+        position: 'absolute',
+        bottom: -15,
+        right: -15,
+        width: 35,
+        height: 35,
+        borderBottomWidth: 4,
+        borderRightWidth: 4,
+        borderColor: '#10D9C4',
+        borderBottomRightRadius: 10,
+    },
+    
+    // Face illustration mejorada
+    face: {
+        alignItems: 'center',
+    },
+    hair: {
+        width: 75,
+        height: 40,
+        backgroundColor: '#2D1B69',
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        marginBottom: -8,
+    },
+    faceCircle: {
+        width: 65,
+        height: 65,
+        backgroundColor: '#FFDBAC',
+        borderRadius: 32.5,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    eyesContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: 32,
+        marginTop: -10,
+    },
+    eye: {
+        width: 8,
+        height: 8,
+        backgroundColor: '#2D1B69',
+        borderRadius: 4,
+    },
+    nose: {
+        width: 4,
+        height: 4,
+        backgroundColor: '#E8A87C',
+        borderRadius: 2,
+        marginTop: 3,
+    },
+    mouth: {
+        width: 14,
+        height: 7,
+        backgroundColor: '#FF6B9D',
+        borderRadius: 7,
+        marginTop: 4,
+    },
+    neck: {
+        width: 45,
+        height: 25,
+        backgroundColor: '#FFDBAC',
+        borderBottomLeftRadius: 25,
+        borderBottomRightRadius: 25,
+        marginTop: -5,
+    },
+    
+    // Scan line animation effect
+    scanLine: {
+        position: 'absolute',
+        width: 120,
+        height: 2,
+        backgroundColor: '#10D9C4',
+        opacity: 0.8,
+        top: '50%',
+        left: '50%',
+        marginLeft: -60,
+        marginTop: -1,
+        shadowColor: '#10D9C4',
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    
+    // Phone glow effect
+    phoneGlow: {
+        position: 'absolute',
+        width: 200,
+        height: 340,
+        backgroundColor: 'rgba(16, 217, 196, 0.2)',
+        borderRadius: 30,
+        top: -10,
+        left: -10,
+        right: -10,
+        bottom: -10,
+        zIndex: -1,
+    },
+    
+    // Text content
+    textContent: {
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    mainTitle: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: '#1e293b',
+        textAlign: 'center',
+        marginBottom: 8,
+        letterSpacing: -0.5,
+    },
+    subtitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#fb8500',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    description: {
+        fontSize: 15,
+        fontWeight: '400',
+        color: '#64748b',
+        textAlign: 'center',
+        lineHeight: 22,
+        paddingHorizontal: 10,
+    },
+    
+    // Features list
+    featuresList: {
+        marginBottom: 20,
+    },
+    featureItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+        paddingHorizontal: 15,
+    },
+    featureText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#475569',
+        marginLeft: 12,
+        flex: 1,
+    },
+    
+    // Buttons
+    buttonContainer: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+        paddingTop: 20,
+    },
+    activateButton: {
+        backgroundColor: '#e36414',
+        borderRadius: 20,
+        paddingVertical: 18,
+        marginBottom: 15,
+        position: 'relative',
+        overflow: 'hidden',
+        shadowColor: '#e36414',
+        shadowOffset: {
+            width: 0,
+            height: 8,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 15,
+        elevation: 10,
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
+    },
+    buttonGradient: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'transparent',
+    },
+    activateButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '700',
+        marginLeft: 12,
+        letterSpacing: 0.5,
+    },
+
+    phoneImage: {
+        width: 150,
+        height: 200,
+        marginBottom: 10,
+    },
+    
+    // Secondary button (ya no se usa, pero lo dejo por si lo necesitas)
+    secondaryButton: {
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        borderRadius: 20,
+        paddingVertical: 16,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: 'rgba(99, 102, 241, 0.2)',
+    },
+    secondaryButtonText: {
+        color: '#6366f1',
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 8,
+    },
+    
+    // NUEVOS ESTILOS para el botón inteligente
+    disabledButton: {
+        opacity: 0.6,
+        backgroundColor: '#94a3b8',
+        shadowOpacity: 0.1,
+    },
+    
+    // Estilo para animación de loading (opcional)
+    rotating: {
+        // Podrías usar react-native-reanimated para animación de rotación
+        transform: [{ rotate: '0deg' }],
+    },
+});

@@ -20,16 +20,16 @@ export const styles = StyleSheet.create({
     marginTop: 10,
 
   },
- backButton: {
-  
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+  backButton: {
+
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   headerMainTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
-            marginLeft: 10,
+    marginLeft: 15,
 
   },
   headerBottom: {

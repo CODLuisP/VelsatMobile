@@ -1,0 +1,152 @@
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { Battery, Zap, Power, AlertTriangle, ChevronLeft } from 'lucide-react-native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../../../../App';
+import { styles } from '../../../styles/notifications';
+
+
+// Interfaz para el tipo de evento
+interface Event {
+  id: number;
+  type: string;
+  title: string;
+  device: string;
+  timestamp: string;
+  icon: any;
+}
+
+const Events = () => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
+  // Función para manejar el click en un evento
+  const handleEventPress = (event: Event) => {
+    navigation.navigate('MapEvent', {
+      notificationData: {
+        id: event.id,
+        type: event.type,
+        title: event.title,
+        device: event.device,
+        timestamp: event.timestamp,
+        iconName: getIconName(event.type)
+      }
+    });
+  };
+
+  // Función para obtener el nombre del icono basado en el tipo
+  const getIconName = (type: string): string => {
+    switch (type) {
+      case 'battery':
+        return 'Battery';
+      case 'motor':
+        return 'Zap';
+      case 'motor-off':
+        return 'Power';
+      case 'panic':
+        return 'AlertTriangle';
+      default:
+        return 'Bell';
+    }
+  };
+
+  const events = [
+    {
+      id: 1,
+      type: 'battery',
+      title: 'Desconexión de batería',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: Battery,
+    },
+    {
+      id: 2,
+      type: 'motor',
+      title: 'Encendido de motor',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: Zap,
+    },
+    {
+      id: 3,
+      type: 'motor-off',
+      title: 'Apagado de motor',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: Power,
+    },
+    {
+      id: 4,
+      type: 'panic',
+      title: 'Botón de pánico',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: AlertTriangle,
+    },
+  ];
+
+  const getEventStyle = (type: string) => {
+    switch (type) {
+      case 'battery':
+        return styles.batteryNotification;
+      case 'motor':
+        return styles.motorNotification;
+      case 'motor-off':
+        return styles.motorOffNotification;
+      case 'panic':
+        return styles.panicNotification;
+      default:
+        return styles.defaultNotification;
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+            <ChevronLeft size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerMainTitle}>Eventos</Text>
+        </View>
+        <View style={styles.headerBottom}>
+          <Text style={styles.headerTitle}>Eventos de tus unidades</Text>
+          <Text style={styles.headerSubtitle}>
+            Visualiza el detalle de los eventos de tus unidades, desconexión de batería, apagado de motor, encendido de motor y botón de pánico.
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView style={styles.notificationsList} showsVerticalScrollIndicator={false}>
+        {events.map((event) => {
+          const IconComponent = event.icon;
+          return (
+            <TouchableOpacity
+              key={event.id}
+              style={[styles.notificationCard, getEventStyle(event.type)]}
+              activeOpacity={0.7}
+              onPress={() => handleEventPress(event)}
+              
+            >
+              <View style={styles.notificationHeader}>
+                <View style={styles.iconContainer}>
+                  <IconComponent size={24} color="#FF8C42" />
+                </View>
+                <View style={styles.notificationContent}>
+                  <Text style={styles.notificationTitle}>{event.title}</Text>
+                  <Text style={styles.deviceName}>{event.device}</Text>
+                  <Text style={styles.timestamp}>{event.timestamp}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+};
+
+export default Events;
