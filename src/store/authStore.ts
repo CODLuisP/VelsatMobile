@@ -129,18 +129,24 @@ export const useAuthStore = create<AuthState>()(
         set({ token });
       },
 
-      logout: async () => {
-        set({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-          server: null,
-          token: null,
-        });
-        
-        // Limpiar credenciales biométricas al hacer logout
-        get().clearBiometricCredentials();
-      },
+  logout: async () => {
+  set({
+    user: null,
+    isAuthenticated: false,
+    isLoading: false,
+    server: null,
+    token: null,
+  });
+  
+  // ✅ CORRECCIÓN: NO limpiar las credenciales biométricas en logout normal
+  // Solo limpiarlas si la biometría está deshabilitada
+  const currentState = get();
+  if (!currentState.biometric.isEnabled) {
+    get().clearBiometricCredentials();
+  }
+  
+  console.log('Logout completed, biometric credentials preserved');
+},
 
       setLoading: (loading: boolean) => {
         set({ isLoading: loading });
