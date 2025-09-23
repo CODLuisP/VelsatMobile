@@ -1,7 +1,16 @@
 import axios from 'axios';
 import { useAuthStore, User as UserType } from '../../store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Eye, EyeOff, Fingerprint, Lock, Phone, Scan, User } from 'lucide-react-native';
+import {
+  Eye,
+  EyeOff,
+  Fingerprint,
+  Lock,
+  LogIn,
+  Phone,
+  Scan,
+  User,
+} from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -61,58 +70,45 @@ const Login = () => {
   const roadOffset = useSharedValue(0);
 
   // Usar authStore extendido
-  const { 
-    setUser, 
-    setServer, 
-    setToken, 
+  const {
+    setUser,
+    setServer,
+    setToken,
     setLoading,
-    // Funciones biométricas
     biometric,
     checkBiometricAvailability,
     authenticateWithBiometric,
     getBiometricDisplayName,
-    canUseBiometricLogin
+    canUseBiometricLogin,
   } = useAuthStore();
 
-  // Estado para mostrar opción biométrica
   const [showBiometricOption, setShowBiometricOption] = useState(false);
 
+  const handleBiometricLogin = async () => {
+    try {
+      setLoading(true);
 
-  // Login con biometría
-// REEMPLAZA tu handleBiometricLogin en Login.tsx por esta versión:
+      const success = await authenticateWithBiometric();
 
-const handleBiometricLogin = async () => {
-  try {
-    setLoading(true);
-    console.log('🔐 Iniciando autenticación biométrica...');
-    
-    const success = await authenticateWithBiometric();
-    
-    if (success) {
-      console.log('✅ Login biométrico exitoso');
-      // La sesión se restaura automáticamente en el store
-      // NO llamar setLoading(false) aquí porque la app navega automáticamente
-    } else {
-      console.log('❌ Autenticación biométrica fallida');
+      if (success) {
+      } else {
+        Alert.alert(
+          'Autenticación fallida',
+          'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
+          [{ text: 'Entendido' }],
+        );
+        setLoading(false);
+      }
+    } catch (error) {
       Alert.alert(
-        'Autenticación fallida',
-        'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
-        [{ text: 'Entendido' }]
+        'Error de Autenticación',
+        'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+        [{ text: 'Entendido' }],
       );
       setLoading(false);
     }
-  } catch (error) {
-    console.log('❌ Error biometric login:', error);
-    Alert.alert(
-      'Error de Autenticación', 
-      'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
-      [{ text: 'Entendido' }]
-    );
-    setLoading(false);
-  }
-};
+  };
 
-  // Función para cargar datos guardados (solo para credenciales normales)
   const loadSavedCredentials = async () => {
     try {
       const savedUser = await AsyncStorage.getItem('savedUser');
@@ -129,7 +125,6 @@ const handleBiometricLogin = async () => {
     }
   };
 
-  // Función para guardar credenciales normales
   const saveCredentials = async () => {
     try {
       if (rememberMe) {
@@ -144,7 +139,6 @@ const handleBiometricLogin = async () => {
     }
   };
 
-  // Función para limpiar credenciales normales
   const clearCredentials = async () => {
     try {
       await AsyncStorage.removeItem('savedUser');
@@ -155,7 +149,6 @@ const handleBiometricLogin = async () => {
     }
   };
 
-  // Función para abrir la aplicación de teléfono
   const makePhoneCall = () => {
     const phoneNumber = '91290330';
     const phoneUrl = `tel:${phoneNumber}`;
@@ -174,287 +167,272 @@ const handleBiometricLogin = async () => {
       });
   };
 
-const handleLogin = async () => {
-  // Validaciones básicas
-  if (!usuario.trim()) {
-    Alert.alert('Error', 'Por favor ingresa tu usuario');
-    return;
-  }
-
-  if (!password.trim()) {
-    Alert.alert('Error', 'Por favor ingresa tu contraseña');
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    // PASO 1: Obtener el servidor
-    const serverResponse = await axios.get(
-      `https://velsat.pe:2096/api/Server/${usuario}`,
-      {
-        timeout: 10000,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
-
-    const serverData = serverResponse.data;
-
-    if (!serverData.servidor) {
-      Alert.alert('Error', 'No se pudo obtener la configuración del servidor');
-      setLoading(false);
+  const handleLogin = async () => {
+    if (!usuario.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu usuario');
       return;
     }
 
-    // PASO 2: Hacer login con el servidor obtenido
-    const loginResponse = await axios.post(
-      `${serverData.servidor}/api/Login/login`,
-      {
-        login: usuario,
-        clave: password,
-      },
-      {
-        timeout: 10000,
-        headers: {
-          'Content-Type': 'application/json',
+    if (!password.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu contraseña');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // PASO 1: Obtener el servidor
+      const serverResponse = await axios.get(
+        `https://velsat.pe:2096/api/Server/${usuario}`,
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-      },
-    );
+      );
 
-    const loginData = loginResponse.data;
+      const serverData = serverResponse.data;
 
-    if (loginData.token && loginData.username) {
-      // Guardar credenciales normales si el usuario lo desea
-      await saveCredentials();
+      if (!serverData.servidor) {
+        Alert.alert(
+          'Error',
+          'No se pudo obtener la configuración del servidor',
+        );
+        setLoading(false);
+        return;
+      }
 
-      // Guardar server y token
-      setServer(serverData.servidor);
-      setToken(loginData.token);
+      // PASO 2: Hacer login con el servidor obtenido
+      const loginResponse = await axios.post(
+        `${serverData.servidor}/api/Login/login`,
+        {
+          login: usuario,
+          clave: password,
+        },
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
 
-      // Crear objeto usuario
-      const userObj: UserType = {
-        id: loginData.username,
-        username: loginData.username,
-        email: `${loginData.username}@velsat.com`,
-        name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
-      };
+      const loginData = loginResponse.data;
 
-      // Guardar usuario (esto guardará automáticamente las credenciales biométricas)
-      setUser(userObj);
+      if (loginData.token && loginData.username) {
+        await saveCredentials();
 
-    } else {
-      Alert.alert('Error', 'Respuesta de login inválida');
+        setServer(serverData.servidor);
+        setToken(loginData.token);
+
+        const userObj: UserType = {
+          id: loginData.username,
+          username: loginData.username,
+          email: `${loginData.username}@velsat.com`,
+          name:
+            loginData.username.charAt(0).toUpperCase() +
+            loginData.username.slice(1),
+        };
+
+        setUser(userObj);
+      } else {
+        Alert.alert('Error', 'Respuesta de login inválida');
+        setLoading(false);
+      }
+    } catch (error) {
+      let errorMessage = 'Error de conexión';
+
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          const status = error.response.status;
+          if (status === 401 || status === 400) {
+            errorMessage = 'Usuario o contraseña incorrectos';
+          } else if (status >= 500) {
+            errorMessage = 'Error del servidor. Intenta más tarde';
+          } else {
+            errorMessage = `Error del servidor (${status})`;
+          }
+        } else if (error.request) {
+          errorMessage = 'Sin conexión a internet. Verifica tu conexión';
+        } else {
+          errorMessage = 'Error de configuración';
+        }
+      }
+
+      Alert.alert('Error de Login', errorMessage);
       setLoading(false);
     }
-  } catch (error) {
-    let errorMessage = 'Error de conexión';
-
-    if (axios.isAxiosError(error)) {
-      if (error.response) {
-        const status = error.response.status;
-        if (status === 401 || status === 400) {
-          errorMessage = 'Usuario o contraseña incorrectos';
-        } else if (status >= 500) {
-          errorMessage = 'Error del servidor. Intenta más tarde';
-        } else {
-          errorMessage = `Error del servidor (${status})`;
-        }
-      } else if (error.request) {
-        errorMessage = 'Sin conexión a internet. Verifica tu conexión';
-      } else {
-        errorMessage = 'Error de configuración';
-      }
-    }
-
-    Alert.alert('Error de Login', errorMessage);
-    setLoading(false);
-  }
-};
-  // Función para reiniciar el carro cuando sale de pantalla
+  };
   const resetCarPosition = () => {
     carPosition.value = -100;
   };
 
+  useEffect(() => {
+    loadSavedCredentials();
 
-  // 2. REEMPLAZAR el useEffect completo con este:
-useEffect(() => {
-  // Cargar credenciales guardadas al iniciar
-  loadSavedCredentials();
+    const checkBiometricWithDelay = async () => {
+      try {
+        await new Promise<void>(resolve => setTimeout(resolve, 1000));
 
-  // Verificar biometría con delay para asegurar hidratación del store
-  const checkBiometricWithDelay = async () => {
-    try {
-      // Esperar a que el store se hidrate completamente
-await new Promise<void>(resolve => setTimeout(resolve, 1000));
+        await checkBiometricAvailability();
 
-      console.log('🔄 Verificando disponibilidad biométrica...');
-      await checkBiometricAvailability();
-      
-      // Verificar si se puede usar login biométrico
-      const canUse = canUseBiometricLogin();
-      console.log('🔍 Puede usar biometría:', canUse);
-      
-      if (canUse) {
-        setShowBiometricOption(true);
-        console.log('✅ Opción biométrica habilitada');
-      } else {
-        console.log('❌ No se puede usar biometría:', {
-          enabled: biometric.isEnabled,
-          available: biometric.isAvailable,
-          hasCredentials: !!useAuthStore.getState().biometricCredentials.username
-        });
-      }
-    } catch (error) {
-      console.log('❌ Error en verificación biométrica:', error);
-    }
-  };
+        const canUse = canUseBiometricLogin();
 
-  checkBiometricWithDelay();
-
-
-
-  // Resto de animaciones (mantener todo igual)...
-  backgroundShift.value = withRepeat(
-    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
-
-  orb1.value = withRepeat(
-    withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
-
-  orb2.value = withRepeat(
-    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
-
-  orb3.value = withRepeat(
-    withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
-
-  // Satélites en órbita
-  satellite1.value = withRepeat(
-    withTiming(1, { duration: 12000, easing: Easing.linear }),
-    -1,
-    false,
-  );
-
-  satellite2.value = withDelay(
-    4000,
-    withRepeat(
-      withTiming(1, { duration: 15000, easing: Easing.linear }),
-      -1,
-      false,
-    ),
-  );
-
-  satellite3.value = withDelay(
-    8000,
-    withRepeat(
-      withTiming(1, { duration: 18000, easing: Easing.linear }),
-      -1,
-      false,
-    ),
-  );
-
-  // Señales GPS pulsantes
-  gpsSignal1.value = withRepeat(
-    withSequence(
-      withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-      withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-    ),
-    -1,
-    false,
-  );
-
-  gpsSignal2.value = withDelay(
-    800,
-    withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-      ),
-      -1,
-      false,
-    ),
-  );
-
-  gpsSignal3.value = withDelay(
-    1600,
-    withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-      ),
-      -1,
-      false,
-    ),
-  );
-
-  // Radar sweep
-  radarSweep.value = withRepeat(
-    withTiming(1, { duration: 4000, easing: Easing.linear }),
-    -1,
-    false,
-  );
-
-  // Señal de antena
-  antennaSignal.value = withRepeat(
-    withSequence(
-      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-      withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
-      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-      withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
-    ),
-    -1,
-    false,
-  );
-
-  // Pulso de red/conexión
-  networkPulse.value = withRepeat(
-    withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
-
-  // Animación del carro
-  const startCarAnimation = () => {
-    carPosition.value = withTiming(
-      width + 100,
-      {
-        duration: 8000,
-        easing: Easing.linear,
-      },
-      finished => {
-        if (finished) {
-          runOnJS(resetCarPosition)();
-          runOnJS(startCarAnimation)();
+        if (canUse) {
+          setShowBiometricOption(true);
+        } else {
+          console.log('No se puede usar biometría:', {
+            enabled: biometric.isEnabled,
+            available: biometric.isAvailable,
+            hasCredentials:
+              !!useAuthStore.getState().biometricCredentials.username,
+          });
         }
-      },
+      } catch (error) {
+        console.log('Error en verificación biométrica:', error);
+      }
+    };
+
+    checkBiometricWithDelay();
+
+    backgroundShift.value = withRepeat(
+      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
     );
-  };
 
-  startCarAnimation();
+    orb1.value = withRepeat(
+      withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
 
-  // Animación de las líneas de carretera
-  roadOffset.value = withRepeat(
-    withTiming(80, {
-      duration: 800,
-      easing: Easing.linear,
-    }),
-    -1,
-    false,
-  );
-}, []); // Mantener array vacío 
+    orb2.value = withRepeat(
+      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
 
+    orb3.value = withRepeat(
+      withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+
+    satellite1.value = withRepeat(
+      withTiming(1, { duration: 12000, easing: Easing.linear }),
+      -1,
+      false,
+    );
+
+    satellite2.value = withDelay(
+      4000,
+      withRepeat(
+        withTiming(1, { duration: 15000, easing: Easing.linear }),
+        -1,
+        false,
+      ),
+    );
+
+    satellite3.value = withDelay(
+      8000,
+      withRepeat(
+        withTiming(1, { duration: 18000, easing: Easing.linear }),
+        -1,
+        false,
+      ),
+    );
+
+    // Señales GPS pulsantes
+    gpsSignal1.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+      ),
+      -1,
+      false,
+    );
+
+    gpsSignal2.value = withDelay(
+      800,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+        ),
+        -1,
+        false,
+      ),
+    );
+
+    gpsSignal3.value = withDelay(
+      1600,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+        ),
+        -1,
+        false,
+      ),
+    );
+
+    // Radar sweep
+    radarSweep.value = withRepeat(
+      withTiming(1, { duration: 4000, easing: Easing.linear }),
+      -1,
+      false,
+    );
+
+    // Señal de antena
+    antennaSignal.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+        withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
+        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+        withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
+      ),
+      -1,
+      false,
+    );
+
+    // Pulso de red/conexión
+    networkPulse.value = withRepeat(
+      withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+
+    // Animación del carro
+    const startCarAnimation = () => {
+      carPosition.value = withTiming(
+        width + 100,
+        {
+          duration: 8000,
+          easing: Easing.linear,
+        },
+        finished => {
+          if (finished) {
+            runOnJS(resetCarPosition)();
+            runOnJS(startCarAnimation)();
+          }
+        },
+      );
+    };
+
+    startCarAnimation();
+
+    // Animación de las líneas de carretera
+    roadOffset.value = withRepeat(
+      withTiming(80, {
+        duration: 800,
+        easing: Easing.linear,
+      }),
+      -1,
+      false,
+    );
+  }, []); // Mantener array vacío
 
   // Estilos animados
   const backgroundStyle = useAnimatedStyle(() => {
@@ -647,7 +625,7 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
       {/* Antena de comunicación */}
       <View style={styles.antennaContainer}>
         <Animated.View style={[styles.antennaSignal, antennaSignalStyle]} />
-        <Text style={styles.antennaIcon}>📶</Text>
+        <Text style={styles.antennaIcon}>🛰️</Text>
       </View>
 
       {/* Indicadores de red */}
@@ -677,21 +655,22 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
           <View style={styles.formCard}>
             <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
-
             {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
             {showBiometricOption && (
-
-
               <>
                 <View style={styles.biometricSection}>
-                  <TouchableOpacity 
-                    style={styles.biometricButton} 
+                  <TouchableOpacity
+                    style={styles.biometricButton}
                     onPress={handleBiometricLogin}
                   >
                     <View style={styles.biometricButtonContent}>
-                      {biometric.type === 'FaceID' && <Scan color="#fff" size={24} />}
-                      {(biometric.type === 'TouchID' || biometric.type === 'Biometrics') && 
-                        <Fingerprint color="#fff" size={24} />}
+                      {biometric.type === 'FaceID' && (
+                        <Scan color="#fff" size={24} />
+                      )}
+                      {(biometric.type === 'TouchID' ||
+                        biometric.type === 'Biometrics') && (
+                        <Fingerprint color="#fff" size={24} />
+                      )}
                       <Text style={styles.biometricButtonText}>
                         Acceder con {getBiometricDisplayName()}
                       </Text>
@@ -767,7 +746,8 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
               <View style={styles.loginButtonGradient}>
                 <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
                 <View style={styles.loginArrow}>
-                  <Text style={styles.arrowText}>→</Text>
+                                    <LogIn  color="white" size={16} />
+
                 </View>
               </View>
             </TouchableOpacity>

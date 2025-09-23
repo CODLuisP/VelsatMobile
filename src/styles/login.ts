@@ -250,7 +250,7 @@ export const styles = StyleSheet.create({
   },
 
   welcomeText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#ffffff',
     textAlign: 'center',
@@ -371,22 +371,24 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
-    marginRight: 12,
+    marginRight: 5,
   },
 
   loginArrow: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    width: 24,
+    height: 24,
+
   },
 
   arrowText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+    lineHeight: 16,
+    includeFontPadding: false,
   },
 
   // Divisor elegante
@@ -418,9 +420,9 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-biometricSection: {
-  marginBottom: -20,
-},
+  biometricSection: {
+    marginBottom: -20,
+  },
 
   biometricIcon: {
     fontSize: 20,
@@ -535,47 +537,46 @@ biometricSection: {
     height: 130,
   },
 
+  biometricButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    paddingVertical: 16,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
 
-biometricButton: {
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  borderRadius: 16,
-  paddingVertical: 16,
-  marginBottom: 20,
-  borderWidth: 1.5,
-  borderColor: 'rgba(255, 255, 255, 0.3)',
-},
+  biometricButtonContent: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
-biometricButtonContent: {
-  flexDirection: 'row',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
+  biometricButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 12,
+    letterSpacing: 0.5,
+  },
 
-biometricButtonText: {
-  color: '#fff',
-  fontSize: 14,
-  fontWeight: '600',
-  marginLeft: 12,
-  letterSpacing: 0.5,
-},
+  // Separador entre biometría y login normal
+  loginSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
 
-// Separador entre biometría y login normal
-loginSeparator: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 20,
-},
+  separatorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
 
-separatorLine: {
-  flex: 1,
-  height: 1,
-  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-},
-
-separatorText: {
-  color: 'rgba(255, 255, 255, 0.7)',
-  fontSize: 14,
-  fontWeight: '500',
-  paddingHorizontal: 16,
-},
+  separatorText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    fontWeight: '500',
+    paddingHorizontal: 16,
+  },
 });
