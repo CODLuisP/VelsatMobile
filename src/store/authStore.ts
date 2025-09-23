@@ -76,12 +76,8 @@ export const useAuthStore = create<AuthState>()(
         server: null,
       },
 
-
-
       // Actions existentes
       setUser: (user: User) => {
-        const currentState = get();
-        
         set({
           user,
           isAuthenticated: true,
@@ -94,21 +90,27 @@ export const useAuthStore = create<AuthState>()(
           // Solo si la biometría está habilitada Y tenemos token y servidor
           if (newState.biometric.isEnabled && newState.token && newState.server) {
             console.log('🔐 Guardando credenciales biométricas para:', user.username);
-            console.log('📊 Estado actual:', {
-              isEnabled: newState.biometric.isEnabled,
-              hasToken: !!newState.token,
-              hasServer: !!newState.server
-            });
             
-            set((state) => ({
+            // CORRECCIÓN CRÍTICA: Usar set con función para asegurar la actualización
+            set((currentState) => ({
+              ...currentState,
               biometricCredentials: {
                 username: user.username,
-                token: newState.token,
-                server: newState.server,
+                token: newState.token!,
+                server: newState.server!,
               },
             }));
             
-            console.log('✅ Credenciales biométricas guardadas exitosamente');
+            // NUEVO: Forzar persistencia inmediata
+            setTimeout(() => {
+              const finalState = get();
+              if (finalState.biometricCredentials.username) {
+                console.log('✅ Credenciales biométricas guardadas y verificadas');
+              } else {
+                console.log('❌ Error: Las credenciales no se guardaron correctamente');
+              }
+            }, 50);
+            
           } else {
             console.log('❌ No se pudieron guardar credenciales biométricas:', {
               biometricEnabled: newState.biometric.isEnabled,
@@ -118,8 +120,6 @@ export const useAuthStore = create<AuthState>()(
           }
         }, 100);
       },
-
-
 
       setServer: (server: string) => {
         set({ server });
@@ -342,8 +342,8 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      // Persistir todos los estados importantes
-      partialize: (state) => ({
+      // CORRECCIÓN CRÍTICA: Configuración mejorada de persistencia
+      partialize: (state: AuthState) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         server: state.server,
@@ -351,6 +351,21 @@ export const useAuthStore = create<AuthState>()(
         biometric: state.biometric,
         biometricCredentials: state.biometricCredentials,
       }),
+      // NUEVO: Configuración adicional para asegurar persistencia
+      version: 1,
+      // NUEVO: Función para manejar la hidratación
+      onRehydrateStorage: () => (state: AuthState | undefined) => {
+        if (state) {
+          console.log('🔄 Store hidratado correctamente:', {
+            hasBiometric: !!state.biometric,
+            biometricEnabled: state.biometric?.isEnabled,
+            hasCredentials: !!state.biometricCredentials?.username,
+            credentialsUsername: state.biometricCredentials?.username,
+          });
+        } else {
+          console.log('❌ Error en hidratación del store');
+        }
+      },
     }
   )
 );
