@@ -220,7 +220,7 @@ export const styles = StyleSheet.create({
   },
 
   logoText: {
-    fontSize: 40,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#ffffff',
     letterSpacing: 3,
@@ -250,7 +250,7 @@ export const styles = StyleSheet.create({
   },
 
   welcomeText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#ffffff',
     textAlign: 'center',
@@ -362,13 +362,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
+    paddingVertical: 14,
     paddingHorizontal: 24,
   },
 
   loginButtonText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
     marginRight: 12,
@@ -419,7 +419,7 @@ export const styles = StyleSheet.create({
   },
 
 biometricSection: {
-  marginBottom: 25,
+  marginBottom: -20,
 },
 
   biometricIcon: {
@@ -492,8 +492,8 @@ biometricSection: {
   },
 
   logoImage: {
-    width: 180,
-    height: 90,
+    width: 150,
+    height: 70,
   },
 
   road: {
@@ -564,7 +564,7 @@ biometricButtonContent: {
 
 biometricButtonText: {
   color: '#fff',
-  fontSize: 16,
+  fontSize: 14,
   fontWeight: '600',
   marginLeft: 12,
   letterSpacing: 0.5,
@@ -574,7 +574,7 @@ biometricButtonText: {
 loginSeparator: {
   flexDirection: 'row',
   alignItems: 'center',
-  marginVertical: 20,
+  paddingVertical: 20,
 },
 
 separatorLine: {

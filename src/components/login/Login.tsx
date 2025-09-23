@@ -75,7 +75,7 @@ const Login = () => {
   } = useAuthStore();
 
   // Estado para mostrar opción biométrica
-  const [showBiometricOption, setShowBiometricOption] = useState(false);
+  const [showBiometricOption, setShowBiometricOption] = useState(true);
 
 
   // Login con biometría
@@ -229,76 +229,6 @@ const handleLogin = async () => {
       // Guardar credenciales normales si el usuario lo desea
       await saveCredentials();
 
-      // DEBUG 1: Verificar estado de biometría antes de guardar
-      const stateBefore = useAuthStore.getState();
-      Alert.alert(
-        'DEBUG 1 - Estado antes',
-        `Biometría habilitada: ${stateBefore.biometric.isEnabled ? 'SÍ' : 'NO'}\n` +
-        `Token recibido: ${loginData.token ? 'SÍ' : 'NO'}\n` +
-        `Server recibido: ${serverData.servidor ? 'SÍ' : 'NO'}`,
-        [{ text: 'Continuar', onPress: () => continueLogin() }]
-      );
-
-      const continueLogin = () => {
-        // Guardar server y token
-        setServer(serverData.servidor);
-        setToken(loginData.token);
-
-        // Crear objeto usuario
-        const userObj: UserType = {
-          id: loginData.username,
-          username: loginData.username,
-          email: `${loginData.username}@velsat.com`,
-          name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
-        };
-
-        // DEBUG 2: Verificar después de guardar server/token
-        setTimeout(() => {
-          const stateAfterTokens = useAuthStore.getState();
-          Alert.alert(
-            'DEBUG 2 - Después de guardar',
-            `Token en store: ${stateAfterTokens.token ? 'SÍ' : 'NO'}\n` +
-            `Server en store: ${stateAfterTokens.server ? 'SÍ' : 'NO'}\n` +
-            `Biometría habilitada: ${stateAfterTokens.biometric.isEnabled ? 'SÍ' : 'NO'}`,
-            [{ text: 'Continuar', onPress: () => saveUser() }]
-          );
-
-          const saveUser = () => {
-            // Guardar usuario
-            setUser(userObj);
-
-            // DEBUG 3: Verificar resultado final
-            setTimeout(() => {
-              const finalState = useAuthStore.getState();
-              Alert.alert(
-                'DEBUG 3 - Resultado final',
-                `Usuario guardado: ${finalState.user ? 'SÍ' : 'NO'}\n` +
-                `Credenciales guardadas: ${finalState.biometricCredentials.username ? 'SÍ' : 'NO'}\n` +
-                `Username en credenciales: ${finalState.biometricCredentials.username || 'NINGUNO'}`,
-                [{ 
-                  text: 'OK', 
-                  onPress: () => {
-                    // Si no se guardaron, forzar guardado manual
-                    if (finalState.biometric.isEnabled && !finalState.biometricCredentials.username) {
-                      finalState.saveBiometricCredentials(userObj.username, loginData.token, serverData.servidor);
-                      
-                      setTimeout(() => {
-                        const afterManual = useAuthStore.getState();
-                        Alert.alert(
-                          'DEBUG - Guardado manual',
-                          `Credenciales después del guardado manual: ${afterManual.biometricCredentials.username ? 'SÍ' : 'NO'}`,
-                          [{ text: 'Finalizar' }]
-                        );
-                      }, 100);
-                    }
-                  }
-                }]
-              );
-            }, 300);
-          };
-        }, 100);
-      };
-
     } else {
       Alert.alert('Error', 'Respuesta de login inválida');
       setLoading(false);
@@ -368,6 +298,11 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
   };
 
   checkBiometricWithDelay();
+
+  // TEMPORAL - Solo para testing en emulador
+setTimeout(() => {
+  setShowBiometricOption(true);
+}, 2000);
 
   // Resto de animaciones (mantener todo igual)...
   backgroundShift.value = withRepeat(
@@ -731,15 +666,10 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
           <View style={styles.formCard}>
             <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
-{/* DEBUG MEJORADO */}
-<Text style={{color: 'white', fontSize: 10, textAlign: 'center', marginBottom: 10}}>
-  DEBUG: {showBiometricOption ? 'Botón VISIBLE' : 'Botón OCULTO'}{'\n'}
-  Habilitado: {biometric.isEnabled ? 'SÍ' : 'NO'}{'\n'}
-  Disponible: {biometric.isAvailable ? 'SÍ' : 'NO'}{'\n'}
-  Credenciales: {useAuthStore.getState().biometricCredentials.username ? 'SÍ' : 'NO'}
-</Text>
+
             {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
-            {showBiometricOption && (
+            {(showBiometricOption || true) && (
+
               <>
                 <View style={styles.biometricSection}>
                   <TouchableOpacity 
