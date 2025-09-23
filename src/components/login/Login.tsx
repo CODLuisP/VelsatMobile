@@ -77,19 +77,6 @@ const Login = () => {
   // Estado para mostrar opción biométrica
   const [showBiometricOption, setShowBiometricOption] = useState(false);
 
-  // Verificar si mostrar opción biométrica
-  const checkAndShowBiometricOption = async () => {
-    try {
-      await checkBiometricAvailability();
-      
-      // Mostrar opción biométrica si está todo configurado
-      if (canUseBiometricLogin()) {
-        setShowBiometricOption(true);
-      }
-    } catch (error) {
-      console.log('Error checking biometric option:', error);
-    }
-  };
 
   // Login con biometría
   const handleBiometricLogin = async () => {
@@ -297,155 +284,177 @@ const Login = () => {
     carPosition.value = -100;
   };
 
-  useEffect(() => {
-    // Cargar credenciales guardadas al iniciar
-    loadSavedCredentials();
+// REEMPLAZAR el useEffect completo en Login.tsx por este:
 
-    // Verificar si mostrar opción biométrica
-    checkAndShowBiometricOption();
+useEffect(() => {
+  // Cargar credenciales guardadas al iniciar
+  loadSavedCredentials();
 
-    // Fondo dinámico con gradiente
-    backgroundShift.value = withRepeat(
-      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  // Verificar biometría con delay para asegurar hidratación del store
+  const checkBiometricWithDelay = async () => {
+    // Esperar a que el store se hidrate completamente
+    setTimeout(async () => {
+      try {
+        await checkBiometricAvailability();
+        
+        // Verificar si se puede usar login biométrico
+        if (canUseBiometricLogin()) {
+          setShowBiometricOption(true);
+          console.log('Biometric option enabled');
+        } else {
+          console.log('Cannot use biometric login:', {
+            enabled: biometric.isEnabled,
+            available: biometric.isAvailable,
+            hasCredentials: !!useAuthStore.getState().biometricCredentials.username
+          });
+        }
+      } catch (error) {
+        console.log('Error in biometric check:', error);
+      }
+    }, 2000); // Esperar 2 segundos para asegurar hidratación
+  };
 
-    // Orbes flotantes decorativos
-    orb1.value = withRepeat(
-      withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  checkBiometricWithDelay();
 
-    orb2.value = withRepeat(
-      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  // Resto de animaciones...
+  backgroundShift.value = withRepeat(
+    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    orb3.value = withRepeat(
-      withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  orb1.value = withRepeat(
+    withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    // ANIMACIONES GPS ESPECÍFICAS
+  orb2.value = withRepeat(
+    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    // Satélites en órbita
-    satellite1.value = withRepeat(
-      withTiming(1, { duration: 12000, easing: Easing.linear }),
+  orb3.value = withRepeat(
+    withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
+
+  // Satélites en órbita
+  satellite1.value = withRepeat(
+    withTiming(1, { duration: 12000, easing: Easing.linear }),
+    -1,
+    false,
+  );
+
+  satellite2.value = withDelay(
+    4000,
+    withRepeat(
+      withTiming(1, { duration: 15000, easing: Easing.linear }),
       -1,
       false,
-    );
+    ),
+  );
 
-    satellite2.value = withDelay(
-      4000,
-      withRepeat(
-        withTiming(1, { duration: 15000, easing: Easing.linear }),
-        -1,
-        false,
-      ),
-    );
+  satellite3.value = withDelay(
+    8000,
+    withRepeat(
+      withTiming(1, { duration: 18000, easing: Easing.linear }),
+      -1,
+      false,
+    ),
+  );
 
-    satellite3.value = withDelay(
-      8000,
-      withRepeat(
-        withTiming(1, { duration: 18000, easing: Easing.linear }),
-        -1,
-        false,
-      ),
-    );
+  // Señales GPS pulsantes
+  gpsSignal1.value = withRepeat(
+    withSequence(
+      withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+      withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+    ),
+    -1,
+    false,
+  );
 
-    // Señales GPS pulsantes
-    gpsSignal1.value = withRepeat(
+  gpsSignal2.value = withDelay(
+    800,
+    withRepeat(
       withSequence(
         withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
         withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
       ),
       -1,
       false,
-    );
+    ),
+  );
 
-    gpsSignal2.value = withDelay(
-      800,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-        ),
-        -1,
-        false,
-      ),
-    );
-
-    gpsSignal3.value = withDelay(
-      1600,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-        ),
-        -1,
-        false,
-      ),
-    );
-
-    // Radar sweep (barrido de radar)
-    radarSweep.value = withRepeat(
-      withTiming(1, { duration: 4000, easing: Easing.linear }),
-      -1,
-      false,
-    );
-
-    // Señal de antena
-    antennaSignal.value = withRepeat(
+  gpsSignal3.value = withDelay(
+    1600,
+    withRepeat(
       withSequence(
-        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-        withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
-        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-        withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
+        withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
       ),
       -1,
       false,
-    );
+    ),
+  );
 
-    // Pulso de red/conexión
-    networkPulse.value = withRepeat(
-      withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  // Radar sweep
+  radarSweep.value = withRepeat(
+    withTiming(1, { duration: 4000, easing: Easing.linear }),
+    -1,
+    false,
+  );
 
-    // Animación del carro
-    const startCarAnimation = () => {
-      carPosition.value = withTiming(
-        width + 100,
-        {
-          duration: 8000,
-          easing: Easing.linear,
-        },
-        finished => {
-          if (finished) {
-            runOnJS(resetCarPosition)();
-            runOnJS(startCarAnimation)();
-          }
-        },
-      );
-    };
+  // Señal de antena
+  antennaSignal.value = withRepeat(
+    withSequence(
+      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+      withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
+      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+      withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
+    ),
+    -1,
+    false,
+  );
 
-    startCarAnimation();
+  // Pulso de red/conexión
+  networkPulse.value = withRepeat(
+    withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    // Animación de las líneas de carretera
-    roadOffset.value = withRepeat(
-      withTiming(80, {
-        duration: 800,
+  // Animación del carro
+  const startCarAnimation = () => {
+    carPosition.value = withTiming(
+      width + 100,
+      {
+        duration: 8000,
         easing: Easing.linear,
-      }),
-      -1,
-      false,
+      },
+      finished => {
+        if (finished) {
+          runOnJS(resetCarPosition)();
+          runOnJS(startCarAnimation)();
+        }
+      },
     );
-  }, []);
+  };
+
+  startCarAnimation();
+
+  // Animación de las líneas de carretera
+  roadOffset.value = withRepeat(
+    withTiming(80, {
+      duration: 800,
+      easing: Easing.linear,
+    }),
+    -1,
+    false,
+  );
+}, []); // Sin dependencias para evitar re-ejecutar constantemente
 
   // Estilos animados
   const backgroundStyle = useAnimatedStyle(() => {
@@ -668,6 +677,12 @@ const Login = () => {
           <View style={styles.formCard}>
             <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
+    {/* DEBUG - QUITAR DESPUÉS DE PROBAR */}
+<Text style={{color: 'white', fontSize: 12, textAlign: 'center', marginBottom: 10}}>
+  DEBUG: {showBiometricOption ? 'Botón VISIBLE' : 'Botón OCULTO'} | 
+  Habilitado: {biometric.isEnabled ? 'SÍ' : 'NO'} | 
+  Disponible: {biometric.isAvailable ? 'SÍ' : 'NO'}
+</Text>
             {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
             {showBiometricOption && (
               <>
