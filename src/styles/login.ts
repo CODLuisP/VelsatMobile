@@ -240,8 +240,8 @@ export const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     flex: 1,
-    justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 0,
+    paddingTop: 100,
   },
 
   formCard: {
@@ -450,19 +450,14 @@ export const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 
-  // Footer
-  footer: {
-    alignItems: 'center',
-    paddingBottom: 140,
-    marginTop: 20,
-  },
-
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 16,
     borderRadius: 20,
+    
   },
 
   statusDot: {

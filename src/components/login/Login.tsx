@@ -790,19 +790,19 @@ const Login = () => {
               <Text style={styles.forgotPasswordText}>
                 Contáctanos por teléfono
               </Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
 
-        {/* Footer con indicador de estado */}
-        <View style={styles.footer}>
-          <View style={styles.statusContainer}>
+            </TouchableOpacity>
+
+             <View style={styles.statusContainer}>
             <View style={styles.statusDot} />
             <Text style={styles.statusText}>
               Aplicativo móvil • GPS en línea
             </Text>
           </View>
-        </View>
+          </View>
+        </Animated.View>
+
+      
       </View>
 
       {/* Carretera con carro en movimiento */}

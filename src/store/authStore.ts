@@ -105,14 +105,14 @@ export const useAuthStore = create<AuthState>()(
             setTimeout(() => {
               const finalState = get();
               if (finalState.biometricCredentials.username) {
-                console.log('✅ Credenciales biométricas guardadas y verificadas');
+                console.log('Credenciales biométricas guardadas y verificadas');
               } else {
-                console.log('❌ Error: Las credenciales no se guardaron correctamente');
+                console.log('Error: Las credenciales no se guardaron correctamente');
               }
             }, 50);
             
           } else {
-            console.log('❌ No se pudieron guardar credenciales biométricas:', {
+            console.log('No se pudieron guardar credenciales biométricas:', {
               biometricEnabled: newState.biometric.isEnabled,
               hasToken: !!newState.token,
               hasServer: !!newState.server
@@ -138,8 +138,7 @@ export const useAuthStore = create<AuthState>()(
     token: null,
   });
   
-  // ✅ CORRECCIÓN: NO limpiar las credenciales biométricas en logout normal
-  // Solo limpiarlas si la biometría está deshabilitada
+
   const currentState = get();
   if (!currentState.biometric.isEnabled) {
     get().clearBiometricCredentials();
@@ -348,7 +347,6 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      // CORRECCIÓN CRÍTICA: Configuración mejorada de persistencia
       partialize: (state: AuthState) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
@@ -357,9 +355,7 @@ export const useAuthStore = create<AuthState>()(
         biometric: state.biometric,
         biometricCredentials: state.biometricCredentials,
       }),
-      // NUEVO: Configuración adicional para asegurar persistencia
       version: 1,
-      // NUEVO: Función para manejar la hidratación
       onRehydrateStorage: () => (state: AuthState | undefined) => {
         if (state) {
           console.log('🔄 Store hidratado correctamente:', {
