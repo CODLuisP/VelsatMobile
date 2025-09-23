@@ -677,11 +677,12 @@ useEffect(() => {
           <View style={styles.formCard}>
             <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
-    {/* DEBUG - QUITAR DESPUÉS DE PROBAR */}
-<Text style={{color: 'white', fontSize: 12, textAlign: 'center', marginBottom: 10}}>
-  DEBUG: {showBiometricOption ? 'Botón VISIBLE' : 'Botón OCULTO'} | 
-  Habilitado: {biometric.isEnabled ? 'SÍ' : 'NO'} | 
-  Disponible: {biometric.isAvailable ? 'SÍ' : 'NO'}
+{/* DEBUG MEJORADO */}
+<Text style={{color: 'white', fontSize: 10, textAlign: 'center', marginBottom: 10}}>
+  DEBUG: {showBiometricOption ? 'Botón VISIBLE' : 'Botón OCULTO'}{'\n'}
+  Habilitado: {biometric.isEnabled ? 'SÍ' : 'NO'}{'\n'}
+  Disponible: {biometric.isAvailable ? 'SÍ' : 'NO'}{'\n'}
+  Credenciales: {useAuthStore.getState().biometricCredentials.username ? 'SÍ' : 'NO'}
 </Text>
             {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
             {showBiometricOption && (
