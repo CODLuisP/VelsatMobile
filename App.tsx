@@ -29,6 +29,9 @@ import SplashScreen from './src/components/SplashScreen';
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+
+import NavigationBarColor from 'react-native-navigation-bar-color';
+
 // Interfaz para el dispositivo
 interface Device {
   id: string;
@@ -98,7 +101,10 @@ const App = () => {
 
   useEffect(() => {
     // Configurar StatusBar desde el inicio
-    StatusBar.setBarStyle('light-content', true);
+    StatusBar.setBarStyle('dark-content', true);
+
+  NavigationBarColor('#1e3a8a', false);
+
 
     // Simula carga de sesión
     setLoading(true);
