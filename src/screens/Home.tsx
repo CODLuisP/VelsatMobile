@@ -393,11 +393,16 @@ const Home: React.FC = () => {
                 )}
               </View>
             </View>
-
-            <Text style={homeStyles.companyName}>
-              {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : ''}
-              {server && ` - ${server}`}
-            </Text>
+<Text style={homeStyles.companyName}>
+  {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : ''}
+  {server && ` - ${server}`}
+  {/* Agregar coordenadas para debug */}
+  {location.latitude && location.longitude && (
+    <Text style={{fontSize: 10, color: '#fff'}}>
+      {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
+    </Text>
+  )}
+</Text>
 
             <View style={homeStyles.locationContainer}>
               <MapPin size={25} color="#FFF" />

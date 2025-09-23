@@ -312,171 +312,169 @@ const makePhoneCall = (): void => {
     carPosition.value = -100;
   };
 
-  useEffect(() => {
-    loadSavedCredentials();
+ useEffect(() => {
+  loadSavedCredentials();
 
-    const checkBiometricWithDelay = async () => {
-      try {
-        await new Promise<void>(resolve => setTimeout(resolve, 1000));
+  const checkBiometricWithDelay = async (): Promise<void> => {
+    try {
+      await checkBiometricAvailability();
 
-        await checkBiometricAvailability();
+      const canUse = canUseBiometricLogin();
 
-        const canUse = canUseBiometricLogin();
-
-        if (canUse) {
-          setShowBiometricOption(true);
-        } else {
-          console.log('No se puede usar biometría:', {
-            enabled: biometric.isEnabled,
-            available: biometric.isAvailable,
-            hasCredentials:
-              !!useAuthStore.getState().biometricCredentials.username,
-          });
-        }
-      } catch (error) {
-        console.log('Error en verificación biométrica:', error);
+      if (canUse) {
+        setShowBiometricOption(true);
+      } else {
+        console.log('No se puede usar biometría:', {
+          enabled: biometric.isEnabled,
+          available: biometric.isAvailable,
+          hasCredentials:
+            !!useAuthStore.getState().biometricCredentials.username,
+        });
       }
-    };
+    } catch (error) {
+      console.log('Error en verificación biométrica:', error);
+    }
+  };
 
-    checkBiometricWithDelay();
+  checkBiometricWithDelay();
 
-    backgroundShift.value = withRepeat(
-      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  backgroundShift.value = withRepeat(
+    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    orb1.value = withRepeat(
-      withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  orb1.value = withRepeat(
+    withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    orb2.value = withRepeat(
-      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  orb2.value = withRepeat(
+    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    orb3.value = withRepeat(
-      withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  orb3.value = withRepeat(
+    withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    satellite1.value = withRepeat(
-      withTiming(1, { duration: 12000, easing: Easing.linear }),
+  satellite1.value = withRepeat(
+    withTiming(1, { duration: 12000, easing: Easing.linear }),
+    -1,
+    false,
+  );
+
+  satellite2.value = withDelay(
+    4000,
+    withRepeat(
+      withTiming(1, { duration: 15000, easing: Easing.linear }),
       -1,
       false,
-    );
+    ),
+  );
 
-    satellite2.value = withDelay(
-      4000,
-      withRepeat(
-        withTiming(1, { duration: 15000, easing: Easing.linear }),
-        -1,
-        false,
-      ),
-    );
+  satellite3.value = withDelay(
+    8000,
+    withRepeat(
+      withTiming(1, { duration: 18000, easing: Easing.linear }),
+      -1,
+      false,
+    ),
+  );
 
-    satellite3.value = withDelay(
-      8000,
-      withRepeat(
-        withTiming(1, { duration: 18000, easing: Easing.linear }),
-        -1,
-        false,
-      ),
-    );
+  // Señales GPS pulsantes
+  gpsSignal1.value = withRepeat(
+    withSequence(
+      withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+      withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+    ),
+    -1,
+    false,
+  );
 
-    // Señales GPS pulsantes
-    gpsSignal1.value = withRepeat(
+  gpsSignal2.value = withDelay(
+    800,
+    withRepeat(
       withSequence(
         withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
         withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
       ),
       -1,
       false,
-    );
+    ),
+  );
 
-    gpsSignal2.value = withDelay(
-      800,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-        ),
-        -1,
-        false,
-      ),
-    );
-
-    gpsSignal3.value = withDelay(
-      1600,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-        ),
-        -1,
-        false,
-      ),
-    );
-
-    // Radar sweep
-    radarSweep.value = withRepeat(
-      withTiming(1, { duration: 4000, easing: Easing.linear }),
-      -1,
-      false,
-    );
-
-    // Señal de antena
-    antennaSignal.value = withRepeat(
+  gpsSignal3.value = withDelay(
+    1600,
+    withRepeat(
       withSequence(
-        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-        withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
-        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-        withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
+        withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
       ),
       -1,
       false,
-    );
+    ),
+  );
 
-    // Pulso de red/conexión
-    networkPulse.value = withRepeat(
-      withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  // Radar sweep
+  radarSweep.value = withRepeat(
+    withTiming(1, { duration: 4000, easing: Easing.linear }),
+    -1,
+    false,
+  );
 
-    // Animación del carro
-    const startCarAnimation = () => {
-      carPosition.value = withTiming(
-        width + 100,
-        {
-          duration: 8000,
-          easing: Easing.linear,
-        },
-        finished => {
-          if (finished) {
-            runOnJS(resetCarPosition)();
-            runOnJS(startCarAnimation)();
-          }
-        },
-      );
-    };
+  // Señal de antena
+  antennaSignal.value = withRepeat(
+    withSequence(
+      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+      withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
+      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+      withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
+    ),
+    -1,
+    false,
+  );
 
-    startCarAnimation();
+  // Pulso de red/conexión
+  networkPulse.value = withRepeat(
+    withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    // Animación de las líneas de carretera
-    roadOffset.value = withRepeat(
-      withTiming(80, {
-        duration: 800,
+  // Animación del carro
+  const startCarAnimation = (): void => {
+    carPosition.value = withTiming(
+      width + 100,
+      {
+        duration: 8000,
         easing: Easing.linear,
-      }),
-      -1,
-      false,
+      },
+      (finished?: boolean) => {
+        if (finished) {
+          runOnJS(resetCarPosition)();
+          runOnJS(startCarAnimation)();
+        }
+      },
     );
-  }, []); // Mantener array vacío
+  };
+
+  startCarAnimation();
+
+  // Animación de las líneas de carretera
+  roadOffset.value = withRepeat(
+    withTiming(80, {
+      duration: 800,
+      easing: Easing.linear,
+    }),
+    -1,
+    false,
+  );
+}, []); // Mantener array vacío
 
   // Estilos animados
   const backgroundStyle = useAnimatedStyle(() => {
@@ -813,12 +811,12 @@ const makePhoneCall = (): void => {
 
             </TouchableOpacity>
 
-            <View style={styles.statusContainer}>
-              <View style={styles.statusDot} />
-              <Text style={styles.statusText}>
-                Aplicativo móvil • GPS en línea
-              </Text>
-            </View>
+              {/* <View style={styles.statusContainer}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusText}>
+                  Aplicativo móvil • GPS en línea
+                </Text>
+              </View> */}
           </View>
         </Animated.View>
 

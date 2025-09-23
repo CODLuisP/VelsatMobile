@@ -536,7 +536,7 @@ export const styles = StyleSheet.create({
   biometricButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 16,
-    paddingVertical: 16,
+    paddingVertical: 14,
     marginBottom: 20,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.3)',
