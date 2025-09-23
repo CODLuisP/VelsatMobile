@@ -75,7 +75,7 @@ const Login = () => {
   } = useAuthStore();
 
   // Estado para mostrar opción biométrica
-  const [showBiometricOption, setShowBiometricOption] = useState(true);
+  const [showBiometricOption, setShowBiometricOption] = useState(false);
 
 
   // Login con biometría
@@ -299,10 +299,6 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
 
   checkBiometricWithDelay();
 
-  // TEMPORAL - Solo para testing en emulador
-setTimeout(() => {
-  setShowBiometricOption(true);
-}, 2000);
 
   // Resto de animaciones (mantener todo igual)...
   backgroundShift.value = withRepeat(
@@ -668,7 +664,7 @@ setTimeout(() => {
 
 
             {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
-            {(showBiometricOption || true) && (
+{showBiometricOption && (
 
               <>
                 <View style={styles.biometricSection}>
