@@ -27,6 +27,7 @@ import Home from './src/screens/Home';
 import SplashScreen from './src/components/SplashScreen';
 
 import { useAuthStore } from './src/store/authStore';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Interfaz para el dispositivo
 interface Device {
@@ -57,15 +58,15 @@ export type RootStackParamList = {
   };
   Devices: undefined;
   DetailDevice: {
-    device: Device; 
+    device: Device;
   };
 
   InfoDevice: {
-    deviceName: string; 
+    deviceName: string;
   };
   Events: undefined;
   MapEvent: {
-     notificationData: {
+    notificationData: {
       id: number;
       type: string;
       title: string;
@@ -73,7 +74,7 @@ export type RootStackParamList = {
       timestamp: string;
       iconName: string;
     };
-  
+
   };
   Reports: undefined;
   GeneralReport: undefined;
@@ -132,44 +133,46 @@ const App = () => {
 
   // 3) Navegación normal
   return (
-    <View style={{ flex: 1, backgroundColor: '#1e3a8a' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: '#1e3a8a' },
-            animation: 'slide_from_right',
-          }}
-        >
-          {isAuthenticated ? (
-            <>
-              <Stack.Screen name="Home" component={Home} />
-              <Stack.Screen name="Profile" component={Profile} />
-              <Stack.Screen name="Setting" component={Setting} />
-              <Stack.Screen name="Pin" component={Pin} />
-              <Stack.Screen name="Notifications" component={Notifications} />
-              <Stack.Screen name="MapAlert" component={MapAlert} />
-              <Stack.Screen name="Devices" component={Devices} />
-              <Stack.Screen name="DetailDevice" component={DetailDevice} />
-              <Stack.Screen name="InfoDevice" component={InfoDevice} />
-              <Stack.Screen name="Events" component={Events} />
-              <Stack.Screen name="MapEvent" component={MapEvent} />
-              <Stack.Screen name="Reports" component={Reports} />
-              <Stack.Screen name="GeneralReport" component={GeneralReport} />
-              <Stack.Screen name="StopReport" component={StopReport} />
-              <Stack.Screen name="SpeedReport" component={SpeedReport} />
-              <Stack.Screen name="MileageReport" component={MileageReport} />
-              <Stack.Screen name="TourReport" component={TourReport} />
-              <Stack.Screen name="Security" component={Security} />
+    <SafeAreaProvider>
+      <View style={{ flex: 1, backgroundColor: '#1e3a8a' }}>
+        <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: '#1e3a8a' },
+              animation: 'slide_from_right',
+            }}
+          >
+            {isAuthenticated ? (
+              <>
+                <Stack.Screen name="Home" component={Home} />
+                <Stack.Screen name="Profile" component={Profile} />
+                <Stack.Screen name="Setting" component={Setting} />
+                <Stack.Screen name="Pin" component={Pin} />
+                <Stack.Screen name="Notifications" component={Notifications} />
+                <Stack.Screen name="MapAlert" component={MapAlert} />
+                <Stack.Screen name="Devices" component={Devices} />
+                <Stack.Screen name="DetailDevice" component={DetailDevice} />
+                <Stack.Screen name="InfoDevice" component={InfoDevice} />
+                <Stack.Screen name="Events" component={Events} />
+                <Stack.Screen name="MapEvent" component={MapEvent} />
+                <Stack.Screen name="Reports" component={Reports} />
+                <Stack.Screen name="GeneralReport" component={GeneralReport} />
+                <Stack.Screen name="StopReport" component={StopReport} />
+                <Stack.Screen name="SpeedReport" component={SpeedReport} />
+                <Stack.Screen name="MileageReport" component={MileageReport} />
+                <Stack.Screen name="TourReport" component={TourReport} />
+                <Stack.Screen name="Security" component={Security} />
 
-            </>
-          ) : (
-            <Stack.Screen name="Login" component={Login} />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    </View>
+              </>
+            ) : (
+              <Stack.Screen name="Login" component={Login} />
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </View>
+    </SafeAreaProvider>
   );
 };
 

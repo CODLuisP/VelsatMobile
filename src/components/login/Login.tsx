@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useAuthStore, User as UserType } from '../../store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import {
   Eye,
   EyeOff,
@@ -44,6 +46,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+    const insets = useSafeAreaInsets();
+
 
   // Animaciones principales
   const logoScale = useSharedValue(1);
@@ -780,7 +785,10 @@ const Login = () => {
       </View>
 
       {/* Carretera con carro en movimiento */}
-      <View style={styles.footerRoadSection}>
+         <View style={[
+        styles.footerRoadSection,
+        { paddingBottom: Math.max(insets.bottom, 20) } // ← SOLO ESTA LÍNEA ES NUEVA
+      ]}>
         <View style={styles.road}>
           <Animated.View style={[styles.roadLines, roadStyle]}>
             {Array.from({ length: 40 }).map((_, index) => (
