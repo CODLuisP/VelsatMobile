@@ -174,123 +174,159 @@ const handleBiometricLogin = async () => {
       });
   };
 
-  // Función para manejar el login tradicional
-  const handleLogin = async () => {
-    // Validaciones básicas
-    if (!usuario.trim()) {
-      Alert.alert('Error', 'Por favor ingresa tu usuario');
+const handleLogin = async () => {
+  // Validaciones básicas
+  if (!usuario.trim()) {
+    Alert.alert('Error', 'Por favor ingresa tu usuario');
+    return;
+  }
+
+  if (!password.trim()) {
+    Alert.alert('Error', 'Por favor ingresa tu contraseña');
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // PASO 1: Obtener el servidor
+    const serverResponse = await axios.get(
+      `https://velsat.pe:2096/api/Server/${usuario}`,
+      {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    const serverData = serverResponse.data;
+
+    if (!serverData.servidor) {
+      Alert.alert('Error', 'No se pudo obtener la configuración del servidor');
+      setLoading(false);
       return;
     }
 
-    if (!password.trim()) {
-      Alert.alert('Error', 'Por favor ingresa tu contraseña');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // PASO 1: Obtener el servidor
-      console.log('Obteniendo servidor para usuario:', usuario);
-
-      const serverResponse = await axios.get(
-        `https://velsat.pe:2096/api/Server/${usuario}`,
-        {
-          timeout: 10000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+    // PASO 2: Hacer login con el servidor obtenido
+    const loginResponse = await axios.post(
+      `${serverData.servidor}/api/Login/login`,
+      {
+        login: usuario,
+        clave: password,
+      },
+      {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
         },
+      },
+    );
+
+    const loginData = loginResponse.data;
+
+    if (loginData.token && loginData.username) {
+      // Guardar credenciales normales si el usuario lo desea
+      await saveCredentials();
+
+      // DEBUG 1: Verificar estado de biometría antes de guardar
+      const stateBefore = useAuthStore.getState();
+      Alert.alert(
+        'DEBUG 1 - Estado antes',
+        `Biometría habilitada: ${stateBefore.biometric.isEnabled ? 'SÍ' : 'NO'}\n` +
+        `Token recibido: ${loginData.token ? 'SÍ' : 'NO'}\n` +
+        `Server recibido: ${serverData.servidor ? 'SÍ' : 'NO'}`,
+        [{ text: 'Continuar', onPress: () => continueLogin() }]
       );
 
-      const serverData = serverResponse.data;
-      console.log('Respuesta del servidor:', serverData);
-
-      if (!serverData.servidor) {
-        Alert.alert(
-          'Error',
-          'No se pudo obtener la configuración del servidor',
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Guardar servidor en Zustand
-      setServer(serverData.servidor);
-
-      // PASO 2: Hacer login con el servidor obtenido
-      console.log('Intentando login en servidor:', serverData.servidor);
-
-      const loginResponse = await axios.post(
-        `${serverData.servidor}/api/Login/login`,
-        {
-          login: usuario,
-          clave: password,
-        },
-        {
-          timeout: 10000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      const loginData = loginResponse.data;
-      console.log('Respuesta del login:', loginData);
-
-      if (loginData.token && loginData.username) {
-        // Guardar credenciales normales si el usuario lo desea
-        await saveCredentials();
-
-        // Guardar token y servidor en Zustand
-        setToken(loginData.token);
+      const continueLogin = () => {
+        // Guardar server y token
         setServer(serverData.servidor);
+        setToken(loginData.token);
 
         // Crear objeto usuario
         const userObj: UserType = {
           id: loginData.username,
           username: loginData.username,
           email: `${loginData.username}@velsat.com`,
-          name:
-            loginData.username.charAt(0).toUpperCase() +
-            loginData.username.slice(1),
+          name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
         };
 
-        // Guardar usuario en Zustand - esto navegará automáticamente a Home
-        // Y guardará automáticamente las credenciales biométricas si está habilitada
-        setUser(userObj);
+        // DEBUG 2: Verificar después de guardar server/token
+        setTimeout(() => {
+          const stateAfterTokens = useAuthStore.getState();
+          Alert.alert(
+            'DEBUG 2 - Después de guardar',
+            `Token en store: ${stateAfterTokens.token ? 'SÍ' : 'NO'}\n` +
+            `Server en store: ${stateAfterTokens.server ? 'SÍ' : 'NO'}\n` +
+            `Biometría habilitada: ${stateAfterTokens.biometric.isEnabled ? 'SÍ' : 'NO'}`,
+            [{ text: 'Continuar', onPress: () => saveUser() }]
+          );
 
-        console.log('Login exitoso para usuario:', loginData.username);
-      } else {
-        Alert.alert('Error', 'Respuesta de login inválida');
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error('Error durante el login:', error);
+          const saveUser = () => {
+            // Guardar usuario
+            setUser(userObj);
 
-      let errorMessage = 'Error de conexión';
+            // DEBUG 3: Verificar resultado final
+            setTimeout(() => {
+              const finalState = useAuthStore.getState();
+              Alert.alert(
+                'DEBUG 3 - Resultado final',
+                `Usuario guardado: ${finalState.user ? 'SÍ' : 'NO'}\n` +
+                `Credenciales guardadas: ${finalState.biometricCredentials.username ? 'SÍ' : 'NO'}\n` +
+                `Username en credenciales: ${finalState.biometricCredentials.username || 'NINGUNO'}`,
+                [{ 
+                  text: 'OK', 
+                  onPress: () => {
+                    // Si no se guardaron, forzar guardado manual
+                    if (finalState.biometric.isEnabled && !finalState.biometricCredentials.username) {
+                      finalState.saveBiometricCredentials(userObj.username, loginData.token, serverData.servidor);
+                      
+                      setTimeout(() => {
+                        const afterManual = useAuthStore.getState();
+                        Alert.alert(
+                          'DEBUG - Guardado manual',
+                          `Credenciales después del guardado manual: ${afterManual.biometricCredentials.username ? 'SÍ' : 'NO'}`,
+                          [{ text: 'Finalizar' }]
+                        );
+                      }, 100);
+                    }
+                  }
+                }]
+              );
+            }, 300);
+          };
+        }, 100);
+      };
 
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          const status = error.response.status;
-          if (status === 401 || status === 400) {
-            errorMessage = 'Usuario o contraseña incorrectos';
-          } else if (status >= 500) {
-            errorMessage = 'Error del servidor. Intenta más tarde';
-          } else {
-            errorMessage = `Error del servidor (${status})`;
-          }
-        } else if (error.request) {
-          errorMessage = 'Sin conexión a internet. Verifica tu conexión';
-        } else {
-          errorMessage = 'Error de configuración';
-        }
-      }
-
-      Alert.alert('Error de Login', errorMessage);
+    } else {
+      Alert.alert('Error', 'Respuesta de login inválida');
       setLoading(false);
     }
-  };
+  } catch (error) {
+    let errorMessage = 'Error de conexión';
+
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        const status = error.response.status;
+        if (status === 401 || status === 400) {
+          errorMessage = 'Usuario o contraseña incorrectos';
+        } else if (status >= 500) {
+          errorMessage = 'Error del servidor. Intenta más tarde';
+        } else {
+          errorMessage = `Error del servidor (${status})`;
+        }
+      } else if (error.request) {
+        errorMessage = 'Sin conexión a internet. Verifica tu conexión';
+      } else {
+        errorMessage = 'Error de configuración';
+      }
+    }
+
+    Alert.alert('Error de Login', errorMessage);
+    setLoading(false);
+  }
+};
 
   // Función para reiniciar el carro cuando sale de pantalla
   const resetCarPosition = () => {
