@@ -75,7 +75,7 @@ const Login = () => {
 
 useFocusEffect(
   React.useCallback(() => {
-    NavigationBarColor('#374151', false); // Plomo solo para Login
+    NavigationBarColor('#212529', false); // Plomo solo para Login
     
     return () => {
       NavigationBarColor('#1e3a8a', false); // Volver a azul al salir
@@ -186,23 +186,81 @@ useFocusEffect(
     }
   };
 
-  const makePhoneCall = () => {
-    const phoneNumber = '91290330';
-    const phoneUrl = `tel:${phoneNumber}`;
 
-    Linking.canOpenURL(phoneUrl)
-      .then(supported => {
-        if (supported) {
-          return Linking.openURL(phoneUrl);
-        } else {
-          Alert.alert('Error', 'No se pudo abrir la aplicación de teléfono');
+const makePhoneCall = async (): Promise<void> => {
+  const phoneNumber: string = '91290330';
+  
+  // Diferentes formatos a intentar
+  const phoneFormats: string[] = [
+    `tel:${phoneNumber}`,
+    `tel://${phoneNumber}`,
+    `tel:+51${phoneNumber}`, // Con código de país de Perú
+  ];
+
+  let callSuccessful: boolean = false;
+
+  // Intentar con cada formato
+  for (const phoneUrl of phoneFormats) {
+    try {
+      console.log(`Intentando con formato: ${phoneUrl}`);
+      
+      const canOpen: boolean = await Linking.canOpenURL(phoneUrl);
+      
+      if (canOpen) {
+        await Linking.openURL(phoneUrl);
+        console.log(`Llamada exitosa con formato: ${phoneUrl}`);
+        callSuccessful = true;
+        break; // Salir del loop si fue exitoso
+      }
+    } catch (error) {
+      console.log(`Error con formato ${phoneUrl}:`, error);
+      continue; // Intentar con el siguiente formato
+    }
+  }
+
+  // Si ningún formato funcionó
+  if (!callSuccessful) {
+    Alert.alert(
+      'No se puede llamar automáticamente',
+      `Por favor marca manualmente:\n${phoneNumber}`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Abrir marcador',
+          onPress: () => openDialer(phoneNumber)
         }
-      })
-      .catch(err => {
-        Alert.alert('Error', 'No se pudo realizar la llamada');
-        console.error('Error making phone call:', err);
-      });
-  };
+      ]
+    );
+  }
+};
+
+
+const openDialer = async (phoneNumber: string): Promise<void> => {
+  const dialerUrl: string = Platform.OS === 'android' 
+    ? `tel:${phoneNumber}` 
+    : `tel:${phoneNumber}`;
+
+  try {
+    const canOpen: boolean = await Linking.canOpenURL(dialerUrl);
+    if (canOpen) {
+      await Linking.openURL(dialerUrl);
+    } else {
+      // Fallback: mostrar el número para copiar manualmente
+      Alert.alert(
+        'Información de Contacto',
+        `Número de teléfono:\n${phoneNumber}`,
+        [{ text: 'OK' }]
+      );
+    }
+  } catch (error) {
+    console.error('Error abriendo marcador:', error);
+    Alert.alert(
+      'Contacto',
+      `Número: ${phoneNumber}`,
+      [{ text: 'OK' }]
+    );
+  }
+};
 
   const handleLogin = async () => {
     if (!usuario.trim()) {
