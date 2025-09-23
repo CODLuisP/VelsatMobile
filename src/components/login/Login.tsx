@@ -187,80 +187,29 @@ useFocusEffect(
   };
 
 
-const makePhoneCall = async (): Promise<void> => {
-  const phoneNumber: string = '91290330';
-  
-  // Diferentes formatos a intentar
-  const phoneFormats: string[] = [
-    `tel:${phoneNumber}`,
-    `tel://${phoneNumber}`,
-    `tel:+51${phoneNumber}`, // Con código de país de Perú
-  ];
+const makePhoneCall = (): void => {
+  const phoneNumber: string = '912903330';
+  const phoneUrl: string = `tel:${phoneNumber}`;
 
-  let callSuccessful: boolean = false;
-
-  // Intentar con cada formato
-  for (const phoneUrl of phoneFormats) {
-    try {
-      console.log(`Intentando con formato: ${phoneUrl}`);
+  // Intentar abrir directo sin verificaciones complejas
+  Linking.openURL(phoneUrl)
+    .then(() => {
+      console.log('Marcador abierto exitosamente');
+    })
+    .catch((error) => {
+      console.log('Error abriendo marcador:', error);
       
-      const canOpen: boolean = await Linking.canOpenURL(phoneUrl);
-      
-      if (canOpen) {
-        await Linking.openURL(phoneUrl);
-        console.log(`Llamada exitosa con formato: ${phoneUrl}`);
-        callSuccessful = true;
-        break; // Salir del loop si fue exitoso
-      }
-    } catch (error) {
-      console.log(`Error con formato ${phoneUrl}:`, error);
-      continue; // Intentar con el siguiente formato
-    }
-  }
-
-  // Si ningún formato funcionó
-  if (!callSuccessful) {
-    Alert.alert(
-      'No se puede llamar automáticamente',
-      `Por favor marca manualmente:\n${phoneNumber}`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Abrir marcador',
-          onPress: () => openDialer(phoneNumber)
-        }
-      ]
-    );
-  }
-};
-
-
-const openDialer = async (phoneNumber: string): Promise<void> => {
-  const dialerUrl: string = Platform.OS === 'android' 
-    ? `tel:${phoneNumber}` 
-    : `tel:${phoneNumber}`;
-
-  try {
-    const canOpen: boolean = await Linking.canOpenURL(dialerUrl);
-    if (canOpen) {
-      await Linking.openURL(dialerUrl);
-    } else {
-      // Fallback: mostrar el número para copiar manualmente
+      // Si falla, mostrar el número para marcar manualmente
       Alert.alert(
-        'Información de Contacto',
-        `Número de teléfono:\n${phoneNumber}`,
-        [{ text: 'OK' }]
+        'No se pudo abrir el marcador',
+        `Marca manualmente este número:\n${phoneNumber}`,
+        [{ text: 'Entendido' }]
       );
-    }
-  } catch (error) {
-    console.error('Error abriendo marcador:', error);
-    Alert.alert(
-      'Contacto',
-      `Número: ${phoneNumber}`,
-      [{ text: 'OK' }]
-    );
-  }
+    });
 };
+
+
+
 
   const handleLogin = async () => {
     if (!usuario.trim()) {
