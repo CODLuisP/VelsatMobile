@@ -75,7 +75,7 @@ const Login = () => {
 
 useFocusEffect(
   React.useCallback(() => {
-    NavigationBarColor('#6b7280', false); // Plomo solo para Login
+    NavigationBarColor('#374151', false); // Plomo solo para Login
     
     return () => {
       NavigationBarColor('#1e3a8a', false); // Volver a azul al salir
