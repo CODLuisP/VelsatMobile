@@ -229,6 +229,21 @@ const handleLogin = async () => {
       // Guardar credenciales normales si el usuario lo desea
       await saveCredentials();
 
+      // Guardar server y token
+      setServer(serverData.servidor);
+      setToken(loginData.token);
+
+      // Crear objeto usuario
+      const userObj: UserType = {
+        id: loginData.username,
+        username: loginData.username,
+        email: `${loginData.username}@velsat.com`,
+        name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
+      };
+
+      // Guardar usuario (esto guardará automáticamente las credenciales biométricas)
+      setUser(userObj);
+
     } else {
       Alert.alert('Error', 'Respuesta de login inválida');
       setLoading(false);
@@ -257,7 +272,6 @@ const handleLogin = async () => {
     setLoading(false);
   }
 };
-
   // Función para reiniciar el carro cuando sale de pantalla
   const resetCarPosition = () => {
     carPosition.value = -100;
@@ -298,6 +312,7 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
   };
 
   checkBiometricWithDelay();
+
 
 
   // Resto de animaciones (mantener todo igual)...
@@ -664,7 +679,8 @@ await new Promise<void>(resolve => setTimeout(resolve, 1000));
 
 
             {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
-{showBiometricOption && (
+            {showBiometricOption && (
+
 
               <>
                 <View style={styles.biometricSection}>
