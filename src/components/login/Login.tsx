@@ -46,15 +46,15 @@ const getBottomSpace = (insets: EdgeInsets) => {
   if (Platform.OS === 'android') {
     const screen = Dimensions.get('screen');
     const window = Dimensions.get('window');
-    
+
     // Calcular altura de la barra de navegación
     const navBarHeight = screen.height - window.height;
-    
+
     // Si hay barra de navegación, usar su altura + padding
     // Si no, usar padding estándar para gestos
     return navBarHeight > 0 ? navBarHeight + 30 : 70;
   }
-  
+
   // Para iOS, usar safe area normal
   return Math.max(insets.bottom, 20);
 };
@@ -66,8 +66,8 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-    const insets = useSafeAreaInsets();
-      const bottomSpace = getBottomSpace(insets); // ← AGREGAR ESTA LÍNEA
+  const insets = useSafeAreaInsets();
+  const bottomSpace = getBottomSpace(insets); // ← AGREGAR ESTA LÍNEA
 
 
 
@@ -664,21 +664,23 @@ const Login = () => {
 
       {/* Contenido principal */}
       <View style={styles.mainContent}>
-        {/* Logo con glow effect */}
-        <Animated.View style={[styles.logoContainer, logoStyle]}>
-          <View style={styles.logoMain}>
-            <Image
-              source={require('../../../assets/logob.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.logoText}>VELSAT</Text>
-          </View>
-        </Animated.View>
+
 
         {/* Formulario moderno */}
         <Animated.View style={[styles.formContainer, formStyle]}>
           <View style={styles.formCard}>
+
+            {/* Logo con glow effect */}
+            <Animated.View style={[styles.logoContainer, logoStyle]}>
+              <View style={styles.logoMain}>
+                <Image
+                  source={require('../../../assets/logob.png')}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.logoText}>VELSAT</Text>
+              </View>
+            </Animated.View>
             <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
             {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
@@ -695,8 +697,8 @@ const Login = () => {
                       )}
                       {(biometric.type === 'TouchID' ||
                         biometric.type === 'Biometrics') && (
-                        <Fingerprint color="#fff" size={24} />
-                      )}
+                          <Fingerprint color="#fff" size={24} />
+                        )}
                       <Text style={styles.biometricButtonText}>
                         Acceder con {getBiometricDisplayName()}
                       </Text>
@@ -772,7 +774,7 @@ const Login = () => {
               <View style={styles.loginButtonGradient}>
                 <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
                 <View style={styles.loginArrow}>
-                                    <LogIn  color="white" size={16} />
+                  <LogIn color="white" size={16} />
 
                 </View>
               </View>
@@ -793,53 +795,53 @@ const Login = () => {
 
             </TouchableOpacity>
 
-             <View style={styles.statusContainer}>
-            <View style={styles.statusDot} />
-            <Text style={styles.statusText}>
-              Aplicativo móvil • GPS en línea
-            </Text>
-          </View>
+            <View style={styles.statusContainer}>
+              <View style={styles.statusDot} />
+              <Text style={styles.statusText}>
+                Aplicativo móvil • GPS en línea
+              </Text>
+            </View>
           </View>
         </Animated.View>
 
-      
+
       </View>
 
       {/* Carretera con carro en movimiento */}
-   
-   <View style={[
-  styles.footerRoadSection,
-  { 
-    paddingBottom: bottomSpace,
-    height: Platform.OS === 'android' ? 160 : 100,
-    backgroundColor: '#374151'
-  }
-]}>
-  <View style={styles.road}>
-    <Animated.View style={[styles.roadLines, roadStyle]}>
-      {Array.from({ length: 40 }).map((_, index) => (
-        <View key={`line1-${index}`} style={styles.roadLine} />
-      ))}
-    </Animated.View>
-    <Animated.View style={[styles.roadLines, roadStyle, { left: 80 }]}>
-      {Array.from({ length: 40 }).map((_, index) => (
-        <View key={`line2-${index}`} style={styles.roadLine} />
-      ))}
-    </Animated.View>
-  </View>
 
-  <Animated.View style={[
-    styles.carContainer, 
-    carStyle,
-    { bottom: Platform.OS === 'android' ? 40 : -5 }
-  ]}>
-    <Image
-      source={require('../../../assets/carlogin.png')}
-      style={styles.carImage}
-      resizeMode="contain"
-    />
-  </Animated.View>
-</View>
+      <View style={[
+        styles.footerRoadSection,
+        {
+          paddingBottom: bottomSpace,
+          height: Platform.OS === 'android' ? 160 : 100,
+          backgroundColor: '#374151'
+        }
+      ]}>
+        <View style={styles.road}>
+          <Animated.View style={[styles.roadLines, roadStyle]}>
+            {Array.from({ length: 40 }).map((_, index) => (
+              <View key={`line1-${index}`} style={styles.roadLine} />
+            ))}
+          </Animated.View>
+          <Animated.View style={[styles.roadLines, roadStyle, { left: 80 }]}>
+            {Array.from({ length: 40 }).map((_, index) => (
+              <View key={`line2-${index}`} style={styles.roadLine} />
+            ))}
+          </Animated.View>
+        </View>
+
+        <Animated.View style={[
+          styles.carContainer,
+          carStyle,
+          { bottom: Platform.OS === 'android' ? 40 : -5 }
+        ]}>
+          <Image
+            source={require('../../../assets/carlogin.png')}
+            style={styles.carImage}
+            resizeMode="contain"
+          />
+        </Animated.View>
+      </View>
     </View>
   );
 };

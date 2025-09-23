@@ -240,8 +240,9 @@ export const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     flex: 1,
-    marginTop: 0,
-    paddingTop: 100,
+    marginTop: -120,
+    justifyContent: 'center',
+
   },
 
   formCard: {
