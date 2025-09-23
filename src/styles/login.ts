@@ -240,7 +240,7 @@ export const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     flex: 1,
-    marginTop: -120,
+    marginTop: -160,
     justifyContent: 'center',
 
   },
@@ -456,7 +456,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 5,
     borderRadius: 20,
     
   },
