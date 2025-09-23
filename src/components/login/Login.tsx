@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore, User as UserType } from '../../store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   Eye,
@@ -24,6 +24,7 @@ import {
   Image,
   Linking,
   Alert,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -41,6 +42,24 @@ import { styles } from '../../styles/login';
 
 const { width, height } = Dimensions.get('window');
 
+const getBottomSpace = (insets: EdgeInsets) => {
+  if (Platform.OS === 'android') {
+    const screen = Dimensions.get('screen');
+    const window = Dimensions.get('window');
+    
+    // Calcular altura de la barra de navegación
+    const navBarHeight = screen.height - window.height;
+    
+    // Si hay barra de navegación, usar su altura + padding
+    // Si no, usar padding estándar para gestos
+    return navBarHeight > 0 ? navBarHeight + 30 : 70;
+  }
+  
+  // Para iOS, usar safe area normal
+  return Math.max(insets.bottom, 20);
+};
+
+
 const Login = () => {
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
@@ -48,6 +67,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
     const insets = useSafeAreaInsets();
+      const bottomSpace = getBottomSpace(insets); // ← AGREGAR ESTA LÍNEA
+
 
 
   // Animaciones principales
@@ -785,31 +806,40 @@ const Login = () => {
       </View>
 
       {/* Carretera con carro en movimiento */}
-         <View style={[
-        styles.footerRoadSection,
-        { paddingBottom: Math.max(insets.bottom, 20) } // ← SOLO ESTA LÍNEA ES NUEVA
-      ]}>
-        <View style={styles.road}>
-          <Animated.View style={[styles.roadLines, roadStyle]}>
-            {Array.from({ length: 40 }).map((_, index) => (
-              <View key={`line1-${index}`} style={styles.roadLine} />
-            ))}
-          </Animated.View>
-          <Animated.View style={[styles.roadLines, roadStyle, { left: 80 }]}>
-            {Array.from({ length: 40 }).map((_, index) => (
-              <View key={`line2-${index}`} style={styles.roadLine} />
-            ))}
-          </Animated.View>
-        </View>
+   
+   <View style={[
+  styles.footerRoadSection,
+  { 
+    paddingBottom: bottomSpace,
+    height: Platform.OS === 'android' ? 160 : 100,
+    backgroundColor: '#374151'
+  }
+]}>
+  <View style={styles.road}>
+    <Animated.View style={[styles.roadLines, roadStyle]}>
+      {Array.from({ length: 40 }).map((_, index) => (
+        <View key={`line1-${index}`} style={styles.roadLine} />
+      ))}
+    </Animated.View>
+    <Animated.View style={[styles.roadLines, roadStyle, { left: 80 }]}>
+      {Array.from({ length: 40 }).map((_, index) => (
+        <View key={`line2-${index}`} style={styles.roadLine} />
+      ))}
+    </Animated.View>
+  </View>
 
-        <Animated.View style={[styles.carContainer, carStyle]}>
-          <Image
-            source={require('../../../assets/carlogin.png')}
-            style={styles.carImage}
-            resizeMode="contain"
-          />
-        </Animated.View>
-      </View>
+  <Animated.View style={[
+    styles.carContainer, 
+    carStyle,
+    { bottom: Platform.OS === 'android' ? 40 : -5 }
+  ]}>
+    <Image
+      source={require('../../../assets/carlogin.png')}
+      style={styles.carImage}
+      resizeMode="contain"
+    />
+  </Animated.View>
+</View>
     </View>
   );
 };
