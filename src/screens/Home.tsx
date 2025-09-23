@@ -192,30 +192,30 @@ const Home: React.FC = () => {
   };
 
   // Función para obtener dirección usando reverse geocoding
-  const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
-    try {
-      const response = await fetch(
-        `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`
-      );
-      const data = await response.json();
+const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
+  try {
+    const response = await fetch(
+      `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`
+    );
+    const data = await response.json();
 
-      if (data.error) {
-        console.log('Error en geocoding:', data.error);
-        return LIMA_COORDINATES.displayName;
-      }
-
-      // Verificar si tiene address29 (para direcciones de Perú)
-      if (data.address && data.address.address29) {
-        return data.address.address29;
-      }
-
-      // Fallback a Lima, Perú si no hay address29
-      return LIMA_COORDINATES.displayName;
-    } catch (error) {
-      console.log('Error al obtener dirección:', error);
+    if (data.error) {
+      console.log('Error en geocoding:', data.error);
       return LIMA_COORDINATES.displayName;
     }
-  };
+
+    // CAMBIO: Usar display_name en lugar de address29
+    if (data.display_name) {
+      return data.display_name;
+    }
+
+    // Fallback a Lima, Perú si no hay display_name
+    return LIMA_COORDINATES.displayName;
+  } catch (error) {
+    console.log('Error al obtener dirección:', error);
+    return LIMA_COORDINATES.displayName;
+  }
+};
 
   // Función para solicitar permisos en Android
   const solicitarPermisosUbicacion = async (): Promise<boolean> => {
