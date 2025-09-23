@@ -103,7 +103,7 @@ const App = () => {
     // Configurar StatusBar desde el inicio
     StatusBar.setBarStyle('dark-content', true);
 
-  NavigationBarColor('#1e3a8a', false);
+    NavigationBarColor('#1e3a8a', false);
 
 
     // Simula carga de sesión

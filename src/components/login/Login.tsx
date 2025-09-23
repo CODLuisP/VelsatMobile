@@ -39,6 +39,9 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { styles } from '../../styles/login';
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -70,7 +73,15 @@ const Login = () => {
   const bottomSpace = getBottomSpace(insets); // ← AGREGAR ESTA LÍNEA
 
 
-
+useFocusEffect(
+  React.useCallback(() => {
+    NavigationBarColor('#6b7280', false); // Plomo solo para Login
+    
+    return () => {
+      NavigationBarColor('#1e3a8a', false); // Volver a azul al salir
+    };
+  }, [])
+);
   // Animaciones principales
   const logoScale = useSharedValue(1);
   const formOpacity = useSharedValue(1);
