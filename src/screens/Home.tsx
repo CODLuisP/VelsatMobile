@@ -263,8 +263,8 @@ const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
     return true; // iOS maneja permisos automáticamente
   };
 
-  // Función para obtener ubicación
-const obtenerUbicacion = async (): Promise<void> => {
+
+  const obtenerUbicacion = async (): Promise<void> => {
   const tienePermiso = await solicitarPermisosUbicacion();
 
   if (!tienePermiso) {
@@ -279,53 +279,70 @@ const obtenerUbicacion = async (): Promise<void> => {
     setWeather({
       temperature: null,
       weatherCode: null,
-      isDay: null,
+      isDay: 1,
       loading: false,
-      error: 'Sin acceso a ubicación'
+      error: null
     });
     return;
   }
 
-  console.log('🔍 UBICACIÓN: Solicitando GPS...');
+  console.log('🔍 UBICACIÓN: Iniciando obtención GPS optimizada...');
   
-  Geolocation.getCurrentPosition(
+  // Variable para controlar si ya obtuvimos ubicación
+  let locationObtained = false;
+
+  // PRIMERA ESTRATEGIA: GPS Rápido con caché
+  console.log('🚀 Intentando GPS rápido...');
+  
+  const watchId = Geolocation.watchPosition(
     async (position) => {
+      if (locationObtained) {
+        Geolocation.clearWatch(watchId);
+        return;
+      }
+      
+      locationObtained = true;
+      Geolocation.clearWatch(watchId);
+      
       try {
-        console.log('✅ GPS: Posición obtenida');
+        console.log('✅ GPS: Posición obtenida exitosamente');
         const { latitude, longitude } = position.coords;
         const lat = latitude.toFixed(6);
         const lng = longitude.toFixed(6);
 
-        console.log('✅ GPS: Coordenadas procesadas:', { lat, lng });
+        console.log('📍 Coordenadas:', { lat, lng });
 
-        // Actualizar con coordenadas, sin dirección
-        setLocation(prev => ({
-          ...prev,
-          latitude: lat,
-          longitude: lng,
-          loading: true,
-          error: null
-        }));
-
-        // Obtener la dirección de forma asíncrona
-        console.log('🔍 UBICACIÓN: Obteniendo dirección...');
-        const direccion = await obtenerDireccion(lat, lng);
-        console.log('✅ UBICACIÓN: Dirección obtenida:', direccion);
-
-        // Actualizar con la dirección final
+        // Actualizar inmediatamente con coordenadas
         setLocation({
           latitude: lat,
           longitude: lng,
-          address: direccion,
-          loading: false,
+          address: 'Obteniendo dirección...',
+          loading: true,
           error: null
         });
 
-        // Obtener clima
+        // Obtener clima inmediatamente
         obtenerClima(lat, lng);
 
+        // Obtener dirección en segundo plano
+        try {
+          const direccion = await obtenerDireccion(lat, lng);
+          setLocation(prev => ({
+            ...prev,
+            address: direccion,
+            loading: false
+          }));
+        } catch (dirError) {
+          console.log('⚠️ Error obteniendo dirección:', dirError);
+          setLocation(prev => ({
+            ...prev,
+            address: 'No hay dirección disponible',
+            loading: false
+          }));
+        }
+
       } catch (error) {
-        console.log('❌ UBICACIÓN: Error procesando GPS:', error);
+        console.log('❌ Error procesando ubicación:', error);
         setLocation({
           latitude: null,
           longitude: null,
@@ -336,36 +353,128 @@ const obtenerUbicacion = async (): Promise<void> => {
         setWeather({
           temperature: null,
           weatherCode: null,
-          isDay: null,
+          isDay: 1,
           loading: false,
-          error: 'Error al obtener clima'
+          error: null
         });
       }
     },
     (error) => {
-      console.log('❌ GPS: Error obteniendo posición:', error);
+      console.log('❌ GPS Watch Error:', error.code, error.message);
+      
+      if (!locationObtained) {
+        // Si watchPosition falla, intentar getCurrentPosition como respaldo
+        console.log('🔄 Intentando método de respaldo...');
+        
+        Geolocation.getCurrentPosition(
+          async (position) => {
+            if (locationObtained) return;
+            
+            locationObtained = true;
+            
+            try {
+              const { latitude, longitude } = position.coords;
+              const lat = latitude.toFixed(6);
+              const lng = longitude.toFixed(6);
+
+              setLocation({
+                latitude: lat,
+                longitude: lng,
+                address: 'Obteniendo dirección...',
+                loading: true,
+                error: null
+              });
+
+              obtenerClima(lat, lng);
+
+              const direccion = await obtenerDireccion(lat, lng);
+              setLocation(prev => ({
+                ...prev,
+                address: direccion,
+                loading: false
+              }));
+
+            } catch (backupError) {
+              console.log('❌ Error en método de respaldo:', backupError);
+              setLocation({
+                latitude: null,
+                longitude: null,
+                address: 'Error al obtener ubicación GPS',
+                loading: false,
+                error: 'Error al obtener ubicación GPS'
+              });
+              setWeather({
+                temperature: null,
+                weatherCode: null,
+                isDay: 1,
+                loading: false,
+                error: null
+              });
+            }
+          },
+          (backupError) => {
+            console.log('❌ Error final GPS:', backupError);
+            if (!locationObtained) {
+              locationObtained = true;
+              setLocation({
+                latitude: null,
+                longitude: null,
+                address: 'Error al obtener ubicación GPS',
+                loading: false,
+                error: 'Error al obtener ubicación GPS'
+              });
+              setWeather({
+                temperature: null,
+                weatherCode: null,
+                isDay: 1,
+                loading: false,
+                error: null
+              });
+            }
+          },
+          {
+            enableHighAccuracy: false, // Usar red/WiFi para ser más rápido
+            timeout: 8000,
+            maximumAge: 600000 // 10 minutos
+          }
+        );
+      }
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 300000, // 5 minutos
+      distanceFilter: 0 // Obtener la primera lectura disponible
+    }
+  );
+
+  // Timeout de seguridad para evitar que se quede colgado
+  setTimeout(() => {
+    if (!locationObtained) {
+      console.log('⏰ Timeout de seguridad activado');
+      locationObtained = true;
+      Geolocation.clearWatch(watchId);
+      
       setLocation({
         latitude: null,
         longitude: null,
-        address: 'Error al obtener ubicación GPS',
+        address: 'Tiempo de espera agotado para GPS',
         loading: false,
-        error: 'Error al obtener ubicación GPS'
+        error: 'Tiempo de espera agotado'
       });
       setWeather({
         temperature: null,
         weatherCode: null,
-        isDay: null,
+        isDay: 1,
         loading: false,
-        error: 'Sin ubicación disponible'
+        error: null
       });
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 10000
     }
-  );
+  }, 15000); // 15 segundos máximo
 };
+ 
+
+
   // Obtener ubicación y clima al cargar el componente
   useEffect(() => {
     obtenerUbicacion();
