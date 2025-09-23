@@ -78,17 +78,25 @@ export const useAuthStore = create<AuthState>()(
 
       // Actions existentes
       setUser: (user: User) => {
+        const currentState = get();
+        
         set({
           user,
           isAuthenticated: true,
           isLoading: false,
         });
         
-        // ARREGLADO: Guardar credenciales biométricas después de setear el usuario
-        // Usamos get() para obtener el estado más reciente
-        const currentState = get();
+        // CORREGIDO: Guardar credenciales biométricas inmediatamente después
+        // Solo si la biometría está habilitada Y tenemos token y servidor
         if (currentState.biometric.isEnabled && currentState.token && currentState.server) {
-          currentState.saveBiometricCredentials(user.username, currentState.token, currentState.server);
+          console.log('Guardando credenciales biométricas para:', user.username);
+          set((state) => ({
+            biometricCredentials: {
+              username: user.username,
+              token: currentState.token,
+              server: currentState.server,
+            },
+          }));
         }
       },
 
@@ -167,11 +175,14 @@ export const useAuthStore = create<AuthState>()(
             // NUEVO: Guardar credenciales inmediatamente si ya hay sesión activa
             const currentState = get();
             if (currentState.user && currentState.token && currentState.server) {
-              currentState.saveBiometricCredentials(
-                currentState.user.username, 
-                currentState.token, 
-                currentState.server
-              );
+              console.log('Guardando credenciales biométricas inmediatamente para:', currentState.user.username);
+              set((state) => ({
+                biometricCredentials: {
+                  username: currentState.user!.username,
+                  token: currentState.token,
+                  server: currentState.server,
+                },
+              }));
             }
             
             console.log('Biometric enabled successfully');
