@@ -79,25 +79,38 @@ const Login = () => {
 
 
   // Login con biometría
-  const handleBiometricLogin = async () => {
-    try {
-      setLoading(true);
-      
-      const success = await authenticateWithBiometric();
-      
-      if (success) {
-        console.log('Login biométrico exitoso');
-        // La sesión se restaura automáticamente en el store
-      } else {
-        Alert.alert('Error', 'No se pudo autenticar con biometría');
-        setLoading(false);
-      }
-    } catch (error) {
-      console.log('Error biometric login:', error);
-      Alert.alert('Error', 'No se pudo autenticar con biometría. Intenta con tu usuario y contraseña.');
+// REEMPLAZA tu handleBiometricLogin en Login.tsx por esta versión:
+
+const handleBiometricLogin = async () => {
+  try {
+    setLoading(true);
+    console.log('🔐 Iniciando autenticación biométrica...');
+    
+    const success = await authenticateWithBiometric();
+    
+    if (success) {
+      console.log('✅ Login biométrico exitoso');
+      // La sesión se restaura automáticamente en el store
+      // NO llamar setLoading(false) aquí porque la app navega automáticamente
+    } else {
+      console.log('❌ Autenticación biométrica fallida');
+      Alert.alert(
+        'Autenticación fallida',
+        'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
+        [{ text: 'Entendido' }]
+      );
       setLoading(false);
     }
-  };
+  } catch (error) {
+    console.log('❌ Error biometric login:', error);
+    Alert.alert(
+      'Error de Autenticación', 
+      'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+      [{ text: 'Entendido' }]
+    );
+    setLoading(false);
+  }
+};
 
   // Función para cargar datos guardados (solo para credenciales normales)
   const loadSavedCredentials = async () => {
@@ -284,39 +297,43 @@ const Login = () => {
     carPosition.value = -100;
   };
 
-// REEMPLAZAR el useEffect completo en Login.tsx por este:
 
+  // 2. REEMPLAZAR el useEffect completo con este:
 useEffect(() => {
   // Cargar credenciales guardadas al iniciar
   loadSavedCredentials();
 
   // Verificar biometría con delay para asegurar hidratación del store
   const checkBiometricWithDelay = async () => {
-    // Esperar a que el store se hidrate completamente
-    setTimeout(async () => {
-      try {
-        await checkBiometricAvailability();
-        
-        // Verificar si se puede usar login biométrico
-        if (canUseBiometricLogin()) {
-          setShowBiometricOption(true);
-          console.log('Biometric option enabled');
-        } else {
-          console.log('Cannot use biometric login:', {
-            enabled: biometric.isEnabled,
-            available: biometric.isAvailable,
-            hasCredentials: !!useAuthStore.getState().biometricCredentials.username
-          });
-        }
-      } catch (error) {
-        console.log('Error in biometric check:', error);
+    try {
+      // Esperar a que el store se hidrate completamente
+await new Promise<void>(resolve => setTimeout(resolve, 1000));
+
+      console.log('🔄 Verificando disponibilidad biométrica...');
+      await checkBiometricAvailability();
+      
+      // Verificar si se puede usar login biométrico
+      const canUse = canUseBiometricLogin();
+      console.log('🔍 Puede usar biometría:', canUse);
+      
+      if (canUse) {
+        setShowBiometricOption(true);
+        console.log('✅ Opción biométrica habilitada');
+      } else {
+        console.log('❌ No se puede usar biometría:', {
+          enabled: biometric.isEnabled,
+          available: biometric.isAvailable,
+          hasCredentials: !!useAuthStore.getState().biometricCredentials.username
+        });
       }
-    }, 2000); // Esperar 2 segundos para asegurar hidratación
+    } catch (error) {
+      console.log('❌ Error en verificación biométrica:', error);
+    }
   };
 
   checkBiometricWithDelay();
 
-  // Resto de animaciones...
+  // Resto de animaciones (mantener todo igual)...
   backgroundShift.value = withRepeat(
     withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
     -1,
@@ -454,7 +471,8 @@ useEffect(() => {
     -1,
     false,
   );
-}, []); // Sin dependencias para evitar re-ejecutar constantemente
+}, []); // Mantener array vacío 
+
 
   // Estilos animados
   const backgroundStyle = useAnimatedStyle(() => {

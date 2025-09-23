@@ -76,6 +76,8 @@ export const useAuthStore = create<AuthState>()(
         server: null,
       },
 
+
+
       // Actions existentes
       setUser: (user: User) => {
         const currentState = get();
@@ -86,19 +88,38 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
         });
         
-        // CORREGIDO: Guardar credenciales biométricas inmediatamente después
-        // Solo si la biometría está habilitada Y tenemos token y servidor
-        if (currentState.biometric.isEnabled && currentState.token && currentState.server) {
-          console.log('Guardando credenciales biométricas para:', user.username);
-          set((state) => ({
-            biometricCredentials: {
-              username: user.username,
-              token: currentState.token,
-              server: currentState.server,
-            },
-          }));
-        }
+        // CORRECCIÓN: Usar setTimeout para asegurar que el estado se actualice primero
+        setTimeout(() => {
+          const newState = get();
+          // Solo si la biometría está habilitada Y tenemos token y servidor
+          if (newState.biometric.isEnabled && newState.token && newState.server) {
+            console.log('🔐 Guardando credenciales biométricas para:', user.username);
+            console.log('📊 Estado actual:', {
+              isEnabled: newState.biometric.isEnabled,
+              hasToken: !!newState.token,
+              hasServer: !!newState.server
+            });
+            
+            set((state) => ({
+              biometricCredentials: {
+                username: user.username,
+                token: newState.token,
+                server: newState.server,
+              },
+            }));
+            
+            console.log('✅ Credenciales biométricas guardadas exitosamente');
+          } else {
+            console.log('❌ No se pudieron guardar credenciales biométricas:', {
+              biometricEnabled: newState.biometric.isEnabled,
+              hasToken: !!newState.token,
+              hasServer: !!newState.server
+            });
+          }
+        }, 100);
       },
+
+
 
       setServer: (server: string) => {
         set({ server });
