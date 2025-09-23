@@ -191,31 +191,60 @@ const Home: React.FC = () => {
     }
   };
 
-  // Función para obtener dirección usando reverse geocoding
 const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
   try {
-    const response = await fetch(
-      `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`
-    );
+    console.log('🔍 GEOCODING: Iniciando con coordenadas:', { lat, lng });
+    
+    const url = `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+    console.log('🔍 GEOCODING: URL:', url);
+    
+    const response = await fetch(url);
+    console.log('🔍 GEOCODING: Response status:', response.status);
+    console.log('🔍 GEOCODING: Response ok:', response.ok);
+    
     const data = await response.json();
+    console.log('🔍 GEOCODING: Data recibida:', JSON.stringify(data, null, 2));
 
+    // Verificar si hay un error explícito en la respuesta
     if (data.error) {
-      console.log('Error en geocoding:', data.error);
+      console.log('❌ GEOCODING: Error en respuesta:', data.error);
       return LIMA_COORDINATES.displayName;
     }
 
-    // CAMBIO: Usar display_name en lugar de address29
-    if (data.display_name) {
-      return data.display_name;
+    // Verificar si existe display_name
+    if (data.display_name && data.display_name.trim() !== '') {
+      console.log('✅ GEOCODING: Display name encontrado:', data.display_name);
+      return data.display_name.trim();
     }
 
-    // Fallback a Lima, Perú si no hay display_name
+    // Si no hay display_name pero hay address, construir dirección
+    if (data.address) {
+      console.log('🔧 GEOCODING: No hay display_name, construyendo desde address');
+      const address = data.address;
+      let direccionCustom = '';
+      
+      if (address.road) direccionCustom += address.road;
+      if (address.city) direccionCustom += (direccionCustom ? ', ' : '') + address.city;
+      if (address.region) direccionCustom += (direccionCustom ? ', ' : '') + address.region;
+      if (address.country) direccionCustom += (direccionCustom ? ', ' : '') + address.country;
+      
+      if (direccionCustom.trim() !== '') {
+        console.log('✅ GEOCODING: Dirección construida:', direccionCustom);
+        return direccionCustom;
+      }
+    }
+
+    // Si llegamos aquí, no hay data útil
+    console.log('❌ GEOCODING: No se pudo obtener dirección válida, usando fallback');
+    console.log('❌ GEOCODING: Data completa era:', data);
     return LIMA_COORDINATES.displayName;
+
   } catch (error) {
-    console.log('Error al obtener dirección:', error);
+    console.log('❌ GEOCODING: Error de red/parsing:', error);
     return LIMA_COORDINATES.displayName;
   }
 };
+
 
   // Función para solicitar permisos en Android
   const solicitarPermisosUbicacion = async (): Promise<boolean> => {
@@ -242,33 +271,49 @@ const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
   };
 
   // Función para obtener ubicación
-  const obtenerUbicacion = async (): Promise<void> => {
-    const tienePermiso = await solicitarPermisosUbicacion();
+const obtenerUbicacion = async (): Promise<void> => {
+  const tienePermiso = await solicitarPermisosUbicacion();
 
-    if (!tienePermiso) {
-      // Sin permisos, usar coordenadas de Lima
-      setLocation({
-        latitude: LIMA_COORDINATES.latitude,
-        longitude: LIMA_COORDINATES.longitude,
-        address: LIMA_COORDINATES.displayName,
-        loading: false,
-        error: 'Permiso de ubicación denegado'
-      });
+  if (!tienePermiso) {
+    console.log('❌ UBICACIÓN: Sin permisos, usando Lima');
+    setLocation({
+      latitude: LIMA_COORDINATES.latitude,
+      longitude: LIMA_COORDINATES.longitude,
+      address: LIMA_COORDINATES.displayName,
+      loading: false,
+      error: 'Permiso de ubicación denegado'
+    });
+    obtenerClima(LIMA_COORDINATES.latitude, LIMA_COORDINATES.longitude);
+    return;
+  }
 
-      // Obtener clima de Lima
-      obtenerClima(LIMA_COORDINATES.latitude, LIMA_COORDINATES.longitude);
-      return;
-    }
-
-    Geolocation.getCurrentPosition(
-      async (position) => {
+  console.log('🔍 UBICACIÓN: Solicitando GPS...');
+  
+  Geolocation.getCurrentPosition(
+    async (position) => {
+      try {
+        console.log('✅ GPS: Posición obtenida');
         const { latitude, longitude } = position.coords;
         const lat = latitude.toFixed(6);
         const lng = longitude.toFixed(6);
 
-        // Obtener la dirección
-        const direccion = await obtenerDireccion(lat, lng);
+        console.log('✅ GPS: Coordenadas procesadas:', { lat, lng });
 
+        // IMPORTANTE: Primero actualizar con coordenadas, sin dirección
+        setLocation(prev => ({
+          ...prev,
+          latitude: lat,
+          longitude: lng,
+          loading: true, // Seguimos cargando mientras obtenemos dirección
+          error: null
+        }));
+
+        // Obtener la dirección de forma asíncrona
+        console.log('🔍 UBICACIÓN: Obteniendo dirección...');
+        const direccion = await obtenerDireccion(lat, lng);
+        console.log('✅ UBICACIÓN: Dirección obtenida:', direccion);
+
+        // Actualizar con la dirección final
         setLocation({
           latitude: lat,
           longitude: lng,
@@ -277,31 +322,41 @@ const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
           error: null
         });
 
-        // Obtener clima con coordenadas actuales
+        // Obtener clima
         obtenerClima(lat, lng);
-      },
-      (error) => {
-        console.log('Error GPS:', error);
 
-        // Error de GPS, usar coordenadas de Lima
+      } catch (error) {
+        console.log('❌ UBICACIÓN: Error procesando GPS:', error);
+        // En caso de error, usar Lima
         setLocation({
           latitude: LIMA_COORDINATES.latitude,
           longitude: LIMA_COORDINATES.longitude,
           address: LIMA_COORDINATES.displayName,
           loading: false,
-          error: 'Error al obtener ubicación'
+          error: 'Error al procesar ubicación'
         });
-
-        // Obtener clima de Lima
         obtenerClima(LIMA_COORDINATES.latitude, LIMA_COORDINATES.longitude);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 10000
       }
-    );
-  };
+    },
+    (error) => {
+      console.log('❌ GPS: Error obteniendo posición:', error);
+      // Error de GPS, usar coordenadas de Lima
+      setLocation({
+        latitude: LIMA_COORDINATES.latitude,
+        longitude: LIMA_COORDINATES.longitude,
+        address: LIMA_COORDINATES.displayName,
+        loading: false,
+        error: 'Error al obtener ubicación GPS'
+      });
+      obtenerClima(LIMA_COORDINATES.latitude, LIMA_COORDINATES.longitude);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 10000
+    }
+  );
+};
 
   // Obtener ubicación y clima al cargar el componente
   useEffect(() => {
