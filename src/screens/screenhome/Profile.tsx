@@ -38,13 +38,13 @@ const Profile = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const insets = useSafeAreaInsets();
-const bottomSpace = getBottomSpace(insets);
+  const bottomSpace = getBottomSpace(insets);
 
-useFocusEffect(
-  React.useCallback(() => {
-    NavigationBarColor('#1e3a8a', false);
-  }, [])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, [])
+  );
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -58,14 +58,13 @@ useFocusEffect(
     navigation.navigate('Setting');
   };
 
-    const handlePin = () => {
+  const handlePin = () => {
     navigation.navigate('Pin');
   };
 
-      const handleNotifications = () => {
+  const handleNotifications = () => {
     navigation.navigate('Notifications');
   };
-
 
   return (
     <View style={styles.container}>
@@ -121,9 +120,9 @@ useFocusEffect(
       </View>
 
       <ScrollView style={[
-  styles.scrollContent,
-  { paddingBottom: bottomSpace }
-]}>
+        styles.scrollContent,
+        { paddingBottom: bottomSpace }
+      ]}>
         {/* Menu Options */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
