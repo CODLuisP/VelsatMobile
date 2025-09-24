@@ -8,14 +8,16 @@ import {
   Image,
   PermissionsAndroid,
   Platform,
+  Dimensions,
 } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
 import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
 import { RootStackParamList } from '../../App';
+import NavigationBarColor from 'react-native-navigation-bar-color';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { EdgeInsets, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Headphones,
   Sun,
@@ -53,6 +55,19 @@ interface CoordinatesType {
   displayName: string;
 }
 
+
+const getBottomSpace = (insets: EdgeInsets) => {
+  if (Platform.OS === 'android') {
+    const screen = Dimensions.get('screen');
+    const window = Dimensions.get('window');
+    
+    const navBarHeight = screen.height - window.height;
+    return navBarHeight > 0 ? navBarHeight + 30 : 70;
+  }
+  
+  return Math.max(insets.bottom, 20);
+};
+
 const Home: React.FC = () => {
   const { user, logout, server } = useAuthStore();
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
@@ -69,6 +84,16 @@ const Home: React.FC = () => {
     loading: true,
     error: null,
   });
+
+
+  const insets = useSafeAreaInsets();
+const bottomSpace = getBottomSpace(insets);
+
+useFocusEffect(
+  React.useCallback(() => {
+    NavigationBarColor('red', false);
+  }, [])
+);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -630,8 +655,11 @@ const Home: React.FC = () => {
         </View>
 
         <ScrollView
-          style={homeStyles.content}
-          showsVerticalScrollIndicator={false}
+  style={[
+    homeStyles.content,
+    { paddingBottom: bottomSpace }
+  ]}
+  showsVerticalScrollIndicator={false}
         >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
