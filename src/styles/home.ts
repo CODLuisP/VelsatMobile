@@ -186,7 +186,7 @@ backgroundImage: {
   },
   optionIcon: {
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 2,
   },
   profileIconContainer: {
     width: 50,
@@ -244,7 +244,7 @@ backgroundImage: {
     elevation: 3,
   },
   customerCareIcon: {
-    marginBottom: 15,
+    marginBottom: 2,
   },
   supportIcon: {
     fontSize: 50,
