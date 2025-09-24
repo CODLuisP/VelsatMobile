@@ -26,7 +26,7 @@ const getBottomSpace = (insets: EdgeInsets) => {
     const window = Dimensions.get('window');
     
     const navBarHeight = screen.height - window.height;
-    return navBarHeight > 0 ? navBarHeight + 30 : 70;
+    return navBarHeight > 0 ? navBarHeight + 10 : 20;
   }
   
   return Math.max(insets.bottom, 20);
@@ -40,11 +40,13 @@ const Profile = () => {
   const insets = useSafeAreaInsets();
   const bottomSpace = getBottomSpace(insets);
 
-  useFocusEffect(
-    React.useCallback(() => {
+useFocusEffect(
+  React.useCallback(() => {
+    setTimeout(() => {
       NavigationBarColor('#1e3a8a', false);
-    }, [])
-  );
+    }, 100);
+  }, [])
+);
 
   const handleGoBack = () => {
     navigation.goBack();
