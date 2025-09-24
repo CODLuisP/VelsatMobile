@@ -13,7 +13,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
 import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
-import { RootStackParamList } from '../../App'; 
+import { RootStackParamList } from '../../App';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -28,7 +28,7 @@ import {
   Car,
   BarChart3,
   Shield,
-  LogOut
+  LogOut,
 } from 'lucide-react-native';
 
 // Tipos TypeScript
@@ -43,7 +43,6 @@ interface WeatherState {
 interface LocationState {
   latitude: string | null;
   longitude: string | null;
-  address: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -54,7 +53,6 @@ interface CoordinatesType {
   displayName: string;
 }
 
-
 const Home: React.FC = () => {
   const { user, logout, server } = useAuthStore();
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
@@ -63,35 +61,38 @@ const Home: React.FC = () => {
     weatherCode: null,
     isDay: null,
     loading: true,
-    error: null
+    error: null,
   });
   const [location, setLocation] = useState<LocationState>({
     latitude: null,
     longitude: null,
-    address: null,
     loading: true,
-    error: null
+    error: null,
   });
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const [direccionCoordenadas, setDireccionCoordenadas] = useState<string>(
+    'Obteniendo dirección...',
+  );
+
+  const [debugUrl, setDebugUrl] = useState<string>('');
 
   const handleNavigateToProfile = () => {
     navigation.navigate('Profile');
   };
 
-   const handleNavigateToDevice = () => {
+  const handleNavigateToDevice = () => {
     navigation.navigate('Devices');
   };
 
-    const handleNavigateToReports = () => {
+  const handleNavigateToReports = () => {
     navigation.navigate('Reports');
   };
 
-      const handleNavigateToSecurity = () => {
+  const handleNavigateToSecurity = () => {
     navigation.navigate('Security');
   };
-  
-  
 
   // Función para obtener el saludo según la hora
   const obtenerSaludo = (): string => {
@@ -107,9 +108,13 @@ const Home: React.FC = () => {
   };
 
   // Función para obtener el ícono del clima
-  const obtenerIconoClima = (weatherCode: number | null, isDay: number | null, temperature: number | null): React.ReactElement => {
+  const obtenerIconoClima = (
+    weatherCode: number | null,
+    isDay: number | null,
+    temperature: number | null,
+  ): React.ReactElement => {
     const size = 20;
-    const color = "#FFD700";
+    const color = '#FFD700';
 
     // Si no hay datos, usar sol por defecto
     if (!weatherCode && !temperature) {
@@ -119,7 +124,11 @@ const Home: React.FC = () => {
     // WMO Weather interpretation codes
     // 0: Clear sky
     if (weatherCode === 0) {
-      return isDay === 1 ? <Sun size={size} color={color} /> : <Moon size={size} color="#E6E6FA" />;
+      return isDay === 1 ? (
+        <Sun size={size} color={color} />
+      ) : (
+        <Moon size={size} color="#E6E6FA" />
+      );
     }
 
     // 1-3: Mainly clear, partly cloudy, and overcast
@@ -133,12 +142,21 @@ const Home: React.FC = () => {
     }
 
     // 51-67: Rain (various intensities)
-    if (weatherCode && ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82))) {
+    if (
+      weatherCode &&
+      ((weatherCode >= 51 && weatherCode <= 67) ||
+        (weatherCode >= 80 && weatherCode <= 82))
+    ) {
       return <CloudRain size={size} color="#4682B4" />;
     }
 
     // 71-77, 85-86: Snow
-    if (weatherCode && ((weatherCode >= 71 && weatherCode <= 77) || weatherCode === 85 || weatherCode === 86)) {
+    if (
+      weatherCode &&
+      ((weatherCode >= 71 && weatherCode <= 77) ||
+        weatherCode === 85 ||
+        weatherCode === 86)
+    ) {
       return <CloudSnow size={size} color="#F0F8FF" />;
     }
 
@@ -148,7 +166,11 @@ const Home: React.FC = () => {
     }
 
     // Por defecto basado en la hora
-    return isDay === 1 ? <Sun size={size} color={color} /> : <Moon size={size} color="#E6E6FA" />;
+    return isDay === 1 ? (
+      <Sun size={size} color={color} />
+    ) : (
+      <Moon size={size} color="#E6E6FA" />
+    );
   };
 
   // Función para obtener el clima
@@ -157,7 +179,7 @@ const Home: React.FC = () => {
       setWeather(prev => ({ ...prev, loading: true }));
 
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`,
       );
 
       if (!response.ok) {
@@ -171,75 +193,109 @@ const Home: React.FC = () => {
         weatherCode: data.current_weather.weathercode,
         isDay: data.current_weather.is_day,
         loading: false,
-        error: null
+        error: null,
       });
     } catch (error) {
       console.error('Error al obtener clima:', error);
       setWeather({
-        temperature: 25, // Temperatura por defecto
-        weatherCode: 0, // Cielo despejado por defecto
+        temperature: 25,
+        weatherCode: 0,
         isDay: 1,
         loading: false,
-        error: 'Error al obtener clima'
+        error: 'Error al obtener clima',
       });
     }
   };
 
-const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
-  try {
-    console.log('🔍 GEOCODING: Iniciando con coordenadas:', { lat, lng });
-    
-    const url = `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
-    console.log('🔍 GEOCODING: URL:', url);
-    
-    const response = await fetch(url);
-    console.log('🔍 GEOCODING: Response status:', response.status);
-    console.log('🔍 GEOCODING: Response ok:', response.ok);
-    
-    const data = await response.json();
-    console.log('🔍 GEOCODING: Data recibida:', JSON.stringify(data, null, 2));
+  const obtenerDireccion = async (lat: string, lng: string) => {
+    console.log('INICIO obtenerDireccion:', { lat, lng });
 
-    // Verificar si hay un error explícito en la respuesta
-    if (data.error) {
-      console.log('❌ GEOCODING: Error en respuesta:', data.error);
-      return 'No hay dirección disponible';
+    setDireccionCoordenadas('Validando coordenadas...');
+
+    if (!lat || !lng || lat === 'null' || lng === 'null') {
+      console.log('Coordenadas inválidas:', { lat, lng });
+      setDireccionCoordenadas('Coordenadas no válidas');
+      return;
     }
 
-    // Verificar si existe display_name
-    if (data.display_name && data.display_name.trim() !== '') {
-      console.log('✅ GEOCODING: Display name encontrado:', data.display_name);
-      return data.display_name.trim();
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+
+    if (isNaN(latNum) || isNaN(lngNum)) {
+      console.log('Coordenadas no son números válidos:', { lat, lng });
+      setDireccionCoordenadas('Coordenadas no válidas (NaN)');
+      return;
     }
 
-    // Si no hay display_name pero hay address, construir dirección
-    if (data.address) {
-      console.log('🔧 GEOCODING: No hay display_name, construyendo desde address');
-      const address = data.address;
-      let direccionCustom = '';
-      
-      if (address.road) direccionCustom += address.road;
-      if (address.city) direccionCustom += (direccionCustom ? ', ' : '') + address.city;
-      if (address.region) direccionCustom += (direccionCustom ? ', ' : '') + address.region;
-      if (address.country) direccionCustom += (direccionCustom ? ', ' : '') + address.country;
-      
-      if (direccionCustom.trim() !== '') {
-        console.log('✅ GEOCODING: Dirección construida:', direccionCustom);
-        return direccionCustom;
+    if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+      console.log('Coordenadas fuera de rango:', {
+        lat: latNum,
+        lng: lngNum,
+      });
+      setDireccionCoordenadas('Coordenadas fuera de rango');
+      return;
+    }
+
+    try {
+      const url = `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+      console.log('📡 URL de consulta:', url);
+
+      setDebugUrl(url);
+      setDireccionCoordenadas('Consultando servidor...');
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 10000);
+
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP Error: ${response.status} - ${response.statusText}`,
+        );
+      }
+
+      console.log('Parseando JSON...');
+      const data = await response.json();
+
+      if (data && data.display_name) {
+        setDireccionCoordenadas(data.display_name);
+      } else if (data && data.error) {
+        setDireccionCoordenadas('Error API: ' + data.error);
+      } else {
+        setDireccionCoordenadas('Sin dirección disponible');
+      }
+    } catch (error) {
+      console.log('ERROR COMPLETO en obtenerDireccion:', error);
+
+      if (error instanceof Error) {
+        console.log('Error name:', error.name);
+        console.log('Error message:', error.message);
+
+        if (error.name === 'AbortError') {
+          setDireccionCoordenadas('Timeout - Servidor muy lento');
+        } else if (error.message.includes('Network')) {
+          setDireccionCoordenadas('Sin conexión a internet');
+        } else if (error.message.includes('fetch')) {
+          setDireccionCoordenadas('Error conectando al servidor');
+        } else {
+          setDireccionCoordenadas(`Error: ${error.message}`);
+        }
+      } else {
+        setDireccionCoordenadas(`Error desconocido: ${String(error)}`);
       }
     }
+  };
 
-    // Si llegamos aquí, no hay data útil
-    console.log('❌ GEOCODING: No se pudo obtener dirección válida');
-    return 'No hay dirección disponible';
-
-  } catch (error) {
-    console.log('❌ GEOCODING: Error de red/parsing:', error);
-    return 'No hay dirección disponible';
-  }
-};
-
-
-  // Función para solicitar permisos en Android
   const solicitarPermisosUbicacion = async (): Promise<boolean> => {
     if (Platform.OS === 'android') {
       try {
@@ -251,7 +307,7 @@ const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
             buttonNeutral: 'Preguntar Después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
-          }
+          },
         );
 
         return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -260,222 +316,211 @@ const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
         return false;
       }
     }
-    return true; // iOS maneja permisos automáticamente
+    return true;
   };
 
-
   const obtenerUbicacion = async (): Promise<void> => {
-  const tienePermiso = await solicitarPermisosUbicacion();
+    const tienePermiso = await solicitarPermisosUbicacion();
 
-  if (!tienePermiso) {
-    console.log('❌ UBICACIÓN: Sin permisos GPS');
-    setLocation({
-      latitude: null,
-      longitude: null,
-      address: 'Permiso de ubicación denegado',
-      loading: false,
-      error: 'Permiso de ubicación denegado'
-    });
-    setWeather({
-      temperature: null,
-      weatherCode: null,
-      isDay: 1,
-      loading: false,
-      error: null
-    });
-    return;
-  }
-
-  console.log('🔍 UBICACIÓN: Iniciando obtención GPS optimizada...');
-  
-  // Variable para controlar si ya obtuvimos ubicación
-  let locationObtained = false;
-
-  // PRIMERA ESTRATEGIA: GPS Rápido con caché
-  console.log('🚀 Intentando GPS rápido...');
-  
-  const watchId = Geolocation.watchPosition(
-    async (position) => {
-      if (locationObtained) {
-        Geolocation.clearWatch(watchId);
-        return;
-      }
-      
-      locationObtained = true;
-      Geolocation.clearWatch(watchId);
-      
-      try {
-        console.log('✅ GPS: Posición obtenida exitosamente');
-        const { latitude, longitude } = position.coords;
-        const lat = latitude.toFixed(6);
-        const lng = longitude.toFixed(6);
-
-        console.log('📍 Coordenadas:', { lat, lng });
-
-        // Actualizar inmediatamente con coordenadas
-        setLocation({
-          latitude: lat,
-          longitude: lng,
-          address: 'Obteniendo dirección...',
-          loading: true,
-          error: null
-        });
-
-        // Obtener clima inmediatamente
-        obtenerClima(lat, lng);
-
-        // Obtener dirección en segundo plano
-        try {
-          const direccion = await obtenerDireccion(lat, lng);
-          setLocation(prev => ({
-            ...prev,
-            address: direccion,
-            loading: false
-          }));
-        } catch (dirError) {
-          console.log('⚠️ Error obteniendo dirección:', dirError);
-          setLocation(prev => ({
-            ...prev,
-            address: 'No hay dirección disponible',
-            loading: false
-          }));
-        }
-
-      } catch (error) {
-        console.log('❌ Error procesando ubicación:', error);
-        setLocation({
-          latitude: null,
-          longitude: null,
-          address: 'Error al procesar ubicación',
-          loading: false,
-          error: 'Error al procesar ubicación'
-        });
-        setWeather({
-          temperature: null,
-          weatherCode: null,
-          isDay: 1,
-          loading: false,
-          error: null
-        });
-      }
-    },
-    (error) => {
-      console.log('❌ GPS Watch Error:', error.code, error.message);
-      
-      if (!locationObtained) {
-        // Si watchPosition falla, intentar getCurrentPosition como respaldo
-        console.log('🔄 Intentando método de respaldo...');
-        
-        Geolocation.getCurrentPosition(
-          async (position) => {
-            if (locationObtained) return;
-            
-            locationObtained = true;
-            
-            try {
-              const { latitude, longitude } = position.coords;
-              const lat = latitude.toFixed(6);
-              const lng = longitude.toFixed(6);
-
-              setLocation({
-                latitude: lat,
-                longitude: lng,
-                address: 'Obteniendo dirección...',
-                loading: true,
-                error: null
-              });
-
-              obtenerClima(lat, lng);
-
-              const direccion = await obtenerDireccion(lat, lng);
-              setLocation(prev => ({
-                ...prev,
-                address: direccion,
-                loading: false
-              }));
-
-            } catch (backupError) {
-              console.log('❌ Error en método de respaldo:', backupError);
-              setLocation({
-                latitude: null,
-                longitude: null,
-                address: 'Error al obtener ubicación GPS',
-                loading: false,
-                error: 'Error al obtener ubicación GPS'
-              });
-              setWeather({
-                temperature: null,
-                weatherCode: null,
-                isDay: 1,
-                loading: false,
-                error: null
-              });
-            }
-          },
-          (backupError) => {
-            console.log('❌ Error final GPS:', backupError);
-            if (!locationObtained) {
-              locationObtained = true;
-              setLocation({
-                latitude: null,
-                longitude: null,
-                address: 'Error al obtener ubicación GPS',
-                loading: false,
-                error: 'Error al obtener ubicación GPS'
-              });
-              setWeather({
-                temperature: null,
-                weatherCode: null,
-                isDay: 1,
-                loading: false,
-                error: null
-              });
-            }
-          },
-          {
-            enableHighAccuracy: false, // Usar red/WiFi para ser más rápido
-            timeout: 8000,
-            maximumAge: 600000 // 10 minutos
-          }
-        );
-      }
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 300000, // 5 minutos
-      distanceFilter: 0 // Obtener la primera lectura disponible
-    }
-  );
-
-  // Timeout de seguridad para evitar que se quede colgado
-  setTimeout(() => {
-    if (!locationObtained) {
-      console.log('⏰ Timeout de seguridad activado');
-      locationObtained = true;
-      Geolocation.clearWatch(watchId);
-      
+    if (!tienePermiso) {
+      console.log('❌ UBICACIÓN: Sin permisos GPS');
       setLocation({
         latitude: null,
         longitude: null,
-        address: 'Tiempo de espera agotado para GPS',
         loading: false,
-        error: 'Tiempo de espera agotado'
+        error: 'Permiso de ubicación denegado',
       });
       setWeather({
         temperature: null,
         weatherCode: null,
         isDay: 1,
         loading: false,
-        error: null
+        error: null,
       });
+      return;
     }
-  }, 15000); // 15 segundos máximo
-};
- 
 
+    let locationObtained = false;
 
-  // Obtener ubicación y clima al cargar el componente
+    const tryPreciseLocationAsBackup = () => {
+      console.log('🔄 Intentando método de respaldo con GPS...');
+
+      Geolocation.getCurrentPosition(
+        async position => {
+          if (locationObtained) return;
+          locationObtained = true;
+
+          try {
+            const { latitude, longitude } = position.coords;
+            const lat = latitude.toFixed(6);
+            const lng = longitude.toFixed(6);
+
+            setLocation({
+              latitude: lat,
+              longitude: lng,
+              loading: true,
+              error: null,
+            });
+
+            obtenerClima(lat, lng);
+
+            try {
+              console.log('Obteniendo dirección en respaldo con coordenadas:', {
+                lat,
+                lng,
+              });
+              await obtenerDireccion(lat, lng);
+              console.log('Dirección obtenida exitosamente en respaldo');
+            } catch (dirError) {
+              console.log('Error obteniendo dirección en respaldo:', dirError);
+              setDireccionCoordenadas('No hay dirección disponible');
+            }
+
+            setLocation(prev => ({
+              ...prev,
+              loading: false,
+            }));
+          } catch (backupError) {
+            console.log('Error en método de respaldo:', backupError);
+            setLocation({
+              latitude: null,
+              longitude: null,
+              loading: false,
+              error: 'Error al obtener ubicación GPS',
+            });
+            setWeather({
+              temperature: null,
+              weatherCode: null,
+              isDay: 1,
+              loading: false,
+              error: null,
+            });
+          }
+        },
+        backupError => {
+          console.log('Error final GPS:', backupError.message);
+          if (!locationObtained) {
+            locationObtained = true;
+            setLocation({
+              latitude: null,
+              longitude: null,
+              loading: false,
+              error: 'Error al obtener ubicación GPS',
+            });
+            setWeather({
+              temperature: null,
+              weatherCode: null,
+              isDay: 1,
+              loading: false,
+              error: null,
+            });
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        },
+      );
+    };
+
+    Geolocation.getCurrentPosition(
+      async position => {
+        if (locationObtained) return;
+        locationObtained = true;
+
+        try {
+          const { latitude, longitude } = position.coords;
+          const lat = latitude.toFixed(6);
+          const lng = longitude.toFixed(6);
+
+          setLocation({
+            latitude: lat,
+            longitude: lng,
+            loading: true,
+            error: null,
+          });
+
+          obtenerClima(lat, lng);
+
+          try {
+            await obtenerDireccion(lat, lng);
+          } catch (dirError) {
+            setDireccionCoordenadas('No hay dirección disponible');
+          }
+
+          setLocation(prev => ({
+            ...prev,
+            loading: false,
+          }));
+
+          setTimeout(() => {
+            Geolocation.getCurrentPosition(
+              async precisePosition => {
+                try {
+                  const { latitude: precLat, longitude: precLng } =
+                    precisePosition.coords;
+                  const preciseLat = precLat.toFixed(6);
+                  const preciseLng = precLng.toFixed(6);
+
+                  const latDiff = Math.abs(parseFloat(lat) - precLat);
+                  const lngDiff = Math.abs(parseFloat(lng) - precLng);
+
+                  if (latDiff > 0.0001 || lngDiff > 0.0001) {
+                    setLocation(prev => ({
+                      ...prev,
+                      latitude: preciseLat,
+                      longitude: preciseLng,
+                    }));
+
+                    obtenerClima(preciseLat, preciseLng);
+
+                    try {
+                      await obtenerDireccion(preciseLat, preciseLng);
+                    } catch (error) {
+                      console.log(
+                        'Error actualizando dirección precisa:',
+                        error,
+                      );
+                    }
+                  } else {
+                    console.log(
+                      'Coordenadas precisas similares a las iniciales, no es necesario actualizar',
+                    );
+                  }
+                } catch (error) {
+                  console.log('Error procesando ubicación precisa:', error);
+                }
+              },
+              error => {
+                console.log('No se pudo mejorar la precisión:', error.message);
+              },
+              {
+                enableHighAccuracy: true,
+                timeout: 8000,
+                maximumAge: 0,
+              },
+            );
+          }, 3000);
+        } catch (error) {
+          locationObtained = false;
+          tryPreciseLocationAsBackup();
+        }
+      },
+      error => {
+        if (!locationObtained) {
+          tryPreciseLocationAsBackup();
+        }
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 60000,
+      },
+    );
+  };
+
+  // Obtener ubicación  clima al cargar el componente
   useEffect(() => {
     obtenerUbicacion();
   }, []);
@@ -493,22 +538,6 @@ const obtenerDireccion = async (lat: string, lng: string): Promise<string> => {
     logout();
   };
 
-  // Función para renderizar el texto de ubicación
-const renderLocationText = (): React.ReactElement => {
-  if (location.loading) {
-    return <Text style={homeStyles.locationText}>Obteniendo ubicación...</Text>;
-  }
-
-  if (location.error) {
-    return <Text style={homeStyles.locationText}>{location.address || 'Sin ubicación'}</Text>;
-  }
-
-  return (
-    <Text style={homeStyles.locationText}>
-      {location.address || 'No hay dirección disponible'}
-    </Text>
-  );
-};
   return (
     <View style={{ flex: 1, backgroundColor: '#1a237e' }}>
       <StatusBar
@@ -517,9 +546,7 @@ const renderLocationText = (): React.ReactElement => {
         translucent={false}
       />
       <SafeAreaView style={homeStyles.container}>
-        {/* Header con efecto satelite */}
         <View style={homeStyles.header}>
-          {/* Imagen de fondo con transparencia azul */}
           <Image
             source={require('../../assets/fondo3.png')}
             style={homeStyles.backgroundImage}
@@ -538,7 +565,11 @@ const renderLocationText = (): React.ReactElement => {
                     </>
                   ) : (
                     <>
-                      {obtenerIconoClima(weather.weatherCode, weather.isDay, weather.temperature)}
+                      {obtenerIconoClima(
+                        weather.weatherCode,
+                        weather.isDay,
+                        weather.temperature,
+                      )}
                       <Text style={homeStyles.temperature}>
                         {weather.temperature || '--'}°
                       </Text>
@@ -547,7 +578,10 @@ const renderLocationText = (): React.ReactElement => {
                 </View>
               </View>
               <View style={homeStyles.profileContainer}>
-                <TouchableOpacity style={homeStyles.profileImage} onPress={toggleDropdown}>
+                <TouchableOpacity
+                  style={homeStyles.profileImage}
+                  onPress={toggleDropdown}
+                >
                   <Image
                     source={require('../../assets/usuario.jpeg')}
                     style={homeStyles.logoImage}
@@ -567,70 +601,95 @@ const renderLocationText = (): React.ReactElement => {
                 )}
               </View>
             </View>
-<Text style={homeStyles.companyName}>
-  {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : ''}
-  {server && ` - ${server}`}
-  {/* Agregar coordenadas para debug */}
-  {location.latitude && location.longitude && (
-    <Text style={{fontSize: 10, color: '#fff'}}>
-      {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
-    </Text>
-  )}
-</Text>
+            <Text style={homeStyles.companyName}>
+              {user?.username
+                ? user.username.charAt(0).toUpperCase() + user.username.slice(1)
+                : ''}
+              {server && ` - ${server}`}
+              {/* Agregar coordenadas para debug */}
+              {location.latitude && location.longitude && (
+                <Text style={{ fontSize: 10, color: '#fff' }}>
+                  {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
+                </Text>
+              )}
+            </Text>
 
             <View style={homeStyles.locationContainer}>
               <MapPin size={25} color="#FFF" />
               <View>
-                <Text style={homeStyles.locationLabel}>Tu ubicación actual es:</Text>
-                {renderLocationText()}
+                <Text style={homeStyles.locationLabel}>
+                  Tu ubicación actual es:{' '}
+                </Text>
+
+                <Text style={homeStyles.locationLabel}>
+                   {direccionCoordenadas}
+                </Text>
               </View>
             </View>
           </View>
         </View>
 
-        <ScrollView style={homeStyles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={homeStyles.content}
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
           {/* Grid de opciones principales */}
           <View style={homeStyles.optionsGrid}>
-            <TouchableOpacity style={homeStyles.optionCard} onPress={handleNavigateToProfile}>
+            <TouchableOpacity
+              style={homeStyles.optionCard}
+              onPress={handleNavigateToProfile}
+            >
               <View style={homeStyles.optionIcon}>
                 <User size={24} color="#e36414" />
-
               </View>
               <Text style={homeStyles.optionTitle}>Perfil</Text>
               <Text style={homeStyles.optionSubtitle}>
-                Revisa tu información personal, actualiza tus datos y credenciales y personaliza tus marcadores.
+                Revisa tu información personal, actualiza tus datos y
+                credenciales y personaliza tus marcadores.
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={homeStyles.optionCard} onPress={handleNavigateToDevice}>
+            <TouchableOpacity
+              style={homeStyles.optionCard}
+              onPress={handleNavigateToDevice}
+            >
               <View style={homeStyles.optionIcon}>
                 <Car size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Unidades</Text>
               <Text style={homeStyles.optionSubtitle}>
-                Rastrea tus unidades, conoce su última ubicación, velocidad, dirección y estado.
+                Rastrea tus unidades, conoce su última ubicación, velocidad,
+                dirección y estado.
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={homeStyles.optionCard} onPress={handleNavigateToReports}>
+            <TouchableOpacity
+              style={homeStyles.optionCard}
+              onPress={handleNavigateToReports}
+            >
               <View style={homeStyles.optionIcon}>
                 <BarChart3 size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Reportes</Text>
               <Text style={homeStyles.optionSubtitle}>
-                Genera reportes de tus unidades, general, velocidad, kilometraje, paradas y detalle de recorrido.
+                Genera reportes de tus unidades, general, velocidad,
+                kilometraje, paradas y detalle de recorrido.
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={homeStyles.optionCard} onPress={handleNavigateToSecurity}>
+            <TouchableOpacity
+              style={homeStyles.optionCard}
+              onPress={handleNavigateToSecurity}
+            >
               <View style={homeStyles.optionIcon}>
                 <Shield size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Seguridad</Text>
               <Text style={homeStyles.optionSubtitle}>
-                Activa la autenticación con datos biométricos y habilita o deshabilita las notificaciones.
+                Activa la autenticación con datos biométricos y habilita o
+                deshabilita las notificaciones.
               </Text>
             </TouchableOpacity>
           </View>
@@ -640,13 +699,16 @@ const renderLocationText = (): React.ReactElement => {
               <View style={homeStyles.customerCareIcon}>
                 <Headphones size={24} color="#e36414" />
               </View>
-              <Text style={homeStyles.customerCareTitle}>Atención al Cliente</Text>
+              <Text style={homeStyles.customerCareTitle}>
+                Atención al Cliente
+              </Text>
               <Text style={homeStyles.customerCareSubtitle}>
-                Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles.
+                Conoce nuestros números telefónicos, llámanos a la central de
+                monitoreo, escríbenos al Whatsapp, revisa las preguntas
+                frecuentes y visualiza tutoriales útiles.
               </Text>
             </TouchableOpacity>
           </View>
-
         </ScrollView>
       </SafeAreaView>
     </View>
