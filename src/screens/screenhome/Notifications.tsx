@@ -5,6 +5,24 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { styles } from '../../styles/notifications';
 
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useFocusEffect } from '@react-navigation/native';
+import { Platform, Dimensions } from 'react-native';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+
+
+const getBottomSpace = (insets: EdgeInsets) => {
+  if (Platform.OS === 'android') {
+    const screen = Dimensions.get('screen');
+    const window = Dimensions.get('window');
+    
+    const navBarHeight = screen.height - window.height;
+    return navBarHeight > 0 ? navBarHeight + 30 : 70;
+  }
+  
+  return Math.max(insets.bottom, 20);
+}; 
+
 // Interfaz para el tipo de notificación
 interface Notification {
   id: number;
@@ -17,6 +35,16 @@ interface Notification {
 
 const Notifications = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+
+  const insets = useSafeAreaInsets();
+const bottomSpace = getBottomSpace(insets);
+
+useFocusEffect(
+  React.useCallback(() => {
+    NavigationBarColor('#1e3a8a', false);
+  }, [])
+);
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -119,7 +147,13 @@ const Notifications = () => {
         </View>
       </View>
 
-      <ScrollView style={styles.notificationsList} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+  style={[
+    styles.notificationsList,
+    { paddingBottom: bottomSpace }
+  ]} 
+  showsVerticalScrollIndicator={false}
+>
         {notifications.map((notification) => {
           const IconComponent = notification.icon;
           return (

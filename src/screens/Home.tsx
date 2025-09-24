@@ -91,7 +91,7 @@ const bottomSpace = getBottomSpace(insets);
 
 useFocusEffect(
   React.useCallback(() => {
-    NavigationBarColor('red', false);
+    NavigationBarColor('#1e3a8a', false);
   }, [])
 );
 

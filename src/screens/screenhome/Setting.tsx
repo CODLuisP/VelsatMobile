@@ -11,12 +11,36 @@ import Animated, {
     runOnJS
 } from 'react-native-reanimated';
 import { styles } from '../../styles/setting';
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useFocusEffect } from '@react-navigation/native';
+import { Platform, Dimensions } from 'react-native';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 
+const getBottomSpace = (insets: EdgeInsets) => {
+    if (Platform.OS === 'android') {
+        const screen = Dimensions.get('screen');
+        const window = Dimensions.get('window');
+
+        const navBarHeight = screen.height - window.height;
+        return navBarHeight > 0 ? navBarHeight + 30 : 70;
+    }
+
+    return Math.max(insets.bottom, 20);
+};
 const Setting = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [activeForm, setActiveForm] = useState<'update' | 'password'>('update');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const insets = useSafeAreaInsets();
+    const bottomSpace = getBottomSpace(insets);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            NavigationBarColor('#1e3a8a', false);
+        }, [])
+    );
 
     // Estados para los formularios
     const [updateData, setUpdateData] = useState({
@@ -252,8 +276,11 @@ const Setting = () => {
             </View>
 
             {/* Forms - CORREGIDO: Solo animación en el contenedor principal */}
-            <Animated.View style={[styles.contentContainer, animatedStyle]}>
-                {activeForm === 'update' ? renderUpdateForm() : renderPasswordForm()}
+            <Animated.View style={[
+                styles.contentContainer,
+                animatedStyle,
+                { paddingBottom: bottomSpace }
+            ]}>                {activeForm === 'update' ? renderUpdateForm() : renderPasswordForm()}
             </Animated.View>
         </View>
     );

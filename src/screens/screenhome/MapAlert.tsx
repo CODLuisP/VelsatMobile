@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, Platform, PermissionsAndroid } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { 
-  ChevronLeft, 
-  Battery, 
-  Zap, 
-  Power, 
+import {
+  ChevronLeft,
+  Battery,
+  Zap,
+  Power,
   AlertTriangle,
   MapPin,
   Clock,
@@ -15,6 +15,24 @@ import { WebView } from 'react-native-webview';
 import { NavigationProp, useNavigation, RouteProp, useRoute } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { styles } from '../../styles/mapalert';
+
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useFocusEffect } from '@react-navigation/native';
+import { Dimensions } from 'react-native';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+
+
+const getBottomSpace = (insets: EdgeInsets) => {
+  if (Platform.OS === 'android') {
+    const screen = Dimensions.get('screen');
+    const window = Dimensions.get('window');
+
+    const navBarHeight = screen.height - window.height;
+    return navBarHeight > 0 ? navBarHeight + 30 : 70;
+  }
+
+  return Math.max(insets.bottom, 20);
+};
 
 // Interfaz para los parámetros de la ruta
 interface MapAlertRouteParams {
@@ -32,7 +50,16 @@ const MapAlert = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<{ params: MapAlertRouteParams }, 'params'>>();
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
-  
+
+  const insets = useSafeAreaInsets();
+  const bottomSpace = getBottomSpace(insets);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, [])
+  );
+
   // Obtener los datos de la notificación desde los parámetros de navegación
   const notificationData = route.params?.notificationData;
 
@@ -54,7 +81,7 @@ const MapAlert = () => {
             buttonPositive: 'OK',
           }
         );
-        
+
         setHasLocationPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
       } catch (err) {
         console.warn(err);
@@ -283,7 +310,7 @@ const MapAlert = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Detalle de Alerta</Text>
         </View>
-        
+
         {/* Información de la alerta en el header */}
         <View style={styles.headerAlertInfo}>
           <View style={styles.headerAlertRow}>
@@ -301,7 +328,10 @@ const MapAlert = () => {
         </View>
       </View>
 
-      <View style={styles.content}>
+      <View style={[
+        styles.content,
+        { paddingBottom: bottomSpace }
+      ]}>
         {/* Map Container */}
         <View style={styles.mapContainer}>
           {renderMap()}

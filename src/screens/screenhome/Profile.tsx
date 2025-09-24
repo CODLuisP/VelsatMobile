@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, Platform, Dimensions } from 'react-native';
 import {
   ChevronLeft,
   Info,
@@ -15,13 +15,36 @@ import {
 } from 'lucide-react-native';
 import { styles } from '../../styles/profile';
 import { useAuthStore } from '../../store/authStore';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
+import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
+import NavigationBarColor from 'react-native-navigation-bar-color';
+
+const getBottomSpace = (insets: EdgeInsets) => {
+  if (Platform.OS === 'android') {
+    const screen = Dimensions.get('screen');
+    const window = Dimensions.get('window');
+    
+    const navBarHeight = screen.height - window.height;
+    return navBarHeight > 0 ? navBarHeight + 30 : 70;
+  }
+  
+  return Math.max(insets.bottom, 20);
+};
 
 const Profile = () => {
 
   const { user, server, logout } = useAuthStore();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const insets = useSafeAreaInsets();
+const bottomSpace = getBottomSpace(insets);
+
+useFocusEffect(
+  React.useCallback(() => {
+    NavigationBarColor('#1e3a8a', false);
+  }, [])
+);
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -97,7 +120,10 @@ const Profile = () => {
         </View>
       </View>
 
-      <ScrollView style={styles.scrollContent}>
+      <ScrollView style={[
+  styles.scrollContent,
+  { paddingBottom: bottomSpace }
+]}>
         {/* Menu Options */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>

@@ -4,10 +4,36 @@ import { ChevronLeft, Clock } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { styles } from '../../styles/pin';
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useFocusEffect } from '@react-navigation/native';
+import { Platform, Dimensions } from 'react-native';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+
+
+const getBottomSpace = (insets: EdgeInsets) => {
+  if (Platform.OS === 'android') {
+    const screen = Dimensions.get('screen');
+    const window = Dimensions.get('window');
+    
+    const navBarHeight = screen.height - window.height;
+    return navBarHeight > 0 ? navBarHeight + 30 : 70;
+  }
+  
+  return Math.max(insets.bottom, 20);
+};
 
 const Pin = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [selectedOption, setSelectedOption] = useState<string>('');
+
+    const insets = useSafeAreaInsets();
+const bottomSpace = getBottomSpace(insets);
+
+useFocusEffect(
+  React.useCallback(() => {
+    NavigationBarColor('#1e3a8a', false);
+  }, [])
+);
 
     const handleGoBack = () => {
         navigation.goBack();
@@ -56,8 +82,13 @@ const Pin = () => {
             </View>
 
             {/* Content */}
-            <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-                <View style={styles.optionsContainer}>
+<ScrollView 
+  style={[
+    styles.scrollContainer,
+    { paddingBottom: bottomSpace }
+  ]} 
+  showsVerticalScrollIndicator={false}
+>                <View style={styles.optionsContainer}>
                     {vehicleOptions.map((option) => (
                         <View key={option.id} style={styles.optionCard}>
                             <Text style={styles.optionTitle}>{option.title}</Text>
