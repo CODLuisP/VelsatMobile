@@ -24,7 +24,6 @@ import Security from './src/screens/screenhome/security/Security';
 // Importar pantallas
 import Login from './src/components/login/Login';
 import Home from './src/screens/Home';
-import SplashScreen from './src/components/SplashScreen';
 
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -106,19 +105,8 @@ const App = () => {
     NavigationBarColor('#1e3a8a', false);
 
 
-    // Simula carga de sesión
-    setLoading(true);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [setLoading]);
-
-  // 1) Mostrar tu SplashScreen animado INMEDIATAMENTE
-  if (showSplash) {
-    return <SplashScreen onFinish={handleSplashFinish} />;
-  }
 
   // 2) Pantalla de carga mientras se verifica sesión
   if (isLoading) {

@@ -27,7 +27,7 @@ interface SplashScreenProps {
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   // Valores animados
-  const logoScale = useSharedValue(0);
+  const logoScale = useSharedValue(0.8); // Comenzar con tamaño pequeño pero visible
   const logoOpacity = useSharedValue(0);
   const textOpacity = useSharedValue(0);
   const textTranslateY = useSharedValue(30);
@@ -44,7 +44,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   };
 
   useEffect(() => {
-    // Secuencia de animaciones
+    // Todo aparece junto desde el inicio
     
     // 1. Fade in del fondo
     backgroundOpacity.value = withTiming(1, {
@@ -52,44 +52,43 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       easing: Easing.out(Easing.ease),
     });
 
-    // 2. Animación del logo (escala y opacidad)
-    logoOpacity.value = withDelay(300,
-      withTiming(1, {
-        duration: 800,
-        easing: Easing.out(Easing.ease),
-      })
-    );
-
-    logoScale.value = withDelay(300,
-      withSequence(
-        withTiming(1.2, {
-          duration: 600,
-          easing: Easing.out(Easing.back(1.5)),
-        }),
-        withTiming(1, {
-          duration: 200,
-          easing: Easing.out(Easing.ease),
-        })
-      )
-    );
-
-    // 3. Animación del texto
-    textOpacity.value = withDelay(1000,
+    // 2. Logo y texto aparecen al mismo tiempo
+    const simultaneousDelay = 300;
+    
+    // Logo
+    logoOpacity.value = withDelay(simultaneousDelay,
       withTiming(1, {
         duration: 600,
         easing: Easing.out(Easing.ease),
       })
     );
 
-    textTranslateY.value = withDelay(1000,
+    logoScale.value = withDelay(simultaneousDelay,
+      withTiming(1, {
+        duration: 600,
+        easing: Easing.out(Easing.ease),
+      })
+    );
+
+    // Texto (mismo timing que el logo)
+    textOpacity.value = withDelay(simultaneousDelay,
+      withTiming(1, {
+        duration: 600,
+        easing: Easing.out(Easing.ease),
+      })
+    );
+
+    textTranslateY.value = withDelay(simultaneousDelay,
       withTiming(0, {
         duration: 600,
-        easing: Easing.out(Easing.back(1.2)),
+        easing: Easing.out(Easing.ease),
       })
     );
 
-    // 4. Animación de los puntos de carga (parpadeantes)
-    dot1Opacity.value = withDelay(1200,
+    // 3. Puntos de carga aparecen poco después (todos juntos)
+    const dotsDelay = 900;
+    
+    dot1Opacity.value = withDelay(dotsDelay,
       withRepeat(
         withSequence(
           withTiming(1, { duration: 400 }),
@@ -100,7 +99,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       )
     );
 
-    dot2Opacity.value = withDelay(1400,
+    dot2Opacity.value = withDelay(dotsDelay + 100,
       withRepeat(
         withSequence(
           withTiming(1, { duration: 400 }),
@@ -111,7 +110,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       )
     );
 
-    dot3Opacity.value = withDelay(1600,
+    dot3Opacity.value = withDelay(dotsDelay + 200,
       withRepeat(
         withSequence(
           withTiming(1, { duration: 400 }),
@@ -122,7 +121,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       )
     );
 
-    // 5. Fade out completo y finalizar
+    // 4. Fade out completo y finalizar
     const fadeOutTimer = setTimeout(() => {
       backgroundOpacity.value = withTiming(0, {
         duration: 500,
@@ -132,7 +131,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           runOnJS(finishSplash)();
         }
       });
-    }, 1000); // Total: 3 segundos
+    }, 2500); // Tiempo total: 3 segundos
 
     return () => clearTimeout(fadeOutTimer);
   }, []);
@@ -230,12 +229,11 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginBottom: 20,
-
   },
 
   logoImage: {
-    width: 200,
-    height: 100,
+    width: 150, // Tamaño más pequeño y consistente
+    height: 80,
   },
 
   textContainer: {

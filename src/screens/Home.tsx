@@ -162,7 +162,7 @@ const Home: React.FC = () => {
 
     // 95-99: Thunderstorm
     if (weatherCode && weatherCode >= 95 && weatherCode <= 99) {
-      return <CloudRain size={size} color="#2F4F4F" />;
+      return <CloudRain size={size} color="#bde0fe" />;
     }
 
     // Por defecto basado en la hora
