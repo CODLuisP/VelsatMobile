@@ -67,7 +67,10 @@ const Profile = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[
+      styles.container,
+      { paddingBottom: bottomSpace }
+    ]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
@@ -119,10 +122,7 @@ const Profile = () => {
         </View>
       </View>
 
-      <ScrollView style={[
-        styles.scrollContent,
-        { paddingBottom: bottomSpace }
-      ]}>
+      <ScrollView style={styles.scrollContent}>
         {/* Menu Options */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
