@@ -1,10 +1,25 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { Battery, Zap, Power, AlertTriangle, ChevronLeft } from 'lucide-react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  Battery,
+  Zap,
+  Power,
+  AlertTriangle,
+  ChevronLeft,
+} from 'lucide-react-native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { RootStackParamList } from '../../../../App';
 import { styles } from '../../../styles/notifications';
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import NavigationBarColor from 'react-native-navigation-bar-color';
 
 // Interfaz para el tipo de evento
 interface Event {
@@ -19,6 +34,19 @@ interface Event {
 const Events = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, []),
+  );
+
   const handleGoBack = () => {
     navigation.goBack();
   };
@@ -32,8 +60,8 @@ const Events = () => {
         title: event.title,
         device: event.device,
         timestamp: event.timestamp,
-        iconName: getIconName(event.type)
-      }
+        iconName: getIconName(event.type),
+      },
     });
   };
 
@@ -104,46 +132,50 @@ const Events = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerMainTitle}>Eventos</Text>
+          <Text style={styles.headerMainTitle}>Eventos de la unidad: M2L-771 </Text>
         </View>
         <View style={styles.headerBottom}>
           <Text style={styles.headerTitle}>Eventos de tus unidades</Text>
           <Text style={styles.headerSubtitle}>
-            Visualiza el detalle de los eventos de tus unidades, desconexión de batería, apagado de motor, encendido de motor y botón de pánico.
+            Visualiza el detalle de los eventos de tus unidades, desconexión de
+            batería, apagado de motor, encendido de motor y botón de pánico.
           </Text>
         </View>
       </View>
-
-      <ScrollView style={styles.notificationsList} showsVerticalScrollIndicator={false}>
-        {events.map((event) => {
-          const IconComponent = event.icon;
-          return (
-            <TouchableOpacity
-              key={event.id}
-              style={[styles.notificationCard, getEventStyle(event.type)]}
-              activeOpacity={0.7}
-              onPress={() => handleEventPress(event)}
-              
-            >
-              <View style={styles.notificationHeader}>
-                <View style={styles.iconContainer}>
-                  <IconComponent size={24} color="#FF8C42" />
+      <ScrollView
+        style={styles.notificationsList}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.formContainer}>
+          {events.map(event => {
+            const IconComponent = event.icon;
+            return (
+              <TouchableOpacity
+                key={event.id}
+                style={[styles.notificationCard, getEventStyle(event.type)]}
+                activeOpacity={0.7}
+                onPress={() => handleEventPress(event)}
+              >
+                <View style={styles.notificationHeader}>
+                  <View style={styles.iconContainer}>
+                    <IconComponent size={24} color="#FF8C42" />
+                  </View>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>{event.title}</Text>
+                    <Text style={styles.deviceName}>{event.device}</Text>
+                    <Text style={styles.timestamp}>{event.timestamp}</Text>
+                  </View>
                 </View>
-                <View style={styles.notificationContent}>
-                  <Text style={styles.notificationTitle}>{event.title}</Text>
-                  <Text style={styles.deviceName}>{event.device}</Text>
-                  <Text style={styles.timestamp}>{event.timestamp}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </ScrollView>
     </View>
   );

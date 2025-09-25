@@ -124,24 +124,7 @@ SystemNavigationBar.setNavigationColor('#1e3a8a');        console.log('Navigatio
     };
   }, []);
 
-  // 2) Pantalla de carga mientras se verifica sesión
-  if (isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#1e3a8a',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
-        <ActivityIndicator size="large" color="#f97316" />
-      </View>
-    );
-  }
 
-  // 3) Navegación normal
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: '#1e3a8a' }}>

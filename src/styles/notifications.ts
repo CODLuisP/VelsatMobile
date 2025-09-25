@@ -3,10 +3,9 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#1e3a8a',
   },
   header: {
-    backgroundColor: '#1e3a8a',
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 30,
@@ -48,15 +47,25 @@ export const styles = StyleSheet.create({
     lineHeight: 20,
     opacity: 0.9,
   },
+
+    formContainer: {
+      marginTop:20,
+      paddingHorizontal:20,
+      marginBottom:15,
+
+
+  },
+
   notificationsList: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#f5f5f5',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
   },
   notificationCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 10,
+    padding: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -68,6 +77,7 @@ export const styles = StyleSheet.create({
     borderLeftWidth: 5,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
+    marginBottom:10
   },
   batteryNotification: {
     borderLeftColor: '#FF6B6B',

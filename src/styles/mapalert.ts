@@ -4,14 +4,13 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#1e3a8a',
   },
   header: {
-    backgroundColor: '#1e3a8a',
     paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 16,
-      borderBottomLeftRadius: 20,
+    borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     
   },
@@ -64,6 +63,10 @@ export const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    backgroundColor:'#fff',
+       borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+ 
   },
   mapContainer: {
     backgroundColor: '#fff',
@@ -74,7 +77,9 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-  },
+
+   borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,  },
   // Estilo del mapa
   map: {
     flex: 1,

@@ -24,14 +24,10 @@ const GeneralReport = () => {
     navigation.goBack();
   };
 
-  // Función para manejar el click en cada item del reporte
   const handleReportItemPress = (item: ReportItem) => {
-    // TODO: Navegar a la pantalla de detalle del reporte
-    // navigation.navigate('ReportDetail', { reportItem: item });
     console.log('Clicked on report item:', item);
   };
 
-  // Datos de ejemplo basados en la imagen
   const [reportData] = useState<ReportItem[]>([
     {
       id: '1',

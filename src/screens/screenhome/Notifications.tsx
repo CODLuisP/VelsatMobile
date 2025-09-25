@@ -1,27 +1,23 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import React from 'react';
-import { Battery, Zap, Power, AlertTriangle, ChevronLeft } from 'lucide-react-native';
+import {
+  Battery,
+  Zap,
+  Power,
+  AlertTriangle,
+  ChevronLeft,
+} from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { styles } from '../../styles/notifications';
 
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
-import { Platform, Dimensions } from 'react-native';
-import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
-
-
-const getBottomSpace = (insets: EdgeInsets) => {
-  if (Platform.OS === 'android') {
-    const screen = Dimensions.get('screen');
-    const window = Dimensions.get('window');
-    
-    const navBarHeight = screen.height - window.height;
-    return navBarHeight > 0 ? navBarHeight + 30 : 70;
-  }
-  
-  return Math.max(insets.bottom, 20);
-}; 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../hooks/useNavigationMode';
 
 // Interfaz para el tipo de notificación
 interface Notification {
@@ -36,21 +32,23 @@ interface Notification {
 const Notifications = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-
   const insets = useSafeAreaInsets();
-const bottomSpace = getBottomSpace(insets);
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
 
-useFocusEffect(
-  React.useCallback(() => {
-    NavigationBarColor('#1e3a8a', false);
-  }, [])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, []),
+  );
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  // Función para manejar el click en una notificación
   const handleNotificationPress = (notification: Notification) => {
     navigation.navigate('MapAlert', {
       notificationData: {
@@ -59,12 +57,11 @@ useFocusEffect(
         title: notification.title,
         device: notification.device,
         timestamp: notification.timestamp,
-        iconName: getIconName(notification.type)
-      }
+        iconName: getIconName(notification.type),
+      },
     });
   };
 
-  // Función para obtener el nombre del icono basado en el tipo
   const getIconName = (type: string): string => {
     switch (type) {
       case 'battery':
@@ -113,6 +110,41 @@ useFocusEffect(
       timestamp: '11/09/2025 23:35:58',
       icon: AlertTriangle,
     },
+
+    {
+      id: 4,
+      type: 'panic',
+      title: 'Botón de pánico',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: AlertTriangle,
+    },
+
+    {
+      id: 4,
+      type: 'panic',
+      title: 'Botón de pánico',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: AlertTriangle,
+    },
+
+    {
+      id: 4,
+      type: 'panic',
+      title: 'Botón de pánico',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: AlertTriangle,
+    },
+    {
+      id: 4,
+      type: 'panic',
+      title: 'Botón de pánico luis',
+      device: 'M2L-777',
+      timestamp: '11/09/2025 23:35:58',
+      icon: AlertTriangle,
+    },
   ];
 
   const getNotificationStyle = (type: string) => {
@@ -131,7 +163,7 @@ useFocusEffect(
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -142,40 +174,47 @@ useFocusEffect(
         <View style={styles.headerBottom}>
           <Text style={styles.headerTitle}>Eventos de tus unidades</Text>
           <Text style={styles.headerSubtitle}>
-            Visualiza el detalle de los eventos de tus unidades, desconexión de batería, apagado de motor, encendido de motor y botón de pánico.
+            Visualiza el detalle de los eventos de tus unidades, desconexión de
+            batería, apagado de motor, encendido de motor y botón de pánico.
           </Text>
         </View>
       </View>
 
-      <ScrollView 
-  style={[
-    styles.notificationsList,
-    { paddingBottom: bottomSpace }
-  ]} 
-  showsVerticalScrollIndicator={false}
->
-        {notifications.map((notification) => {
-          const IconComponent = notification.icon;
-          return (
-            <TouchableOpacity
-              key={notification.id}
-              style={[styles.notificationCard, getNotificationStyle(notification.type)]}
-              activeOpacity={0.7}
-              onPress={() => handleNotificationPress(notification)}
-            >
-              <View style={styles.notificationHeader}>
-                <View style={styles.iconContainer}>
-                  <IconComponent size={24} color="#FF8C42" />
+      <ScrollView
+        style={styles.notificationsList}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.formContainer}>
+          {notifications.map(notification => {
+            const IconComponent = notification.icon;
+            return (
+              <TouchableOpacity
+                key={notification.id}
+                style={[
+                  styles.notificationCard,
+                  getNotificationStyle(notification.type),
+                ]}
+                activeOpacity={0.7}
+                onPress={() => handleNotificationPress(notification)}
+              >
+                <View style={styles.notificationHeader}>
+                  <View style={styles.iconContainer}>
+                    <IconComponent size={24} color="#FF8C42" />
+                  </View>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>
+                      {notification.title}
+                    </Text>
+                    <Text style={styles.deviceName}>{notification.device}</Text>
+                    <Text style={styles.timestamp}>
+                      {notification.timestamp}
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.notificationContent}>
-                  <Text style={styles.notificationTitle}>{notification.title}</Text>
-                  <Text style={styles.deviceName}>{notification.device}</Text>
-                  <Text style={styles.timestamp}>{notification.timestamp}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </ScrollView>
     </View>
   );

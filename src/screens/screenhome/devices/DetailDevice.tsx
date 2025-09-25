@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Platform, PermissionsAndroid, Animated, Image, ScrollView } from 'react-native';
-import { 
-  ChevronLeft, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  PermissionsAndroid,
+  Animated,
+  Image,
+  ScrollView,
+} from 'react-native';
+import {
+  ChevronLeft,
   ChevronUp,
   ChevronDown,
   Navigation,
@@ -10,15 +19,28 @@ import {
   MapPin,
   Signal,
   Eye,
-  Forward
+  Forward,
 } from 'lucide-react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
-import { NavigationProp, useNavigation, RouteProp, useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useNavigation,
+  RouteProp,
+  useRoute,
+} from '@react-navigation/native';
 import { RootStackParamList } from '../../../../App';
 import { styles } from '../../../styles/detaildevice';
 
-// Tipo para los parámetros de la ruta
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useFocusEffect } from '@react-navigation/native';
+import { Dimensions } from 'react-native';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
 
 const DetailDevice = () => {
@@ -28,28 +50,35 @@ const DetailDevice = () => {
   const [isInfoExpanded, setIsInfoExpanded] = useState(true);
   const [animatedHeight] = useState(new Animated.Value(1));
 
-  // Extraer los datos del dispositivo desde los parámetros de la ruta
   const { device } = route.params;
 
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
 
- const handleInfiDevice = () => {
-  navigation.navigate('InfoDevice', {
-    deviceName: device.name
-  });
-};
-  // Coordenadas de Lima, Perú (ejemplo)
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, []),
+  );
+
+  const handleInfiDevice = () => {
+    navigation.navigate('InfoDevice', {
+      deviceName: device.name,
+    });
+  };
   const latitude = -12.0464;
   const longitude = -77.0428;
 
-  // Tu API Key de Google Maps (reemplaza con tu clave real)
   const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
 
-  // URL para Street View Static API
   const getStreetViewUrl = () => {
     return `https://maps.googleapis.com/maps/api/streetview?size=300x150&location=${latitude},${longitude}&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`;
   };
 
-  // Función para pedir permisos de ubicación
   const requestLocationPermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -57,14 +86,17 @@ const DetailDevice = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Permiso de Ubicación',
-            message: 'Esta app necesita acceso a tu ubicación para mostrar el mapa',
+            message:
+              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
             buttonNeutral: 'Preguntar después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
-          }
+          },
         );
-        
-        setHasLocationPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+
+        setHasLocationPermission(
+          granted === PermissionsAndroid.RESULTS.GRANTED,
+        );
       } catch (err) {
         console.warn(err);
         setHasLocationPermission(false);
@@ -84,13 +116,13 @@ const DetailDevice = () => {
 
   const toggleInfo = () => {
     const toValue = isInfoExpanded ? 0 : 1;
-    
+
     Animated.timing(animatedHeight, {
       toValue,
       duration: 300,
       useNativeDriver: false,
     }).start();
-    
+
     setIsInfoExpanded(!isInfoExpanded);
   };
 
@@ -119,6 +151,12 @@ const DetailDevice = () => {
                 width: 100vw;
                 z-index: 0;
             }
+
+.leaflet-top.leaflet-left {
+    left: auto !important;
+    right: 5px !important;
+    top: 25px !important;
+}
         </style>
     </head>
     <body>
@@ -147,28 +185,44 @@ const DetailDevice = () => {
             
             marker.bindPopup(\`
                 <div style="text-align: center; font-family: Arial, sans-serif; min-width: 200px;">
-                    <h3 style="margin: 8px 0; color: #1e40af; font-size: 16px;">${device.name}</h3>
+                    <h3 style="margin: 8px 0; color: #1e40af; font-size: 16px;">${
+                      device.name
+                    }</h3>
                     <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Estado:</span>
-                            <span style="color: ${device.status === 'Movimiento' ? '#10b981' : '#ef4444'}; font-weight: 600;">${device.status}</span>
+                            <span style="color: ${
+                              device.status === 'Movimiento'
+                                ? '#10b981'
+                                : '#ef4444'
+                            }; font-weight: 600;">${device.status}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Velocidad:</span>
-                            <span style="color: #6b7280;">${device.speed} Km/h</span>
+                            <span style="color: #6b7280;">${
+                              device.speed
+                            } Km/h</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Conexión:</span>
-                            <span style="color: ${device.isOnline ? '#10b981' : '#ef4444'}; font-weight: 600;">${device.isOnline ? 'Online' : 'Offline'}</span>
+                            <span style="color: ${
+                              device.isOnline ? '#10b981' : '#ef4444'
+                            }; font-weight: 600;">${
+    device.isOnline ? 'Online' : 'Offline'
+  }</span>
                         </div>
                         <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
-                            <div style="font-size: 12px; color: #6b7280;">ID: ${device.id}</div>
+                            <div style="font-size: 12px; color: #6b7280;">ID: ${
+                              device.id
+                            }</div>
                         </div>
                     </div>
                 </div>
             \`).openPopup();
 
-            ${hasLocationPermission ? `
+            ${
+              hasLocationPermission
+                ? `
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var userLat = position.coords.latitude;
@@ -187,7 +241,9 @@ const DetailDevice = () => {
                 }, function(error) {
                     console.log('Error obteniendo ubicación:', error);
                 });
-            }` : ''}
+            }`
+                : ''
+            }
 
             map.on('focus', function() { 
                 map.scrollWheelZoom.enable(); 
@@ -238,7 +294,7 @@ const DetailDevice = () => {
           scalesPageToFit={true}
           mixedContentMode="compatibility"
           geolocationEnabled={hasLocationPermission}
-          onError={(syntheticEvent) => {
+          onError={syntheticEvent => {
             const { nativeEvent } = syntheticEvent;
             console.warn('WebView error: ', nativeEvent);
           }}
@@ -248,25 +304,29 @@ const DetailDevice = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Map Container */}
       <View style={styles.mapContainer}>
         {renderMap()}
-        
+
         {/* Floating Back Button */}
-        <TouchableOpacity style={styles.floatingBackButton} onPress={handleGoBack}>
+        <TouchableOpacity
+          style={styles.floatingBackButton}
+          onPress={handleGoBack}
+        >
           <ChevronLeft size={26} color="#1f2937" />
         </TouchableOpacity>
       </View>
 
       {/* Device Info Panel */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.infoPanel,
           {
+            bottom: bottomSpace === 50 ? 50 : 20, // Línea añadida
             height: animatedHeight.interpolate({
               inputRange: [0, 1],
-              outputRange: [60, 300],
+              outputRange: [50, 300],
             }),
           },
         ]}
@@ -277,42 +337,69 @@ const DetailDevice = () => {
             <View style={styles.deviceHeaderInfo}>
               <Text style={styles.deviceName}>{device.name}</Text>
               <View style={styles.deviceStatusRow}>
-                <View style={[styles.statusDot, { backgroundColor: device.isOnline ? '#10b981' : '#ef4444' }]} />
+                <View
+                  style={[
+                    styles.statusDot,
+                    {
+                      backgroundColor: device.isOnline ? '#10b981' : '#ef4444',
+                    },
+                  ]}
+                />
                 <Text style={styles.deviceId}>ID: {device.id}</Text>
-                <Text style={[styles.onlineStatus, { color: device.isOnline ? '#10b981' : '#ef4444' }]}>
+                <Text
+                  style={[
+                    styles.onlineStatus,
+                    { color: device.isOnline ? '#10b981' : '#ef4444' },
+                  ]}
+                >
                   {device.isOnline ? 'Online' : 'Offline'}
                 </Text>
               </View>
             </View>
-            {isInfoExpanded ? <ChevronDown size={24} color="#ffffffff" /> : <ChevronUp size={24} color="#ffffffff" />}
+            {isInfoExpanded ? (
+              <ChevronDown size={24} color="#ffffffff" />
+            ) : (
+              <ChevronUp size={24} color="#ffffffff" />
+            )}
           </View>
         </TouchableOpacity>
 
         {/* Panel Content */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.panelContent,
             {
               opacity: animatedHeight.interpolate({
-  inputRange: [0, 1],
-  outputRange: [1, 1],
-}),
-backgroundColor: animatedHeight.interpolate({
-  inputRange: [0, 1],
-  outputRange: ['#1e3a8a', '#ffffff'],
-}),
+                inputRange: [0, 1],
+                outputRange: [1, 1],
+              }),
+              backgroundColor: animatedHeight.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['#1e3a8a', '#ffffff'],
+              }),
             },
           ]}
         >
-          <ScrollView 
+          <ScrollView
             showsVerticalScrollIndicator={false}
             style={styles.scrollContent}
           >
             {/* Status and Speed Row */}
             <View style={styles.statusRow}>
               <View style={styles.statusItem}>
-                <Navigation size={16} color={device.status === 'Movimiento' ? '#10b981' : '#ef4444'} />
-                <Text style={[styles.statusText, { color: device.status === 'Movimiento' ? '#10b981' : '#ef4444' }]}>
+                <Navigation
+                  size={16}
+                  color={device.status === 'Movimiento' ? '#10b981' : '#ef4444'}
+                />
+                <Text
+                  style={[
+                    styles.statusText,
+                    {
+                      color:
+                        device.status === 'Movimiento' ? '#10b981' : '#ef4444',
+                    },
+                  ]}
+                >
                   {device.status}
                 </Text>
                 <Text style={styles.speedText}>({device.speed} Km/h)</Text>
@@ -329,14 +416,18 @@ backgroundColor: animatedHeight.interpolate({
             {/* Distance Info */}
             <View style={styles.distanceInfo}>
               <MapPin size={18} color="#6b7280" />
-              <Text style={styles.distanceText}>30 km manejados el día de hoy</Text>
+              <Text style={styles.distanceText}>
+                30 km manejados el día de hoy
+              </Text>
             </View>
-            <Text style={styles.startTimeText}>Empezó el día a las 02:55:53 PM</Text>
+            <Text style={styles.startTimeText}>
+              Empezó el día a las 02:55:53 PM
+            </Text>
 
             {/* Street View Preview */}
             <View style={styles.streetViewRow}>
               <View style={styles.streetViewContainer}>
-                <Image 
+                <Image
                   source={{ uri: getStreetViewUrl() }}
                   style={styles.streetViewImage}
                   resizeMode="cover"
@@ -347,17 +438,21 @@ backgroundColor: animatedHeight.interpolate({
                 </View>
               </View>
               <View style={styles.locationInfoRight}>
-                <Text style={styles.locationTitle}>Jr. Zoilo León 391, Lima, Perú</Text>
+                <Text style={styles.locationTitle}>
+                  Jr. Zoilo León 391, Lima, Perú
+                </Text>
                 <Text style={styles.locationSubtitle}>Ubicación actual</Text>
                 <TouchableOpacity style={styles.locationButton}>
-                      <Forward size={15} color="#fff"/>
-
+                  <Forward size={15} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Ver más button */}
-            <TouchableOpacity style={styles.verMasButton} onPress={handleInfiDevice}>
+            <TouchableOpacity
+              style={styles.verMasButton}
+              onPress={handleInfiDevice}
+            >
               <Text style={styles.verMasText}>Ver más</Text>
               <Text style={styles.arrowText}>→</Text>
             </TouchableOpacity>

@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#1e3a8a',
   },
   header: {
     backgroundColor: '#1e3a8a', // Color azul similar al de la imagen
@@ -42,12 +42,17 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     flex: 1,
-    marginTop: 0, 
+    marginTop: 0,
+    backgroundColor: '#f5f5f5',
+
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
   },
   infoSection: {
     backgroundColor: '#fff',
     marginHorizontal: 20,
-    marginTop: -40, 
+    marginTop: -60,
+    marginBottom: 20,
     borderRadius: 15,
     shadowColor: '#000',
     shadowOffset: {
@@ -62,7 +67,9 @@ export const styles = StyleSheet.create({
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
@@ -73,7 +80,8 @@ export const styles = StyleSheet.create({
     marginLeft: 8,
   },
   infoContent: {
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingTop: 5,
   },
   infoItem: {
     flexDirection: 'row',
@@ -118,7 +126,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
     marginLeft: 12,
     fontWeight: '500',
@@ -128,9 +136,9 @@ export const styles = StyleSheet.create({
   },
   versionContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
-    marginBottom: 20,
-    gap: 8,
+    paddingVertical: 20,
+    marginBottom: 10,
+    gap: 5,
   },
   versionText: {
     fontSize: 12,
@@ -138,11 +146,11 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   versionTextTitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#585757ff',
     fontWeight: '600',
   },
-    avatarImage: {
+  avatarImage: {
     width: 50,
     height: 50,
     borderRadius: 20,

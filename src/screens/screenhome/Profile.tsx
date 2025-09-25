@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, Platform, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import {
   ChevronLeft,
   Info,
   Settings,
-  MapPin,
+
   LogOut,
   User,
   Clipboard,
@@ -17,35 +17,22 @@ import { styles } from '../../styles/profile';
 import { useAuthStore } from '../../store/authStore';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
-import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
-import SystemNavigationBar from 'react-native-system-navigation-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { getBottomSpace, useNavigationMode } from '../../hooks/useNavigationMode';
 
-const getBottomSpace = (insets: EdgeInsets) => {
-  if (Platform.OS === 'android') {
-    const screen = Dimensions.get('screen');
-    const window = Dimensions.get('window');
-    
-    const navBarHeight = screen.height - window.height;
-    return navBarHeight > 0 ? navBarHeight + 10 : 50;
-  }
-  
-  return Math.max(insets.bottom, 20);
-};
 
 const Profile = () => {
 
   const { user, server, logout } = useAuthStore();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const insets = useSafeAreaInsets();
-  const bottomSpace = getBottomSpace(insets);
-
+ const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(insets, navigationDetection.hasNavigationBar);
   useFocusEffect(
     React.useCallback(() => {
-      // Solo aplicar en Android
-      if (Platform.OS === 'android') {
-        SystemNavigationBar.setNavigationColor('#1e3a8a'); // Negro para ocultar la barra real
-      }
+      NavigationBarColor('#1e3a8a', false);
     }, [])
   );
 
@@ -72,7 +59,7 @@ const Profile = () => {
   return (
     <View style={[
       styles.container,
-      { paddingBottom: Platform.OS === 'android' ? 0 : bottomSpace } // En iOS usar bottomSpace normal
+      { paddingBottom: bottomSpace }
     ]}>
       {/* Header */}
       <View style={styles.header}>
@@ -125,12 +112,7 @@ const Profile = () => {
         </View>
       </View>
 
-      <ScrollView 
-        style={styles.scrollContent}
-        contentContainerStyle={{ 
-          paddingBottom: Platform.OS === 'android' ? bottomSpace : 0 // En Android usar padding, en iOS no
-        }}
-      >
+      <ScrollView style={styles.scrollContent}>
         {/* Menu Options */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
@@ -173,32 +155,8 @@ const Profile = () => {
           <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
         </View>
 
-        <View style={styles.versionContainer}>
-          <Text style={styles.versionTextTitle}>VELSAT SAC</Text>
-          <Text style={styles.versionText}>Lima - Perú</Text>
-          <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
-        </View>
-
-        <View style={styles.versionContainer}>
-          <Text style={styles.versionTextTitle}>VELSAT SAC</Text>
-          <Text style={styles.versionText}>Lima - Perú</Text>
-          <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
-        </View>
-
+       
       </ScrollView>
-
-      {/* Footer personalizado que simula la barra de navegación - SOLO EN ANDROID */}
-      {Platform.OS === 'android' && (
-        <View style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: bottomSpace,
-          backgroundColor: '#1e3a8a', // Exactamente el mismo color del header
-          zIndex: 1000,
-        }} />
-      )}
     </View>
   );
 };

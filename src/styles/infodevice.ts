@@ -1,15 +1,13 @@
 import { StyleSheet } from 'react-native';
 
-
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#1e3a8a',
   },
-  
+
   // Header Styles - Fixed
   header: {
-    backgroundColor: '#1e3a8a',
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
@@ -17,10 +15,15 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
   },
-  
+
   // Scrollable content
   scrollContent: {
     flex: 1,
+
+    backgroundColor: '#f5f5f5',
+
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
   },
   backButton: {
     width: 40,
@@ -89,10 +92,14 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
+    height: 150,
+    padding: 20,
   },
+
   vehicleImage: {
     width: '100%',
-    height: 200,
+    height: '100%',
+    resizeMode: 'contain',
   },
 
   // Information Section Styles
@@ -177,17 +184,14 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     flex: 1,
     alignItems: 'center',
-      flexDirection: 'row',
+    flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
-    
   },
   eventsButtonText: {
     color: '#333',
     fontSize: 16,
     fontWeight: '600',
-
- 
   },
   shareButton: {
     backgroundColor: '#4CAF50',

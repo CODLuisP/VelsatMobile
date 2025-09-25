@@ -1,23 +1,36 @@
-import { View, Text, TouchableOpacity, Platform, PermissionsAndroid } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  PermissionsAndroid,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { 
-  ChevronLeft, 
-  Battery, 
-  Zap, 
-  Power, 
+import {
+  ChevronLeft,
+  Battery,
+  Zap,
+  Power,
   AlertTriangle,
-  MapPin,
-  Clock,
-  Smartphone
 } from 'lucide-react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
-import { NavigationProp, useNavigation, RouteProp, useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useNavigation,
+  RouteProp,
+  useRoute,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { RootStackParamList } from '../../../../App';
 import { styles } from '../../../styles/mapalert';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import NavigationBarColor from 'react-native-navigation-bar-color';
 
-
-// Interfaz para los parámetros de la ruta
 interface MapAlertRouteParams {
   notificationData: {
     id: number;
@@ -31,17 +44,28 @@ interface MapAlertRouteParams {
 
 const MapEvent = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<{ params: MapAlertRouteParams }, 'params'>>();
+  const route =
+    useRoute<RouteProp<{ params: MapAlertRouteParams }, 'params'>>();
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
-  
-  // Obtener los datos de la notificación desde los parámetros de navegación
+
   const notificationData = route.params?.notificationData;
 
-  // Coordenadas de ejemplo (deberías obtenerlas de tus datos)
   const latitude = -12.0464;
   const longitude = -77.0428;
 
-  // ✅ FUNCIÓN PARA PEDIR PERMISOS DE UBICACIÓN
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, []),
+  );
+
   const requestLocationPermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -49,14 +73,17 @@ const MapEvent = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Permiso de Ubicación',
-            message: 'Esta app necesita acceso a tu ubicación para mostrar el mapa',
+            message:
+              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
             buttonNeutral: 'Preguntar después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
-          }
+          },
         );
-        
-        setHasLocationPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+
+        setHasLocationPermission(
+          granted === PermissionsAndroid.RESULTS.GRANTED,
+        );
       } catch (err) {
         console.warn(err);
         setHasLocationPermission(false);
@@ -91,26 +118,28 @@ const MapEvent = () => {
     }
   };
 
-  // Función para obtener el color basado en el tipo
   const getAlertColor = (type: string) => {
     switch (type) {
       case 'battery':
-        return '#fb8500'; // Amarillo para batería
+        return '#fb8500';
       case 'motor':
-        return '#10b981'; // Verde para encendido
+        return '#10b981';
       case 'motor-off':
-        return '#6b7280'; // Gris para apagado
+        return '#6b7280';
       case 'panic':
-        return '#ef4444'; // Rojo para pánico
+        return '#ef4444';
       default:
         return '#6b7280';
     }
   };
 
-  const IconComponent = notificationData ? getIcon(notificationData.iconName) : AlertTriangle;
-  const alertColor = notificationData ? getAlertColor(notificationData.type) : '#6b7280';
+  const IconComponent = notificationData
+    ? getIcon(notificationData.iconName)
+    : AlertTriangle;
+  const alertColor = notificationData
+    ? getAlertColor(notificationData.type)
+    : '#6b7280';
 
-  // ✅ HTML CON LEAFLET PARA ANDROID
   const leafletHTML = `
     <!DOCTYPE html>
     <html>
@@ -168,15 +197,25 @@ const MapEvent = () => {
             // Agregar popup con información
             marker.bindPopup(\`
                 <div style="text-align: center; font-family: Arial, sans-serif;">
-                    <h3 style="margin: 5px 0; color: ${alertColor};">${notificationData?.title || 'Alerta'}</h3>
-                    <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${notificationData?.device || 'Sin información'}</p>
-                    <p style="margin: 3px 0;"><strong>ID:</strong> ${notificationData?.id || 'N/A'}</p>
-                    <p style="margin: 3px 0;"><strong>Fecha:</strong> ${notificationData?.timestamp || 'Sin fecha'}</p>
+                    <h3 style="margin: 5px 0; color: ${alertColor};">${
+    notificationData?.title || 'Alerta'
+  }</h3>
+                    <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${
+                      notificationData?.device || 'Sin información'
+                    }</p>
+                    <p style="margin: 3px 0;"><strong>ID:</strong> ${
+                      notificationData?.id || 'N/A'
+                    }</p>
+                    <p style="margin: 3px 0;"><strong>Fecha:</strong> ${
+                      notificationData?.timestamp || 'Sin fecha'
+                    }</p>
                 </div>
             \`).openPopup();
 
             // Agregar ubicación del usuario si hay permisos
-            ${hasLocationPermission ? `
+            ${
+              hasLocationPermission
+                ? `
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var userLat = position.coords.latitude;
@@ -195,7 +234,9 @@ const MapEvent = () => {
                 }, function(error) {
                     console.log('Error obteniendo ubicación:', error);
                 });
-            }` : ''}
+            }`
+                : ''
+            }
 
             // Evitar scroll en el contenedor padre
             map.on('focus', function() { 
@@ -209,13 +250,11 @@ const MapEvent = () => {
     </html>
   `;
 
-  // ✅ FUNCIÓN PARA RENDERIZAR EL MAPA SEGÚN LA PLATAFORMA
   const renderMap = () => {
     if (Platform.OS === 'ios') {
-      // ✅ APPLE MAPS PARA iOS
       return (
         <MapView
-          provider={PROVIDER_DEFAULT} // Apple Maps
+          provider={PROVIDER_DEFAULT}
           style={styles.map}
           initialRegion={{
             latitude: latitude,
@@ -232,13 +271,14 @@ const MapEvent = () => {
               longitude: longitude,
             }}
             title={notificationData?.title || 'Alerta'}
-            description={`${notificationData?.device || 'Dispositivo'} - ${notificationData?.timestamp || ''}`}
+            description={`${notificationData?.device || 'Dispositivo'} - ${
+              notificationData?.timestamp || ''
+            }`}
             pinColor={alertColor}
           />
         </MapView>
       );
     } else {
-      // ✅ LEAFLET PARA ANDROID
       return (
         <WebView
           source={{ html: leafletHTML }}
@@ -249,7 +289,7 @@ const MapEvent = () => {
           scalesPageToFit={true}
           mixedContentMode="compatibility"
           geolocationEnabled={hasLocationPermission}
-          onError={(syntheticEvent) => {
+          onError={syntheticEvent => {
             const { nativeEvent } = syntheticEvent;
             console.warn('WebView error: ', nativeEvent);
           }}
@@ -268,15 +308,16 @@ const MapEvent = () => {
           <Text style={styles.headerTitle}>Detalle de Alerta</Text>
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>No se encontraron datos de la alerta</Text>
+          <Text style={styles.errorText}>
+            No se encontraron datos de la alerta
+          </Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
@@ -284,19 +325,28 @@ const MapEvent = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Detalle de Alerta</Text>
         </View>
-        
+
         {/* Información de la alerta en el header */}
         <View style={styles.headerAlertInfo}>
           <View style={styles.headerAlertRow}>
-            <View style={[styles.headerIconContainer, { backgroundColor: alertColor }]}>
+            <View
+              style={[
+                styles.headerIconContainer,
+                { backgroundColor: alertColor },
+              ]}
+            >
               <IconComponent size={20} color="#fff" />
             </View>
             <View style={styles.headerAlertDetails}>
-              <Text style={styles.headerAlertTitle}>{notificationData.title}</Text>
+              <Text style={styles.headerAlertTitle}>
+                {notificationData.title}
+              </Text>
               <Text style={styles.headerAlertSubtitle}>
                 {notificationData.device} • ID: {notificationData.id}
               </Text>
-              <Text style={styles.headerAlertTimestamp}>{notificationData.timestamp}</Text>
+              <Text style={styles.headerAlertTimestamp}>
+                {notificationData.timestamp}
+              </Text>
             </View>
           </View>
         </View>
@@ -304,9 +354,7 @@ const MapEvent = () => {
 
       <View style={styles.content}>
         {/* Map Container */}
-        <View style={styles.mapContainer}>
-          {renderMap()}
-        </View>
+        <View style={styles.mapContainer}>{renderMap()}</View>
       </View>
     </View>
   );

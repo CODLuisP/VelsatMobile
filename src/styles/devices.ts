@@ -3,12 +3,11 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#1e3a8a',
   },
 
   // Header styles
   header: {
-    backgroundColor: '#1e3a8a',
     paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
@@ -44,11 +43,11 @@ export const styles = StyleSheet.create({
   // Search styles
   searchInputContainer: {
     backgroundColor: '#fff',
-    borderRadius: 25,
+    borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingVertical: 2,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -70,9 +69,12 @@ export const styles = StyleSheet.create({
   // Device list styles
   devicesList: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
   },
   devicesListContent: {
-    paddingVertical: 10,
+    paddingVertical: 20,
   },
 
   // Device item styles
@@ -92,7 +94,7 @@ export const styles = StyleSheet.create({
   },
   deviceContent: {
     flexDirection: 'row',
-    padding: 15,
+    padding: 10,
     alignItems: 'center',
   },
 
@@ -133,10 +135,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 2,
   },
   deviceName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -182,7 +184,7 @@ export const styles = StyleSheet.create({
 
   // Status styles
   statusContainer: {
-    marginBottom: 8,
+    marginBottom: 2,
   },
   statusIndicator: {
     flexDirection: 'row',
@@ -203,7 +205,7 @@ export const styles = StyleSheet.create({
   // Location styles
   locationLabel: {
     fontSize: 12,
-    color: '#999',
+    color: '#333',
     marginBottom: 2,
   },
   locationText: {
@@ -217,6 +219,17 @@ export const styles = StyleSheet.create({
     height: 60,
     resizeMode: 'contain',
   },
+
+  deviceItemFirst: {
+  borderTopLeftRadius: 15,
+  borderTopRightRadius: 15,
+  marginTop: 0,
+},
+deviceItemLast: {
+  borderBottomLeftRadius: 15,
+  borderBottomRightRadius: 15,
+  marginBottom: 20,
+},
 
 // Estilos para el componente de búsqueda vacía
 emptyContainer: {
