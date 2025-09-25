@@ -1,15 +1,18 @@
 <resources>
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
-        
-        <!-- AGREGAR ESTAS LÍNEAS PARA BARRA OSCURA: -->
+                 
         <item name="android:windowLightNavigationBar">false</item>
         <item name="android:navigationBarColor">#1e3a8a</item>
         <item name="android:statusBarColor">#1e3a8a</item>
         <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- REEMPLAZAR CON ESTAS 3 LÍNEAS: -->
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">false</item>
     </style>
-
+    
     <style name="BootTheme" parent="Theme.BootSplash">
         <item name="bootSplashBackground">@color/bootsplash_background</item>
         <item name="bootSplashLogo">@drawable/bootsplash_logo</item>

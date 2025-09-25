@@ -18,7 +18,7 @@ import { useAuthStore } from '../../store/authStore';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
-import NavigationBarColor from 'react-native-navigation-bar-color';
+import SystemNavigationBar from 'react-native-system-navigation-bar';
 
 const getBottomSpace = (insets: EdgeInsets) => {
   if (Platform.OS === 'android') {
@@ -26,7 +26,7 @@ const getBottomSpace = (insets: EdgeInsets) => {
     const window = Dimensions.get('window');
     
     const navBarHeight = screen.height - window.height;
-    return navBarHeight > 0 ? navBarHeight + 10 : 20;
+    return navBarHeight > 0 ? navBarHeight + 10 : 50;
   }
   
   return Math.max(insets.bottom, 20);
@@ -40,13 +40,11 @@ const Profile = () => {
   const insets = useSafeAreaInsets();
   const bottomSpace = getBottomSpace(insets);
 
-useFocusEffect(
-  React.useCallback(() => {
-    setTimeout(() => {
-      NavigationBarColor('#1e3a8a', false);
-    }, 100);
-  }, [])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      SystemNavigationBar.setNavigationColor('#1e3a8a'); // Negro para ocultar la barra real
+    }, [])
+  );
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -71,7 +69,7 @@ useFocusEffect(
   return (
     <View style={[
       styles.container,
-      { paddingBottom: bottomSpace }
+      { paddingBottom: 0 } // Cambiar a 0 porque el footer manejará el espacio
     ]}>
       {/* Header */}
       <View style={styles.header}>
@@ -124,7 +122,10 @@ useFocusEffect(
         </View>
       </View>
 
-      <ScrollView style={styles.scrollContent}>
+      <ScrollView 
+        style={styles.scrollContent}
+        contentContainerStyle={{ paddingBottom: bottomSpace }} // Mover el padding aquí
+      >
         {/* Menu Options */}
         <View style={styles.menuSection}>
           <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
@@ -166,7 +167,31 @@ useFocusEffect(
           <Text style={styles.versionText}>Lima - Perú</Text>
           <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
         </View>
+
+        <View style={styles.versionContainer}>
+          <Text style={styles.versionTextTitle}>VELSAT SAC</Text>
+          <Text style={styles.versionText}>Lima - Perú</Text>
+          <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
+        </View>
+
+        <View style={styles.versionContainer}>
+          <Text style={styles.versionTextTitle}>VELSAT SAC</Text>
+          <Text style={styles.versionText}>Lima - Perú</Text>
+          <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
+        </View>
+
       </ScrollView>
+
+      {/* Footer personalizado que simula la barra de navegación */}
+      <View style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: bottomSpace,
+        backgroundColor: '#1e3a8a', // Exactamente el mismo color del header
+        zIndex: 1000,
+      }} />
     </View>
   );
 };

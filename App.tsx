@@ -28,8 +28,8 @@ import Home from './src/screens/Home';
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-
-import NavigationBarColor from 'react-native-navigation-bar-color';
+// NUEVA IMPORTACIÓN - SystemNavigationBar
+import SystemNavigationBar from 'react-native-system-navigation-bar';
 
 // Interfaz para el dispositivo
 interface Device {
@@ -102,11 +102,27 @@ const App = () => {
     // Configurar StatusBar desde el inicio
     StatusBar.setBarStyle('dark-content', true);
 
-    NavigationBarColor('#1e3a8a', false);
+    // NUEVA IMPLEMENTACIÓN - Configurar Navigation Bar con SystemNavigationBar
+    const setNavigationBarColor = () => {
+      try {
+        // setNavigationColor(color, style, animated)
+        // style: 'dark' para iconos oscuros, 'light' para iconos claros
+SystemNavigationBar.setNavigationColor('#1e3a8a');        console.log('Navigation bar color set to #1e3a8a');
+      } catch (error) {
+        console.log('Error setting navigation bar color:', error);
+      }
+    };
 
+    // Aplicar inmediatamente
+    setNavigationBarColor();
+    
+    // Reintento después de un pequeño delay para asegurar que se aplique
+    const timer = setTimeout(setNavigationBarColor, 100);
 
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
-
 
   // 2) Pantalla de carga mientras se verifica sesión
   if (isLoading) {
