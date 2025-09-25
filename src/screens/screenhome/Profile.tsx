@@ -42,7 +42,10 @@ const Profile = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      SystemNavigationBar.setNavigationColor('#1e3a8a'); // Negro para ocultar la barra real
+      // Solo aplicar en Android
+      if (Platform.OS === 'android') {
+        SystemNavigationBar.setNavigationColor('#1e3a8a'); // Negro para ocultar la barra real
+      }
     }, [])
   );
 
@@ -69,7 +72,7 @@ const Profile = () => {
   return (
     <View style={[
       styles.container,
-      { paddingBottom: 0 } // Cambiar a 0 porque el footer manejará el espacio
+      { paddingBottom: Platform.OS === 'android' ? 0 : bottomSpace } // En iOS usar bottomSpace normal
     ]}>
       {/* Header */}
       <View style={styles.header}>
@@ -124,7 +127,9 @@ const Profile = () => {
 
       <ScrollView 
         style={styles.scrollContent}
-        contentContainerStyle={{ paddingBottom: bottomSpace }} // Mover el padding aquí
+        contentContainerStyle={{ 
+          paddingBottom: Platform.OS === 'android' ? bottomSpace : 0 // En Android usar padding, en iOS no
+        }}
       >
         {/* Menu Options */}
         <View style={styles.menuSection}>
@@ -182,16 +187,18 @@ const Profile = () => {
 
       </ScrollView>
 
-      {/* Footer personalizado que simula la barra de navegación */}
-      <View style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: bottomSpace,
-        backgroundColor: '#1e3a8a', // Exactamente el mismo color del header
-        zIndex: 1000,
-      }} />
+      {/* Footer personalizado que simula la barra de navegación - SOLO EN ANDROID */}
+      {Platform.OS === 'android' && (
+        <View style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: bottomSpace,
+          backgroundColor: '#1e3a8a', // Exactamente el mismo color del header
+          zIndex: 1000,
+        }} />
+      )}
     </View>
   );
 };
