@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -64,6 +64,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
+    paddingVertical: Platform.OS === 'ios' ? 10 : 0,
   },
 
   // Device list styles
