@@ -20,18 +20,16 @@ import SpeedReport from './src/screens/screenhome/reports/SpeedReport';
 import MileageReport from './src/screens/screenhome/reports/MileageReport';
 import TourReport from './src/screens/screenhome/reports/TourReport';
 import Security from './src/screens/screenhome/security/Security';
+import Help from './src/screens/screenhome/help/Help';
 
-// Importar pantallas
 import Login from './src/components/login/Login';
 import Home from './src/screens/Home';
 
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-// NUEVA IMPORTACIÓN - SystemNavigationBar
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 
-// Interfaz para el dispositivo
 interface Device {
   id: string;
   name: string;
@@ -85,6 +83,7 @@ export type RootStackParamList = {
   MileageReport: undefined;
   TourReport: undefined;
   Security: undefined;
+  Help:undefined;
 
 };
 
@@ -107,7 +106,7 @@ const App = () => {
       try {
         // setNavigationColor(color, style, animated)
         // style: 'dark' para iconos oscuros, 'light' para iconos claros
-SystemNavigationBar.setNavigationColor('#1e3a8a');        console.log('Navigation bar color set to #1e3a8a');
+        SystemNavigationBar.setNavigationColor('#1e3a8a'); console.log('Navigation bar color set to #1e3a8a');
       } catch (error) {
         console.log('Error setting navigation bar color:', error);
       }
@@ -115,7 +114,7 @@ SystemNavigationBar.setNavigationColor('#1e3a8a');        console.log('Navigatio
 
     // Aplicar inmediatamente
     setNavigationBarColor();
-    
+
     // Reintento después de un pequeño delay para asegurar que se aplique
     const timer = setTimeout(setNavigationBarColor, 100);
 
@@ -157,6 +156,7 @@ SystemNavigationBar.setNavigationColor('#1e3a8a');        console.log('Navigatio
                 <Stack.Screen name="MileageReport" component={MileageReport} />
                 <Stack.Screen name="TourReport" component={TourReport} />
                 <Stack.Screen name="Security" component={Security} />
+                <Stack.Screen name="Help" component={Help} />
 
               </>
             ) : (

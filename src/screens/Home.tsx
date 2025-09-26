@@ -119,6 +119,9 @@ useFocusEffect(
     navigation.navigate('Security');
   };
 
+    const handleNavigateToHelp = () => {
+    navigation.navigate('Help');
+  };
   // Función para obtener el saludo según la hora
   const obtenerSaludo = (): string => {
     const hora = new Date().getHours();
@@ -723,12 +726,12 @@ useFocusEffect(
           </View>
 
           <View style={homeStyles.customerCareContainer}>
-            <TouchableOpacity style={homeStyles.customerCareCard}>
+            <TouchableOpacity style={homeStyles.customerCareCard} onPress={handleNavigateToHelp}>
               <View style={homeStyles.customerCareIcon}>
                 <Headphones size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.customerCareTitle}>
-                Atención al Cliente
+                Ayuda
               </Text>
               <Text style={homeStyles.customerCareSubtitle}>
                 Conoce nuestros números telefónicos, llámanos a la central de

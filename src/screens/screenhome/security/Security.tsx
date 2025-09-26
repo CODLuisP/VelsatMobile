@@ -42,7 +42,7 @@ interface ContentConfig {
 const Security: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
     insets,
@@ -330,8 +330,8 @@ const insets = useSafeAreaInsets();
   };
 
   return (
-        <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-    
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -346,8 +346,8 @@ const insets = useSafeAreaInsets();
             {isLoading
               ? 'Detectando...'
               : isAlreadyEnabled
-              ? 'Biometría Activada'
-              : 'Configuración de Seguridad'}
+                ? 'Biometría Activada'
+                : 'Configuración de Seguridad'}
           </Text>
         </View>
       </View>
@@ -381,8 +381,8 @@ const insets = useSafeAreaInsets();
                   {isAlreadyEnabled
                     ? 'Autenticación biométrica activa'
                     : biometric.isAvailable
-                    ? 'Acceso instantáneo en menos de 1 segundo'
-                    : 'Acceso rápido y seguro'}
+                      ? 'Acceso instantáneo en menos de 1 segundo'
+                      : 'Acceso rápido y seguro'}
                 </Text>
               </View>
               <View style={styles.featureItem}>

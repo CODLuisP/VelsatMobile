@@ -61,25 +61,16 @@ export const styles = StyleSheet.create({
   },
 
   cardContainer: {
-    backgroundColor: '#fff',
     borderRadius: 25,
     padding: 25,
-    marginTop: 30,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 25,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.1)',
+    marginTop: 30,   
   },
 
   phoneContainer: {
     alignItems: 'center',
     marginBottom: 0,
+    backgroundColor:'white',
+    borderRadius:20
   },
   phoneWrapper: {
     position: 'relative',
@@ -292,6 +283,7 @@ export const styles = StyleSheet.create({
   textContent: {
     alignItems: 'center',
     marginBottom: 15,
+    paddingTop:20
   },
   mainTitle: {
     fontSize: 20,
@@ -318,7 +310,7 @@ export const styles = StyleSheet.create({
   },
 
   featuresList: {
-    marginBottom: 20,
+    marginBottom: 0,
   },
   featureItem: {
     flexDirection: 'row',
@@ -380,7 +372,7 @@ export const styles = StyleSheet.create({
   phoneImage: {
     width: 150,
     height: 150,
-    marginBottom: 10,
+    paddingVertical:10
   },
 
   secondaryButton: {
