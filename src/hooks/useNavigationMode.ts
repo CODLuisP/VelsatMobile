@@ -105,5 +105,5 @@ export const getBottomSpace = (insets: EdgeInsets, hasNavigationBar: boolean): n
     }
   }
 
-  return Math.max(insets.bottom, 20);
+  return 0;
 };
