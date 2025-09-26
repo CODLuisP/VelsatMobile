@@ -3,17 +3,15 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#1e3a8a',
   },
 
-  // Header styles - similar to devices
   header: {
     backgroundColor: '#1e3a8a',
     paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+
   },
   headerTop: {
     flexDirection: 'row',
@@ -28,6 +26,17 @@ export const styles = StyleSheet.create({
   headerContent: {
     flex: 1,
   },
+
+  reportItemFirst: {
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
+},
+reportItemLast: {
+  borderBottomLeftRadius: 10,
+  borderBottomRightRadius: 10,
+},
+
+
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -54,9 +63,13 @@ export const styles = StyleSheet.create({
   // Reports list styles
   reportsList: {
     flex: 1,
+       backgroundColor: '#f5f5f5',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
   },
   reportsListContent: {
     paddingVertical: 10,
+    paddingHorizontal:10
   },
 
   // Report item styles
@@ -79,7 +92,7 @@ export const styles = StyleSheet.create({
   },
   reportContent: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 6,
     alignItems: 'flex-start',
     paddingVertical: 12,},
 
@@ -138,7 +151,7 @@ export const styles = StyleSheet.create({
   dateTimeText: {
     fontSize: 12,
     color: '#333',
-    marginBottom: 12,
+    marginBottom: 5,
     marginLeft: 20,
   },
 
@@ -150,7 +163,7 @@ export const styles = StyleSheet.create({
   speedText: {
     fontSize: 12,
     color: '#333',
-    marginBottom: 12,
+    marginBottom: 5,
     marginLeft: 20,
   },
 
@@ -163,7 +176,7 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#333',
     marginLeft: 20,
-    marginBottom: 12,
+    marginBottom: 5,
   },
 
   // Location styles - now full width

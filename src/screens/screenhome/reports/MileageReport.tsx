@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
 import { Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
 import { ChevronLeft, Calendar, Car, MapPin } from 'lucide-react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { styles } from '../../../styles/mileagereport';
 import { RootStackParamList } from '../../../../App';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import NavigationBarColor from 'react-native-navigation-bar-color';
 
 interface VehicleReport {
   id: string;
@@ -15,6 +25,19 @@ interface VehicleReport {
 
 const MileageReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, []),
+  );
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -30,35 +53,58 @@ const MileageReport = () => {
       itemNumber: 1,
       unitName: 'BDV-953',
       mileage: 263.75,
-      carImage: require('../../../../assets/Car.jpg')
+      carImage: require('../../../../assets/Car.jpg'),
     },
     {
       id: '2',
       itemNumber: 2,
       unitName: 'BDV-954',
-      mileage: 412.30,
-      carImage: require('../../../../assets/Car.jpg')
+      mileage: 412.3,
+      carImage: require('../../../../assets/Car.jpg'),
     },
     {
       id: '3',
       itemNumber: 3,
       unitName: 'BDV-955',
       mileage: 198.45,
-      carImage: require('../../../../assets/Car.jpg')
+      carImage: require('../../../../assets/Car.jpg'),
     },
     {
       id: '4',
       itemNumber: 4,
       unitName: 'BDV-956',
-      mileage: 327.80,
-      carImage: require('../../../../assets/Car.jpg')
+      mileage: 327.8,
+      carImage: require('../../../../assets/Car.jpg'),
     },
     {
       id: '5',
       itemNumber: 5,
       unitName: 'BDV-957',
       mileage: 156.25,
-      carImage: require('../../../../assets/Car.jpg')
+      carImage: require('../../../../assets/Car.jpg'),
+    },
+
+    {
+      id: '6',
+      itemNumber: 5,
+      unitName: 'BDV-957',
+      mileage: 156.25,
+      carImage: require('../../../../assets/Car.jpg'),
+    },
+
+    {
+      id: '7',
+      itemNumber: 5,
+      unitName: 'BDV-957',
+      mileage: 156.25,
+      carImage: require('../../../../assets/Car.jpg'),
+    },
+    {
+      id: '8',
+      itemNumber: 5,
+      unitName: 'BDV-957',
+      mileage: 156.25,
+      carImage: require('../../../../assets/Car.jpg'),
     },
   ]);
 
@@ -74,7 +120,6 @@ const MileageReport = () => {
           <Text style={styles.itemBadgeText}>ITEM #{item.itemNumber} </Text>
         </View>
         <View style={styles.unitHeaderInfo}>
-
           <Text style={styles.unitCompleteText}>Unidad: {item.unitName}</Text>
         </View>
       </View>
@@ -98,7 +143,6 @@ const MileageReport = () => {
           <View style={styles.mileageLabel}>
             <MapPin size={12} color="#ff8c00" />
             <Text style={styles.mileageLabelText}>Km recorridos</Text>
-
           </View>
         </View>
       </View>
@@ -106,8 +150,7 @@ const MileageReport = () => {
   );
 
   return (
-    <View style={styles.container}>
-      {/* Header mejorado */}
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
@@ -117,11 +160,7 @@ const MileageReport = () => {
             <View style={styles.headerTextContainer}>
               <Text style={styles.headerTitle}>Reporte de Kilometraje</Text>
 
-      
-                  <Text style={styles.dateText}>
-                    Unidad Bwb 113
-                  </Text>
-              
+              <Text style={styles.dateText}>Unidad Bwb 113</Text>
 
               <View style={styles.dateContainer}>
                 <View style={styles.dateWrapper}>
@@ -133,22 +172,17 @@ const MileageReport = () => {
               </View>
             </View>
           </View>
-
-
         </View>
       </View>
 
-      {/* Lista de vehículos */}
-      <View style={styles.listContainer}>
-        <FlatList
-          data={vehicleData}
-          keyExtractor={(item) => item.id}
-          renderItem={renderVehicleItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
-      </View>
+      <FlatList
+        data={vehicleData}
+        keyExtractor={item => item.id}
+        renderItem={renderVehicleItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+      />
     </View>
   );
 };

@@ -1,11 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, TouchableOpacity, Platform, PermissionsAndroid } from 'react-native';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Platform,
+  PermissionsAndroid,
+} from 'react-native';
 import { ChevronLeft, Calendar, ChevronRight } from 'lucide-react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import MapView, { PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 import { styles } from '../../../styles/tourreport';
 import { RootStackParamList } from '../../../../App';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import NavigationBarColor from 'react-native-navigation-bar-color';
 
 const TourReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -13,11 +29,22 @@ const TourReport = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [sidebarCompact, setSidebarCompact] = useState(false);
 
-  // Coordenadas de ejemplo para Lima, Perú
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, []),
+  );
+
   const latitude = -12.0464;
   const longitude = -77.0428;
 
-  // ✅ FUNCIÓN PARA PEDIR PERMISOS DE UBICACIÓN
   const requestLocationPermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -25,14 +52,17 @@ const TourReport = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Permiso de Ubicación',
-            message: 'Esta app necesita acceso a tu ubicación para mostrar el mapa',
+            message:
+              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
             buttonNeutral: 'Preguntar después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
-          }
+          },
         );
-        
-        setHasLocationPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+
+        setHasLocationPermission(
+          granted === PermissionsAndroid.RESULTS.GRANTED,
+        );
       } catch (err) {
         console.warn(err);
         setHasLocationPermission(false);
@@ -60,7 +90,6 @@ const TourReport = () => {
     setSidebarCompact(!sidebarCompact);
   };
 
-  // ✅ HTML CON LEAFLET PARA ANDROID
   const leafletHTML = `
     <!DOCTYPE html>
     <html>
@@ -85,6 +114,12 @@ const TourReport = () => {
                 width: 100vw;
                 z-index: 0;
             }
+
+                .leaflet-top.leaflet-left {
+                left: auto !important;
+                right: 5px !important;
+                top: 25px !important;
+            }
         </style>
     </head>
     <body>
@@ -105,7 +140,9 @@ const TourReport = () => {
             }).addTo(map);
 
             // Agregar ubicación del usuario si hay permisos
-            ${hasLocationPermission ? `
+            ${
+              hasLocationPermission
+                ? `
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var userLat = position.coords.latitude;
@@ -124,7 +161,9 @@ const TourReport = () => {
                 }, function(error) {
                     console.log('Error obteniendo ubicación:', error);
                 });
-            }` : ''}
+            }`
+                : ''
+            }
 
             // Evitar scroll en el contenedor padre
             map.on('focus', function() { 
@@ -138,13 +177,11 @@ const TourReport = () => {
     </html>
   `;
 
-  // ✅ FUNCIÓN PARA RENDERIZAR EL MAPA SEGÚN LA PLATAFORMA
   const renderMap = () => {
     if (Platform.OS === 'ios') {
-      // ✅ APPLE MAPS PARA iOS
       return (
         <MapView
-          provider={PROVIDER_DEFAULT} // Apple Maps
+          provider={PROVIDER_DEFAULT}
           style={styles.map}
           initialRegion={{
             latitude: latitude,
@@ -157,7 +194,6 @@ const TourReport = () => {
         />
       );
     } else {
-      // ✅ LEAFLET PARA ANDROID
       return (
         <WebView
           source={{ html: leafletHTML }}
@@ -168,7 +204,7 @@ const TourReport = () => {
           scalesPageToFit={true}
           mixedContentMode="compatibility"
           geolocationEnabled={hasLocationPermission}
-          onError={(syntheticEvent) => {
+          onError={syntheticEvent => {
             const { nativeEvent } = syntheticEvent;
             console.warn('WebView error: ', nativeEvent);
           }}
@@ -178,7 +214,7 @@ const TourReport = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -201,14 +237,12 @@ const TourReport = () => {
       {/* Contenido con Mapa y Sidebar */}
       <View style={styles.content}>
         {/* Container del Mapa - Ahora siempre ocupa todo el espacio */}
-        <View style={styles.mapContainer}>
-          {renderMap()}
-        </View>
+        <View style={styles.mapContainer}>{renderMap()}</View>
 
         {/* Botón para mostrar sidebar cuando está oculto */}
         {!sidebarVisible && (
-          <TouchableOpacity 
-            style={styles.showSidebarButton} 
+          <TouchableOpacity
+            style={styles.showSidebarButton}
             onPress={toggleSidebar}
           >
             <ChevronRight size={20} color="#fff" />
@@ -217,14 +251,15 @@ const TourReport = () => {
 
         {/* Sidebar - Solo se muestra cuando sidebarVisible es true */}
         {sidebarVisible && (
-          <View style={[
-            styles.sidebar, 
-            sidebarCompact && styles.sidebarCompact
-          ]}>
-            <View style={[
-              styles.sidebarHeader,
-              sidebarCompact && styles.sidebarCompactHeader
-            ]}>
+          <View
+            style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}
+          >
+            <View
+              style={[
+                styles.sidebarHeader,
+                sidebarCompact && styles.sidebarCompactHeader,
+              ]}
+            >
               {!sidebarCompact ? (
                 <>
                   <View style={styles.sidebarHeaderContent}>
@@ -234,9 +269,8 @@ const TourReport = () => {
                     </View>
                   </View>
                   <View style={{ flexDirection: 'row' }}>
-               
-                    <TouchableOpacity 
-                      style={styles.hideSidebarButton} 
+                    <TouchableOpacity
+                      style={styles.hideSidebarButton}
                       onPress={toggleSidebar}
                     >
                       <ChevronLeft size={20} color="#fff" />
@@ -245,14 +279,14 @@ const TourReport = () => {
                 </>
               ) : (
                 <>
-                  <TouchableOpacity 
-                    style={{ flex: 1 }} 
+                  <TouchableOpacity
+                    style={{ flex: 1 }}
                     onPress={toggleSidebarCompact}
                   >
                     <Text style={styles.sidebarCompactTitle}>L</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.hideSidebarButton} 
+                  <TouchableOpacity
+                    style={styles.hideSidebarButton}
                     onPress={toggleSidebar}
                   >
                     <ChevronLeft size={16} color="#fff" />
@@ -260,7 +294,7 @@ const TourReport = () => {
                 </>
               )}
             </View>
-            
+
             {!sidebarCompact && (
               <View style={styles.sidebarContent}>
                 {/* Información de la Unidad */}
@@ -272,32 +306,49 @@ const TourReport = () => {
                 {/* Rango de Fechas */}
                 <View style={styles.sidebarSection}>
                   <Text style={styles.sidebarSectionTitle}>RANGO FECHAS</Text>
-                  <Text style={styles.sidebarText}>18/09/2025 00:00 - 18/09/2025 23:59</Text>
+                  <Text style={styles.sidebarText}>
+                    18/09/2025 00:00 - 18/09/2025 23:59
+                  </Text>
                 </View>
 
                 {/* Rango de Velocidad */}
                 <View style={styles.sidebarSection}>
-                  <Text style={styles.sidebarSectionTitle}>RANGO VELOCIDAD</Text>
-                  
+                  <Text style={styles.sidebarSectionTitle}>
+                    RANGO VELOCIDAD
+                  </Text>
+
+                  <View style={styles.sidebarRago}>
+                 
+
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#ef4444' }]} />
+                    <View
+                      style={[styles.legendDot, { backgroundColor: '#ef4444' }]}
+                    />
                     <Text style={styles.legendText}>0 km/h</Text>
                   </View>
-                  
+
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#22c55e' }]} />
+                    <View
+                      style={[styles.legendDot, { backgroundColor: '#22c55e' }]}
+                    />
                     <Text style={styles.legendText}>1 - 10 km/h</Text>
                   </View>
-                  
+
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#eab308' }]} />
+                    <View
+                      style={[styles.legendDot, { backgroundColor: '#eab308' }]}
+                    />
                     <Text style={styles.legendText}>11 - 30 km/h</Text>
                   </View>
-                  
+
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#3b82f6' }]} />
+                    <View
+                      style={[styles.legendDot, { backgroundColor: '#3b82f6' }]}
+                    />
                     <Text style={styles.legendText}> 60 km/h</Text>
                   </View>
+
+                   </View>
                 </View>
               </View>
             )}

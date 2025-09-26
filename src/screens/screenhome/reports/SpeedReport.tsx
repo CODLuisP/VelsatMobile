@@ -1,9 +1,27 @@
 import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, FlatList, ScrollView } from 'react-native';
-import { ChevronLeft, MapPin, Clock, Gauge, Navigation, Globe, Calendar } from 'lucide-react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  FlatList,
+} from 'react-native';
+import {
+  ChevronLeft,
+  MapPin,
+  Clock,
+  Gauge,
+  Globe,
+  Calendar,
+} from 'lucide-react-native';
+import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { styles } from '../../../styles/generalreport';
 import { RootStackParamList } from '../../../../App';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import NavigationBarColor from 'react-native-navigation-bar-color';
 
 interface ReportItem {
   id: string;
@@ -19,18 +37,28 @@ interface ReportItem {
 const SpeedReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, []),
+  );
+
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  // Función para manejar el click en cada item del reporte
   const handleReportItemPress = (item: ReportItem) => {
-    // TODO: Navegar a la pantalla de detalle del reporte
-    // navigation.navigate('ReportDetail', { reportItem: item });
+ 
     console.log('Clicked on report item:', item);
   };
 
-  // Datos de ejemplo basados en la imagen
   const [reportData] = useState<ReportItem[]>([
     {
       id: '1',
@@ -39,8 +67,8 @@ const SpeedReport = () => {
       time: '02:25',
       speed: 75,
       location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.89860,
-      longitude: -79.78812
+      latitude: -6.8986,
+      longitude: -79.78812,
     },
     {
       id: '2',
@@ -49,8 +77,8 @@ const SpeedReport = () => {
       time: '02:25',
       speed: 25,
       location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.89860,
-      longitude: -79.78812
+      latitude: -6.8986,
+      longitude: -79.78812,
     },
     {
       id: '3',
@@ -59,8 +87,8 @@ const SpeedReport = () => {
       time: '02:25',
       speed: 5,
       location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.89860,
-      longitude: -79.78812
+      latitude: -6.8986,
+      longitude: -79.78812,
     },
     {
       id: '4',
@@ -69,8 +97,8 @@ const SpeedReport = () => {
       time: '02:25',
       speed: 75,
       location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.89860,
-      longitude: -79.78812
+      latitude: -6.8986,
+      longitude: -79.78812,
     },
     {
       id: '5',
@@ -79,8 +107,8 @@ const SpeedReport = () => {
       time: '02:25',
       speed: 75,
       location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.89860,
-      longitude: -79.78812
+      latitude: -6.8986,
+      longitude: -79.78812,
     },
     {
       id: '6',
@@ -89,8 +117,8 @@ const SpeedReport = () => {
       time: '02:25',
       speed: 75,
       location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.89860,
-      longitude: -79.78812
+      latitude: -6.8986,
+      longitude: -79.78812,
     },
   ]);
 
@@ -101,70 +129,88 @@ const SpeedReport = () => {
     return '#0066FF';
   };
 
-  const renderReportItem = ({ item }: { item: ReportItem }) => (
-    <TouchableOpacity 
-      style={styles.reportItem}
-      onPress={() => handleReportItemPress(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.reportContent}>
-        {/* Número del reporte */}
-        <View style={styles.numberContainer}>
-          <Text style={styles.numberText}>{item.number}.</Text>
-        </View>
+  const renderReportItem = ({
+    item,
+    index,
+  }: {
+    item: ReportItem;
+    index: number;
+  }) => {
+    const isFirst = index === 0;
+    const isLast = index === reportData.length - 1;
 
-        {/* Contenido principal */}
-        <View style={styles.mainContent}>
-          {/* Fila superior con dos columnas */}
-          <View style={styles.topRowContent}>
-            {/* Sección izquierda - Fecha y velocidad */}
-            <View style={styles.leftSection}>
-              <View style={styles.dateTimeContainer}>
-                <Clock size={14} color="#666" />
-                <Text style={styles.sectionLabel}>Fecha y hora</Text>
-              </View>
-              <Text style={styles.dateTimeText}>
-                {item.date} {item.time}
-              </Text>
-
-              <View style={styles.speedContainer}>
-                <Gauge size={14} color="#666" />
-                <Text style={styles.sectionLabel}>Velocidad</Text>
-              </View>
-              <Text style={[styles.speedText, { color: getSpeedColor(item.speed) }]}>
-                {item.speed} Km/h
-              </Text>
-            </View>
-
-            {/* Sección derecha - Coordenadas */}
-            <View style={styles.rightSection}>
-              <View style={styles.coordinatesContainer}>
-                <Globe size={14} color="#666" />
-                <Text style={styles.sectionLabel}>Latitud y Longitud</Text>
-              </View>
-              <Text style={styles.coordinatesText}>
-                {item.latitude}, {item.longitude}
-              </Text>
-            </View>
+    return (
+      <TouchableOpacity
+        style={[
+          styles.reportItem,
+          isFirst && styles.reportItemFirst,
+          isLast && styles.reportItemLast,
+        ]}
+        onPress={() => handleReportItemPress(item)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.reportContent}>
+          {/* Número del reporte */}
+          <View style={styles.numberContainer}>
+            <Text style={styles.numberText}>{item.number}.</Text>
           </View>
 
-          {/* Fila inferior - Ubicación ocupa todo el ancho */}
-          <View style={styles.bottomRowContent}>
-            <View style={styles.locationContainer}>
-              <MapPin size={14} color="#666" />
-              <Text style={styles.sectionLabel}>Ubicación</Text>
+          {/* Contenido principal */}
+          <View style={styles.mainContent}>
+            {/* Fila superior con dos columnas */}
+            <View style={styles.topRowContent}>
+              {/* Sección izquierda - Fecha y velocidad */}
+              <View style={styles.leftSection}>
+                <View style={styles.dateTimeContainer}>
+                  <Clock size={14} color="#666" />
+                  <Text style={styles.sectionLabel}>Fecha y hora</Text>
+                </View>
+                <Text style={styles.dateTimeText}>
+                  {item.date} {item.time}
+                </Text>
+
+                <View style={styles.speedContainer}>
+                  <Gauge size={14} color="#666" />
+                  <Text style={styles.sectionLabel}>Velocidad</Text>
+                </View>
+                <Text
+                  style={[
+                    styles.speedText,
+                    { color: getSpeedColor(item.speed) },
+                  ]}
+                >
+                  {item.speed} Km/h
+                </Text>
+              </View>
+
+              {/* Sección derecha - Coordenadas */}
+              <View style={styles.rightSection}>
+                <View style={styles.coordinatesContainer}>
+                  <Globe size={14} color="#666" />
+                  <Text style={styles.sectionLabel}>Latitud y Longitud</Text>
+                </View>
+                <Text style={styles.coordinatesText}>
+                  {item.latitude}, {item.longitude}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.locationText}>
-              {item.location}
-            </Text>
+
+            {/* Fila inferior - Ubicación ocupa todo el ancho */}
+            <View style={styles.bottomRowContent}>
+              <View style={styles.locationContainer}>
+                <MapPin size={14} color="#666" />
+                <Text style={styles.sectionLabel}>Ubicación</Text>
+              </View>
+              <Text style={styles.locationText}>{item.location}</Text>
+            </View>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -187,8 +233,8 @@ const SpeedReport = () => {
       {/* Lista de reportes */}
       <FlatList
         data={reportData}
-        keyExtractor={(item) => item.id}
-        renderItem={renderReportItem}
+        keyExtractor={item => item.id}
+        renderItem={({ item, index }) => renderReportItem({ item, index })}
         style={styles.reportsList}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.reportsListContent}

@@ -5,24 +5,13 @@ const { width } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#1e3a8a',
   },
 
   // Header mejorado
   header: {
-    backgroundColor: '#1e3a8a',
     paddingTop: 60,
     paddingBottom: 10,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: '#1e3a8a',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
 
   headerContent: {
@@ -54,7 +43,6 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
     marginBottom: 2,
-
   },
 
   headerSubtitle: {
@@ -77,25 +65,26 @@ export const styles = StyleSheet.create({
   dateText: {
     fontSize: 14,
     color: '#fff',
-   
   },
 
-  // Lista mejorada
   listContainer: {
     flex: 1,
     paddingTop: 20,
   },
 
   listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
+    flexGrow: 1, // Cambiar de flex: 1 a flexGrow: 1
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#f5f5f5',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
   },
 
   separator: {
     height: 12,
   },
 
-  // Card del vehículo rediseñado
   vehicleCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -112,7 +101,6 @@ export const styles = StyleSheet.create({
     borderColor: '#f1f5f9',
   },
 
-  // Header combinado - Badge + Unidad
   itemHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -168,21 +156,18 @@ export const styles = StyleSheet.create({
     minHeight: 70,
   },
 
-  // Sección izquierda - Solo imagen
   leftSection: {
     flex: 1,
     paddingRight: 12,
     justifyContent: 'center',
   },
 
-  // Imagen del carro centrada
   carImageWrapper: {
     width: '100%',
     height: 60,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-
   },
 
   carImage: {
@@ -191,7 +176,6 @@ export const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
 
-  // Header de unidad (arriba)
   unitHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,13 +197,11 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Sección derecha - Kilometraje mejorado
   rightSection: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
-
   },
 
   mileageContainer: {

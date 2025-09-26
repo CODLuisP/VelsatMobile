@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Text,
   View,
@@ -6,7 +6,6 @@ import {
   TextInput,
   Alert,
   ScrollView,
-  NativeModules, // ← AGREGAR ESTO
 } from 'react-native';
 import {
   ChevronLeft,
@@ -27,13 +26,11 @@ import Animated, {
 import { styles } from '../../styles/setting';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
-import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getBottomSpace, useNavigationMode } from '../../hooks/useNavigationMode';
-
-
-
-
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../hooks/useNavigationMode';
 
 const Setting = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -41,17 +38,18 @@ const Setting = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
-  const bottomSpace = getBottomSpace(insets, navigationDetection.hasNavigationBar);
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
 
- useFocusEffect(
+  useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#1e3a8a', false);
     }, []),
   );
-
 
   const [updateData, setUpdateData] = useState({
     usuario: 'cgacela',
@@ -106,7 +104,7 @@ const Setting = () => {
       <View style={styles.formContainer}>
         <View style={styles.infoSection}>
           <Text style={styles.infoTitle}>Nuevo correo o celular?</Text>
- 
+
           <Text style={styles.infoSubtitle}>
             No te preocupes! Acá podrás actualizar estos datos rápidamente; si
             deseas cambiar otra información, por favor contáctanos.

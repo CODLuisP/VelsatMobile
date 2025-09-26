@@ -26,10 +26,17 @@ import {
 } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { styles } from '../../../styles/reports';
-import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 
 interface ReportType {
@@ -46,11 +53,12 @@ interface Unit {
 }
 
 const Reports: React.FC = () => {
-
-
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
-  const bottomSpace = getBottomSpace(insets, navigationDetection.hasNavigationBar);
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -58,7 +66,6 @@ const Reports: React.FC = () => {
     }, []),
   );
 
-  
   // Estados
   const [allUnitsEnabled, setAllUnitsEnabled] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
@@ -657,7 +664,6 @@ const Reports: React.FC = () => {
           </View>
         </View>
 
-  
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={styles.excelButton}>
             <Text style={styles.buttonText}>Descargar Excel</Text>
