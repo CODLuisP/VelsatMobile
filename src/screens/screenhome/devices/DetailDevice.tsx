@@ -34,8 +34,7 @@ import { styles } from '../../../styles/detaildevice';
 
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
-import { Dimensions } from 'react-native';
-import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   getBottomSpace,
   useNavigationMode,
@@ -323,7 +322,7 @@ const DetailDevice = () => {
         style={[
           styles.infoPanel,
           {
-            bottom: bottomSpace === 50 ? 50 : 20, // Línea añadida
+            bottom: bottomSpace, 
             height: animatedHeight.interpolate({
               inputRange: [0, 1],
               outputRange: [50, 300],
