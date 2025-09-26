@@ -638,8 +638,8 @@ const Reports: React.FC = () => {
                 styles.toggleSwitch,
                 allUnitsEnabled && styles.toggleSwitchActive,
                 !isAllUnitsOptionEnabled() && {
-                  backgroundColor: '#f0f0f0',
-                  opacity: 0.6,
+                  backgroundColor: '#fff',
+                  opacity: 1,
                 },
               ]}
               onPress={toggleAllUnits}

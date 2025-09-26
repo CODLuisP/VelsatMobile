@@ -119,7 +119,7 @@ export const styles = StyleSheet.create({
     elevation: 5,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
     marginBottom: 16,
@@ -150,6 +150,8 @@ export const styles = StyleSheet.create({
     marginBottom: 2,
   },
   statusMoving: {
+        fontSize: 16,
+
     color: '#4CAF50',
     fontWeight: '600',
   },
@@ -158,13 +160,13 @@ export const styles = StyleSheet.create({
     fontWeight: '400',
   },
   infoValue: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
     fontWeight: '500',
     marginBottom: 2,
   },
   infoSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
     fontWeight: '400',
   },

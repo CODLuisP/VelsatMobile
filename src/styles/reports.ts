@@ -117,10 +117,8 @@ export const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    paddingTop: 20,
     gap: 15,
+    paddingVertical:20,
   },
   excelButton: {
     backgroundColor: '#4CAF50',
@@ -138,7 +136,7 @@ export const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },

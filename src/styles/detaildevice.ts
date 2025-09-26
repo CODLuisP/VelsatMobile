@@ -95,6 +95,7 @@ deviceHeaderInfo: {
   },
   panelContent: {
     flex: 1,
+     backgroundColor: '#ffffff', 
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -142,7 +143,7 @@ deviceHeaderInfo: {
     marginBottom: 4,
   },
   distanceText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#1f2937',
     fontWeight: '600',
   },
@@ -193,7 +194,7 @@ deviceHeaderInfo: {
     position: 'relative',
   },
   locationTitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#1f2937',
     fontWeight: '600',
     marginBottom: 2,
@@ -225,7 +226,7 @@ deviceHeaderInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: 12,
     gap: 8,
   },

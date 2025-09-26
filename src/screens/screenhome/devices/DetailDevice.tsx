@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   Platform,
   PermissionsAndroid,
-  Animated,
   Image,
   ScrollView,
+  Linking,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -15,9 +15,7 @@ import {
   ChevronDown,
   Navigation,
   Clock,
-  Zap,
   MapPin,
-  Signal,
   Eye,
   Forward,
 } from 'lucide-react-native';
@@ -47,7 +45,6 @@ const DetailDevice = () => {
   const route = useRoute<DetailDeviceRouteProp>();
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [isInfoExpanded, setIsInfoExpanded] = useState(true);
-  const [animatedHeight] = useState(new Animated.Value(1));
 
   const { device } = route.params;
 
@@ -69,10 +66,39 @@ const DetailDevice = () => {
       deviceName: device.name,
     });
   };
+  
   const latitude = -12.0464;
   const longitude = -77.0428;
 
   const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
+
+  const openGoogleMaps = () => {
+    const destinationLat = latitude;
+    const destinationLng = longitude;
+    
+    const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${destinationLat},${destinationLng}&travelmode=driving`;
+
+    const nativeUrl = Platform.select({
+      ios: `maps://app?daddr=${destinationLat},${destinationLng}&dirflg=d`,
+      android: `google.navigation:q=${destinationLat},${destinationLng}&mode=d`,
+      default: webUrl
+    });
+
+    if (nativeUrl) {
+      Linking.canOpenURL(nativeUrl).then(supported => {
+        if (supported) {
+          return Linking.openURL(nativeUrl);
+        } else {
+          return Linking.openURL(webUrl);
+        }
+      }).catch(err => {
+        console.error('Error al abrir Google Maps:', err);
+        Linking.openURL(webUrl);
+      });
+    } else {
+      Linking.openURL(webUrl);
+    }
+  };
 
   const getStreetViewUrl = () => {
     return `https://maps.googleapis.com/maps/api/streetview?size=300x150&location=${latitude},${longitude}&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`;
@@ -85,8 +111,7 @@ const DetailDevice = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Permiso de Ubicación',
-            message:
-              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
+            message: 'Esta app necesita acceso a tu ubicación para mostrar el mapa',
             buttonNeutral: 'Preguntar después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
@@ -114,14 +139,6 @@ const DetailDevice = () => {
   };
 
   const toggleInfo = () => {
-    const toValue = isInfoExpanded ? 0 : 1;
-
-    Animated.timing(animatedHeight, {
-      toValue,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-
     setIsInfoExpanded(!isInfoExpanded);
   };
 
@@ -151,11 +168,11 @@ const DetailDevice = () => {
                 z-index: 0;
             }
 
-.leaflet-top.leaflet-left {
-    left: auto !important;
-    right: 5px !important;
-    top: 25px !important;
-}
+            .leaflet-top.leaflet-left {
+                left: auto !important;
+                right: 5px !important;
+                top: 25px !important;
+            }
         </style>
     </head>
     <body>
@@ -184,44 +201,28 @@ const DetailDevice = () => {
             
             marker.bindPopup(\`
                 <div style="text-align: center; font-family: Arial, sans-serif; min-width: 200px;">
-                    <h3 style="margin: 8px 0; color: #1e40af; font-size: 16px;">${
-                      device.name
-                    }</h3>
+                    <h3 style="margin: 8px 0; color: #1e40af; font-size: 16px;">${device.name}</h3>
                     <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Estado:</span>
-                            <span style="color: ${
-                              device.status === 'Movimiento'
-                                ? '#10b981'
-                                : '#ef4444'
-                            }; font-weight: 600;">${device.status}</span>
+                            <span style="color: ${device.status === 'Movimiento' ? '#10b981' : '#ef4444'}; font-weight: 600;">${device.status}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Velocidad:</span>
-                            <span style="color: #6b7280;">${
-                              device.speed
-                            } Km/h</span>
+                            <span style="color: #6b7280;">${device.speed} Km/h</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Conexión:</span>
-                            <span style="color: ${
-                              device.isOnline ? '#10b981' : '#ef4444'
-                            }; font-weight: 600;">${
-    device.isOnline ? 'Online' : 'Offline'
-  }</span>
+                            <span style="color: ${device.isOnline ? '#10b981' : '#ef4444'}; font-weight: 600;">${device.isOnline ? 'Online' : 'Offline'}</span>
                         </div>
                         <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
-                            <div style="font-size: 12px; color: #6b7280;">ID: ${
-                              device.id
-                            }</div>
+                            <div style="font-size: 12px; color: #6b7280;">ID: ${device.id}</div>
                         </div>
                     </div>
                 </div>
             \`).openPopup();
 
-            ${
-              hasLocationPermission
-                ? `
+            ${hasLocationPermission ? `
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var userLat = position.coords.latitude;
@@ -240,9 +241,7 @@ const DetailDevice = () => {
                 }, function(error) {
                     console.log('Error obteniendo ubicación:', error);
                 });
-            }`
-                : ''
-            }
+            }` : ''}
 
             map.on('focus', function() { 
                 map.scrollWheelZoom.enable(); 
@@ -318,16 +317,14 @@ const DetailDevice = () => {
       </View>
 
       {/* Device Info Panel */}
-      <Animated.View
+      <View 
         style={[
-          styles.infoPanel,
-          {
+          styles.infoPanel, 
+          { 
             bottom: bottomSpace, 
-            height: animatedHeight.interpolate({
-              inputRange: [0, 1],
-              outputRange: [50, 300],
-            }),
-          },
+            height: isInfoExpanded ? 280 : 50,
+             backgroundColor: '#1e3a8a', 
+          }
         ]}
       >
         {/* Panel Header */}
@@ -363,101 +360,91 @@ const DetailDevice = () => {
           </View>
         </TouchableOpacity>
 
-        {/* Panel Content */}
-        <Animated.View
-          style={[
-            styles.panelContent,
-            {
-              opacity: animatedHeight.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 1],
-              }),
-              backgroundColor: animatedHeight.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['#1e3a8a', '#ffffff'],
-              }),
-            },
-          ]}
-        >
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            style={styles.scrollContent}
-          >
-            {/* Status and Speed Row */}
-            <View style={styles.statusRow}>
-              <View style={styles.statusItem}>
-                <Navigation
-                  size={16}
-                  color={device.status === 'Movimiento' ? '#10b981' : '#ef4444'}
-                />
-                <Text
-                  style={[
-                    styles.statusText,
-                    {
-                      color:
-                        device.status === 'Movimiento' ? '#10b981' : '#ef4444',
-                    },
-                  ]}
-                >
-                  {device.status}
-                </Text>
-                <Text style={styles.speedText}>({device.speed} Km/h)</Text>
-              </View>
-              <View style={styles.dateContainer}>
-                <Clock size={14} color="#6b7280" />
-                <View>
-                  <Text style={styles.dateText}>16/09/2025 16:45:34</Text>
-                  <Text style={styles.lastReportText}>Último reporte</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Distance Info */}
-            <View style={styles.distanceInfo}>
-              <MapPin size={18} color="#6b7280" />
-              <Text style={styles.distanceText}>
-                30 km manejados el día de hoy
-              </Text>
-            </View>
-            <Text style={styles.startTimeText}>
-              Empezó el día a las 02:55:53 PM
-            </Text>
-
-            {/* Street View Preview */}
-            <View style={styles.streetViewRow}>
-              <View style={styles.streetViewContainer}>
-                <Image
-                  source={{ uri: getStreetViewUrl() }}
-                  style={styles.streetViewImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.streetViewOverlay}>
-                  <Eye size={12} color="#fff" />
-                  <Text style={styles.streetViewText}>View</Text>
-                </View>
-              </View>
-              <View style={styles.locationInfoRight}>
-                <Text style={styles.locationTitle}>
-                  Jr. Zoilo León 391, Lima, Perú
-                </Text>
-                <Text style={styles.locationSubtitle}>Ubicación actual</Text>
-                <TouchableOpacity style={styles.locationButton}>
-                  <Forward size={15} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Ver más button */}
-            <TouchableOpacity
-              style={styles.verMasButton}
-              onPress={handleInfiDevice}
+        {/* Panel Content - Solo se muestra cuando está expandido */}
+        {isInfoExpanded && (
+          <View style={styles.panelContent}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.scrollContent}
             >
-              <Text style={styles.verMasText}>Ver más</Text>
-              <Text style={styles.arrowText}>→</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </Animated.View>
-      </Animated.View>
+              {/* Status and Speed Row */}
+              <View style={styles.statusRow}>
+                <View style={styles.statusItem}>
+                  <Navigation
+                    size={16}
+                    color={device.status === 'Movimiento' ? '#10b981' : '#ef4444'}
+                  />
+                  <Text
+                    style={[
+                      styles.statusText,
+                      {
+                        color: device.status === 'Movimiento' ? '#10b981' : '#ef4444',
+                      },
+                    ]}
+                  >
+                    {device.status}
+                  </Text>
+                  <Text style={styles.speedText}>({device.speed} Km/h)</Text>
+                </View>
+                <View style={styles.dateContainer}>
+                  <Clock size={14} color="#6b7280" />
+                  <View>
+                    <Text style={styles.dateText}>16/09/2025 16:45:34</Text>
+                    <Text style={styles.lastReportText}>Último reporte</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Distance Info */}
+              <View style={styles.distanceInfo}>
+                <MapPin size={18} color="#6b7280" />
+                <Text style={styles.distanceText}>
+                  30 km manejados el día de hoy
+                </Text>
+              </View>
+              <Text style={styles.startTimeText}>
+                Empezó el día a las 02:55:53 PM
+              </Text>
+
+              {/* Street View Preview */}
+              <View style={styles.streetViewRow}>
+                <View style={styles.streetViewContainer}>
+                  <Image
+                    source={{ uri: getStreetViewUrl() }}
+                    style={styles.streetViewImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.streetViewOverlay}>
+                    <Eye size={12} color="#fff" />
+                    <Text style={styles.streetViewText}>View</Text>
+                  </View>
+                </View>
+                <View style={styles.locationInfoRight}>
+                  <Text style={styles.locationTitle}>
+                    Jr. Zoilo León 391, Lima, Perú
+                  </Text>
+                  <Text style={styles.locationSubtitle}>Ubicación actual</Text>
+                  <TouchableOpacity 
+                    style={styles.locationButton}  
+                    onPress={openGoogleMaps}
+                  >
+                    <Forward size={15} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Ver más button */}
+              <TouchableOpacity
+                style={styles.verMasButton}
+                onPress={handleInfiDevice}
+              >
+                <Text style={styles.verMasText}>Ver más</Text>
+                <Text style={styles.arrowText}>→</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        )}
+      </View>
     </View>
   );
 };
