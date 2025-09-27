@@ -66,8 +66,8 @@ export const styles = StyleSheet.create({
   },
   optionCard: {
     borderRadius: 24,
-    padding: 10,
-    width: '44%',
+    padding: 18,
+    width: '46%',
    
     shadowColor: '#000',
     shadowOffset: {
@@ -186,6 +186,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+    marginBottom:10
   },
   websiteButtonText: {
     color: '#FFFFFF',
