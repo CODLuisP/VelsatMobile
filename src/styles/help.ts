@@ -99,14 +99,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 6,
+   
   },
   optionTitle: {
     fontSize: 12,
