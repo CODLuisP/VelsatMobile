@@ -664,6 +664,8 @@ const Reports: React.FC = () => {
           </View>
         </View>
 
+      
+
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={styles.excelButton}>
             <Text style={styles.buttonText}>Descargar Excel</Text>

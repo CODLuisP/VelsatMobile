@@ -70,6 +70,7 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 20,
+    
   },
 
   dropdown: {
@@ -119,6 +120,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 15,
     paddingVertical: 20,
+    marginBottom:20
   },
   excelButton: {
     backgroundColor: '#4CAF50',
