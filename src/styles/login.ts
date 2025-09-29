@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions, Platform } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,13 +10,12 @@ export const styles = StyleSheet.create({
 
 backgroundMap: {
   position: 'absolute',
-  top: (height - 500) / 2,    // Centrado vertical
-  left: (width - 580) / 2,    // Centrado horizontal
+  top: (height - 500) / 2,   
+  left: (width - 580) / 2,    
   width: 580,
   height: 500,
-  opacity: 0.7,
+  opacity: 0.9,
 },
-  // Orbes decorativos
   orb: {
     position: 'absolute',
     borderRadius: 100,

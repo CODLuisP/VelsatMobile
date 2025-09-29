@@ -119,8 +119,8 @@ export const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     gap: 15,
-    paddingVertical: 20,
-    marginBottom:20
+    paddingVertical: 10,
+    marginBottom:20,
   },
   excelButton: {
     backgroundColor: '#4CAF50',
@@ -200,13 +200,14 @@ export const styles = StyleSheet.create({
     padding: 20,
     marginVertical: 8,
     shadowColor: '#000',
+    marginTop:-5
   },
 
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 10,
+    marginBottom: 2,
     letterSpacing: -0.3,
   },
 
@@ -224,8 +225,8 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    padding: 8,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -276,12 +277,14 @@ export const styles = StyleSheet.create({
   },
 
   toggleRow: {
-    flexDirection: 'row',
+      flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: '#f5f5f5',
     borderRadius: 12,
-    padding: 16,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
 
   toggleLabelContainer: {
@@ -356,7 +359,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 5,
+    
   },
 
   unitInputContent: {

@@ -166,11 +166,11 @@ const Reports: React.FC = () => {
   };
 
   const reportTypes: ReportType[] = [
-    { id: 0, name: 'Reporte\nGeneral', icon: BarChart3 },
-    { id: 1, name: 'Reporte\nde Paradas', icon: Hand },
-    { id: 2, name: 'Reporte\nde Velocidad', icon: Gauge },
-    { id: 3, name: 'Reporte\nde Kilometraje', icon: Route },
-    { id: 4, name: 'Reporte\n Recorrido', icon: FileText },
+    { id: 0, name: 'General', icon: BarChart3 },
+    { id: 1, name: 'Paradas', icon: Hand },
+    { id: 2, name: 'Velocidad', icon: Gauge },
+    { id: 3, name: 'Kilometraje', icon: Route },
+    { id: 4, name: 'Recorrido', icon: FileText },
   ];
 
   const handleShowReport = () => {
@@ -663,6 +663,8 @@ const Reports: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
+
+        
 
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={styles.excelButton}>
