@@ -1,4 +1,3 @@
-// src/styles/mapalert.ts
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
@@ -7,14 +6,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#1e3a8a',
   },
   header: {
-    paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    
   },
-  // Contenedor para el botón y título
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -27,7 +23,6 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  // Estilos para la información de la alerta en el header
   headerAlertInfo: {
     marginTop: 12,
   },
@@ -63,31 +58,28 @@ export const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    backgroundColor:'#fff',
-       borderTopLeftRadius: 25,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
- 
   },
   mapContainer: {
     backgroundColor: '#fff',
-    flex: 1, 
+    flex: 1,
     overflow: 'hidden',
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-
-   borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,  },
-  // Estilo del mapa
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
   map: {
     flex: 1,
     height: '100%',
     width: '100%',
   },
-  
-  // Estilos que ya no se usan pero mantenidos por compatibilidad
+
   alertCard: {
     backgroundColor: '#fff',
     borderRadius: 12,

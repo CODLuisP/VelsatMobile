@@ -8,7 +8,6 @@ export const styles = StyleSheet.create({
 
   // Header Styles - Fixed
   header: {
-    paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -19,9 +18,7 @@ export const styles = StyleSheet.create({
   // Scrollable content
   scrollContent: {
     flex: 1,
-
     backgroundColor: '#f5f5f5',
-
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -32,6 +29,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    marginLeft:-10,
   },
   headerContent: {
     flex: 1,
@@ -92,7 +90,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
-    height: 150,
+    height: 130,
     padding: 20,
   },
 
@@ -128,7 +126,7 @@ export const styles = StyleSheet.create({
   infoItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },

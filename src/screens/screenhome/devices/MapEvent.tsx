@@ -298,6 +298,9 @@ const MapEvent = () => {
     }
   };
 
+    const topSpace = insets.top + 15;
+
+
   if (!notificationData) {
     return (
       <View style={styles.container}>
@@ -318,8 +321,7 @@ const MapEvent = () => {
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
+ <View style={[styles.header, { paddingTop: topSpace }]}>        <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>

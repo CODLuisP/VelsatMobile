@@ -8,14 +8,14 @@ export const styles = StyleSheet.create({
     backgroundColor: '#1e3a8a',
   },
 
-  backgroundGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-
+backgroundMap: {
+  position: 'absolute',
+  top: (height - 500) / 2,    // Centrado vertical
+  left: (width - 580) / 2,    // Centrado horizontal
+  width: 580,
+  height: 500,
+  opacity: 0.7,
+},
   // Orbes decorativos
   orb: {
     position: 'absolute',
@@ -372,7 +372,6 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
-    marginRight: 5,
   },
 
   loginArrow: {
@@ -497,7 +496,7 @@ export const styles = StyleSheet.create({
   road: {
     width: '100%',
     height: 100,
-    backgroundColor: '#374151',
+    backgroundColor: '#1e3a8a',
     justifyContent: 'center',
     overflow: 'hidden',
     position: 'relative',

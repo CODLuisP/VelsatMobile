@@ -4,36 +4,45 @@ import {
   ChevronLeft,
   Info,
   Settings,
-
   LogOut,
   User,
   Clipboard,
   Mail,
   Smartphone,
   Megaphone,
-  Pin
+  Pin,
 } from 'lucide-react-native';
 import { styles } from '../../styles/profile';
 import { useAuthStore } from '../../store/authStore';
-import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import NavigationBarColor from 'react-native-navigation-bar-color';
-import { getBottomSpace, useNavigationMode } from '../../hooks/useNavigationMode';
-
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../hooks/useNavigationMode';
 
 const Profile = () => {
-
   const { user, server, logout } = useAuthStore();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
- const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
-  const bottomSpace = getBottomSpace(insets, navigationDetection.hasNavigationBar);
+
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#1e3a8a', false);
-    }, [])
+    }, []),
   );
 
   const handleGoBack = () => {
@@ -56,14 +65,17 @@ const Profile = () => {
     navigation.navigate('Notifications');
   };
 
+  const topSpace = insets.top + 10;
+
   return (
-    <View style={[
-      styles.container,
-      { paddingBottom: bottomSpace }
-    ]}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
+
+        <TouchableOpacity
+          style={[styles.backButton, { top: insets.top + 10 }]}
+          onPress={handleGoBack}
+        >
           <ChevronLeft size={26} color="#fff" />
         </TouchableOpacity>
 
@@ -78,8 +90,44 @@ const Profile = () => {
         </View>
         {/* Company Name */}
         <Text style={styles.companyName}>
-          {user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : ''}
-        </Text>      
+          {user?.username
+            ? user.username.charAt(0).toUpperCase() + user.username.slice(1)
+            : ''}
+        </Text>
+
+        <Text
+          style={[
+            styles.companyName,
+            { fontSize: 14, color: '#fff', marginTop: 5 },
+          ]}
+        >
+          {navigationDetection.mode}
+        </Text>
+
+        <Text
+          style={[
+            styles.companyName,
+            { fontSize: 12, color: '#fff', marginTop: 2 },
+          ]}
+        >
+          hasNavBar: {navigationDetection.hasNavigationBar ? 'Sí' : 'No'}
+        </Text>
+        <Text
+          style={[
+            styles.companyName,
+            { fontSize: 12, color: '#fff', marginTop: 2 },
+          ]}
+        >
+          insets.bottom: {insets.bottom}
+        </Text>
+           <Text
+          style={[
+            styles.companyName,
+            { fontSize: 12, color: '#fff', marginTop: 2 },
+          ]}
+        >
+          insets.top: {insets.top}
+        </Text>
       </View>
 
       {/* Information Section - Posicionada absolutamente sobre el header */}
@@ -131,7 +179,10 @@ const Profile = () => {
             <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={handleNotifications}
+          >
             <View style={styles.menuItemLeft}>
               <Megaphone size={20} color="#e36414" />
               <Text style={styles.menuText}>Notificaciones</Text>
@@ -154,8 +205,6 @@ const Profile = () => {
           <Text style={styles.versionText}>Lima - Perú</Text>
           <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
         </View>
-
-       
       </ScrollView>
     </View>
   );

@@ -94,12 +94,18 @@ export const useNavigationMode = () => {
 // Función utilitaria para calcular el espacio inferior
 export const getBottomSpace = (insets: EdgeInsets, hasNavigationBar: boolean): number => {
   if (Platform.OS === 'android') {
+    // Si insets.bottom es 0, el dispositivo no detecta bien el safe area
+    if (insets.bottom === 0) {
+      return 0; // Sin padding para dispositivos problemáticos
+    }
+
+    // Para dispositivos que sí detectan bien el safe area
     const screen = Dimensions.get('screen');
     const window = Dimensions.get('window');
     const navBarHeight = screen.height - window.height;
 
     if (hasNavigationBar) {
-      return Math.max(navBarHeight + 30, 50); 
+      return Math.max(navBarHeight + 30, 50);
     } else {
       return 20;
     }

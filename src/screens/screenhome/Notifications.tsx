@@ -30,6 +30,7 @@ interface Notification {
 }
 
 const Notifications = () => {
+  
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const insets = useSafeAreaInsets();
@@ -162,9 +163,11 @@ const Notifications = () => {
     }
   };
 
+  const topSpace = insets.top + 5;
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />

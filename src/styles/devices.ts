@@ -8,9 +8,7 @@ export const styles = StyleSheet.create({
 
   // Header styles
   header: {
-    paddingTop: 50,
     paddingBottom: 20,
-    paddingHorizontal: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -24,6 +22,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     marginRight: 15,
+    marginLeft:5
   },
   headerContent: {
     flex: 1,
@@ -56,6 +55,8 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginHorizontal:20
+    
   },
   searchIcon: {
     marginRight: 10,

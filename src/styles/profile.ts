@@ -6,9 +6,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#1e3a8a',
   },
   header: {
-    backgroundColor: '#1e3a8a', // Color azul similar al de la imagen
-    paddingTop: 70,
-    paddingBottom: 80, // Más espacio para que la sección info tenga lugar para superponerse
+    backgroundColor: '#1e3a8a',
+    paddingBottom: 80,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
@@ -18,10 +17,10 @@ export const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 50,
-    left: 20,
+    left: 10,
     borderRadius: 8,
     padding: 8,
+
   },
   avatarContainer: {
     marginBottom: 15,

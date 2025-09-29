@@ -519,11 +519,11 @@ const Reports: React.FC = () => {
 
   const isSpeedOptionEnabled = () => selectedReport === 2;
   const isAllUnitsOptionEnabled = () => selectedReport === 3;
+  const topSpace = insets.top + 5;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
             <ChevronLeft size={24} color="white" />
@@ -663,8 +663,6 @@ const Reports: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
-
-      
 
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={styles.excelButton}>
