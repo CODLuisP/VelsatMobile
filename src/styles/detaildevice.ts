@@ -15,12 +15,11 @@ export const styles = StyleSheet.create({
   },
   floatingBackButton: {
     position: 'absolute',
-    top: 50,
     left: 20,
     width: 44,
     height: 44,
     backgroundColor: '#fff',
-    borderRadius: 22,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

@@ -29,8 +29,7 @@ import { styles } from '../../styles/mapalert';
 
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
-import { Dimensions } from 'react-native';
-import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   getBottomSpace,
   useNavigationMode,
@@ -318,11 +317,12 @@ const MapAlert = () => {
       </View>
     );
   }
+  const topSpace = insets.top + 5;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      {/* Header */}
-      <View style={styles.header}>
+     
+      <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
             <ChevronLeft size={26} color="#fff" />
@@ -330,7 +330,6 @@ const MapAlert = () => {
           <Text style={styles.headerTitle}>Detalle de Alerta</Text>
         </View>
 
-        {/* Información de la alerta en el header */}
         <View style={styles.headerAlertInfo}>
           <View style={styles.headerAlertRow}>
             <View

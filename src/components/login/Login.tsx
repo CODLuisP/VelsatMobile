@@ -42,26 +42,12 @@ import { styles } from '../../styles/login';
 import { useFocusEffect } from '@react-navigation/native';
 
 import SystemNavigationBar from 'react-native-system-navigation-bar';
+import { getBottomSpace, useNavigationMode } from '../../hooks/useNavigationMode';
 
 
 const { width, height } = Dimensions.get('window');
 
-const getBottomSpace = (insets: EdgeInsets) => {
-  if (Platform.OS === 'android') {
-    const screen = Dimensions.get('screen');
-    const window = Dimensions.get('window');
 
-    // Calcular altura de la barra de navegación
-    const navBarHeight = screen.height - window.height;
-
-    // Si hay barra de navegación, usar su altura + padding
-    // Si no, usar padding estándar para gestos
-    return navBarHeight > 0 ? navBarHeight + 30 : 70;
-  }
-
-  // Para iOS, usar safe area normal
-  return Math.max(insets.bottom, 20);
-};
 
 
 const Login = () => {
@@ -70,16 +56,22 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+
   const insets = useSafeAreaInsets();
-  const bottomSpace = getBottomSpace(insets); // ← AGREGAR ESTA LÍNEA
+  const navigationDetection = useNavigationMode();
+
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
 
 
 useFocusEffect(
   React.useCallback(() => {
-    SystemNavigationBar.setNavigationColor('#212529'); // Plomo solo para Login
+    SystemNavigationBar.setNavigationColor('#1e3a8a'); 
     
     return () => {
-      SystemNavigationBar.setNavigationColor('#1e3a8a'); // Volver a azul al salir
+      SystemNavigationBar.setNavigationColor('#1e3a8a'); 
     };
   }, [])
 );
@@ -311,9 +303,6 @@ const makePhoneCall = (): void => {
       setLoading(false);
     }
   };
-  const resetCarPosition = () => {
-    carPosition.value = -100;
-  };
 
  useEffect(() => {
   loadSavedCredentials();
@@ -450,22 +439,22 @@ const makePhoneCall = (): void => {
   );
 
   // Animación del carro
-  const startCarAnimation = (): void => {
-    carPosition.value = withTiming(
-      width + 100,
-      {
-        duration: 8000,
-        easing: Easing.linear,
-      },
-      (finished?: boolean) => {
-        if (finished) {
-          runOnJS(resetCarPosition)();
-          runOnJS(startCarAnimation)();
-        }
-      },
-    );
-  };
-
+// Elimina la función resetCarPosition y modifica startCarAnimation:
+const startCarAnimation = (): void => {
+  carPosition.value = -200; // Resetea la posición primero
+  carPosition.value = withTiming(
+    width + 100,
+    {
+      duration: 8000,
+      easing: Easing.linear,
+    },
+    (finished?: boolean) => {
+      if (finished) {
+        runOnJS(startCarAnimation)(); // Se llama a sí misma directamente
+      }
+    },
+  );
+};
   startCarAnimation();
 
   // Animación de las líneas de carretera
@@ -479,16 +468,6 @@ const makePhoneCall = (): void => {
   );
 }, []); // Mantener array vacío
 
-  // Estilos animados
-  const backgroundStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: interpolateColor(
-        backgroundShift.value,
-        [0, 1],
-        ['#1e3a8a', '#1e40af'],
-      ),
-    };
-  });
 
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
@@ -622,17 +601,21 @@ const makePhoneCall = (): void => {
 
   return (
     <View style={styles.container}>
+
+      
       <StatusBar
         barStyle="light-content"
         backgroundColor="transparent"
         translucent
       />
-
+ <Image 
+      source={require('../../../assets/mapa.png')}
+      style={styles.backgroundMap}
+      resizeMode="cover"
+    />
       {/* Fondo gradiente animado */}
-      <Animated.View style={[styles.backgroundGradient, backgroundStyle]} />
 
       {/* Orbes decorativos flotantes */}
-      <Animated.View style={[styles.orb, styles.orb1, orb1Style]} />
       <Animated.View style={[styles.orb, styles.orb2, orb2Style]} />
       <Animated.View style={[styles.orb, styles.orb3, orb3Style]} />
 
@@ -652,34 +635,34 @@ const makePhoneCall = (): void => {
       </Animated.View>
 
       {/* Señales GPS pulsantes */}
-      <Animated.View
+      {/* <Animated.View
         style={[styles.gpsSignal, styles.gpsSignal2Pos, gpsSignal2Style]}
       />
       <Animated.View
         style={[styles.gpsSignal, styles.gpsSignal3Pos, gpsSignal3Style]}
-      />
+      /> */}
 
       {/* Radar sweep */}
-      <View style={styles.radarContainer}>
+      {/* <View style={styles.radarContainer}>
         <Animated.View style={[styles.radarSweep, radarSweepStyle]} />
         <View style={styles.radarCenter}>
           <Text style={styles.radarIcon}>📡</Text>
         </View>
-      </View>
+      </View> */}
 
       {/* Antena de comunicación */}
-      <View style={styles.antennaContainer}>
+      {/* <View style={styles.antennaContainer}>
         <Animated.View style={[styles.antennaSignal, antennaSignalStyle]} />
         <Text style={styles.antennaIcon}>🛰️</Text>
-      </View>
+      </View> */}
 
       {/* Indicadores de red */}
-      <Animated.View
+      {/* <Animated.View
         style={[styles.networkPulse, styles.networkPulse1, networkPulseStyle]}
       />
       <Animated.View
         style={[styles.networkPulse, styles.networkPulse2, networkPulseStyle]}
-      />
+      /> */}
 
       {/* Contenido principal */}
       <View style={styles.mainContent}>
@@ -832,8 +815,8 @@ const makePhoneCall = (): void => {
         styles.footerRoadSection,
         {
           paddingBottom: bottomSpace,
-          height: Platform.OS === 'android' ? 160 : 100,
-          backgroundColor: '#374151'
+          height: Platform.OS === 'android' ? 100 + insets.bottom : 100,
+          backgroundColor: '#1e3a8a'
         }
       ]}>
         <View style={styles.road}>
@@ -852,7 +835,7 @@ const makePhoneCall = (): void => {
         <Animated.View style={[
           styles.carContainer,
           carStyle,
-          { bottom: Platform.OS === 'android' ? 40 : -5 }
+          { bottom: Platform.OS === 'android' ? insets.bottom - 5 : -5 }
         ]}>
           <Image
             source={require('../../../assets/carlogin.png')}

@@ -6,7 +6,6 @@ export const styles = StyleSheet.create({
     backgroundColor: '#1e3a8a',
   },
   header: {
-    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
   },
@@ -19,6 +18,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     marginRight: 10,
+    marginLeft:-10,
   },
   headerTitle: {
     fontSize: 18,

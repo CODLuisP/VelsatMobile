@@ -309,7 +309,7 @@ const DetailDevice = () => {
 
         {/* Floating Back Button */}
         <TouchableOpacity
-          style={styles.floatingBackButton}
+          style={[styles.floatingBackButton, { top: insets.top + 10 }]}
           onPress={handleGoBack}
         >
           <ChevronLeft size={26} color="#1f2937" />
