@@ -66,7 +66,7 @@ const Help = () => {
     // Aquí puedes manejar las diferentes acciones
     switch (option.action) {
       case 'contact':
-        // Navegar a contacto o abrir llamada
+      handleCentral();
         console.log('Contactar central');
         break;
       case 'whatsapp':
