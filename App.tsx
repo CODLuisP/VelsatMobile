@@ -1,8 +1,7 @@
-// App.tsx
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator, StatusBar } from 'react-native';
+import { View, StatusBar } from 'react-native';
 import Profile from './src/screens/screenhome/Profile';
 import Setting from './src/screens/screenhome/Setting';
 import Pin from './src/screens/screenhome/Pin';
@@ -21,10 +20,10 @@ import MileageReport from './src/screens/screenhome/reports/MileageReport';
 import TourReport from './src/screens/screenhome/reports/TourReport';
 import Security from './src/screens/screenhome/security/Security';
 import Help from './src/screens/screenhome/help/Help';
+import Central from './src/screens/screenhome/help/Central';
 
 import Login from './src/components/login/Login';
 import Home from './src/screens/Home';
-
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -84,6 +83,7 @@ export type RootStackParamList = {
   TourReport: undefined;
   Security: undefined;
   Help:undefined;
+  Central:undefined;
 
 };
 
@@ -98,24 +98,18 @@ const App = () => {
   };
 
   useEffect(() => {
-    // Configurar StatusBar desde el inicio
     StatusBar.setBarStyle('dark-content', true);
 
-    // NUEVA IMPLEMENTACIÓN - Configurar Navigation Bar con SystemNavigationBar
     const setNavigationBarColor = () => {
       try {
-        // setNavigationColor(color, style, animated)
-        // style: 'dark' para iconos oscuros, 'light' para iconos claros
         SystemNavigationBar.setNavigationColor('#1e3a8a'); console.log('Navigation bar color set to #1e3a8a');
       } catch (error) {
         console.log('Error setting navigation bar color:', error);
       }
     };
 
-    // Aplicar inmediatamente
     setNavigationBarColor();
 
-    // Reintento después de un pequeño delay para asegurar que se aplique
     const timer = setTimeout(setNavigationBarColor, 100);
 
     return () => {
@@ -157,6 +151,7 @@ const App = () => {
                 <Stack.Screen name="TourReport" component={TourReport} />
                 <Stack.Screen name="Security" component={Security} />
                 <Stack.Screen name="Help" component={Help} />
+                <Stack.Screen name="Central" component={Central} />
 
               </>
             ) : (

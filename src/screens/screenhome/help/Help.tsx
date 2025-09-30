@@ -1,4 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+} from 'react-native';
 import React from 'react';
 import {
   Headphones,
@@ -14,7 +20,10 @@ import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../../../App';
-import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
 import { styles } from '../../../styles/help';
 
 // Interfaz para las opciones de ayuda
@@ -49,6 +58,10 @@ const Help = () => {
     navigation.goBack();
   };
 
+    const handleCentral = () => {
+    navigation.navigate('Central');
+  };
+
   const handleOptionPress = (option: HelpOption) => {
     // Aquí puedes manejar las diferentes acciones
     switch (option.action) {
@@ -74,7 +87,6 @@ const Help = () => {
   };
 
   const handleWebsitePress = () => {
-
     Linking.openURL('https://velsat.com.pe/');
   };
 
@@ -121,9 +133,12 @@ const Help = () => {
     },
   ];
 
+  const topSpace = insets.top + 5;
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
+ 
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
@@ -177,13 +192,17 @@ const Help = () => {
                     <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
 
                     {/* Línea decorativa centrada */}
-                    <View style={[styles.decorativeLine, { backgroundColor: option.color }]} />
+                    <View
+                      style={[
+                        styles.decorativeLine,
+                        { backgroundColor: option.color },
+                      ]}
+                    />
                   </View>
                 </TouchableOpacity>
               );
             })}
           </View>
-
 
           <View style={styles.infoSection}>
             <View style={styles.infoIconContainer}>
@@ -191,16 +210,17 @@ const Help = () => {
             </View>
             <Text style={styles.infoTitle}>Conoce más sobre nosotros</Text>
             <Text style={styles.infoText}>
-              Descubre todos nuestros servicios de monitoreo{'\n'}
-              y soluciones tecnológicas disponibles
+              Descubre todos nuestros servicios de monitoreo{'\n'}y soluciones
+              tecnológicas disponibles
             </Text>
-            <TouchableOpacity style={styles.websiteButton} onPress={handleWebsitePress}>
+            <TouchableOpacity
+              style={styles.websiteButton}
+              onPress={handleWebsitePress}
+            >
               <Text style={styles.websiteButtonText}>Visita velsat.com.pe</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-
       </ScrollView>
     </View>
   );

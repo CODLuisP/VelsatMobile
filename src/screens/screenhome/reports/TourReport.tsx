@@ -213,10 +213,13 @@ const TourReport = () => {
     }
   };
 
+  const topSpace = insets.top + 5;
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
+       
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={26} color="#fff" />
@@ -318,37 +321,46 @@ const TourReport = () => {
                   </Text>
 
                   <View style={styles.sidebarRago}>
-                 
+                    <View style={styles.legendItem}>
+                      <View
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#ef4444' },
+                        ]}
+                      />
+                      <Text style={styles.legendText}>0 km/h</Text>
+                    </View>
 
-                  <View style={styles.legendItem}>
-                    <View
-                      style={[styles.legendDot, { backgroundColor: '#ef4444' }]}
-                    />
-                    <Text style={styles.legendText}>0 km/h</Text>
+                    <View style={styles.legendItem}>
+                      <View
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#22c55e' },
+                        ]}
+                      />
+                      <Text style={styles.legendText}>1 - 10 km/h</Text>
+                    </View>
+
+                    <View style={styles.legendItem}>
+                      <View
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#eab308' },
+                        ]}
+                      />
+                      <Text style={styles.legendText}>11 - 30 km/h</Text>
+                    </View>
+
+                    <View style={styles.legendItem}>
+                      <View
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#3b82f6' },
+                        ]}
+                      />
+                      <Text style={styles.legendText}> 60 km/h</Text>
+                    </View>
                   </View>
-
-                  <View style={styles.legendItem}>
-                    <View
-                      style={[styles.legendDot, { backgroundColor: '#22c55e' }]}
-                    />
-                    <Text style={styles.legendText}>1 - 10 km/h</Text>
-                  </View>
-
-                  <View style={styles.legendItem}>
-                    <View
-                      style={[styles.legendDot, { backgroundColor: '#eab308' }]}
-                    />
-                    <Text style={styles.legendText}>11 - 30 km/h</Text>
-                  </View>
-
-                  <View style={styles.legendItem}>
-                    <View
-                      style={[styles.legendDot, { backgroundColor: '#3b82f6' }]}
-                    />
-                    <Text style={styles.legendText}> 60 km/h</Text>
-                  </View>
-
-                   </View>
                 </View>
               </View>
             )}

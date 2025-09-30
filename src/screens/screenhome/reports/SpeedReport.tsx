@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
+import { Text, View, TouchableOpacity, FlatList } from 'react-native';
 import {
   ChevronLeft,
   MapPin,
@@ -13,7 +8,11 @@ import {
   Globe,
   Calendar,
 } from 'lucide-react-native';
-import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { styles } from '../../../styles/generalreport';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -55,7 +54,6 @@ const SpeedReport = () => {
   };
 
   const handleReportItemPress = (item: ReportItem) => {
- 
     console.log('Clicked on report item:', item);
   };
 
@@ -209,10 +207,13 @@ const SpeedReport = () => {
     );
   };
 
+  const topSpace = insets.top + 5;
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
+      
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={26} color="#fff" />

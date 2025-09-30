@@ -10,17 +10,18 @@ export const styles = StyleSheet.create({
   },
 
   header: {
-    paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 20,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop:10
   },
   backButton: {
     padding: 8,
     marginRight: 15,
+    marginLeft:-10
   },
   headerContent: {
     flex: 1,

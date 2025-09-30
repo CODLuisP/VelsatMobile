@@ -229,10 +229,12 @@ const GeneralReport = () => {
     );
   };
 
+  const topSpace = insets.top + 5;
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={26} color="#fff" />

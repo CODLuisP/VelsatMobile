@@ -1,6 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   container: {
@@ -9,10 +8,8 @@ export const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 50,
     paddingBottom: 30,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+  
   },
   headerTop: {
     flexDirection: 'row',

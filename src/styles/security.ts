@@ -7,7 +7,6 @@ export const styles = StyleSheet.create({
   },
 
   header: {
-    paddingTop: 50,
     paddingBottom: 30,
     paddingHorizontal: 20,
   },
@@ -20,8 +19,6 @@ export const styles = StyleSheet.create({
   backButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -50,7 +47,7 @@ export const styles = StyleSheet.create({
 
   scrollContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -327,7 +324,7 @@ export const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     paddingBottom: 40,
     paddingTop: 20,
   },

@@ -148,10 +148,12 @@ const MileageReport = () => {
       </View>
     </TouchableOpacity>
   );
+  const topSpace = insets.top + 5;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
+  
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>

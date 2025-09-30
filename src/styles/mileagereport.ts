@@ -8,14 +8,13 @@ export const styles = StyleSheet.create({
     backgroundColor: '#1e3a8a',
   },
 
-  // Header mejorado
   header: {
-    paddingTop: 60,
     paddingBottom: 10,
   },
 
   headerContent: {
     paddingHorizontal: 20,
+    marginTop:10
   },
 
   headerTop: {
@@ -27,11 +26,10 @@ export const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    marginLeft:-10
   },
 
   headerTextContainer: {

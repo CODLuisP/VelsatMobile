@@ -8,7 +8,6 @@ export const styles = StyleSheet.create({
 
   header: {
     backgroundColor: '#1e3a8a',
-    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
 
@@ -21,7 +20,9 @@ export const styles = StyleSheet.create({
   backButton: {
     borderRadius: 8,
     padding: 8,
-    marginRight: 15,
+    marginRight: 10,
+    marginLeft:-20,
+    
   },
   headerContent: {
     flex: 1,
