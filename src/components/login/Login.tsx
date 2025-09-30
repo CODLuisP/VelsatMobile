@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore, User as UserType } from '../../store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   Eye,
@@ -35,7 +35,6 @@ import Animated, {
   withDelay,
   Easing,
   interpolate,
-  interpolateColor,
   runOnJS,
 } from 'react-native-reanimated';
 import { styles } from '../../styles/login';
@@ -46,9 +45,6 @@ import { getBottomSpace, useNavigationMode } from '../../hooks/useNavigationMode
 
 
 const { width, height } = Dimensions.get('window');
-
-
-
 
 const Login = () => {
   const [usuario, setUsuario] = useState('');
@@ -66,15 +62,15 @@ const Login = () => {
   );
 
 
-useFocusEffect(
-  React.useCallback(() => {
-    SystemNavigationBar.setNavigationColor('#1e3a8a'); 
-    
-    return () => {
-      SystemNavigationBar.setNavigationColor('#1e3a8a'); 
-    };
-  }, [])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      SystemNavigationBar.setNavigationColor('#1e3a8a');
+
+      return () => {
+        SystemNavigationBar.setNavigationColor('#1e3a8a');
+      };
+    }, [])
+  );
 
 
   // Animaciones principales
@@ -182,26 +178,24 @@ useFocusEffect(
   };
 
 
-const makePhoneCall = (): void => {
-  const phoneNumber: string = '912903330';
-  const phoneUrl: string = `tel:${phoneNumber}`;
+  const makePhoneCall = (): void => {
+    const phoneNumber: string = '912903330';
+    const phoneUrl: string = `tel:${phoneNumber}`;
 
-  // Intentar abrir directo sin verificaciones complejas
-  Linking.openURL(phoneUrl)
-    .then(() => {
-      console.log('Marcador abierto exitosamente');
-    })
-    .catch((error) => {
-      console.log('Error abriendo marcador:', error);
-      
-      // Si falla, mostrar el número para marcar manualmente
-      Alert.alert(
-        'No se pudo abrir el marcador',
-        `Marca manualmente este número:\n${phoneNumber}`,
-        [{ text: 'Entendido' }]
-      );
-    });
-};
+    Linking.openURL(phoneUrl)
+      .then(() => {
+        console.log('Marcador abierto exitosamente');
+      })
+      .catch((error) => {
+        console.log('Error abriendo marcador:', error);
+
+        Alert.alert(
+          'No se pudo abrir el marcador',
+          `Marca manualmente este número:\n${phoneNumber}`,
+          [{ text: 'Entendido' }]
+        );
+      });
+  };
 
 
 
@@ -242,7 +236,6 @@ const makePhoneCall = (): void => {
         return;
       }
 
-      // PASO 2: Hacer login con el servidor obtenido
       const loginResponse = await axios.post(
         `${serverData.servidor}/api/Login/login`,
         {
@@ -304,169 +297,167 @@ const makePhoneCall = (): void => {
     }
   };
 
- useEffect(() => {
-  loadSavedCredentials();
+  useEffect(() => {
+    loadSavedCredentials();
 
-  const checkBiometricWithDelay = async (): Promise<void> => {
-    try {
-      await checkBiometricAvailability();
+    const checkBiometricWithDelay = async (): Promise<void> => {
+      try {
+        await checkBiometricAvailability();
 
-      const canUse = canUseBiometricLogin();
+        const canUse = canUseBiometricLogin();
 
-      if (canUse) {
-        setShowBiometricOption(true);
-      } else {
-        console.log('No se puede usar biometría:', {
-          enabled: biometric.isEnabled,
-          available: biometric.isAvailable,
-          hasCredentials:
-            !!useAuthStore.getState().biometricCredentials.username,
-        });
+        if (canUse) {
+          setShowBiometricOption(true);
+        } else {
+          console.log('No se puede usar biometría:', {
+            enabled: biometric.isEnabled,
+            available: biometric.isAvailable,
+            hasCredentials:
+              !!useAuthStore.getState().biometricCredentials.username,
+          });
+        }
+      } catch (error) {
+        console.log('Error en verificación biométrica:', error);
       }
-    } catch (error) {
-      console.log('Error en verificación biométrica:', error);
-    }
-  };
+    };
 
-  checkBiometricWithDelay();
+    checkBiometricWithDelay();
 
-  backgroundShift.value = withRepeat(
-    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
+    backgroundShift.value = withRepeat(
+      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
 
-  orb1.value = withRepeat(
-    withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
+    orb1.value = withRepeat(
+      withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
 
-  orb2.value = withRepeat(
-    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
+    orb2.value = withRepeat(
+      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
 
-  orb3.value = withRepeat(
-    withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
+    orb3.value = withRepeat(
+      withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
 
-  satellite1.value = withRepeat(
-    withTiming(1, { duration: 12000, easing: Easing.linear }),
-    -1,
-    false,
-  );
-
-  satellite2.value = withDelay(
-    4000,
-    withRepeat(
-      withTiming(1, { duration: 15000, easing: Easing.linear }),
+    satellite1.value = withRepeat(
+      withTiming(1, { duration: 12000, easing: Easing.linear }),
       -1,
       false,
-    ),
-  );
+    );
 
-  satellite3.value = withDelay(
-    8000,
-    withRepeat(
-      withTiming(1, { duration: 18000, easing: Easing.linear }),
-      -1,
-      false,
-    ),
-  );
+    satellite2.value = withDelay(
+      4000,
+      withRepeat(
+        withTiming(1, { duration: 15000, easing: Easing.linear }),
+        -1,
+        false,
+      ),
+    );
 
-  // Señales GPS pulsantes
-  gpsSignal1.value = withRepeat(
-    withSequence(
-      withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-      withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-    ),
-    -1,
-    false,
-  );
+    satellite3.value = withDelay(
+      8000,
+      withRepeat(
+        withTiming(1, { duration: 18000, easing: Easing.linear }),
+        -1,
+        false,
+      ),
+    );
 
-  gpsSignal2.value = withDelay(
-    800,
-    withRepeat(
+    // Señales GPS pulsantes
+    gpsSignal1.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
         withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
       ),
       -1,
       false,
-    ),
-  );
+    );
 
-  gpsSignal3.value = withDelay(
-    1600,
-    withRepeat(
+    gpsSignal2.value = withDelay(
+      800,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+        ),
+        -1,
+        false,
+      ),
+    );
+
+    gpsSignal3.value = withDelay(
+      1600,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
+          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+        ),
+        -1,
+        false,
+      ),
+    );
+
+    // Radar sweep
+    radarSweep.value = withRepeat(
+      withTiming(1, { duration: 4000, easing: Easing.linear }),
+      -1,
+      false,
+    );
+
+    // Señal de antena
+    antennaSignal.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
+        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+        withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
+        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
+        withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
       ),
       -1,
       false,
-    ),
-  );
+    );
 
-  // Radar sweep
-  radarSweep.value = withRepeat(
-    withTiming(1, { duration: 4000, easing: Easing.linear }),
-    -1,
-    false,
-  );
+    // Pulso de red/conexión
+    networkPulse.value = withRepeat(
+      withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
 
-  // Señal de antena
-  antennaSignal.value = withRepeat(
-    withSequence(
-      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-      withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
-      withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-      withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
-    ),
-    -1,
-    false,
-  );
 
-  // Pulso de red/conexión
-  networkPulse.value = withRepeat(
-    withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
+    const startCarAnimation = (): void => {
+      carPosition.value = -200;
+      carPosition.value = withTiming(
+        width + 100,
+        {
+          duration: 8000,
+          easing: Easing.linear,
+        },
+        (finished?: boolean) => {
+          if (finished) {
+            runOnJS(startCarAnimation)();
+          }
+        },
+      );
+    };
+    startCarAnimation();
 
-  // Animación del carro
-// Elimina la función resetCarPosition y modifica startCarAnimation:
-const startCarAnimation = (): void => {
-  carPosition.value = -200; // Resetea la posición primero
-  carPosition.value = withTiming(
-    width + 100,
-    {
-      duration: 8000,
-      easing: Easing.linear,
-    },
-    (finished?: boolean) => {
-      if (finished) {
-        runOnJS(startCarAnimation)(); // Se llama a sí misma directamente
-      }
-    },
-  );
-};
-  startCarAnimation();
-
-  // Animación de las líneas de carretera
-  roadOffset.value = withRepeat(
-    withTiming(80, {
-      duration: 800,
-      easing: Easing.linear,
-    }),
-    -1,
-    false,
-  );
-}, []); // Mantener array vacío
+    roadOffset.value = withRepeat(
+      withTiming(80, {
+        duration: 800,
+        easing: Easing.linear,
+      }),
+      -1,
+      false,
+    );
+  }, []);
 
 
   const logoStyle = useAnimatedStyle(() => ({
@@ -478,12 +469,6 @@ const startCarAnimation = (): void => {
     transform: [{ translateY: formTranslateY.value }],
   }));
 
-  const orb1Style = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: interpolate(orb1.value, [0, 1], [0, -30]) },
-      { translateX: interpolate(orb1.value, [0, 1], [0, 20]) },
-    ],
-  }));
 
   const orb2Style = useAnimatedStyle(() => ({
     transform: [
@@ -499,7 +484,6 @@ const startCarAnimation = (): void => {
     ],
   }));
 
-  // Estilos animados GPS
   const satellite1Style = useAnimatedStyle(() => {
     const angle = interpolate(satellite1.value, [0, 1], [0, 360]);
     const radius = 150;
@@ -554,38 +538,6 @@ const startCarAnimation = (): void => {
     };
   });
 
-  const gpsSignal2Style = useAnimatedStyle(() => ({
-    opacity: interpolate(gpsSignal2.value, [0, 1], [0.1, 0.6]),
-    transform: [{ scale: interpolate(gpsSignal2.value, [0, 1], [0.3, 2.0]) }],
-  }));
-
-  const gpsSignal3Style = useAnimatedStyle(() => ({
-    opacity: interpolate(gpsSignal3.value, [0, 1], [0.1, 0.7]),
-    transform: [{ scale: interpolate(gpsSignal3.value, [0, 1], [0.4, 2.2]) }],
-  }));
-
-  const radarSweepStyle = useAnimatedStyle(() => ({
-    transform: [
-      { rotate: `${interpolate(radarSweep.value, [0, 1], [0, 360])}deg` },
-    ],
-    opacity: interpolate(
-      radarSweep.value,
-      [0, 0.1, 0.9, 1],
-      [0.8, 0.3, 0.3, 0.8],
-    ),
-  }));
-
-  const antennaSignalStyle = useAnimatedStyle(() => ({
-    opacity: antennaSignal.value,
-    transform: [
-      { scale: interpolate(antennaSignal.value, [0, 1], [0.8, 1.3]) },
-    ],
-  }));
-
-  const networkPulseStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(networkPulse.value, [0, 1], [0.2, 0.8]),
-    transform: [{ scale: interpolate(networkPulse.value, [0, 1], [0.9, 1.1]) }],
-  }));
 
   const carStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: carPosition.value }],
@@ -602,17 +554,17 @@ const startCarAnimation = (): void => {
   return (
     <View style={styles.container}>
 
-      
+
       <StatusBar
         barStyle="light-content"
         backgroundColor="transparent"
         translucent
       />
- <Image 
-      source={require('../../../assets/mapa.png')}
-      style={styles.backgroundMap}
-      resizeMode="cover"
-    />
+      <Image
+        source={require('../../../assets/mapa.png')}
+        style={styles.backgroundMap}
+        resizeMode="cover"
+      />
       {/* Fondo gradiente animado */}
 
       {/* Orbes decorativos flotantes */}
@@ -797,7 +749,7 @@ const startCarAnimation = (): void => {
 
             </TouchableOpacity>
 
-              {/* <View style={styles.statusContainer}>
+            {/* <View style={styles.statusContainer}>
                 <View style={styles.statusDot} />
                 <Text style={styles.statusText}>
                   Aplicativo móvil • GPS en línea

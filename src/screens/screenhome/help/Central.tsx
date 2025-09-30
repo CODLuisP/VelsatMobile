@@ -151,7 +151,7 @@ const Central = () => {
                   onPress={() => handleCall(contact.phone)}
                   activeOpacity={0.7}
                 >
-                  <Phone size={24} color="#FFFFFF" />
+                  <Phone size={22} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -167,7 +167,6 @@ const Central = () => {
       </ScrollView>
     </View>
   );
-  
 };
 
 export default Central;
