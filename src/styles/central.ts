@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
   contactCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
+    padding: 10,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
@@ -106,7 +106,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   contactName: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
     color: '#1A202C',
     marginBottom: 8,
@@ -118,13 +118,13 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   scheduleText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#718096',
     marginLeft: 6,
     fontWeight: '500',
   },
   hoursText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#4A5568',
     fontWeight: '600',
     marginBottom: 4,
@@ -140,18 +140,13 @@ export const styles = StyleSheet.create({
   phoneContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    backgroundColor: '#F7FAFC',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    marginTop: 4,
     borderRadius: 10,
     alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   phoneText: {
-    fontSize: 15,
-    color: '#1e3a8a',
+    fontSize: 13,
+    color: '#e36414',
     marginLeft: 8,
     fontWeight: '700',
     letterSpacing: 0.5,
@@ -176,7 +171,7 @@ export const styles = StyleSheet.create({
   infoFooter: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 20,
+    padding: 10,
     marginTop: 8,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
@@ -190,7 +185,7 @@ export const styles = StyleSheet.create({
     elevation: 3,
   },
   infoFooterText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#718096',
     textAlign: 'center',
     lineHeight: 20,

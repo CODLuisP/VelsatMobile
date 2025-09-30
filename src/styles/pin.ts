@@ -53,8 +53,8 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
   },
   optionsContainer: {
-    padding:15,
-
+    paddingHorizontal:20,
+    paddingVertical:20,
     flex: 1,
   },
   optionCard: {

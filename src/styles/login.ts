@@ -14,7 +14,7 @@ backgroundMap: {
   left: (width - 580) / 2,    
   width: 580,
   height: 500,
-  opacity: 0.9,
+  opacity: 1,
 },
   orb: {
     position: 'absolute',

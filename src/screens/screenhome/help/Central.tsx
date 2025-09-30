@@ -167,6 +167,7 @@ const Central = () => {
       </ScrollView>
     </View>
   );
+  
 };
 
 export default Central;
