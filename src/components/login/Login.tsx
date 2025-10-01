@@ -764,9 +764,7 @@ const loadingIconStyle = useAnimatedStyle(() => ({
 >
   <Animated.View style={[
     styles.loginButtonGradient, 
-    buttonAnimatedStyle,
-    { backgroundColor: isLoggingIn ? '#ff6b35' : '#ff6b35' } // SIEMPRE naranja
-  ]}>
+    buttonAnimatedStyle  ]}>
    {isLoggingIn ? (
   <>
     <Animated.View style={[styles.loadingSpinnerContainer, loadingIconStyle]}>

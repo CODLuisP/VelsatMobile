@@ -137,12 +137,10 @@ const ServicesPassenger = () => {
     }
   };
 
-  const handleServicePress = (service: Service) => {
-    // Aquí puedes navegar a la pantalla de detalle del servicio
-    // Descomenta y ajusta según tu estructura de navegación:
-    // navigation.navigate('ServiceDetail', { serviceId: service.id });
-    console.log('Servicio seleccionado:', service.id);
+    const handleNavigateToServicesDetailDriver = () => {
+    navigation.navigate('ServicesDetailPassenger');
   };
+
 
   const topSpace = insets.top + 5;
 
@@ -166,7 +164,7 @@ const ServicesPassenger = () => {
           {services.map((service) => (
             <TouchableOpacity
               key={service.id}
-              onPress={() => handleServicePress(service)}
+              onPress={ handleNavigateToServicesDetailDriver}
               activeOpacity={0.7}
             >
               <View style={styles.serviceCard}>
