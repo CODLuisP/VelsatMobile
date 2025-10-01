@@ -31,8 +31,10 @@ import {
   getBottomSpace,
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
+import { useAuthStore } from '../../store/authStore';
 
 const Setting = () => {
+  const { user, logout, server, tipo } = useAuthStore();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [activeForm, setActiveForm] = useState<'update' | 'password'>('update');
   const [showPassword, setShowPassword] = useState(false);
@@ -88,7 +90,6 @@ const Setting = () => {
 
   const handleUpdateData = () => {
     console.log('Actualizando datos:', updateData);
-    // Aquí iría la lógica para actualizar datos
   };
 
   const handleEstablishPassword = () => {
@@ -103,36 +104,44 @@ const Setting = () => {
     <ScrollView style={styles.scrollContent}>
       <View style={styles.formContainer}>
         <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>Nuevo correo o celular?</Text>
+          <Text style={styles.infoTitle}>
+            {tipo === 'n' ? '¿Nuevo correo o celular?' : '¿Nuevo usuario o celular?'}
+          </Text>
 
           <Text style={styles.infoSubtitle}>
-            No te preocupes! Acá podrás actualizar estos datos rápidamente; si
+            No te preocupes, en este apartado podrás actualizar estos datos rápidamente; si
             deseas cambiar otra información, por favor contáctanos.
           </Text>
         </View>
 
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Usuario</Text>
+          {/* Para tipo 'n' mostrar "Razón social", para 'c' o 'p' mostrar "Nombres" */}
+          <Text style={styles.inputLabel}>
+            {tipo === 'n' ? 'Razón social' : 'Nombres'}
+          </Text>
           <TextInput
             style={styles.input}
             value={updateData.usuario}
             onChangeText={text =>
               setUpdateData({ ...updateData, usuario: text })
             }
-            placeholder="Usuario"
+            placeholder={tipo === 'n' ? 'Razón social' : 'Nombres'}
             placeholderTextColor="#999"
           />
 
-          <Text style={styles.inputLabel}>Correo asociado</Text>
+          {/* Para tipo 'n' mostrar "Correo asociado", para 'c' o 'p' mostrar "Usuario" */}
+          <Text style={styles.inputLabel}>
+            {tipo === 'n' ? 'Correo asociado' : 'Usuario'}
+          </Text>
           <TextInput
             style={styles.input}
             value={updateData.correo}
             onChangeText={text =>
               setUpdateData({ ...updateData, correo: text })
             }
-            placeholder="correo@ejemplo.com"
+            placeholder={tipo === 'n' ? 'correo@ejemplo.com' : 'Usuario'}
             placeholderTextColor="#999"
-            keyboardType="email-address"
+            keyboardType={tipo === 'n' ? 'email-address' : 'default'}
           />
 
           <Text style={styles.inputLabel}>Celular asociado</Text>

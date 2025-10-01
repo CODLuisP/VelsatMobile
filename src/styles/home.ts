@@ -126,7 +126,7 @@ backgroundImage: {
   },
   companyName: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 11,
     fontWeight: '500',
     marginBottom: 15,
   },
@@ -156,7 +156,7 @@ backgroundImage: {
     fontSize: 20,
     fontWeight: '600',
     color: '#fff',
-    marginVertical: 20,
+    marginVertical: 10,
   },
   optionsGrid: {
     flexDirection: 'row',

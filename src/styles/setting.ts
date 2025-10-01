@@ -96,7 +96,7 @@ export const styles = StyleSheet.create({
   },
 
   infoTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 10,

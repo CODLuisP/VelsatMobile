@@ -53,7 +53,7 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
   },
   optionsContainer: {
-    paddingHorizontal:20,
+    paddingHorizontal:30,
     paddingVertical:20,
     flex: 1,
   },

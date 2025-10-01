@@ -358,7 +358,6 @@ backgroundMap: {
   },
 
   loginButtonGradient: {
-    backgroundColor: '#f97316',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -368,10 +367,27 @@ backgroundMap: {
 
   loginButtonText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 'bold',
     letterSpacing: 1,
   },
+
+  loadingSpinnerContainer: {
+  width: 24,
+  height: 24,
+  marginRight: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+loadingSpinnerCircle: {
+  width: 20,
+  height: 20,
+  borderRadius: 10,
+  borderWidth: 3,
+  borderColor: 'rgba(255, 255, 255, 0.3)',
+  borderTopColor: '#ffffff',
+},
 
   loginArrow: {
     flexDirection: 'row',
@@ -573,4 +589,10 @@ backgroundMap: {
     fontWeight: '500',
     paddingHorizontal: 16,
   },
+
+  loadingSpinner: {
+  fontSize: 24,
+  color: 'white',
+  marginRight: 8,
+}
 });

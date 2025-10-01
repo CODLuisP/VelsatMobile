@@ -51,7 +51,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+const [isLoggingIn, setIsLoggingIn] = useState(false);
+const buttonScale = useSharedValue(1);
+const loadingRotation = useSharedValue(0);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -102,6 +104,7 @@ const Login = () => {
     setUser,
     setServer,
     setToken,
+    setTipo, 
     setLoading,
     biometric,
     checkBiometricAvailability,
@@ -200,102 +203,131 @@ const Login = () => {
 
 
 
-  const handleLogin = async () => {
-    if (!usuario.trim()) {
-      Alert.alert('Error', 'Por favor ingresa tu usuario');
+const handleLogin = async () => {
+  if (!usuario.trim()) {
+    Alert.alert('Error', 'Por favor ingresa tu usuario');
+    return;
+  }
+
+  if (!password.trim()) {
+    Alert.alert('Error', 'Por favor ingresa tu contraseña');
+    return;
+  }
+
+  try {
+    // Activar estado de carga INMEDIATAMENTE
+    setIsLoggingIn(true);
+    setLoading(true);
+
+    // Animación del botón
+    buttonScale.value = withSequence(
+      withTiming(0.95, { duration: 100 }),
+      withTiming(1, { duration: 100 })
+    );
+
+    // Animación de rotación para el icono de carga
+    loadingRotation.value = withRepeat(
+      withTiming(360, { duration: 1000, easing: Easing.linear }),
+      -1,
+      false
+    );
+
+    // PASO 1: Obtener el servidor
+    const serverResponse = await axios.get(
+      `https://velsat.pe:2087/api/Server/MobileServer/${usuario}`,
+      {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    const serverData = serverResponse.data;
+
+    if (!serverData.servidor) {
+      Alert.alert(
+        'Error',
+        'No se pudo obtener la configuración del servidor',
+      );
+      setIsLoggingIn(false);
+      setLoading(false);
       return;
     }
 
-    if (!password.trim()) {
-      Alert.alert('Error', 'Por favor ingresa tu contraseña');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // PASO 1: Obtener el servidor
-      const serverResponse = await axios.get(
-        `https://velsat.pe:2096/api/Server/${usuario}`,
-        {
-          timeout: 10000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+    const loginResponse = await axios.post(
+      `https://velsat.pe:2087/api/Login/MobileLogin`,
+      {
+        login: usuario,
+        clave: password,
+        tipo: serverData.tipo,
+      },
+      {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+      },
+    );
 
-      const serverData = serverResponse.data;
+    const loginData = loginResponse.data;
 
-      if (!serverData.servidor) {
-        Alert.alert(
-          'Error',
-          'No se pudo obtener la configuración del servidor',
-        );
-        setLoading(false);
-        return;
-      }
+    if (loginData.token && loginData.username && loginData.account) {
+      await saveCredentials();
 
-      const loginResponse = await axios.post(
-        `${serverData.servidor}/api/Login/login`,
-        {
-          login: usuario,
-          clave: password,
-        },
-        {
-          timeout: 10000,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      setServer(serverData.servidor);
+      setToken(loginData.token);
+      setTipo(serverData.tipo);
 
-      const loginData = loginResponse.data;
+      const userObj: UserType = {
+        id: loginData.username,
+        username: loginData.username,
+        email: `${loginData.username}@velsat.com`,
+        name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
+        description: loginData.account.description,
+      };
 
-      if (loginData.token && loginData.username) {
-        await saveCredentials();
-
-        setServer(serverData.servidor);
-        setToken(loginData.token);
-
-        const userObj: UserType = {
-          id: loginData.username,
-          username: loginData.username,
-          email: `${loginData.username}@velsat.com`,
-          name:
-            loginData.username.charAt(0).toUpperCase() +
-            loginData.username.slice(1),
-        };
-
-        setUser(userObj);
-      } else {
-        Alert.alert('Error', 'Respuesta de login inválida');
-        setLoading(false);
-      }
-    } catch (error) {
-      let errorMessage = 'Error de conexión';
-
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          const status = error.response.status;
-          if (status === 401 || status === 400) {
-            errorMessage = 'Usuario o contraseña incorrectos';
-          } else if (status >= 500) {
-            errorMessage = 'Error del servidor. Intenta más tarde';
-          } else {
-            errorMessage = `Error del servidor (${status})`;
-          }
-        } else if (error.request) {
-          errorMessage = 'Sin conexión a internet. Verifica tu conexión';
-        } else {
-          errorMessage = 'Error de configuración';
-        }
-      }
-
-      Alert.alert('Error de Login', errorMessage);
+      setUser(userObj);
+    } else {
+      Alert.alert('Error', 'Respuesta de login inválida');
+      setIsLoggingIn(false);
       setLoading(false);
     }
-  };
+  } catch (error) {
+    let errorMessage = 'Error de conexión';
+
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        const status = error.response.status;
+        if (status === 401 || status === 400) {
+          errorMessage = 'Usuario o contraseña incorrectos';
+        } else if (status >= 500) {
+          errorMessage = 'Error del servidor. Intenta más tarde';
+        } else {
+          errorMessage = `Error del servidor (${status})`;
+        }
+      } else if (error.request) {
+        errorMessage = 'Sin conexión a internet. Verifica tu conexión';
+      } else {
+        errorMessage = 'Error de configuración';
+      }
+    }
+
+    Alert.alert('Error de Login', errorMessage);
+    setIsLoggingIn(false);
+    setLoading(false);
+  }
+};
+const buttonAnimatedStyle = useAnimatedStyle(() => ({
+  transform: [{ scale: buttonScale.value }],
+  backgroundColor: isLoggingIn ? '#22c55e' : '#f97316',
+}));
+
+const loadingIconStyle = useAnimatedStyle(() => ({
+  transform: [{ rotate: `${loadingRotation.value}deg` }],
+}));
+
+
 
   useEffect(() => {
     loadSavedCredentials();
@@ -724,15 +756,34 @@ const Login = () => {
             </TouchableOpacity>
 
             {/* Botón principal con gradiente */}
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <View style={styles.loginButtonGradient}>
-                <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
-                <View style={styles.loginArrow}>
-                  <LogIn color="white" size={16} />
-
-                </View>
-              </View>
-            </TouchableOpacity>
+           <TouchableOpacity 
+  style={styles.loginButton} 
+  onPress={handleLogin}
+  disabled={isLoggingIn}
+  activeOpacity={0.8}
+>
+  <Animated.View style={[
+    styles.loginButtonGradient, 
+    buttonAnimatedStyle,
+    { backgroundColor: isLoggingIn ? '#ff6b35' : '#ff6b35' } // SIEMPRE naranja
+  ]}>
+   {isLoggingIn ? (
+  <>
+    <Animated.View style={[styles.loadingSpinnerContainer, loadingIconStyle]}>
+      <View style={styles.loadingSpinnerCircle} />
+    </Animated.View>
+    <Text style={styles.loginButtonText}>CARGANDO...</Text>
+  </>
+) : (
+  <>
+    <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
+    <View style={styles.loginArrow}>
+      <LogIn color="white" size={16} />
+    </View>
+  </>
+)}
+  </Animated.View>
+</TouchableOpacity>
 
             <TouchableOpacity
               style={styles.forgotPassword}

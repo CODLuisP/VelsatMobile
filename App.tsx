@@ -3,6 +3,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, StatusBar } from 'react-native';
 import Profile from './src/screens/screenhome/Profile';
+import ServicesDriver from './src/screens/screenhomedp/ServicesDriver';
+import ServicesPassenger from './src/screens/screenhomedp/ServicesPassenger';
+
+import ServicesDetailDriver from './src/screens/screenhomedp/ServicesDetailDriver';
+
+import ServicesDetailPassenger from './src/screens/screenhomedp/ServicesDetailPassenger';
+
 import Setting from './src/screens/screenhome/Setting';
 import Pin from './src/screens/screenhome/Pin';
 import Notifications from './src/screens/screenhome/Notifications';
@@ -24,6 +31,8 @@ import Central from './src/screens/screenhome/help/Central';
 
 import Login from './src/components/login/Login';
 import Home from './src/screens/Home';
+import HomeDriverPassenger from './src/screens/HomeDriverPassenger';
+
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -84,13 +93,17 @@ export type RootStackParamList = {
   Security: undefined;
   Help:undefined;
   Central:undefined;
+  ServicesDriver:undefined;
+  ServicesPassenger:undefined;
+  ServicesDetailDriver:undefined;
+  ServicesDetailPassenger:undefined;
 
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = () => {
-  const { isAuthenticated, isLoading, setLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, setLoading, tipo } = useAuthStore();
   const [showSplash, setShowSplash] = useState(true);
 
   const handleSplashFinish = () => {
@@ -102,7 +115,8 @@ const App = () => {
 
     const setNavigationBarColor = () => {
       try {
-        SystemNavigationBar.setNavigationColor('#1e3a8a'); console.log('Navigation bar color set to #1e3a8a');
+        SystemNavigationBar.setNavigationColor('#1e3a8a'); 
+        console.log('Navigation bar color set to #1e3a8a');
       } catch (error) {
         console.log('Error setting navigation bar color:', error);
       }
@@ -132,7 +146,10 @@ const App = () => {
           >
             {isAuthenticated ? (
               <>
-                <Stack.Screen name="Home" component={Home} />
+                {tipo === 'n' && <Stack.Screen name="Home" component={Home} />}
+                {tipo === 'c' && <Stack.Screen name="Home" component={HomeDriverPassenger} />}
+                {tipo === 'p' && <Stack.Screen name="Home" component={HomeDriverPassenger} />}
+                
                 <Stack.Screen name="Profile" component={Profile} />
                 <Stack.Screen name="Setting" component={Setting} />
                 <Stack.Screen name="Pin" component={Pin} />
@@ -152,6 +169,10 @@ const App = () => {
                 <Stack.Screen name="Security" component={Security} />
                 <Stack.Screen name="Help" component={Help} />
                 <Stack.Screen name="Central" component={Central} />
+                <Stack.Screen name="ServicesDriver" component={ServicesDriver} />
+                <Stack.Screen name="ServicesPassenger" component={ServicesPassenger} />
+                <Stack.Screen name="ServicesDetailDriver" component={ServicesDetailDriver} />
+                <Stack.Screen name="ServicesDetailPassenger" component={ServicesDetailPassenger} />
 
               </>
             ) : (

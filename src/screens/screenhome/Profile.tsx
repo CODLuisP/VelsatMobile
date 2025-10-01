@@ -7,10 +7,10 @@ import {
   LogOut,
   User,
   Clipboard,
-  Mail,
   Smartphone,
   Megaphone,
   Pin,
+  Mail,
 } from 'lucide-react-native';
 import { styles } from '../../styles/profile';
 import { useAuthStore } from '../../store/authStore';
@@ -28,7 +28,8 @@ import {
 } from '../../hooks/useNavigationMode';
 
 const Profile = () => {
-  const { user, server, logout } = useAuthStore();
+  const { user, logout, server, tipo } = useAuthStore();
+  
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const insets = useSafeAreaInsets();
@@ -67,6 +68,9 @@ const Profile = () => {
 
   const topSpace = insets.top + 10;
 
+  // Determinar si debe mostrar las opciones de Marcadores y Notificaciones
+  const shouldShowMarkerAndNotifications = tipo === 'n';
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
@@ -88,14 +92,12 @@ const Profile = () => {
             />
           </View>
         </View>
-        {/* Company Name */}
+        {/* User Name */}
         <Text style={styles.companyName}>
-          {user?.username
-            ? user.username.charAt(0).toUpperCase() + user.username.slice(1)
-            : ''}
+          {user?.description || user?.name || 'Usuario'}
         </Text>
 
-        <Text
+            <Text
           style={[
             styles.companyName,
             { fontSize: 14, color: '#fff', marginTop: 5 },
@@ -130,7 +132,7 @@ const Profile = () => {
         </Text>
       </View>
 
-      {/* Information Section - Posicionada absolutamente sobre el header */}
+      {/* Information Section */}
       <View style={styles.infoSection}>
         <View style={styles.infoHeader}>
           <Info size={20} color="#e36414" />
@@ -140,7 +142,9 @@ const Profile = () => {
         <View style={styles.infoContent}>
           <View style={styles.infoItem}>
             <User size={16} color="#999" />
-            <Text style={styles.infoText}>Corporación Gacela SAC</Text>
+            <Text style={styles.infoText}>
+              {user?.description || 'Sin nombre'}
+            </Text>
           </View>
 
           <View style={styles.infoItem}>
@@ -148,15 +152,33 @@ const Profile = () => {
             <Text style={styles.infoText}>20251234456</Text>
           </View>
 
-          <View style={styles.infoItem}>
-            <Mail size={16} color="#999" />
-            <Text style={styles.infoText}>gacelacorp@gmail.com</Text>
-          </View>
+          {/* Para tipo 'n' mostrar Email */}
+          {tipo === 'n' && (
+            <View style={styles.infoItem}>
+              <Mail size={16} color="#999" />
+              <Text style={styles.infoText}>gacelacorp@gmail.com</Text>
+            </View>
+          )}
 
           <View style={styles.infoItem}>
             <Smartphone size={16} color="#999" />
             <Text style={styles.infoText}>976345098</Text>
           </View>
+
+          {/* Para tipo 'c' o 'p' mostrar TALMA y código */}
+          {(tipo === 'c' || tipo === 'p') && (
+            <>
+              <View style={styles.infoItem}>
+                <Smartphone size={16} color="#999" />
+                <Text style={styles.infoText}>TALMA</Text>
+              </View>
+
+              <View style={styles.infoItem}>
+                <Clipboard size={16} color="#999" />
+                <Text style={styles.infoText}>TALM4738</Text>
+              </View>
+            </>
+          )}
         </View>
       </View>
 
@@ -171,24 +193,30 @@ const Profile = () => {
             <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem} onPress={handlePin}>
-            <View style={styles.menuItemLeft}>
-              <Pin size={20} color="#e36414" />
-              <Text style={styles.menuText}>Marcadores</Text>
-            </View>
-            <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
-          </TouchableOpacity>
+          {/* Solo mostrar Marcadores si tipo === 'n' */}
+          {shouldShowMarkerAndNotifications && (
+            <TouchableOpacity style={styles.menuItem} onPress={handlePin}>
+              <View style={styles.menuItemLeft}>
+                <Pin size={20} color="#e36414" />
+                <Text style={styles.menuText}>Marcadores</Text>
+              </View>
+              <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handleNotifications}
-          >
-            <View style={styles.menuItemLeft}>
-              <Megaphone size={20} color="#e36414" />
-              <Text style={styles.menuText}>Notificaciones</Text>
-            </View>
-            <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
-          </TouchableOpacity>
+          {/* Solo mostrar Notificaciones si tipo === 'n' */}
+          {shouldShowMarkerAndNotifications && (
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleNotifications}
+            >
+              <View style={styles.menuItemLeft}>
+                <Megaphone size={20} color="#e36414" />
+                <Text style={styles.menuText}>Notificaciones</Text>
+              </View>
+              <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
             <View style={styles.menuItemLeft}>
@@ -204,6 +232,7 @@ const Profile = () => {
           <Text style={styles.versionTextTitle}>VELSAT SAC</Text>
           <Text style={styles.versionText}>Lima - Perú</Text>
           <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
+          <Text style={styles.versionText}>RUC: 20202020202202</Text>
         </View>
       </ScrollView>
     </View>

@@ -27,10 +27,8 @@ import {
   CloudSnow,
   MapPin,
   User,
-  Car,
-  BarChart3,
+  CheckCircle,
   Shield,
-  LogOut,
 } from 'lucide-react-native';
 
 // Tipos TypeScript
@@ -60,16 +58,16 @@ const getBottomSpace = (insets: EdgeInsets) => {
   if (Platform.OS === 'android') {
     const screen = Dimensions.get('screen');
     const window = Dimensions.get('window');
-    
+
     const navBarHeight = screen.height - window.height;
     return navBarHeight > 0 ? navBarHeight + 30 : 70;
   }
-  
+
   return Math.max(insets.bottom, 20);
 };
 
-const Home: React.FC = () => {
-const { user, logout, server, tipo } = useAuthStore();
+const HomeDriverPassenger: React.FC = () => {
+  const { user, logout, server, tipo } = useAuthStore();
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
@@ -87,13 +85,13 @@ const { user, logout, server, tipo } = useAuthStore();
 
 
   const insets = useSafeAreaInsets();
-const bottomSpace = getBottomSpace(insets);
+  const bottomSpace = getBottomSpace(insets);
 
-useFocusEffect(
-  React.useCallback(() => {
-    NavigationBarColor('#1e3a8a', false);
-  }, [])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, [])
+  );
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -107,21 +105,22 @@ useFocusEffect(
     navigation.navigate('Profile');
   };
 
-  const handleNavigateToDevice = () => {
-    navigation.navigate('Devices');
-  };
-
-  const handleNavigateToReports = () => {
-    navigation.navigate('Reports');
-  };
-
   const handleNavigateToSecurity = () => {
     navigation.navigate('Security');
   };
 
-    const handleNavigateToHelp = () => {
+  const handleNavigateToHelp = () => {
     navigation.navigate('Help');
   };
+
+   const handleNavigateToServicesDriver = () => {
+    navigation.navigate('ServicesDriver');
+  };
+
+    const handleNavigateToServicesPassenger = () => {
+    navigation.navigate('ServicesPassenger');
+  };
+
   // Función para obtener el saludo según la hora
   const obtenerSaludo = (): string => {
     const hora = new Date().getHours();
@@ -144,13 +143,10 @@ useFocusEffect(
     const size = 20;
     const color = '#FFD700';
 
-    // Si no hay datos, usar sol por defecto
     if (!weatherCode && !temperature) {
       return <Sun size={size} color={color} />;
     }
 
-    // WMO Weather interpretation codes
-    // 0: Clear sky
     if (weatherCode === 0) {
       return isDay === 1 ? (
         <Sun size={size} color={color} />
@@ -159,17 +155,14 @@ useFocusEffect(
       );
     }
 
-    // 1-3: Mainly clear, partly cloudy, and overcast
     if (weatherCode && weatherCode >= 1 && weatherCode <= 3) {
       return <Cloud size={size} color="#87CEEB" />;
     }
 
-    // 45, 48: Fog
     if (weatherCode === 45 || weatherCode === 48) {
       return <Cloud size={size} color="#B0C4DE" />;
     }
 
-    // 51-67: Rain (various intensities)
     if (
       weatherCode &&
       ((weatherCode >= 51 && weatherCode <= 67) ||
@@ -178,7 +171,6 @@ useFocusEffect(
       return <CloudRain size={size} color="#4682B4" />;
     }
 
-    // 71-77, 85-86: Snow
     if (
       weatherCode &&
       ((weatherCode >= 71 && weatherCode <= 77) ||
@@ -188,12 +180,10 @@ useFocusEffect(
       return <CloudSnow size={size} color="#F0F8FF" />;
     }
 
-    // 95-99: Thunderstorm
     if (weatherCode && weatherCode >= 95 && weatherCode <= 99) {
       return <CloudRain size={size} color="#bde0fe" />;
     }
 
-    // Por defecto basado en la hora
     return isDay === 1 ? (
       <Sun size={size} color={color} />
     ) : (
@@ -548,7 +538,6 @@ useFocusEffect(
     );
   };
 
-  // Obtener ubicación  clima al cargar el componente
   useEffect(() => {
     obtenerUbicacion();
   }, []);
@@ -629,17 +618,18 @@ useFocusEffect(
                 )}
               </View>
             </View>
-<Text style={homeStyles.companyName}>
-  {user?.username && `Usuario: ${user.username}`}
-  {user?.description && `Description${user.description}`}
-  {server && `\nServidor: ${server}`}
-  {tipo && `\nTipo: ${tipo}`}
-  {location.latitude && location.longitude && (
-    <Text style={{ fontSize: 10, color: '#fff' }}>
-      {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
-    </Text>
-  )}
-</Text>
+
+       <Text style={homeStyles.companyName}>
+         {user?.username && `Usuario: ${user.username}`}
+         {user?.description && `Description${user.description}`}
+         {server && `\nServidor: ${server}`}
+         {tipo && `\nTipo: ${tipo}`}
+         {location.latitude && location.longitude && (
+           <Text style={{ fontSize: 10, color: '#fff' }}>
+             {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
+           </Text>
+         )}
+       </Text>
 
             <View style={homeStyles.locationContainer}>
               <MapPin size={25} color="#FFF" />
@@ -649,7 +639,7 @@ useFocusEffect(
                 </Text>
 
                 <Text style={homeStyles.locationLabel}>
-                   {direccionCoordenadas}
+                  {direccionCoordenadas}
                 </Text>
               </View>
             </View>
@@ -657,15 +647,15 @@ useFocusEffect(
         </View>
 
         <ScrollView
-  style={[
-    homeStyles.content,
-    { paddingBottom: bottomSpace }
-  ]}
-  showsVerticalScrollIndicator={false}
+          style={[
+            homeStyles.content,
+            { paddingBottom: bottomSpace }
+          ]}
+          showsVerticalScrollIndicator={false}
         >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
-          {/* Grid de opciones principales */}
+          {/* Grid de opciones principales - SOLO 4 OPCIONES */}
           <View style={homeStyles.optionsGrid}>
             <TouchableOpacity
               style={homeStyles.optionCard}
@@ -681,33 +671,19 @@ useFocusEffect(
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={homeStyles.optionCard}
-              onPress={handleNavigateToDevice}
-            >
-              <View style={homeStyles.optionIcon}>
-                <Car size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Unidades</Text>
-              <Text style={homeStyles.optionSubtitle}>
-                Rastrea tus unidades, conoce su última ubicación, velocidad,
-                dirección y estado.
-              </Text>
-            </TouchableOpacity>
+   <TouchableOpacity
+  style={homeStyles.optionCard}
+  onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
+>
+  <View style={homeStyles.optionIcon}>
+    <CheckCircle size={24} color="#e36414" />
+  </View>
+  <Text style={homeStyles.optionTitle}>Servicios</Text>
+  <Text style={homeStyles.optionSubtitle}>
+    Conoce tus servicios programados más recientes.
+  </Text>
+</TouchableOpacity>
 
-            <TouchableOpacity
-              style={homeStyles.optionCard}
-              onPress={handleNavigateToReports}
-            >
-              <View style={homeStyles.optionIcon}>
-                <BarChart3 size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Reportes</Text>
-              <Text style={homeStyles.optionSubtitle}>
-                Genera reportes de tus unidades, general, velocidad,
-                kilometraje, paradas y detalle de recorrido.
-              </Text>
-            </TouchableOpacity>
 
             <TouchableOpacity
               style={homeStyles.optionCard}
@@ -722,17 +698,16 @@ useFocusEffect(
                 deshabilita las notificaciones.
               </Text>
             </TouchableOpacity>
-          </View>
 
-          <View style={homeStyles.customerCareContainer}>
-            <TouchableOpacity style={homeStyles.customerCareCard} onPress={handleNavigateToHelp}>
-              <View style={homeStyles.customerCareIcon}>
+            <TouchableOpacity
+              style={homeStyles.optionCard}
+              onPress={handleNavigateToHelp}
+            >
+              <View style={homeStyles.optionIcon}>
                 <Headphones size={24} color="#e36414" />
               </View>
-              <Text style={homeStyles.customerCareTitle}>
-                Ayuda
-              </Text>
-              <Text style={homeStyles.customerCareSubtitle}>
+              <Text style={homeStyles.optionTitle}>Ayuda</Text>
+              <Text style={homeStyles.optionSubtitle}>
                 Conoce nuestros números telefónicos, llámanos a la central de
                 monitoreo, escríbenos al Whatsapp, revisa las preguntas
                 frecuentes y visualiza tutoriales útiles.
@@ -745,4 +720,4 @@ useFocusEffect(
   );
 };
 
-export default Home;
+export default HomeDriverPassenger;

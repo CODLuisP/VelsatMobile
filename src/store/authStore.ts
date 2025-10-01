@@ -9,6 +9,7 @@ export interface User {
   username: string;
   email?: string;
   name?: string;
+  description?: string;
 }
 
 // Configuración biométrica
@@ -26,6 +27,7 @@ interface AuthState {
   isLoading: boolean;
   server: string | null;
   token: string | null;
+  tipo: string | null;
   
   // Estados biométricos
   biometric: BiometricConfig;
@@ -39,6 +41,7 @@ interface AuthState {
   setUser: (user: User) => void;
   setServer: (server: string) => void;
   setToken: (token: string) => void;
+  setTipo: (tipo: string) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
   
@@ -62,6 +65,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       server: null,
       token: null,
+      tipo: null,
       
       // Estados biométricos
       biometric: {
@@ -129,23 +133,27 @@ export const useAuthStore = create<AuthState>()(
         set({ token });
       },
 
-  logout: async () => {
-  set({
-    user: null,
-    isAuthenticated: false,
-    isLoading: false,
-    server: null,
-    token: null,
-  });
-  
+      setTipo: (tipo: string) => {
+        set({ tipo });
+      },
 
-  const currentState = get();
-  if (!currentState.biometric.isEnabled) {
-    get().clearBiometricCredentials();
-  }
-  
-  console.log('Logout completed, biometric credentials preserved');
-},
+      logout: async () => {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          server: null,
+          token: null,
+          tipo: null,
+        });
+        
+        const currentState = get();
+        if (!currentState.biometric.isEnabled) {
+          get().clearBiometricCredentials();
+        }
+        
+        console.log('Logout completed, biometric credentials preserved');
+      },
 
       setLoading: (loading: boolean) => {
         set({ isLoading: loading });
@@ -352,6 +360,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         server: state.server,
         token: state.token,
+        tipo: state.tipo,
         biometric: state.biometric,
         biometricCredentials: state.biometricCredentials,
       }),
