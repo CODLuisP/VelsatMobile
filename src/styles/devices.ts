@@ -254,7 +254,7 @@ emptyIconContainer: {
   borderStyle: 'dashed',
 },
 emptyTitle: {
-  fontSize: 20,
+  fontSize: 14,
   fontWeight: '600',
   color: '#2D3748',
   textAlign: 'center',
@@ -272,6 +272,18 @@ emptyHint: {
   color: '#A0AEC0',
   textAlign: 'center',
   fontStyle: 'italic',
+},
+retryButton: {
+  backgroundColor: '#1e3a8a',
+  paddingHorizontal: 24,
+  paddingVertical: 12,
+  borderRadius: 8,
+  marginTop: 16,
+},
+retryButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
 },
 
 

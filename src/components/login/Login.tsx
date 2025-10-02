@@ -256,7 +256,7 @@ const handleLogin = async () => {
     }
 
     const loginResponse = await axios.post(
-      `https://velsat.pe:2087/api/Login/MobileLogin`,
+      `${serverData.servidor}/api/Login/MobileLogin`,
       {
         login: usuario,
         clave: password,
@@ -764,7 +764,7 @@ const loadingIconStyle = useAnimatedStyle(() => ({
 >
   <Animated.View style={[
     styles.loginButtonGradient, 
-    buttonAnimatedStyle  ]}>
+    buttonAnimatedStyle, { borderRadius: 16 }  ]}>
    {isLoggingIn ? (
   <>
     <Animated.View style={[styles.loadingSpinnerContainer, loadingIconStyle]}>
@@ -779,6 +779,8 @@ const loadingIconStyle = useAnimatedStyle(() => ({
       <LogIn color="white" size={16} />
     </View>
   </>
+
+  
 )}
   </Animated.View>
 </TouchableOpacity>

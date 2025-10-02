@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Text,
   View,
@@ -6,6 +6,7 @@ import {
   TextInput,
   FlatList,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -24,6 +25,8 @@ import {
   getBottomSpace,
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
+import { useAuthStore } from '../../../store/authStore';
+import axios from 'axios';
 
 interface Device {
   id: string;
@@ -32,11 +35,26 @@ interface Device {
   speed: number;
   location: string;
   isOnline: boolean;
+  latitude?: number;
+  longitude?: number;
+}
+
+interface ApiDevice {
+  deviceId: string;
+  lastValidLatitude: number;
+  lastValidLongitude: number;
+  lastValidSpeed: number;
+  direccion: string;
 }
 
 const Devices = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [searchText, setSearchText] = useState('');
+  const { user, logout, server, tipo } = useAuthStore();
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDetailDevice = (device: Device) => {
     navigation.navigate('DetailDevice', { device });
@@ -55,80 +73,86 @@ const Devices = () => {
     }, []),
   );
 
-  const [devices] = useState<Device[]>([
-    {
-      id: '1',
-      name: 'M2L-777',
-      status: 'Detenido',
-      speed: 0,
-      location: 'Av. Miguel de Cervantes Cd. 1',
-      isOnline: true,
-    },
-    {
-      id: '2',
-      name: 'M2L-777',
-      status: 'Movimiento',
-      speed: 3,
-      location: 'Av. Miguel de Cervantes Cd. 1',
-      isOnline: true,
-    },
-    {
-      id: '3',
-      name: 'M2L-779',
-      status: 'Movimiento',
-      speed: 25,
-      location: 'Av. Miguel de Cervantes Cd. 1',
-      isOnline: true,
-    },
-    {
-      id: '4',
-      name: 'M2L-771',
-      status: 'Movimiento',
-      speed: 75,
-      location: 'Av. Miguel de Cervantes Cd. 1',
-      isOnline: true,
-    },
-    {
-      id: '5',
-      name: 'M2L-767',
-      status: 'Detenido',
-      speed: 0,
-      location: 'Av. Miguel de Cervantes Cd. 1',
-      isOnline: true,
-    },
-    {
-      id: '6',
-      name: 'M2L-867',
-      status: 'Detenido',
-      speed: 0,
-      location: 'Av. Miguel de Cervantes Cd. 1',
-      isOnline: true,
-    },
-    {
-      id: '7',
-      name: 'M2L-967',
-      status: 'Detenido',
-      speed: 0,
-      location: 'Av. Miguel de Cervantes Cd. 1',
-      isOnline: true,
-    },
-  ]);
+  // Función para obtener los dispositivos de la API
+  const fetchDevices = async (showLoading: boolean = false) => {
+    try {
+      if (showLoading) {
+        setLoading(true);
+      }
+      setError(null);
+      
+      const username = user?.username || 'cgacela';
+      const response = await axios.get<ApiDevice[]>(
+        `${server}/api/DeviceList/simplified/${username}`
+      );
+
+      // Transformar los datos de la API al formato de Device
+      const transformedDevices: Device[] = response.data.map((apiDevice) => ({
+        id: apiDevice.deviceId,
+        name: apiDevice.deviceId,
+        status: apiDevice.lastValidSpeed === 0 ? 'Detenido' : 'Movimiento',
+        speed: Math.round(apiDevice.lastValidSpeed),
+        location: apiDevice.direccion,
+        isOnline: true,
+        latitude: apiDevice.lastValidLatitude,
+        longitude: apiDevice.lastValidLongitude,
+      }));
+
+      setDevices(transformedDevices);
+    } catch (err) {
+      console.error('Error al obtener dispositivos:', err);
+      setError('Error al cargar los dispositivos');
+    } finally {
+      if (showLoading) {
+        setLoading(false);
+      }
+      setIsRefreshing(false);
+    }
+  };
+
+  // Función para manejar el pull-to-refresh manual
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchDevices(false);
+  };
+
+  // Cargar dispositivos al montar el componente y configurar actualización automática
+  useEffect(() => {
+    // Cargar datos inmediatamente con indicador de carga
+    fetchDevices(true);
+
+    // Configurar intervalo para actualizar cada 10 segundos (sin mostrar loading)
+    const interval = setInterval(() => {
+      fetchDevices(false);
+    }, 10000); // 10000 ms = 10 segundos
+
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(interval);
+  }, [user?.username, server]);
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
   const getStatusColor = (speed: number, status: string) => {
+    // velocidad 0: rojo
     if (status === 'Detenido' || speed === 0) return '#FF4444';
-    if (speed <= 10) return '#FFA500';
-    if (speed <= 30) return '#00AA00';
+    // velocidad >= 1 and velocidad <= 20: amarillo
+    if (speed >= 1 && speed <= 20) return '#FFA500';
+    // velocidad > 20 and <= 45: verde
+    if (speed > 20 && speed <= 45) return '#00AA00';
+    // mayor que 45: azul
     return '#0066FF';
   };
 
   const getSpeedColor = (speed: number, status: string) => {
+    // velocidad 0: rojo
     if (status === 'Detenido' || speed === 0) return '#FF4444';
-    if (speed <= 10) return '#FFA500';
-    if (speed <= 30) return '#00AA00';
+    // velocidad >= 1 and velocidad <= 20: amarillo
+    if (speed >= 1 && speed <= 20) return '#FFA500';
+    // velocidad > 20 and <= 45: verde
+    if (speed > 20 && speed <= 45) return '#00AA00';
+    // mayor que 45: azul
     return '#0066FF';
   };
 
@@ -221,22 +245,71 @@ const Devices = () => {
     );
   };
 
-  
+  const renderEmptyComponent = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="large" color="#1e3a8a" />
+          <Text style={styles.emptyTitle}>Cargando unidades...</Text>
+        </View>
+      );
+    }
 
-  const renderEmptyComponent = () => (
-    <View style={styles.emptyContainer}>
-      <View style={styles.emptyIconContainer}>
-        <SearchX size={64} color="#CBD5E0" />
+    if (error) {
+      return (
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyIconContainer}>
+            <SearchX size={64} color="#FF4444" />
+          </View>
+          <Text style={styles.emptyTitle}>{error}</Text>
+          <TouchableOpacity
+            onPress={() => fetchDevices(true)}
+            style={{
+              backgroundColor: '#1e3a8a',
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 8,
+              marginTop: 16,
+            }}
+          >
+            <Text style={{
+              color: '#fff',
+              fontSize: 16,
+              fontWeight: '600',
+            }}>
+              Reintentar
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (searchText) {
+      return (
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyIconContainer}>
+            <SearchX size={64} color="#CBD5E0" />
+          </View>
+          <Text style={styles.emptyTitle}>No se encontró la unidad</Text>
+          <Text style={styles.emptySubtitle}>
+            No hay vehículos que coincidan con "{searchText}"
+          </Text>
+          <Text style={styles.emptyHint}>Intenta con otro término de búsqueda</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <View style={styles.emptyIconContainer}>
+          <SearchX size={64} color="#CBD5E0" />
+        </View>
+        <Text style={styles.emptyTitle}>No hay unidades disponibles</Text>
       </View>
-      <Text style={styles.emptyTitle}>No se encontró la unidad</Text>
-      <Text style={styles.emptySubtitle}>
-        No hay vehículos que coincidan con "{searchText}"
-      </Text>
-      <Text style={styles.emptyHint}>Intenta con otro término de búsqueda</Text>
-    </View>
-  );
+    );
+  };
 
-    const topSpace = insets.top + 5;
+  const topSpace = insets.top + 5;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
@@ -248,7 +321,9 @@ const Devices = () => {
           </TouchableOpacity>
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>Lista de Unidades</Text>
-            <Text style={styles.headerSubtitle}>{devices.length} unid.</Text>
+            <Text style={styles.headerSubtitle}>
+              {loading ? 'Cargando...' : `${devices.length} unid.`}
+            </Text>
           </View>
         </View>
 
@@ -261,6 +336,7 @@ const Devices = () => {
             placeholderTextColor="#999"
             value={searchText}
             onChangeText={setSearchText}
+            editable={!loading}
           />
         </View>
       </View>
@@ -273,7 +349,9 @@ const Devices = () => {
         style={styles.devicesList}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.devicesListContent}
-        ListEmptyComponent={searchText ? renderEmptyComponent : null}
+        ListEmptyComponent={renderEmptyComponent}
+        refreshing={isRefreshing}
+        onRefresh={handleRefresh}
       />
     </View>
   );
