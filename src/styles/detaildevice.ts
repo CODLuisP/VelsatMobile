@@ -197,6 +197,7 @@ deviceHeaderInfo: {
     color: '#1f2937',
     fontWeight: '600',
     marginBottom: 2,
+    marginRight:30
   },
   locationSubtitle: {
     fontSize: 14,
