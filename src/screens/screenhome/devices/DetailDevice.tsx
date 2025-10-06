@@ -25,7 +25,7 @@ import {
   Forward,
   ChevronRight,
 } from 'lucide-react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Callout, Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 import {
   NavigationProp,
@@ -45,6 +45,8 @@ import {
 } from '../../../hooks/useNavigationMode';
 import { useAuthStore } from '../../../store/authStore';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
+import { toUpperCaseText } from '../../../utils/textUtils';
+import RadarDot from '../../../components/login/RadarDot';
 
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
@@ -122,6 +124,9 @@ const DetailDevice = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+
+ const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
+
 
 
   useFocusEffect(
@@ -285,49 +290,61 @@ const DetailDevice = () => {
 
   // Función para obtener el nombre de archivo según el ángulo
   // Función para obtener el nombre de archivo y tamaño según el ángulo
-  const getDirectionImageData = (angle: number) => {
-    if (angle >= 0 && angle <= 22.5)
-      return {
-        name: 'up.png' as keyof typeof DIRECTION_IMAGES,
-        size: [30, 40],
-      };
-    if (angle > 22.5 && angle <= 67.5)
-      return {
-        name: 'topright.png' as keyof typeof DIRECTION_IMAGES,
-        size: [55, 35],
-      };
-    if (angle > 67.5 && angle <= 112.5)
-      return {
-        name: 'right.png' as keyof typeof DIRECTION_IMAGES,
-        size: [55, 35],
-      };
-    if (angle > 112.5 && angle <= 157.5)
-      return {
-        name: 'downright.png' as keyof typeof DIRECTION_IMAGES,
-        size: [55, 35],
-      };
-    if (angle > 157.5 && angle <= 202.5)
-      return {
-        name: 'down.png' as keyof typeof DIRECTION_IMAGES,
-        size: [30, 40],
-      };
-    if (angle > 202.5 && angle <= 247.5)
-      return {
-        name: 'downleft.png' as keyof typeof DIRECTION_IMAGES,
-        size: [55, 35],
-      };
-    if (angle > 247.5 && angle <= 292.5)
-      return {
-        name: 'left.png' as keyof typeof DIRECTION_IMAGES,
-        size: [42, 25],
-      };
-    if (angle > 292.5 && angle <= 337.5)
-      return {
-        name: 'topleft.png' as keyof typeof DIRECTION_IMAGES,
-        size: [55, 35],
-      };
-    return { name: 'up.png' as keyof typeof DIRECTION_IMAGES, size: [30, 40] }; // 337.5 - 360
+const getDirectionImageData = (angle: number) => {
+  if (angle >= 0 && angle <= 22.5)
+    return {
+      name: 'up.png' as keyof typeof DIRECTION_IMAGES,
+      size: [30, 40],
+      anchor: [15, 35] // x: mitad del ancho, y: cerca del fondo
+    };
+  if (angle > 22.5 && angle <= 67.5)
+    return {
+      name: 'topright.png' as keyof typeof DIRECTION_IMAGES,
+      size: [55, 35],
+      anchor: [27, 17] // Centro de imagen horizontal
+    };
+  if (angle > 67.5 && angle <= 112.5)
+    return {
+      name: 'right.png' as keyof typeof DIRECTION_IMAGES,
+      size: [55, 35],
+      anchor: [27, 17]
+    };
+  if (angle > 112.5 && angle <= 157.5)
+    return {
+      name: 'downright.png' as keyof typeof DIRECTION_IMAGES,
+      size: [55, 35],
+      anchor: [27, 17]
+    };
+  if (angle > 157.5 && angle <= 202.5)
+    return {
+      name: 'down.png' as keyof typeof DIRECTION_IMAGES,
+      size: [30, 40],
+      anchor: [15, 5] // x: mitad del ancho, y: cerca del tope
+    };
+  if (angle > 202.5 && angle <= 247.5)
+    return {
+      name: 'downleft.png' as keyof typeof DIRECTION_IMAGES,
+      size: [55, 35],
+      anchor: [27, 17]
+    };
+  if (angle > 247.5 && angle <= 292.5)
+    return {
+      name: 'left.png' as keyof typeof DIRECTION_IMAGES,
+      size: [42, 25],
+      anchor: [21, 12]
+    };
+  if (angle > 292.5 && angle <= 337.5)
+    return {
+      name: 'topleft.png' as keyof typeof DIRECTION_IMAGES,
+      size: [55, 35],
+      anchor: [27, 17]
+    };
+  return { 
+    name: 'up.png' as keyof typeof DIRECTION_IMAGES, 
+    size: [30, 40],
+    anchor: [15, 35]
   };
+};
 
 
   // Función para obtener solo el nombre (mantener compatibilidad)
@@ -697,8 +714,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
 
   const webViewRef = useRef<WebView>(null);
   const mapRef = useRef<MapView>(null);
-
-
+const markerRef = useRef<any>(null);
 
 
   // Actualizar el marcadfor cuando cambien los datos
@@ -735,8 +751,22 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
   }, [vehicleData, latitude, longitude]);
 
 
-  const formatThreeDecimals = (num:any) => {
-  return Number(num).toFixed(3);
+useEffect(() => {
+  if (Platform.OS === 'ios' && markerRef.current && vehicleData && !hasShownInitialCallout) {
+    setTimeout(() => {
+      markerRef.current?.showCallout();
+      setHasShownInitialCallout(true); // Marcar como ya mostrado
+    }, 300);
+  }
+}, [vehicleData, hasShownInitialCallout]);
+
+const formatThreeDecimals = (num: any) => {
+  const number = Number(num);
+  if (Number.isInteger(number)) {
+    return number.toString();
+  }
+  // Redondear a 2 decimales y eliminar ceros innecesarios
+  return parseFloat(number.toFixed(2)).toString();
 };
 
 
@@ -746,35 +776,48 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
       const imageData = getDirectionImageData(heading);
 
       return (
-        <MapView
-          ref={mapRef}
-          provider={PROVIDER_DEFAULT}
-          style={styles.map}
-          region={{
-            latitude: latitude,
-            longitude: longitude,
-            latitudeDelta: 0.008,
-            longitudeDelta: 0.008,
-          }}
-          showsUserLocation={hasLocationPermission}
-          showsMyLocationButton={hasLocationPermission}
-        >
-          <Marker
-            coordinate={{
-              latitude: latitude,
-              longitude: longitude,
-            }}
-            title={device.name}
-key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
+  <MapView
+  ref={mapRef}
+  provider={PROVIDER_DEFAULT}
+  style={styles.map}
+  region={{
+    latitude: latitude,
+    longitude: longitude,
+    latitudeDelta: 0.008,
+    longitudeDelta: 0.008,
+  }}
+  showsUserLocation={hasLocationPermission}
+  showsMyLocationButton={hasLocationPermission}
+>
+  {vehicleData && (
+    <Marker
+      ref={markerRef} 
+      key={device.id}
+        anchor={{ x: imageData.anchor[0] / imageData.size[0], y: imageData.anchor[1] / imageData.size[1] }}
 
-          >
-            <Image
-              source={getDirectionImage(heading)}
-              style={{ width: imageData.size[0], height: imageData.size[1] }}
-              resizeMode="contain"
-            />
-          </Marker>
-        </MapView>
+      coordinate={{
+        latitude: latitude,
+        longitude: longitude,
+      }}
+    >
+      <Image
+        source={getDirectionImage(heading)}
+        style={{ width: imageData.size[0], height: imageData.size[1] }}
+        resizeMode="contain"
+      />
+      <Callout>
+        <View style={{ padding: 0, minWidth: 200 }}>
+          <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
+            {toUpperCaseText(device.name)}
+          </Text>
+          <Text style={{ color: '#666' }}>
+            {status} - {formatThreeDecimals(speed)} Km/h - {heading}°
+          </Text>
+        </View>
+      </Callout>
+    </Marker>
+  )}
+</MapView>
       );
     } else {
       return (
@@ -806,7 +849,7 @@ key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
   const getConnectionDisplay = () => {
     switch (connectionStatus) {
       case 'connected':
-        return { color: '#10b981', text: 'Online' };
+        return { color: '#70e000', text: 'Online' };
       case 'connecting':
         return { color: '#FF9800', text: 'Conectando...' };
       case 'error':
@@ -893,16 +936,17 @@ key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
         <TouchableOpacity style={styles.panelHeader} onPress={toggleInfo}>
           <View style={styles.panelHeaderContent}>
             <View style={styles.deviceHeaderInfo}>
-              <Text style={styles.deviceName}>{device.name}</Text>
+              <Text style={styles.deviceName}>{toUpperCaseText(device.name)}</Text>
               <View style={styles.deviceStatusRow}>
                 <View
                   style={[
-                    styles.statusDot,
                     {
                       backgroundColor: connectionDisplay.color,
                     },
                   ]}
                 />
+<RadarDot color={connectionDisplay.color} size={8} />
+
                 <Text
                   style={[
                     styles.onlineStatus,
@@ -911,6 +955,9 @@ key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
                 >
                   {connectionDisplay.text}
                 </Text>
+
+
+
                 <Text style={styles.deviceId}>Dirección: {obtenerDireccion(heading)}</Text>
 
 
@@ -937,7 +984,7 @@ key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
                     size={16}
                     color={
                       status === 'Movimiento'
-                        ? '#10b981'
+                        ? '#38b000'
                         : status === 'Detenido'
                           ? '#ef4444'
                           : '#6b7280'
@@ -949,7 +996,7 @@ key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
                       {
                         color:
                           status === 'Movimiento'
-                            ? '#10b981'
+                            ? '#38b000'
                             : status === 'Detenido'
                               ? '#ef4444'
                               : '#6b7280',
@@ -959,7 +1006,7 @@ key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
                     {status}
                   </Text>
                   {vehicleData && (
-<Text style={styles.speedText}>({formatThreeDecimals(speed)} Km/h)</Text>
+                    <Text style={styles.speedText}>({formatThreeDecimals(speed)} Km/h)</Text>
                   )}
                 </View>
                 <View style={styles.dateContainer}>
