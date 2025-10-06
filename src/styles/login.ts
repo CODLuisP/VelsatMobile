@@ -239,7 +239,7 @@ backgroundMap: {
   formContainer: {
     width: '100%',
     flex: 1,
-    marginTop: -210,
+    marginTop: -160,
     justifyContent: 'center',
 
   },
@@ -470,7 +470,7 @@ loadingSpinnerCircle: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 5,
+    paddingVertical: 15,
     borderRadius: 20,
     
   },
@@ -543,8 +543,8 @@ loadingSpinnerCircle: {
   },
 
   carImage: {
-    width: 130,
-    height: 130,
+    width: 250,
+    height: 180,
   },
 
   biometricButton: {

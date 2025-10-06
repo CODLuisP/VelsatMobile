@@ -22,6 +22,7 @@ import {
   MapPin,
   Eye,
   Forward,
+  ChevronRight,
 } from 'lucide-react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
@@ -42,6 +43,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import { useAuthStore } from '../../../store/authStore';
+import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
 
@@ -70,14 +72,22 @@ interface SignalRData {
 
 // Mapeo de imágenes - IMPORTANTE: debe estar fuera del componente
 const DIRECTION_IMAGES = {
-  'up.png': require('../../../../assets/up.png'),
-  'topright.png': require('../../../../assets/topright.png'),
-  'right.png': require('../../../../assets/right.png'),
-  'downright.png': require('../../../../assets/downright.png'),
-  'down.png': require('../../../../assets/down.png'),
-  'downleft.png': require('../../../../assets/downleft.png'),
-  'left.png': require('../../../../assets/left.png'),
-  'topleft.png': require('../../../../assets/topleft.png'),
+  'up.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/up_f0z0c7.png',
+  'topright.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/topright_ftymue.png',
+  'right.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/right_k9two2.png',
+  'downright.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594559/downright_taregi.png',
+  'down.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/down_oeri45.png',
+  'downleft.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/downleft_pq3a7n.png',
+  'left.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/left_tinfqg.png',
+  'topleft.png':
+    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594556/topleft_ofml2l.png',
 };
 
 const DetailDevice = () => {
@@ -87,8 +97,12 @@ const DetailDevice = () => {
   const [isInfoExpanded, setIsInfoExpanded] = useState(true);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('connecting');
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(
+    null,
+  );
+  const [connectionStatus, setConnectionStatus] = useState<
+    'connecting' | 'connected' | 'disconnected' | 'error'
+  >('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
 
   const { device } = route.params;
@@ -101,11 +115,32 @@ const DetailDevice = () => {
     navigationDetection.hasNavigationBar,
   );
 
-  useFocusEffect(
-    React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
-    }, []),
-  );
+useFocusEffect(
+  React.useCallback(() => {
+    NavigationBarColor('#1e3a8a', false);
+    
+    // SOLUCIÓN: Invalidar mapa al volver a la pantalla
+    if (Platform.OS === 'android' && webViewRef.current && isWebViewReady) {
+      setTimeout(() => {
+        webViewRef.current?.injectJavaScript(`
+          if (typeof map !== 'undefined' && map) {
+            console.log('Invalidando tamaño del mapa...');
+            map.invalidateSize(true);
+            
+            // Forzar redibujado de los tiles
+            map.eachLayer(function(layer) {
+              if (layer instanceof L.TileLayer) {
+                layer.redraw();
+              }
+            });
+          }
+          true;
+        `);
+      }, 200);
+    }
+  }, [isWebViewReady]),
+);
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -118,7 +153,7 @@ const DetailDevice = () => {
   useEffect(() => {
     const username = user?.username;
     const placa = device.name;
-    
+
     if (!username || !placa) {
       console.error('❌ Faltan datos para conectar SignalR');
       setConnectionStatus('error');
@@ -126,14 +161,16 @@ const DetailDevice = () => {
     }
 
     const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
-    
+
     console.log('🔗 Conectando a:', hubUrl);
     setConnectionStatus('connecting');
 
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
         skipNegotiation: false,
-        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling,
+        transport:
+          signalR.HttpTransportType.WebSockets |
+          signalR.HttpTransportType.LongPolling,
       })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: retryContext => {
@@ -147,7 +184,7 @@ const DetailDevice = () => {
             return 10000;
           }
           return 30000;
-        }
+        },
       })
       .configureLogging(signalR.LogLevel.Information)
       .build();
@@ -160,37 +197,38 @@ const DetailDevice = () => {
       }
     });
 
-    newConnection.on('ConectadoExitosamente', (data) => {
+    newConnection.on('ConectadoExitosamente', data => {
       console.log('✅ Conectado exitosamente:', data);
       setConnectionStatus('connected');
     });
 
-    newConnection.on('Error', (msg) => {
+    newConnection.on('Error', msg => {
       console.error('❌ Error desde SignalR:', msg);
       setConnectionStatus('error');
     });
 
-    newConnection.onreconnecting((error) => {
+    newConnection.onreconnecting(error => {
       console.log('🔄 Reconectando...', error);
       setConnectionStatus('connecting');
     });
 
-    newConnection.onreconnected((connectionId) => {
+    newConnection.onreconnected(connectionId => {
       console.log('✅ Reconectado con ID:', connectionId);
       setConnectionStatus('connected');
     });
 
-    newConnection.onclose((error) => {
+    newConnection.onclose(error => {
       console.log('🔌 Conexión cerrada', error);
       setConnectionStatus('disconnected');
     });
 
-    newConnection.start()
+    newConnection
+      .start()
       .then(() => {
         console.log('✅ SignalR conectado exitosamente');
         setConnectionStatus('connected');
       })
-      .catch((err) => {
+      .catch(err => {
         console.error('❌ Error al conectar SignalR:', err);
         setConnectionStatus('error');
       });
@@ -198,7 +236,10 @@ const DetailDevice = () => {
     setConnection(newConnection);
 
     return () => {
-      if (newConnection && newConnection.state === signalR.HubConnectionState.Connected) {
+      if (
+        newConnection &&
+        newConnection.state === signalR.HubConnectionState.Connected
+      ) {
         newConnection.stop().then(() => {
           console.log('🔌 SignalR desconectado correctamente');
         });
@@ -211,7 +252,7 @@ const DetailDevice = () => {
       deviceName: device.name,
     });
   };
-  
+
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
   const speed = vehicleData?.lastValidSpeed || 0;
@@ -230,53 +271,88 @@ const DetailDevice = () => {
   const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
 
   // Función para obtener el nombre de archivo según el ángulo
- // Función para obtener el nombre de archivo y tamaño según el ángulo
-const getDirectionImageData = (angle: number) => {
-  if (angle >= 0 && angle <= 22.5) return { name: 'up.png' as keyof typeof DIRECTION_IMAGES, size: [30,40] };
-  if (angle > 22.5 && angle <= 67.5) return { name: 'topright.png' as keyof typeof DIRECTION_IMAGES, size: [55, 35] };
-  if (angle > 67.5 && angle <= 112.5) return { name: 'right.png' as keyof typeof DIRECTION_IMAGES, size: [55, 35] };
-  if (angle > 112.5 && angle <= 157.5) return { name: 'downright.png' as keyof typeof DIRECTION_IMAGES, size: [55, 35]};
-  if (angle > 157.5 && angle <= 202.5) return { name: 'down.png' as keyof typeof DIRECTION_IMAGES, size: [30,40] };
-  if (angle > 202.5 && angle <= 247.5) return { name: 'downleft.png' as keyof typeof DIRECTION_IMAGES, size: [55, 35] };
-  if (angle > 247.5 && angle <= 292.5) return { name: 'left.png' as keyof typeof DIRECTION_IMAGES, size: [42, 25] };
-  if (angle > 292.5 && angle <= 337.5) return { name: 'topleft.png' as keyof typeof DIRECTION_IMAGES, size: [55, 35] };
-  return { name: 'up.png' as keyof typeof DIRECTION_IMAGES, size: [30,40] }; // 337.5 - 360
-};
+  // Función para obtener el nombre de archivo y tamaño según el ángulo
+  const getDirectionImageData = (angle: number) => {
+    if (angle >= 0 && angle <= 22.5)
+      return {
+        name: 'up.png' as keyof typeof DIRECTION_IMAGES,
+        size: [30, 40],
+      };
+    if (angle > 22.5 && angle <= 67.5)
+      return {
+        name: 'topright.png' as keyof typeof DIRECTION_IMAGES,
+        size: [55, 35],
+      };
+    if (angle > 67.5 && angle <= 112.5)
+      return {
+        name: 'right.png' as keyof typeof DIRECTION_IMAGES,
+        size: [55, 35],
+      };
+    if (angle > 112.5 && angle <= 157.5)
+      return {
+        name: 'downright.png' as keyof typeof DIRECTION_IMAGES,
+        size: [55, 35],
+      };
+    if (angle > 157.5 && angle <= 202.5)
+      return {
+        name: 'down.png' as keyof typeof DIRECTION_IMAGES,
+        size: [30, 40],
+      };
+    if (angle > 202.5 && angle <= 247.5)
+      return {
+        name: 'downleft.png' as keyof typeof DIRECTION_IMAGES,
+        size: [55, 35],
+      };
+    if (angle > 247.5 && angle <= 292.5)
+      return {
+        name: 'left.png' as keyof typeof DIRECTION_IMAGES,
+        size: [42, 25],
+      };
+    if (angle > 292.5 && angle <= 337.5)
+      return {
+        name: 'topleft.png' as keyof typeof DIRECTION_IMAGES,
+        size: [55, 35],
+      };
+    return { name: 'up.png' as keyof typeof DIRECTION_IMAGES, size: [30, 40] }; // 337.5 - 360
+  };
 
-// Función para obtener solo el nombre (mantener compatibilidad)
-const getDirectionImageName = (angle: number): keyof typeof DIRECTION_IMAGES => {
-  return getDirectionImageData(angle).name;
-};
+  // Función para obtener solo el nombre (mantener compatibilidad)
+  const getDirectionImageName = (
+    angle: number,
+  ): keyof typeof DIRECTION_IMAGES => {
+    return getDirectionImageData(angle).name;
+  };
 
-// Función para obtener la imagen según el ángulo
-const getDirectionImage = (angle: number) => {
-  const imageName = getDirectionImageName(angle);
-  return DIRECTION_IMAGES[imageName];
-};
-
+  // Función para obtener la imagen según el ángulo
+  const getDirectionImage = (angle: number) => {
+    const imageName = getDirectionImageName(angle);
+    return { uri: DIRECTION_IMAGES[imageName] };
+  };
 
   const openGoogleMaps = () => {
     if (!vehicleData) return;
-    
+
     const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
 
     const nativeUrl = Platform.select({
       ios: `maps://app?daddr=${latitude},${longitude}&dirflg=d`,
       android: `google.navigation:q=${latitude},${longitude}&mode=d`,
-      default: webUrl
+      default: webUrl,
     });
 
     if (nativeUrl) {
-      Linking.canOpenURL(nativeUrl).then(supported => {
-        if (supported) {
-          return Linking.openURL(nativeUrl);
-        } else {
-          return Linking.openURL(webUrl);
-        }
-      }).catch(err => {
-        console.error('Error al abrir Google Maps:', err);
-        Linking.openURL(webUrl);
-      });
+      Linking.canOpenURL(nativeUrl)
+        .then(supported => {
+          if (supported) {
+            return Linking.openURL(nativeUrl);
+          } else {
+            return Linking.openURL(webUrl);
+          }
+        })
+        .catch(err => {
+          console.error('Error al abrir Google Maps:', err);
+          Linking.openURL(webUrl);
+        });
     } else {
       Linking.openURL(webUrl);
     }
@@ -293,7 +369,8 @@ const getDirectionImage = (angle: number) => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Permiso de Ubicación',
-            message: 'Esta app necesita acceso a tu ubicación para mostrar el mapa',
+            message:
+              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
             buttonNeutral: 'Preguntar después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
@@ -334,7 +411,7 @@ const getDirectionImage = (angle: number) => {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
-const leafletHTML = useMemo(() => {
+  const leafletHTML = useMemo(() => {
     return `
     <!DOCTYPE html>
     <html>
@@ -383,21 +460,22 @@ const leafletHTML = useMemo(() => {
             }).addTo(map);
 
             // Guardar todas las URLs de imágenes
-            window.imageUrls = {
-              up: '${Image.resolveAssetSource(DIRECTION_IMAGES['up.png']).uri}',
-              topright: '${Image.resolveAssetSource(DIRECTION_IMAGES['topright.png']).uri}',
-              right: '${Image.resolveAssetSource(DIRECTION_IMAGES['right.png']).uri}',
-              downright: '${Image.resolveAssetSource(DIRECTION_IMAGES['downright.png']).uri}',
-              down: '${Image.resolveAssetSource(DIRECTION_IMAGES['down.png']).uri}',
-              downleft: '${Image.resolveAssetSource(DIRECTION_IMAGES['downleft.png']).uri}',
-              left: '${Image.resolveAssetSource(DIRECTION_IMAGES['left.png']).uri}',
-              topleft: '${Image.resolveAssetSource(DIRECTION_IMAGES['topleft.png']).uri}'
-            };
-
+window.imageUrls = {
+  up: '${DIRECTION_IMAGES['up.png']}',
+  topright: '${DIRECTION_IMAGES['topright.png']}',
+  right: '${DIRECTION_IMAGES['right.png']}',
+  downright: '${DIRECTION_IMAGES['downright.png']}',
+  down: '${DIRECTION_IMAGES['down.png']}',
+  downleft: '${DIRECTION_IMAGES['downleft.png']}',
+  left: '${DIRECTION_IMAGES['left.png']}',
+  topleft: '${DIRECTION_IMAGES['topleft.png']}'
+};
             // Variable para el marcador (se creará cuando lleguen los datos)
             var marker = null;
 
-            ${hasLocationPermission ? `
+            ${
+              hasLocationPermission
+                ? `
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var userLat = position.coords.latitude;
@@ -416,7 +494,9 @@ const leafletHTML = useMemo(() => {
                 }, function(error) {
                     console.log('Error obteniendo ubicación:', error);
                 });
-            }` : ''}
+            }`
+                : ''
+            }
 
             map.on('focus', function() { 
                 map.scrollWheelZoom.enable(); 
@@ -525,7 +605,45 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                         marker.openPopup();
                     }
                 }
-            };
+  };
+
+            // ⭐ SOLUCIÓN: Escuchar eventos de visibilidad
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && map) {
+                    setTimeout(function() {
+                        console.log('Página visible - invalidando mapa');
+                        map.invalidateSize(true);
+                        
+                        // Forzar redibujado de tiles
+                        map.eachLayer(function(layer) {
+                            if (layer instanceof L.TileLayer) {
+                                layer.redraw();
+                            }
+                        });
+                    }, 250);
+                }
+            });
+
+            // Para mensajes desde React Native
+            document.addEventListener('message', function(event) {
+                if (event.data === 'invalidate-size') {
+                    if (map) {
+                        setTimeout(function() {
+                            map.invalidateSize(true);
+                        }, 100);
+                    }
+                }
+            });
+
+            window.addEventListener('message', function(event) {
+                if (event.data === 'invalidate-size') {
+                    if (map) {
+                        setTimeout(function() {
+                            map.invalidateSize(true);
+                        }, 100);
+                    }
+                }
+            });
 
             // Señalar que el WebView está listo
             window.ReactNativeWebView.postMessage('webview-ready');
@@ -539,44 +657,57 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
 
   // Actualizar el marcador cuando cambien los datos
   useEffect(() => {
-    if (Platform.OS === 'android' && webViewRef.current && vehicleData && isWebViewReady) {
+    if (
+      Platform.OS === 'android' &&
+      webViewRef.current &&
+      vehicleData &&
+      isWebViewReady
+    ) {
       const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device.name}', '${device.id}'); true;`;
       webViewRef.current.injectJavaScript(script);
     }
-  }, [latitude, longitude, heading, speed, status, vehicleData, isWebViewReady]);
+  }, [
+    latitude,
+    longitude,
+    heading,
+    speed,
+    status,
+    vehicleData,
+    isWebViewReady,
+  ]);
 
   const renderMap = () => {
     if (Platform.OS === 'ios') {
-          const imageData = getDirectionImageData(heading);
+      const imageData = getDirectionImageData(heading);
 
       return (
         <MapView
-        provider={PROVIDER_DEFAULT}
-        style={styles.map}
-        region={{
-          latitude: latitude,
-          longitude: longitude,
-          latitudeDelta: 0.008,
-          longitudeDelta: 0.008,
-        }}
-        showsUserLocation={hasLocationPermission}
-        showsMyLocationButton={hasLocationPermission}
-      >
-        <Marker
-          coordinate={{
+          provider={PROVIDER_DEFAULT}
+          style={styles.map}
+          region={{
             latitude: latitude,
             longitude: longitude,
+            latitudeDelta: 0.008,
+            longitudeDelta: 0.008,
           }}
-          title={device.name}
-          description={`${status} - ${speed} Km/h - ${heading}°`}
+          showsUserLocation={hasLocationPermission}
+          showsMyLocationButton={hasLocationPermission}
         >
-          <Image 
-            source={getDirectionImage(heading)}
-            style={{ width: imageData.size[0], height: imageData.size[1] }}
-            resizeMode="contain"
-          />
-        </Marker>
-      </MapView>
+          <Marker
+            coordinate={{
+              latitude: latitude,
+              longitude: longitude,
+            }}
+            title={device.name}
+            description={`${status} - ${speed} Km/h - ${heading}°`}
+          >
+            <Image
+              source={getDirectionImage(heading)}
+              style={{ width: imageData.size[0], height: imageData.size[1] }}
+              resizeMode="contain"
+            />
+          </Marker>
+        </MapView>
       );
     } else {
       return (
@@ -590,7 +721,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
           scalesPageToFit={true}
           mixedContentMode="compatibility"
           geolocationEnabled={hasLocationPermission}
-          onMessage={(event) => {
+          onMessage={event => {
             if (event.nativeEvent.data === 'webview-ready') {
               setIsWebViewReady(true);
             }
@@ -620,13 +751,12 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
   const connectionDisplay = getConnectionDisplay();
 
   return (
-    
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <View style={styles.mapContainer}>
         {renderMap()}
 
         {!vehicleData && (
-          <View 
+          <View
             style={{
               position: 'absolute',
               top: 0,
@@ -639,22 +769,31 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
               zIndex: 10,
             }}
           >
-            <View 
+            <View
               style={{
                 padding: 24,
                 borderRadius: 16,
                 alignItems: 'center',
                 shadowColor: '#000',
-              
               }}
             >
               <ActivityIndicator size="large" color="#3b82f6" />
-              <Text style={{ color: '#fff', marginTop: 16, fontSize: 16, fontWeight: '600' }}>
+              <Text
+                style={{
+                  color: '#fff',
+                  marginTop: 16,
+                  fontSize: 16,
+                  fontWeight: '600',
+                }}
+              >
                 CARGANDO ...
               </Text>
               <Text style={{ color: '#e9ecef', marginTop: 8, fontSize: 14 }}>
-                {connectionStatus === 'connecting' ? 'Conectando al servidor...' : 
-                 connectionStatus === 'error' ? 'Error de conexión' : 'Esperando datos...'}
+                {connectionStatus === 'connecting'
+                  ? 'Conectando al servidor...'
+                  : connectionStatus === 'error'
+                  ? 'Error de conexión'
+                  : 'Esperando datos...'}
               </Text>
             </View>
           </View>
@@ -668,14 +807,14 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
         </TouchableOpacity>
       </View>
 
-      <View 
+      <View
         style={[
-          styles.infoPanel, 
-          { 
-            bottom: bottomSpace, 
+          styles.infoPanel,
+          {
+            bottom: bottomSpace,
             height: isInfoExpanded ? 280 : 50,
-            backgroundColor: '#1e3a8a', 
-          }
+            backgroundColor: '#1e3a8a',
+          },
         ]}
       >
         <TouchableOpacity style={styles.panelHeader} onPress={toggleInfo}>
@@ -691,7 +830,6 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                     },
                   ]}
                 />
-                <Text style={styles.deviceId}>ID: {device.id}</Text>
                 <Text
                   style={[
                     styles.onlineStatus,
@@ -700,6 +838,8 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                 >
                   {connectionDisplay.text}
                 </Text>
+                                <Text style={styles.deviceId}>Dirección: {obtenerDireccion(heading)}</Text>
+
               </View>
             </View>
             {isInfoExpanded ? (
@@ -720,24 +860,39 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                 <View style={styles.statusItem}>
                   <Navigation
                     size={16}
-                    color={status === 'Movimiento' ? '#10b981' : status === 'Detenido' ? '#ef4444' : '#6b7280'}
+                    color={
+                      status === 'Movimiento'
+                        ? '#10b981'
+                        : status === 'Detenido'
+                        ? '#ef4444'
+                        : '#6b7280'
+                    }
                   />
                   <Text
                     style={[
                       styles.statusText,
                       {
-                        color: status === 'Movimiento' ? '#10b981' : status === 'Detenido' ? '#ef4444' : '#6b7280',
+                        color:
+                          status === 'Movimiento'
+                            ? '#10b981'
+                            : status === 'Detenido'
+                            ? '#ef4444'
+                            : '#6b7280',
                       },
                     ]}
                   >
                     {status}
                   </Text>
-                  {vehicleData && <Text style={styles.speedText}>({speed} Km/h)</Text>}
+                  {vehicleData && (
+                    <Text style={styles.speedText}>({speed} Km/h)</Text>
+                  )}
                 </View>
                 <View style={styles.dateContainer}>
                   <Clock size={14} color="#6b7280" />
                   <View>
-                    <Text style={styles.dateText}>{formatDateTime(currentTime)}</Text>
+                    <Text style={styles.dateText}>
+                      {formatDateTime(currentTime)}
+                    </Text>
                     <Text style={styles.lastReportText}>Último reporte</Text>
                   </View>
                 </View>
@@ -746,11 +901,13 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
               <View style={styles.distanceInfo}>
                 <MapPin size={18} color="#6b7280" />
                 <Text style={styles.distanceText}>
-                  {vehicleData?.lastOdometerKM ? `${vehicleData.lastOdometerKM.toFixed(1)} km recorridos` : 'Cargando kilometraje...'}
+                  {vehicleData?.lastOdometerKM
+                    ? `${vehicleData.lastOdometerKM.toFixed(1)} km recorridos`
+                    : 'Cargando kilometraje...'}
                 </Text>
               </View>
               <Text style={styles.startTimeText}>
-                Empezó el día a las 02:55:53 PM
+                Kilometraje total de su unidad
               </Text>
 
               <View style={styles.streetViewRow}>
@@ -763,7 +920,16 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                       key={`${latitude}-${longitude}`}
                     />
                   ) : (
-                    <View style={[styles.streetViewImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#334155' }]}>
+                    <View
+                      style={[
+                        styles.streetViewImage,
+                        {
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          backgroundColor: '#334155',
+                        },
+                      ]}
+                    >
                       <ActivityIndicator size="small" color="#3b82f6" />
                     </View>
                   )}
@@ -773,13 +939,13 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                   </View>
                 </View>
                 <View style={styles.locationInfoRight}>
-                  <Text style={styles.locationTitle}>
-                    {address}
-                  </Text>
-                  <Text style={styles.locationSubtitle}>
-                    Ubicación actual</Text>
-                  <TouchableOpacity 
-                    style={[styles.locationButton, { opacity: vehicleData ? 1 : 0.5 }]}  
+                  <Text style={styles.locationTitle}>{address}</Text>
+                  <Text style={styles.locationSubtitle}>Ubicación actual</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.locationButton,
+                      { opacity: vehicleData ? 1 : 0.5 },
+                    ]}
                     onPress={openGoogleMaps}
                     disabled={!vehicleData}
                   >
@@ -793,14 +959,15 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                 onPress={handleInfiDevice}
               >
                 <Text style={styles.verMasText}>Ver más</Text>
-                <Text style={styles.arrowText}>→</Text>
+                <Text style={styles.arrowText}>
+                  <ChevronRight size={15} color="#fff" />
+                </Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
         )}
       </View>
     </View>
-
   );
 };
 

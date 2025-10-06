@@ -72,7 +72,9 @@ export type RootStackParamList = {
   InfoDevice: {
     deviceName: string;
   };
-  Events: undefined;
+  Events: {
+    deviceName: string;  
+  };
   MapEvent: {
     notificationData: {
       id: number;
@@ -81,8 +83,14 @@ export type RootStackParamList = {
       device: string;
       timestamp: string;
       iconName: string;
+      accountID: string;
+      deviceID: string;
+      unixTimestamp: number;
+      statusCode: number;
+      latitude: number;
+      longitude: number;
+      speedKPH: number;
     };
-
   };
   Reports: undefined;
   GeneralReport: undefined;
@@ -91,13 +99,12 @@ export type RootStackParamList = {
   MileageReport: undefined;
   TourReport: undefined;
   Security: undefined;
-  Help:undefined;
-  Central:undefined;
-  ServicesDriver:undefined;
-  ServicesPassenger:undefined;
-  ServicesDetailDriver:undefined;
-  ServicesDetailPassenger:undefined;
-
+  Help: undefined;
+  Central: undefined;
+  ServicesDriver: undefined;
+  ServicesPassenger: undefined;
+  ServicesDetailDriver: undefined;
+  ServicesDetailPassenger: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -130,7 +137,6 @@ const App = () => {
       clearTimeout(timer);
     };
   }, []);
-
 
   return (
     <SafeAreaProvider>
@@ -173,7 +179,6 @@ const App = () => {
                 <Stack.Screen name="ServicesPassenger" component={ServicesPassenger} />
                 <Stack.Screen name="ServicesDetailDriver" component={ServicesDetailDriver} />
                 <Stack.Screen name="ServicesDetailPassenger" component={ServicesDetailPassenger} />
-
               </>
             ) : (
               <Stack.Screen name="Login" component={Login} />

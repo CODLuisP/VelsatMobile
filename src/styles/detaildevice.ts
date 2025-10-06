@@ -139,7 +139,7 @@ deviceHeaderInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 4,
+    marginBottom: 0,
   },
   distanceText: {
     fontSize: 14,
@@ -150,7 +150,7 @@ deviceHeaderInfo: {
     fontSize: 14,
     color: '#9ca3af',
     marginLeft: 26,
-    marginBottom: 16,
+    marginBottom: 6,
   },
   streetViewRow: {
     flexDirection: 'row',
@@ -239,5 +239,6 @@ deviceHeaderInfo: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    marginTop: 4,
   },
 });

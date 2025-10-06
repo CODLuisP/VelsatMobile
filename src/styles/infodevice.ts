@@ -48,6 +48,14 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  statusStopped: {
+  color: '#ef4444', // rojo
+  fontWeight: 'bold',
+},
+statusMoving: {
+  color: '#008000', // verde
+  fontWeight: 'bold',
+},
   temperatureBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     padding: 6,
@@ -147,12 +155,7 @@ export const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 2,
   },
-  statusMoving: {
-        fontSize: 16,
 
-    color: '#4CAF50',
-    fontWeight: '600',
-  },
   speedText: {
     color: '#333',
     fontWeight: '400',

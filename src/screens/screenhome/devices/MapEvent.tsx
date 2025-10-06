@@ -39,6 +39,13 @@ interface MapAlertRouteParams {
     device: string;
     timestamp: string;
     iconName: string;
+    accountID: string;
+    deviceID: string;
+    unixTimestamp: number;
+    statusCode: number;
+    latitude: number;
+    longitude: number;
+    speedKPH: number;
   };
 }
 
@@ -50,8 +57,9 @@ const MapEvent = () => {
 
   const notificationData = route.params?.notificationData;
 
-  const latitude = -12.0464;
-  const longitude = -77.0428;
+  // Usar las coordenadas reales del evento
+  const latitude = notificationData?.latitude || -12.0464;
+  const longitude = notificationData?.longitude || -77.0428;
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -89,7 +97,6 @@ const MapEvent = () => {
         setHasLocationPermission(false);
       }
     } else {
-      // iOS usa Apple Maps nativo
       setHasLocationPermission(true);
     }
   };
@@ -102,7 +109,6 @@ const MapEvent = () => {
     navigation.goBack();
   };
 
-  // Función para obtener el icono correcto basado en el tipo
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'Battery':
@@ -169,7 +175,6 @@ const MapEvent = () => {
     <body>
         <div id="map"></div>
         <script>
-            // Inicializar el mapa
             var map = L.map('map', {
                 zoomControl: true,
                 scrollWheelZoom: true,
@@ -177,24 +182,21 @@ const MapEvent = () => {
                 touchZoom: true
             }).setView([${latitude}, ${longitude}], 15);
 
-            // Agregar capa de OpenStreetMap (GRATUITO)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 19
             }).addTo(map);
 
-            // Crear icono personalizado con color de alerta
-            var alertIcon = L.divIcon({
-                html: '<div style="background-color: ${alertColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13],
-                className: 'custom-div-icon'
+            // Crear icono personalizado con la imagen
+            var alertIcon = L.icon({
+                iconUrl: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/UnidadK_v4eru0.png',
+                iconSize: [60, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [15, -40]
             });
 
-            // Agregar marcador de alerta
             var marker = L.marker([${latitude}, ${longitude}], {icon: alertIcon}).addTo(map);
             
-            // Agregar popup con información
             marker.bindPopup(\`
                 <div style="text-align: center; font-family: Arial, sans-serif;">
                     <h3 style="margin: 5px 0; color: ${alertColor};">${
@@ -203,16 +205,18 @@ const MapEvent = () => {
                     <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${
                       notificationData?.device || 'Sin información'
                     }</p>
-                    <p style="margin: 3px 0;"><strong>ID:</strong> ${
-                      notificationData?.id || 'N/A'
-                    }</p>
+                    <p style="margin: 3px 0;"><strong>Velocidad:</strong> ${
+                      notificationData?.speedKPH?.toFixed(2) || '0'
+                    } km/h</p>
+                    <p style="margin: 3px 0;"><strong>Coordenadas:</strong> ${latitude.toFixed(
+                      6,
+                    )}, ${longitude.toFixed(6)}</p>
                     <p style="margin: 3px 0;"><strong>Fecha:</strong> ${
                       notificationData?.timestamp || 'Sin fecha'
                     }</p>
                 </div>
             \`).openPopup();
 
-            // Agregar ubicación del usuario si hay permisos
             ${
               hasLocationPermission
                 ? `
@@ -238,7 +242,6 @@ const MapEvent = () => {
                 : ''
             }
 
-            // Evitar scroll en el contenedor padre
             map.on('focus', function() { 
                 map.scrollWheelZoom.enable(); 
             });
@@ -274,7 +277,9 @@ const MapEvent = () => {
             description={`${notificationData?.device || 'Dispositivo'} - ${
               notificationData?.timestamp || ''
             }`}
-            pinColor={alertColor}
+            image={{
+              uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/UnidadK_v4eru0.png',
+            }}
           />
         </MapView>
       );
@@ -298,8 +303,7 @@ const MapEvent = () => {
     }
   };
 
-    const topSpace = insets.top + 15;
-
+  const topSpace = insets.top + 15;
 
   if (!notificationData) {
     return (
@@ -321,14 +325,14 @@ const MapEvent = () => {
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
- <View style={[styles.header, { paddingTop: topSpace }]}>        <View style={styles.headerTop}>
+      <View style={[styles.header, { paddingTop: topSpace }]}>
+        <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Detalle de Alerta</Text>
         </View>
-
-        {/* Información de la alerta en el header */}
+        
         <View style={styles.headerAlertInfo}>
           <View style={styles.headerAlertRow}>
             <View
@@ -344,18 +348,15 @@ const MapEvent = () => {
                 {notificationData.title}
               </Text>
               <Text style={styles.headerAlertSubtitle}>
-                {notificationData.device} • ID: {notificationData.id}
+                {notificationData.device} 
               </Text>
-              <Text style={styles.headerAlertTimestamp}>
-                {notificationData.timestamp}
-              </Text>
+           
             </View>
           </View>
         </View>
       </View>
 
       <View style={styles.content}>
-        {/* Map Container */}
         <View style={styles.mapContainer}>{renderMap()}</View>
       </View>
     </View>

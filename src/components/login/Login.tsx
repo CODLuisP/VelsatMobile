@@ -41,8 +41,11 @@ import { styles } from '../../styles/login';
 import { useFocusEffect } from '@react-navigation/native';
 
 import SystemNavigationBar from 'react-native-system-navigation-bar';
-import { getBottomSpace, useNavigationMode } from '../../hooks/useNavigationMode';
-
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../hooks/useNavigationMode';
+import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
@@ -51,9 +54,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-const [isLoggingIn, setIsLoggingIn] = useState(false);
-const buttonScale = useSharedValue(1);
-const loadingRotation = useSharedValue(0);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const buttonScale = useSharedValue(1);
+  const loadingRotation = useSharedValue(0);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -63,17 +66,15 @@ const loadingRotation = useSharedValue(0);
     navigationDetection.hasNavigationBar,
   );
 
-
   useFocusEffect(
     React.useCallback(() => {
-      SystemNavigationBar.setNavigationColor('#1e3a8a');
+      SystemNavigationBar.setNavigationColor('#00296b');
 
       return () => {
-        SystemNavigationBar.setNavigationColor('#1e3a8a');
+        SystemNavigationBar.setNavigationColor('#00296b');
       };
-    }, [])
+    }, []),
   );
-
 
   // Animaciones principales
   const logoScale = useSharedValue(1);
@@ -104,7 +105,7 @@ const loadingRotation = useSharedValue(0);
     setUser,
     setServer,
     setToken,
-    setTipo, 
+    setTipo,
     setLoading,
     biometric,
     checkBiometricAvailability,
@@ -180,7 +181,6 @@ const loadingRotation = useSharedValue(0);
     }
   };
 
-
   const makePhoneCall = (): void => {
     const phoneNumber: string = '912903330';
     const phoneUrl: string = `tel:${phoneNumber}`;
@@ -189,145 +189,142 @@ const loadingRotation = useSharedValue(0);
       .then(() => {
         console.log('Marcador abierto exitosamente');
       })
-      .catch((error) => {
+      .catch(error => {
         console.log('Error abriendo marcador:', error);
 
         Alert.alert(
           'No se pudo abrir el marcador',
           `Marca manualmente este número:\n${phoneNumber}`,
-          [{ text: 'Entendido' }]
+          [{ text: 'Entendido' }],
         );
       });
   };
 
-
-
-
-const handleLogin = async () => {
-  if (!usuario.trim()) {
-    Alert.alert('Error', 'Por favor ingresa tu usuario');
-    return;
-  }
-
-  if (!password.trim()) {
-    Alert.alert('Error', 'Por favor ingresa tu contraseña');
-    return;
-  }
-
-  try {
-    // Activar estado de carga INMEDIATAMENTE
-    setIsLoggingIn(true);
-    setLoading(true);
-
-    // Animación del botón
-    buttonScale.value = withSequence(
-      withTiming(0.95, { duration: 100 }),
-      withTiming(1, { duration: 100 })
-    );
-
-    // Animación de rotación para el icono de carga
-    loadingRotation.value = withRepeat(
-      withTiming(360, { duration: 1000, easing: Easing.linear }),
-      -1,
-      false
-    );
-
-    // PASO 1: Obtener el servidor
-    const serverResponse = await axios.get(
-      `https://velsat.pe:2087/api/Server/MobileServer/${usuario}`,
-      {
-        timeout: 10000,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
-
-    const serverData = serverResponse.data;
-
-    if (!serverData.servidor) {
-      Alert.alert(
-        'Error',
-        'No se pudo obtener la configuración del servidor',
-      );
-      setIsLoggingIn(false);
-      setLoading(false);
+  const handleLogin = async () => {
+    if (!usuario.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu usuario');
       return;
     }
 
-    const loginResponse = await axios.post(
-      `${serverData.servidor}/api/Login/MobileLogin`,
-      {
-        login: usuario,
-        clave: password,
-        tipo: serverData.tipo,
-      },
-      {
-        timeout: 10000,
-        headers: {
-          'Content-Type': 'application/json',
+    if (!password.trim()) {
+      Alert.alert('Error', 'Por favor ingresa tu contraseña');
+      return;
+    }
+
+    try {
+      // Activar estado de carga INMEDIATAMENTE
+      setIsLoggingIn(true);
+      setLoading(true);
+
+      // Animación del botón
+      buttonScale.value = withSequence(
+        withTiming(0.95, { duration: 100 }),
+        withTiming(1, { duration: 100 }),
+      );
+
+      // Animación de rotación para el icono de carga
+      loadingRotation.value = withRepeat(
+        withTiming(360, { duration: 1000, easing: Easing.linear }),
+        -1,
+        false,
+      );
+
+      // PASO 1: Obtener el servidor
+      const serverResponse = await axios.get(
+        `https://velsat.pe:2087/api/Server/MobileServer/${usuario}`,
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-      },
-    );
+      );
 
-    const loginData = loginResponse.data;
+      const serverData = serverResponse.data;
 
-    if (loginData.token && loginData.username && loginData.account) {
-      await saveCredentials();
+      if (!serverData.servidor) {
+        Alert.alert(
+          'Error',
+          'No se pudo obtener la configuración del servidor',
+        );
+        setIsLoggingIn(false);
+        setLoading(false);
+        return;
+      }
 
-      setServer(serverData.servidor);
-      setToken(loginData.token);
-      setTipo(serverData.tipo);
+      const loginResponse = await axios.post(
+        `${serverData.servidor}/api/Login/MobileLogin`,
+        {
+          login: usuario,
+          clave: password,
+          tipo: serverData.tipo,
+        },
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
 
-      const userObj: UserType = {
-        id: loginData.username,
-        username: loginData.username,
-        email: `${loginData.username}@velsat.com`,
-        name: loginData.username.charAt(0).toUpperCase() + loginData.username.slice(1),
-        description: loginData.account.description,
-      };
+      const loginData = loginResponse.data;
 
-      setUser(userObj);
-    } else {
-      Alert.alert('Error', 'Respuesta de login inválida');
+      if (loginData.token && loginData.username && loginData.account) {
+        await saveCredentials();
+
+        setServer(serverData.servidor);
+        setToken(loginData.token);
+        setTipo(serverData.tipo);
+
+        const userObj: UserType = {
+          id: loginData.username,
+          username: loginData.username,
+          email: `${loginData.username}@velsat.com`,
+          name:
+            loginData.username.charAt(0).toUpperCase() +
+            loginData.username.slice(1),
+          description: loginData.account.description,
+        };
+
+        setUser(userObj);
+      } else {
+        Alert.alert('Error', 'Respuesta de login inválida');
+        setIsLoggingIn(false);
+        setLoading(false);
+      }
+    } catch (error) {
+      let errorMessage = 'Error de conexión';
+
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          const status = error.response.status;
+          if (status === 401 || status === 400) {
+            errorMessage = 'Usuario o contraseña incorrectos';
+          } else if (status >= 500) {
+            errorMessage = 'Error del servidor. Intenta más tarde';
+          } else {
+            errorMessage = `Error del servidor (${status})`;
+          }
+        } else if (error.request) {
+          errorMessage = 'Sin conexión a internet. Verifica tu conexión';
+        } else {
+          errorMessage = 'Error de configuración';
+        }
+      }
+
+      Alert.alert('Error de Login', errorMessage);
       setIsLoggingIn(false);
       setLoading(false);
     }
-  } catch (error) {
-    let errorMessage = 'Error de conexión';
+  };
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+    backgroundColor: isLoggingIn ? '#22c55e' : '#f97316',
+  }));
 
-    if (axios.isAxiosError(error)) {
-      if (error.response) {
-        const status = error.response.status;
-        if (status === 401 || status === 400) {
-          errorMessage = 'Usuario o contraseña incorrectos';
-        } else if (status >= 500) {
-          errorMessage = 'Error del servidor. Intenta más tarde';
-        } else {
-          errorMessage = `Error del servidor (${status})`;
-        }
-      } else if (error.request) {
-        errorMessage = 'Sin conexión a internet. Verifica tu conexión';
-      } else {
-        errorMessage = 'Error de configuración';
-      }
-    }
-
-    Alert.alert('Error de Login', errorMessage);
-    setIsLoggingIn(false);
-    setLoading(false);
-  }
-};
-const buttonAnimatedStyle = useAnimatedStyle(() => ({
-  transform: [{ scale: buttonScale.value }],
-  backgroundColor: isLoggingIn ? '#22c55e' : '#f97316',
-}));
-
-const loadingIconStyle = useAnimatedStyle(() => ({
-  transform: [{ rotate: `${loadingRotation.value}deg` }],
-}));
-
-
+  const loadingIconStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${loadingRotation.value}deg` }],
+  }));
 
   useEffect(() => {
     loadSavedCredentials();
@@ -361,109 +358,6 @@ const loadingIconStyle = useAnimatedStyle(() => ({
       true,
     );
 
-    orb1.value = withRepeat(
-      withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
-
-    orb2.value = withRepeat(
-      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
-
-    orb3.value = withRepeat(
-      withTiming(1, { duration: 10000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
-
-    satellite1.value = withRepeat(
-      withTiming(1, { duration: 12000, easing: Easing.linear }),
-      -1,
-      false,
-    );
-
-    satellite2.value = withDelay(
-      4000,
-      withRepeat(
-        withTiming(1, { duration: 15000, easing: Easing.linear }),
-        -1,
-        false,
-      ),
-    );
-
-    satellite3.value = withDelay(
-      8000,
-      withRepeat(
-        withTiming(1, { duration: 18000, easing: Easing.linear }),
-        -1,
-        false,
-      ),
-    );
-
-    // Señales GPS pulsantes
-    gpsSignal1.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-        withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-      ),
-      -1,
-      false,
-    );
-
-    gpsSignal2.value = withDelay(
-      800,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-        ),
-        -1,
-        false,
-      ),
-    );
-
-    gpsSignal3.value = withDelay(
-      1600,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1500, easing: Easing.out(Easing.cubic) }),
-          withTiming(0, { duration: 500, easing: Easing.in(Easing.cubic) }),
-        ),
-        -1,
-        false,
-      ),
-    );
-
-    // Radar sweep
-    radarSweep.value = withRepeat(
-      withTiming(1, { duration: 4000, easing: Easing.linear }),
-      -1,
-      false,
-    );
-
-    // Señal de antena
-    antennaSignal.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-        withTiming(0.3, { duration: 200, easing: Easing.in(Easing.ease) }),
-        withTiming(1, { duration: 800, easing: Easing.out(Easing.ease) }),
-        withTiming(0, { duration: 1200, easing: Easing.in(Easing.ease) }),
-      ),
-      -1,
-      false,
-    );
-
-    // Pulso de red/conexión
-    networkPulse.value = withRepeat(
-      withTiming(1, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
-
-
     const startCarAnimation = (): void => {
       carPosition.value = -200;
       carPosition.value = withTiming(
@@ -491,7 +385,6 @@ const loadingIconStyle = useAnimatedStyle(() => ({
     );
   }, []);
 
-
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
   }));
@@ -501,92 +394,19 @@ const loadingIconStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: formTranslateY.value }],
   }));
 
-
-  const orb2Style = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: interpolate(orb2.value, [0, 1], [0, 40]) },
-      { translateX: interpolate(orb2.value, [0, 1], [0, -25]) },
-    ],
-  }));
-
-  const orb3Style = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: interpolate(orb3.value, [0, 1], [0, -20]) },
-      { translateX: interpolate(orb3.value, [0, 1], [0, 15]) },
-    ],
-  }));
-
-  const satellite1Style = useAnimatedStyle(() => {
-    const angle = interpolate(satellite1.value, [0, 1], [0, 360]);
-    const radius = 150;
-    const centerX = width * 0.8;
-    const centerY = height * 0.15;
-
-    return {
-      transform: [
-        { translateX: centerX + Math.cos((angle * Math.PI) / 180) * radius },
-        {
-          translateY:
-            centerY + Math.sin((angle * Math.PI) / 180) * radius * 0.3,
-        },
-        { rotate: `${angle}deg` },
-      ],
-    };
-  });
-
-  const satellite2Style = useAnimatedStyle(() => {
-    const angle = interpolate(satellite2.value, [0, 1], [0, 360]);
-    const radius = 120;
-    const centerX = width * 0.2;
-    const centerY = height * 0.25;
-
-    return {
-      transform: [
-        { translateX: centerX + Math.cos((angle * Math.PI) / 180) * radius },
-        {
-          translateY:
-            centerY + Math.sin((angle * Math.PI) / 180) * radius * 0.4,
-        },
-        { rotate: `${-angle}deg` },
-      ],
-    };
-  });
-
-  const satellite3Style = useAnimatedStyle(() => {
-    const angle = interpolate(satellite3.value, [0, 1], [0, 360]);
-    const radius = 100;
-    const centerX = width * 0.9;
-    const centerY = height * 0.4;
-
-    return {
-      transform: [
-        { translateX: centerX + Math.cos((angle * Math.PI) / 180) * radius },
-        {
-          translateY:
-            centerY + Math.sin((angle * Math.PI) / 180) * radius * 0.2,
-        },
-        { rotate: `${angle * 0.5}deg` },
-      ],
-    };
-  });
-
-
-  const carStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: carPosition.value }],
-  }));
-
-  const roadStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateX: interpolate(roadOffset.value, [0, 80], [0, -80]),
-      },
-    ],
-  }));
-
   return (
-    <View style={styles.container}>
-
-
+    <LinearGradient
+      colors={[
+        '#003f88',
+        '#00296b',
+        '#00296b',
+        '#001845',
+        '#00296b',
+        '#00296b',
+        '#00296b',
+      ]}
+      style={styles.container}
+    >
       <StatusBar
         barStyle="light-content"
         backgroundColor="transparent"
@@ -599,63 +419,11 @@ const loadingIconStyle = useAnimatedStyle(() => ({
       />
       {/* Fondo gradiente animado */}
 
-      {/* Orbes decorativos flotantes */}
-      <Animated.View style={[styles.orb, styles.orb2, orb2Style]} />
-      <Animated.View style={[styles.orb, styles.orb3, orb3Style]} />
-
-      {/* ELEMENTOS GPS ANIMADOS */}
-
-      {/* Satélites en órbita */}
-      <Animated.View style={[styles.satellite, satellite1Style]}>
-        <Text style={styles.satelliteIcon}>🛰️</Text>
-      </Animated.View>
-
-      <Animated.View style={[styles.satellite, satellite2Style]}>
-        <Text style={styles.satelliteIcon}>🛰️</Text>
-      </Animated.View>
-
-      <Animated.View style={[styles.satellite, satellite3Style]}>
-        <Text style={styles.satelliteIcon}>🛰️</Text>
-      </Animated.View>
-
-      {/* Señales GPS pulsantes */}
-      {/* <Animated.View
-        style={[styles.gpsSignal, styles.gpsSignal2Pos, gpsSignal2Style]}
-      />
-      <Animated.View
-        style={[styles.gpsSignal, styles.gpsSignal3Pos, gpsSignal3Style]}
-      /> */}
-
-      {/* Radar sweep */}
-      {/* <View style={styles.radarContainer}>
-        <Animated.View style={[styles.radarSweep, radarSweepStyle]} />
-        <View style={styles.radarCenter}>
-          <Text style={styles.radarIcon}>📡</Text>
-        </View>
-      </View> */}
-
-      {/* Antena de comunicación */}
-      {/* <View style={styles.antennaContainer}>
-        <Animated.View style={[styles.antennaSignal, antennaSignalStyle]} />
-        <Text style={styles.antennaIcon}>🛰️</Text>
-      </View> */}
-
-      {/* Indicadores de red */}
-      {/* <Animated.View
-        style={[styles.networkPulse, styles.networkPulse1, networkPulseStyle]}
-      />
-      <Animated.View
-        style={[styles.networkPulse, styles.networkPulse2, networkPulseStyle]}
-      /> */}
-
       {/* Contenido principal */}
       <View style={styles.mainContent}>
-
-
         {/* Formulario moderno */}
         <Animated.View style={[styles.formContainer, formStyle]}>
           <View style={styles.formCard}>
-
             {/* Logo con glow effect */}
             <Animated.View style={[styles.logoContainer, logoStyle]}>
               <View style={styles.logoMain}>
@@ -669,7 +437,6 @@ const loadingIconStyle = useAnimatedStyle(() => ({
             </Animated.View>
             <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
-            {/* BOTÓN BIOMÉTRICO - Solo aparece si está configurado */}
             {showBiometricOption && (
               <>
                 <View style={styles.biometricSection}>
@@ -683,8 +450,8 @@ const loadingIconStyle = useAnimatedStyle(() => ({
                       )}
                       {(biometric.type === 'TouchID' ||
                         biometric.type === 'Biometrics') && (
-                          <Fingerprint color="#fff" size={24} />
-                        )}
+                        <Fingerprint color="#fff" size={24} />
+                      )}
                       <Text style={styles.biometricButtonText}>
                         Acceder con {getBiometricDisplayName()}
                       </Text>
@@ -742,7 +509,6 @@ const loadingIconStyle = useAnimatedStyle(() => ({
               </View>
             </View>
 
-            {/* Checkbox para recordar contraseña */}
             <TouchableOpacity
               style={styles.rememberContainer}
               onPress={() => setRememberMe(!rememberMe)}
@@ -755,35 +521,38 @@ const loadingIconStyle = useAnimatedStyle(() => ({
               <Text style={styles.rememberText}>Recordar mi contraseña</Text>
             </TouchableOpacity>
 
-            {/* Botón principal con gradiente */}
-           <TouchableOpacity 
-  style={styles.loginButton} 
-  onPress={handleLogin}
-  disabled={isLoggingIn}
-  activeOpacity={0.8}
->
-  <Animated.View style={[
-    styles.loginButtonGradient, 
-    buttonAnimatedStyle, { borderRadius: 16 }  ]}>
-   {isLoggingIn ? (
-  <>
-    <Animated.View style={[styles.loadingSpinnerContainer, loadingIconStyle]}>
-      <View style={styles.loadingSpinnerCircle} />
-    </Animated.View>
-    <Text style={styles.loginButtonText}>CARGANDO...</Text>
-  </>
-) : (
-  <>
-    <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
-    <View style={styles.loginArrow}>
-      <LogIn color="white" size={16} />
-    </View>
-  </>
-
-  
-)}
-  </Animated.View>
-</TouchableOpacity>
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={handleLogin}
+              disabled={isLoggingIn}
+              activeOpacity={0.8}
+            >
+              <Animated.View
+                style={[
+                  styles.loginButtonGradient,
+                  buttonAnimatedStyle,
+                  { borderRadius: 16 },
+                ]}
+              >
+                {isLoggingIn ? (
+                  <>
+                    <Animated.View
+                      style={[styles.loadingSpinnerContainer, loadingIconStyle]}
+                    >
+                      <View style={styles.loadingSpinnerCircle} />
+                    </Animated.View>
+                    <Text style={styles.loginButtonText}>CARGANDO...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
+                    <View style={styles.loginArrow}>
+                      <LogIn color="white" size={16} />
+                    </View>
+                  </>
+                )}
+              </Animated.View>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.forgotPassword}
@@ -797,57 +566,16 @@ const loadingIconStyle = useAnimatedStyle(() => ({
               <Text style={styles.forgotPasswordText}>
                 Contáctanos por teléfono
               </Text>
-
             </TouchableOpacity>
 
-            {/* <View style={styles.statusContainer}>
-                <View style={styles.statusDot} />
-                <Text style={styles.statusText}>
-                  Aplicativo móvil • GPS en línea
-                </Text>
-              </View> */}
+            <View style={styles.statusContainer}>
+              <View style={styles.statusDot} />
+              <Text style={styles.statusText}>V. 20.0.1 - App Móvil</Text>
+            </View>
           </View>
         </Animated.View>
-
-
       </View>
-
-      {/* Carretera con carro en movimiento */}
-
-      <View style={[
-        styles.footerRoadSection,
-        {
-          paddingBottom: bottomSpace,
-          height: Platform.OS === 'android' ? 100 + insets.bottom : 100,
-          backgroundColor: '#1e3a8a'
-        }
-      ]}>
-        <View style={styles.road}>
-          <Animated.View style={[styles.roadLines, roadStyle]}>
-            {Array.from({ length: 40 }).map((_, index) => (
-              <View key={`line1-${index}`} style={styles.roadLine} />
-            ))}
-          </Animated.View>
-          <Animated.View style={[styles.roadLines, roadStyle, { left: 80 }]}>
-            {Array.from({ length: 40 }).map((_, index) => (
-              <View key={`line2-${index}`} style={styles.roadLine} />
-            ))}
-          </Animated.View>
-        </View>
-
-        <Animated.View style={[
-          styles.carContainer,
-          carStyle,
-          { bottom: Platform.OS === 'android' ? insets.bottom - 5 : -5 }
-        ]}>
-          <Image
-            source={require('../../../assets/carlogin.png')}
-            style={styles.carImage}
-            resizeMode="contain"
-          />
-        </Animated.View>
-      </View>
-    </View>
+    </LinearGradient>
   );
 };
 

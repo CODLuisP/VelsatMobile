@@ -1,5 +1,14 @@
-import React from 'react';
-import { Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+  Share,
+  Alert,
+} from 'react-native';
 import {
   ChevronLeft,
   Settings,
@@ -7,7 +16,7 @@ import {
   Navigation,
   Gauge,
   Calendar,
-  Share,
+  Share as ShareIcon,
   Radar,
   SatelliteDish,
   BatteryFull,
@@ -28,12 +37,39 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useAuthStore } from '../../../store/authStore';
+import axios from 'axios';
+import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 
 type InfoDeviceRouteProp = RouteProp<RootStackParamList, 'InfoDevice'>;
+
+interface VehiculoData {
+  deviceId: string;
+  lastGPSTimestamp: number;
+  lastValidLatitude: number;
+  lastValidLongitude: number;
+  lastValidHeading: number;
+  lastValidSpeed: number;
+  lastOdometerKM: number;
+  odometerini: number | null;
+  kmini: number | null;
+  descripcion: string | null;
+  direccion: string;
+  codgeoact: string | null;
+  rutaact: string | null;
+  servicio: string | null;
+  datosGeocercausu: string | null;
+}
+
+interface ApiResponse {
+  fechaActual: string;
+  vehiculo: VehiculoData;
+}
 
 const InfoDevice = () => {
   const route = useRoute<InfoDeviceRouteProp>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { user, logout, server, tipo } = useAuthStore();
 
   const { deviceName } = route.params;
   const insets = useSafeAreaInsets();
@@ -43,21 +79,110 @@ const InfoDevice = () => {
     navigationDetection.hasNavigationBar,
   );
 
+  const [vehiculoData, setVehiculoData] = useState<VehiculoData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const username = user?.username;
+
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#1e3a8a', false);
     }, []),
   );
 
+  const getEstadoMovimiento = useCallback((speed: number) => {
+    return speed === 0 ? 'Detenido' : 'Movimiento';
+  }, []);
+
+  const formatFechaHora = useCallback((timestamp: number) => {
+    const fecha = new Date(timestamp * 1000);
+    const day = String(fecha.getDate()).padStart(2, '0');
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const year = fecha.getFullYear();
+    const hours = String(fecha.getHours()).padStart(2, '0');
+    const minutes = String(fecha.getMinutes()).padStart(2, '0');
+    const seconds = String(fecha.getSeconds()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  }, []);
+
+  const fetchVehiculoData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get<ApiResponse>(
+        `${server}/api/Aplicativo/vehiculo/${username}/${deviceName}`,
+      );
+      setVehiculoData(response.data.vehiculo);
+    } catch (error) {
+      console.error('Error fetching vehiculo data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [username, deviceName]);
+
+  useEffect(() => {
+    fetchVehiculoData();
+  }, [fetchVehiculoData]);
+
   const handleGoBack = () => {
     navigation.goBack();
   };
 
   const handleEvents = () => {
-    navigation.navigate('Events');
+    navigation.navigate('Events', { deviceName });
+  };
+  const handleShare = async () => {
+    if (!vehiculoData) {
+      Alert.alert('Error', 'No hay información disponible para compartir');
+      return;
+    }
+
+    const googleMapsLink = `https://www.google.com/maps?q=${vehiculoData.lastValidLatitude},${vehiculoData.lastValidLongitude}`;
+
+    const mensaje = `
+*INFORMACIÓN DEL VEHÍCULO*
+
+✅ *UNIDAD:* ${deviceName}
+✅ *ESTADO:* ${estado}
+✅ *VELOCIDAD:* ${vehiculoData.lastValidSpeed} km/h
+✅ *FECHA Y HORA:* ${fechaHora}
+✅ *UBICACIÓN ACTUAL:* ${vehiculoData.direccion}
+✅ *DIRECCIÓN:* ${direccion}
+✅ *KILOMETRAJE:* ${kilometraje} Km
+✅ *COORDENADAS:*
+  Latitud:  ${vehiculoData.lastValidLatitude}
+  Longitud: ${vehiculoData.lastValidLongitude}
+
+✅ *VER EN GOOGLE MAPS:*
+  ${googleMapsLink}
+
+Compartido desde Velsat Mobile
+  `.trim();
+
+    try {
+      await Share.share({
+        message: mensaje,
+        title: `Ubicación de ${deviceName}`,
+      });
+    } catch (error) {
+      console.error('Error al compartir:', error);
+      Alert.alert('Error', 'No se pudo compartir la información');
+    }
   };
 
   const topSpace = insets.top + 5;
+
+  const estado = vehiculoData
+    ? getEstadoMovimiento(vehiculoData.lastValidSpeed)
+    : 'Cargando...';
+  const direccion = vehiculoData
+    ? obtenerDireccion(vehiculoData.lastValidHeading)
+    : 'Cargando...';
+  const fechaHora = vehiculoData
+    ? formatFechaHora(vehiculoData.lastGPSTimestamp)
+    : 'Cargando...';
+  const kilometraje = vehiculoData
+    ? vehiculoData.lastOdometerKM.toFixed(3)
+    : '0.000';
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
@@ -68,9 +193,6 @@ const InfoDevice = () => {
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>Unidad: {deviceName}</Text>
           <View style={styles.headerBadges}>
-            <View style={styles.temperatureBadge}>
-              <Radar size={16} color="#ffffffff" />
-            </View>
             <View style={styles.fuelBadge}>
               <BatteryFull size={16} color="#ffffffff" />
             </View>
@@ -92,7 +214,9 @@ const InfoDevice = () => {
         {/* Vehicle Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={require('../../../../assets/Car.jpg')}
+            source={{
+              uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/UnidadK_v4eru0.png',
+            }}
             style={styles.vehicleImage}
           />
         </View>
@@ -107,11 +231,28 @@ const InfoDevice = () => {
               <Gauge size={20} color="#666" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>
-                <Text style={styles.statusMoving}>Movimiento</Text>
-                <Text style={styles.speedText}> (34 km/h)</Text>
-              </Text>
-              <Text style={styles.infoSubtitle}>Estado y velocidad</Text>
+              {loading && !vehiculoData ? (
+                <ActivityIndicator size="small" color="#666" />
+              ) : (
+                <>
+                  <Text style={styles.infoLabel}>
+                    <Text
+                      style={
+                        estado === 'Detenido'
+                          ? styles.statusStopped
+                          : styles.statusMoving
+                      }
+                    >
+                      {estado}
+                    </Text>
+                    <Text style={styles.speedText}>
+                      {' '}
+                      ({vehiculoData?.lastValidSpeed || 0} km/h)
+                    </Text>
+                  </Text>
+                  <Text style={styles.infoSubtitle}>Estado y velocidad</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -121,8 +262,14 @@ const InfoDevice = () => {
               <Calendar size={20} color="#666" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>16/09/2025 16:45:34</Text>
-              <Text style={styles.infoSubtitle}>Fecha y hora</Text>
+              {loading && !vehiculoData ? (
+                <ActivityIndicator size="small" color="#666" />
+              ) : (
+                <>
+                  <Text style={styles.infoValue}>{fechaHora}</Text>
+                  <Text style={styles.infoSubtitle}>Fecha y hora</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -132,8 +279,17 @@ const InfoDevice = () => {
               <Settings size={20} color="#666" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>-7.151254, -78.506478</Text>
-              <Text style={styles.infoSubtitle}>Latitud y longitud</Text>
+              {loading && !vehiculoData ? (
+                <ActivityIndicator size="small" color="#666" />
+              ) : (
+                <>
+                  <Text style={styles.infoValue}>
+                    {vehiculoData?.lastValidLatitude || 0},{' '}
+                    {vehiculoData?.lastValidLongitude || 0}
+                  </Text>
+                  <Text style={styles.infoSubtitle}>Latitud y longitud</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -143,10 +299,16 @@ const InfoDevice = () => {
               <MapPin size={20} color="#666" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>
-                Jr. Zoilo León 391, Lima, Perú
-              </Text>
-              <Text style={styles.infoSubtitle}>Ubicación actual</Text>
+              {loading && !vehiculoData ? (
+                <ActivityIndicator size="small" color="#666" />
+              ) : (
+                <>
+                  <Text style={styles.infoValue}>
+                    {vehiculoData?.direccion || 'Cargando ubicación...'}
+                  </Text>
+                  <Text style={styles.infoSubtitle}>Ubicación actual</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -156,8 +318,14 @@ const InfoDevice = () => {
               <Navigation size={20} color="#666" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>Noroeste</Text>
-              <Text style={styles.infoSubtitle}>Dirección</Text>
+              {loading && !vehiculoData ? (
+                <ActivityIndicator size="small" color="#666" />
+              ) : (
+                <>
+                  <Text style={styles.infoValue}>{direccion}</Text>
+                  <Text style={styles.infoSubtitle}>Dirección</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -167,8 +335,14 @@ const InfoDevice = () => {
               <Gauge size={20} color="#666" />
             </View>
             <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>14195.7 Km</Text>
-              <Text style={styles.infoSubtitle}>Kilometraje actual</Text>
+              {loading && !vehiculoData ? (
+                <ActivityIndicator size="small" color="#666" />
+              ) : (
+                <>
+                  <Text style={styles.infoValue}>{kilometraje} Km</Text>
+                  <Text style={styles.infoSubtitle}>Kilometraje actual</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -195,8 +369,8 @@ const InfoDevice = () => {
             <Text style={styles.eventsButtonText}>Eventos</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.shareButton}>
-            <Share size={20} color="#fff" />
+          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+            <ShareIcon size={20} color="#fff" />
             <Text style={styles.shareButtonText}>Compartir</Text>
           </TouchableOpacity>
         </View>
