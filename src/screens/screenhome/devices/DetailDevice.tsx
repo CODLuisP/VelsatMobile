@@ -1,6 +1,7 @@
 // DetailDevice.tsx
 import 'react-native-url-polyfill/auto';
 
+
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
   View,
@@ -45,7 +46,9 @@ import {
 import { useAuthStore } from '../../../store/authStore';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 
+
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
+
 
 interface VehicleData {
   deviceId: string;
@@ -65,10 +68,12 @@ interface VehicleData {
   datosGeocercausu: any | null;
 }
 
+
 interface SignalRData {
   fechaActual: string;
   vehiculo: VehicleData;
 }
+
 
 // Mapeo de imágenes - IMPORTANTE: debe estar fuera del componente
 const DIRECTION_IMAGES = {
@@ -90,6 +95,7 @@ const DIRECTION_IMAGES = {
     'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594556/topleft_ofml2l.png',
 };
 
+
 const DetailDevice = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<DetailDeviceRouteProp>();
@@ -105,8 +111,10 @@ const DetailDevice = () => {
   >('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
 
+
   const { device } = route.params;
   const { user, logout, server, tipo } = useAuthStore();
+
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -115,31 +123,15 @@ const DetailDevice = () => {
     navigationDetection.hasNavigationBar,
   );
 
-useFocusEffect(
-  React.useCallback(() => {
-    NavigationBarColor('#1e3a8a', false);
-    
-    // SOLUCIÓN: Invalidar mapa al volver a la pantalla
-    if (Platform.OS === 'android' && webViewRef.current && isWebViewReady) {
-      setTimeout(() => {
-        webViewRef.current?.injectJavaScript(`
-          if (typeof map !== 'undefined' && map) {
-            console.log('Invalidando tamaño del mapa...');
-            map.invalidateSize(true);
-            
-            // Forzar redibujado de los tiles
-            map.eachLayer(function(layer) {
-              if (layer instanceof L.TileLayer) {
-                layer.redraw();
-              }
-            });
-          }
-          true;
-        `);
-      }, 200);
-    }
-  }, [isWebViewReady]),
-);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+
+    }, []),
+  );
+
+
 
 
   useEffect(() => {
@@ -147,12 +139,15 @@ useFocusEffect(
       setCurrentTime(new Date());
     }, 1000);
 
+
     return () => clearInterval(timer);
   }, []);
+
 
   useEffect(() => {
     const username = user?.username;
     const placa = device.name;
+
 
     if (!username || !placa) {
       console.error('❌ Faltan datos para conectar SignalR');
@@ -160,10 +155,13 @@ useFocusEffect(
       return;
     }
 
+
     const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
+
 
     console.log('🔗 Conectando a:', hubUrl);
     setConnectionStatus('connecting');
+
 
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
@@ -189,6 +187,7 @@ useFocusEffect(
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
+
     newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
       console.log('📡 Datos recibidos:', JSON.stringify(datos, null, 2));
       if (datos.vehiculo) {
@@ -197,30 +196,36 @@ useFocusEffect(
       }
     });
 
+
     newConnection.on('ConectadoExitosamente', data => {
       console.log('✅ Conectado exitosamente:', data);
       setConnectionStatus('connected');
     });
+
 
     newConnection.on('Error', msg => {
       console.error('❌ Error desde SignalR:', msg);
       setConnectionStatus('error');
     });
 
+
     newConnection.onreconnecting(error => {
       console.log('🔄 Reconectando...', error);
       setConnectionStatus('connecting');
     });
+
 
     newConnection.onreconnected(connectionId => {
       console.log('✅ Reconectado con ID:', connectionId);
       setConnectionStatus('connected');
     });
 
+
     newConnection.onclose(error => {
       console.log('🔌 Conexión cerrada', error);
       setConnectionStatus('disconnected');
     });
+
 
     newConnection
       .start()
@@ -233,7 +238,9 @@ useFocusEffect(
         setConnectionStatus('error');
       });
 
+
     setConnection(newConnection);
+
 
     return () => {
       if (
@@ -247,11 +254,13 @@ useFocusEffect(
     };
   }, [device.name, user?.username]);
 
+
   const handleInfiDevice = () => {
     navigation.navigate('InfoDevice', {
       deviceName: device.name,
     });
   };
+
 
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
@@ -260,15 +269,19 @@ useFocusEffect(
   const gpsTimestamp = vehicleData?.lastGPSTimestamp || Date.now() / 1000;
   const heading = vehicleData?.lastValidHeading || 0;
 
+
   const getStatus = () => {
     if (!vehicleData) return 'Cargando...';
     if (speed > 0) return 'Movimiento';
     return 'Detenido';
   };
 
+
   const status = getStatus();
 
+
   const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
+
 
   // Función para obtener el nombre de archivo según el ángulo
   // Función para obtener el nombre de archivo y tamaño según el ángulo
@@ -316,6 +329,7 @@ useFocusEffect(
     return { name: 'up.png' as keyof typeof DIRECTION_IMAGES, size: [30, 40] }; // 337.5 - 360
   };
 
+
   // Función para obtener solo el nombre (mantener compatibilidad)
   const getDirectionImageName = (
     angle: number,
@@ -323,22 +337,27 @@ useFocusEffect(
     return getDirectionImageData(angle).name;
   };
 
+
   // Función para obtener la imagen según el ángulo
   const getDirectionImage = (angle: number) => {
     const imageName = getDirectionImageName(angle);
     return { uri: DIRECTION_IMAGES[imageName] };
   };
 
+
   const openGoogleMaps = () => {
     if (!vehicleData) return;
 
+
     const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
+
 
     const nativeUrl = Platform.select({
       ios: `maps://app?daddr=${latitude},${longitude}&dirflg=d`,
       android: `google.navigation:q=${latitude},${longitude}&mode=d`,
       default: webUrl,
     });
+
 
     if (nativeUrl) {
       Linking.canOpenURL(nativeUrl)
@@ -358,9 +377,11 @@ useFocusEffect(
     }
   };
 
+
   const getStreetViewUrl = () => {
     return `https://maps.googleapis.com/maps/api/streetview?size=300x150&location=${latitude},${longitude}&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`;
   };
+
 
   const requestLocationPermission = async () => {
     if (Platform.OS === 'android') {
@@ -377,6 +398,7 @@ useFocusEffect(
           },
         );
 
+
         setHasLocationPermission(
           granted === PermissionsAndroid.RESULTS.GRANTED,
         );
@@ -389,17 +411,21 @@ useFocusEffect(
     }
   };
 
+
   useEffect(() => {
     requestLocationPermission();
   }, []);
+
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
+
   const toggleInfo = () => {
     setIsInfoExpanded(!isInfoExpanded);
   };
+
 
   const formatDateTime = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -411,251 +437,271 @@ useFocusEffect(
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
+
   const leafletHTML = useMemo(() => {
     return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Ubicación del Vehículo</title>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-            crossorigin=""/>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
-        <style>
-            body { 
-                margin: 0; 
-                padding: 0; 
-                overflow: hidden;
-            }
-            #map { 
-                height: 100vh; 
-                width: 100vw;
-                z-index: 0;
-            }
+   <!DOCTYPE html>
+   <html>
+   <head>
+       <meta charset="utf-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+       <title>Ubicación del Vehículo</title>
+       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+           crossorigin=""/>
+       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+           crossorigin=""></script>
+       <style>
+           body {
+               margin: 0;
+               padding: 0;
+               overflow: hidden;
+           }
+           #map {
+               height: 100vh;
+               width: 100vw;
+               z-index: 0;
+           }
 
-            .leaflet-top.leaflet-left {
-                left: auto !important;
-                right: 5px !important;
-                top: 25px !important;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="map"></div>
-        <script>
-            var map = L.map('map', {
-                zoomControl: true,
-                scrollWheelZoom: true,
-                doubleClickZoom: true,
-                touchZoom: true
-            }).setView([-12.0464, -77.0428], 16);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19
-            }).addTo(map);
+           .leaflet-top.leaflet-left {
+               left: auto !important;
+               right: 5px !important;
+               top: 25px !important;
+           }
+       </style>
+   </head>
+   <body>
+       <div id="map"></div>
+       <script>
+           var map = L.map('map', {
+               zoomControl: true,
+               scrollWheelZoom: true,
+               doubleClickZoom: true,
+               touchZoom: true
+           }).setView([-12.0464, -77.0428], 16);
 
-            // Guardar todas las URLs de imágenes
+
+           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+               attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+               maxZoom: 19
+           }).addTo(map);
+
+
+           // Guardar todas las URLs de imágenes
 window.imageUrls = {
-  up: '${DIRECTION_IMAGES['up.png']}',
-  topright: '${DIRECTION_IMAGES['topright.png']}',
-  right: '${DIRECTION_IMAGES['right.png']}',
-  downright: '${DIRECTION_IMAGES['downright.png']}',
-  down: '${DIRECTION_IMAGES['down.png']}',
-  downleft: '${DIRECTION_IMAGES['downleft.png']}',
-  left: '${DIRECTION_IMAGES['left.png']}',
-  topleft: '${DIRECTION_IMAGES['topleft.png']}'
+ up: '${DIRECTION_IMAGES['up.png']}',
+ topright: '${DIRECTION_IMAGES['topright.png']}',
+ right: '${DIRECTION_IMAGES['right.png']}',
+ downright: '${DIRECTION_IMAGES['downright.png']}',
+ down: '${DIRECTION_IMAGES['down.png']}',
+ downleft: '${DIRECTION_IMAGES['downleft.png']}',
+ left: '${DIRECTION_IMAGES['left.png']}',
+ topleft: '${DIRECTION_IMAGES['topleft.png']}'
 };
-            // Variable para el marcador (se creará cuando lleguen los datos)
-            var marker = null;
+           // Variable para el marcador (se creará cuando lleguen los datos)
+           var marker = null;
 
-            ${
-              hasLocationPermission
-                ? `
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var userLat = position.coords.latitude;
-                    var userLng = position.coords.longitude;
-                    
-                    var userIcon = L.divIcon({
-                        html: '<div style="background-color: #10b981; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(16,185,129,0.5);"></div>',
-                        iconSize: [18, 18],
-                        iconAnchor: [9, 9],
-                        className: 'user-location-icon'
-                    });
-                    
-                    L.marker([userLat, userLng], {icon: userIcon})
-                        .addTo(map)
-                        .bindPopup('<div style="text-align: center; font-family: Arial, sans-serif;"><strong>Tu ubicación</strong></div>');
-                }, function(error) {
-                    console.log('Error obteniendo ubicación:', error);
-                });
-            }`
-                : ''
-            }
 
-            map.on('focus', function() { 
-                map.scrollWheelZoom.enable(); 
-            });
-            map.on('blur', function() { 
-                map.scrollWheelZoom.disable(); 
-            });
+           ${hasLocationPermission
+        ? `
+           if (navigator.geolocation) {
+               navigator.geolocation.getCurrentPosition(function(position) {
+                   var userLat = position.coords.latitude;
+                   var userLng = position.coords.longitude;
+                  
+                   var userIcon = L.divIcon({
+                       html: '<div style="background-color: #10b981; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(16,185,129,0.5);"></div>',
+                       iconSize: [18, 18],
+                       iconAnchor: [9, 9],
+                       className: 'user-location-icon'
+                   });
+                  
+                   L.marker([userLat, userLng], {icon: userIcon})
+                       .addTo(map)
+                       .bindPopup('<div style="text-align: center; font-family: Arial, sans-serif;"><strong>Tu ubicación</strong></div>');
+               }, function(error) {
+                   console.log('Error obteniendo ubicación:', error);
+               });
+           }`
+        : ''
+      }
 
-            // Función para crear o actualizar el marcador
+
+           map.on('focus', function() {
+               map.scrollWheelZoom.enable();
+           });
+           map.on('blur', function() {
+               map.scrollWheelZoom.disable();
+           });
+
+
+           // Función para crear o actualizar el marcador
 window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
-    // Determinar qué imagen y tamaño usar según el ángulo
-    var imageUrl = '';
-    var iconSize = [42, 25]; // Tamaño por defecto
-    
-    if (heading >= 0 && heading <= 22.5) {
-        imageUrl = window.imageUrls.up;
-        iconSize = [30,40]; // Vertical
-    } else if (heading > 22.5 && heading <= 67.5) {
-        imageUrl = window.imageUrls.topright;
-        iconSize = [55, 35]; // Horizontal
-    } else if (heading > 67.5 && heading <= 112.5) {
-        imageUrl = window.imageUrls.right;
-        iconSize = [55, 35]; // Horizontal
-    } else if (heading > 112.5 && heading <= 157.5) {
-        imageUrl = window.imageUrls.downright;
-        iconSize = [55, 35]; // Horizontal
-    } else if (heading > 157.5 && heading <= 202.5) {
-        imageUrl = window.imageUrls.down;
-        iconSize = [30,40]; // Vertical
-    } else if (heading > 202.5 && heading <= 247.5) {
-        imageUrl = window.imageUrls.downleft;
-        iconSize = [55, 35]; // Horizontal
-    } else if (heading > 247.5 && heading <= 292.5) {
-        imageUrl = window.imageUrls.left;
-        iconSize = [55, 35]; // Horizontal
-    } else if (heading > 292.5 && heading <= 337.5) {
-        imageUrl = window.imageUrls.topleft;
-        iconSize = [55, 35]; // Horizontal
-    } else {
-        imageUrl = window.imageUrls.up;
-        iconSize = [30,40]; // Vertical
-    }
+   // Determinar qué imagen y tamaño usar según el ángulo
+   var imageUrl = '';
+   var iconSize = [42, 25]; // Tamaño por defecto
+  
+   if (heading >= 0 && heading <= 22.5) {
+       imageUrl = window.imageUrls.up;
+       iconSize = [30,40]; // Vertical
+   } else if (heading > 22.5 && heading <= 67.5) {
+       imageUrl = window.imageUrls.topright;
+       iconSize = [55, 35]; // Horizontal
+   } else if (heading > 67.5 && heading <= 112.5) {
+       imageUrl = window.imageUrls.right;
+       iconSize = [55, 35]; // Horizontal
+   } else if (heading > 112.5 && heading <= 157.5) {
+       imageUrl = window.imageUrls.downright;
+       iconSize = [55, 35]; // Horizontal
+   } else if (heading > 157.5 && heading <= 202.5) {
+       imageUrl = window.imageUrls.down;
+       iconSize = [30,40]; // Vertical
+   } else if (heading > 202.5 && heading <= 247.5) {
+       imageUrl = window.imageUrls.downleft;
+       iconSize = [55, 35]; // Horizontal
+   } else if (heading > 247.5 && heading <= 292.5) {
+       imageUrl = window.imageUrls.left;
+       iconSize = [55, 35]; // Horizontal
+   } else if (heading > 292.5 && heading <= 337.5) {
+       imageUrl = window.imageUrls.topleft;
+       iconSize = [55, 35]; // Horizontal
+   } else {
+       imageUrl = window.imageUrls.up;
+       iconSize = [30,40]; // Vertical
+   }
 
-    var vehicleIcon = L.icon({
-        iconUrl: imageUrl,
-        iconSize: iconSize, // Usar tamaño dinámico
-        iconAnchor: [iconSize[0] / 2, iconSize[1] / 2], // Centrar dinámicamente
-        popupAnchor: [0, -30]
-    });
 
-                var statusColor = statusText === 'Movimiento' ? '#10b981' : '#ef4444';
-                var popupContent = \`
-                    <div style="text-align: center; font-family: Arial, sans-serif; min-width: 200px;">
-                        <h3 style="margin: 8px 0; color: #1e40af; font-size: 16px;">\${deviceName}</h3>
-                        <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="font-weight: 600; color: #374151;">Estado:</span>
-                                <span style="color: \${statusColor}; font-weight: 600;">\${statusText}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="font-weight: 600; color: #374151;">Velocidad:</span>
-                                <span style="color: #6b7280;">\${speed} Km/h</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="font-weight: 600; color: #374151;">Dirección:</span>
-                                <span style="color: #6b7280;">\${heading}°</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="font-weight: 600; color: #374151;">Conexión:</span>
-                                <span style="color: #10b981; font-weight: 600;">Online</span>
-                            </div>
-                            <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
-                                <div style="font-size: 12px; color: #6b7280;">ID: \${deviceId}</div>
-                            </div>
-                        </div>
-                    </div>
-                \`;
+   var vehicleIcon = L.icon({
+       iconUrl: imageUrl,
+       iconSize: iconSize, // Usar tamaño dinámico
+       iconAnchor: [iconSize[0] / 2, iconSize[1] / 2], // Centrar dinámicamente
+       popupAnchor: [0, -30]
+   });
 
-                // Si es la primera vez, crear el marcador
-                if (marker === null) {
-                    marker = L.marker([lat, lng], {
-                        icon: vehicleIcon,
-                        autoPan: false
-                    }).addTo(map);
 
-                    marker.bindPopup(popupContent, {
-                        autoPan: false,
-                        closeButton: true,
-                        autoClose: false,
-                        closeOnClick: false
-                    }).openPopup();
+               var statusColor = statusText === 'Movimiento' ? '#10b981' : '#ef4444';
+               var popupContent = \`
+                   <div style="text-align: center; font-family: Arial, sans-serif; min-width: 200px;">
+                       <h3 style="margin: 8px 0; color: #1e40af; font-size: 16px;">\${deviceName}</h3>
+                       <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+                           <div style="display: flex; justify-content: space-between;">
+                               <span style="font-weight: 600; color: #374151;">Estado:</span>
+                               <span style="color: \${statusColor}; font-weight: 600;">\${statusText}</span>
+                           </div>
+                           <div style="display: flex; justify-content: space-between;">
+                               <span style="font-weight: 600; color: #374151;">Velocidad:</span>
+                               <span style="color: #6b7280;">\${speed} Km/h</span>
+                           </div>
+                           <div style="display: flex; justify-content: space-between;">
+                               <span style="font-weight: 600; color: #374151;">Dirección:</span>
+                               <span style="color: #6b7280;">\${heading}°</span>
+                           </div>
+                           <div style="display: flex; justify-content: space-between;">
+                               <span style="font-weight: 600; color: #374151;">Conexión:</span>
+                               <span style="color: #10b981; font-weight: 600;">Online</span>
+                           </div>
+                           <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
+                               <div style="font-size: 12px; color: #6b7280;">ID: \${deviceId}</div>
+                           </div>
+                       </div>
+                   </div>
+               \`;
 
-                    // Centrar el mapa en el marcador
-                    map.setView([lat, lng], 16);
-                } else {
-                    // Actualizar marcador existente
-                    marker.setIcon(vehicleIcon);
-                    marker.setLatLng([lat, lng]);
-                    marker.getPopup().setContent(popupContent);
-                    
-                    // Centrar el mapa en el marcador
-                    map.setView([lat, lng], map.getZoom());
-                    
-                    // Mantener el popup abierto
-                    if (!marker.isPopupOpen()) {
-                        marker.openPopup();
-                    }
-                }
-  };
 
-            // ⭐ SOLUCIÓN: Escuchar eventos de visibilidad
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden && map) {
-                    setTimeout(function() {
-                        console.log('Página visible - invalidando mapa');
-                        map.invalidateSize(true);
-                        
-                        // Forzar redibujado de tiles
-                        map.eachLayer(function(layer) {
-                            if (layer instanceof L.TileLayer) {
-                                layer.redraw();
-                            }
-                        });
-                    }, 250);
-                }
-            });
+               // Si es la primera vez, crear el marcador
+               if (marker === null) {
+                   marker = L.marker([lat, lng], {
+                       icon: vehicleIcon,
+                       autoPan: false
+                   }).addTo(map);
 
-            // Para mensajes desde React Native
-            document.addEventListener('message', function(event) {
-                if (event.data === 'invalidate-size') {
-                    if (map) {
-                        setTimeout(function() {
-                            map.invalidateSize(true);
-                        }, 100);
-                    }
-                }
-            });
 
-            window.addEventListener('message', function(event) {
-                if (event.data === 'invalidate-size') {
-                    if (map) {
-                        setTimeout(function() {
-                            map.invalidateSize(true);
-                        }, 100);
-                    }
-                }
-            });
+                   marker.bindPopup(popupContent, {
+                       autoPan: false,
+                       closeButton: true,
+                       autoClose: false,
+                       closeOnClick: false
+                   }).openPopup();
 
-            // Señalar que el WebView está listo
-            window.ReactNativeWebView.postMessage('webview-ready');
-        </script>
-    </body>
-    </html>
-  `;
+
+                   // Centrar el mapa en el marcador
+                   map.setView([lat, lng], 16);
+               } else {
+                   // Actualizar marcador existente
+                   marker.setIcon(vehicleIcon);
+                   marker.setLatLng([lat, lng]);
+                   marker.getPopup().setContent(popupContent);
+                  
+                   // Centrar el mapa en el marcador
+                   map.setView([lat, lng], map.getZoom());
+                  
+                   // Mantener el popup abierto
+                   if (!marker.isPopupOpen()) {
+                       marker.openPopup();
+                   }
+               }
+ };
+
+
+           // ⭐ SOLUCIÓN: Escuchar eventos de visibilidad
+           document.addEventListener('visibilitychange', function() {
+               if (!document.hidden && map) {
+                   setTimeout(function() {
+                       console.log('Página visible - invalidando mapa');
+                       map.invalidateSize(true);
+                      
+                       // Forzar redibujado de tiles
+                       map.eachLayer(function(layer) {
+                           if (layer instanceof L.TileLayer) {
+                               layer.redraw();
+                           }
+                       });
+                   }, 250);
+               }
+           });
+
+
+           // Para mensajes desde React Native
+           document.addEventListener('message', function(event) {
+               if (event.data === 'invalidate-size') {
+                   if (map) {
+                       setTimeout(function() {
+                           map.invalidateSize(true);
+                       }, 100);
+                   }
+               }
+           });
+
+
+           window.addEventListener('message', function(event) {
+               if (event.data === 'invalidate-size') {
+                   if (map) {
+                       setTimeout(function() {
+                           map.invalidateSize(true);
+                       }, 100);
+                   }
+               }
+           });
+
+
+           // Señalar que el WebView está listo
+           window.ReactNativeWebView.postMessage('webview-ready');
+       </script>
+   </body>
+   </html>
+ `;
   }, [hasLocationPermission]);
 
-  const webViewRef = useRef<WebView>(null);
 
-  // Actualizar el marcador cuando cambien los datos
+  const webViewRef = useRef<WebView>(null);
+  const mapRef = useRef<MapView>(null);
+
+
+
+
+  // Actualizar el marcadfor cuando cambien los datos
   useEffect(() => {
     if (
       Platform.OS === 'android' &&
@@ -676,12 +722,32 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
     isWebViewReady,
   ]);
 
+
+  useEffect(() => {
+    if (Platform.OS === 'ios' && mapRef.current && vehicleData) {
+      setTimeout(() => {
+        mapRef.current?.animateCamera({
+          center: { latitude, longitude },
+          zoom: 16,
+        });
+      }, 300);
+    }
+  }, [vehicleData, latitude, longitude]);
+
+
+  const formatThreeDecimals = (num:any) => {
+  return Number(num).toFixed(3);
+};
+
+
   const renderMap = () => {
     if (Platform.OS === 'ios') {
+
       const imageData = getDirectionImageData(heading);
 
       return (
         <MapView
+          ref={mapRef}
           provider={PROVIDER_DEFAULT}
           style={styles.map}
           region={{
@@ -700,6 +766,8 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
             }}
             title={device.name}
             description={`${status} - ${speed} Km/h - ${heading}°`}
+
+
           >
             <Image
               source={getDirectionImage(heading)}
@@ -735,6 +803,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
     }
   };
 
+
   const getConnectionDisplay = () => {
     switch (connectionStatus) {
       case 'connected':
@@ -748,12 +817,15 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
     }
   };
 
+
   const connectionDisplay = getConnectionDisplay();
+
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <View style={styles.mapContainer}>
         {renderMap()}
+
 
         {!vehicleData && (
           <View
@@ -792,12 +864,13 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                 {connectionStatus === 'connecting'
                   ? 'Conectando al servidor...'
                   : connectionStatus === 'error'
-                  ? 'Error de conexión'
-                  : 'Esperando datos...'}
+                    ? 'Error de conexión'
+                    : 'Esperando datos...'}
               </Text>
             </View>
           </View>
         )}
+
 
         <TouchableOpacity
           style={[styles.floatingBackButton, { top: insets.top + 10 }]}
@@ -806,6 +879,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
           <ChevronLeft size={26} color="#1f2937" />
         </TouchableOpacity>
       </View>
+
 
       <View
         style={[
@@ -838,7 +912,8 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                 >
                   {connectionDisplay.text}
                 </Text>
-                                <Text style={styles.deviceId}>Dirección: {obtenerDireccion(heading)}</Text>
+                <Text style={styles.deviceId}>Dirección: {obtenerDireccion(heading)}</Text>
+
 
               </View>
             </View>
@@ -849,6 +924,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
             )}
           </View>
         </TouchableOpacity>
+
 
         {isInfoExpanded && (
           <View style={styles.panelContent}>
@@ -864,8 +940,8 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                       status === 'Movimiento'
                         ? '#10b981'
                         : status === 'Detenido'
-                        ? '#ef4444'
-                        : '#6b7280'
+                          ? '#ef4444'
+                          : '#6b7280'
                     }
                   />
                   <Text
@@ -876,15 +952,15 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                           status === 'Movimiento'
                             ? '#10b981'
                             : status === 'Detenido'
-                            ? '#ef4444'
-                            : '#6b7280',
+                              ? '#ef4444'
+                              : '#6b7280',
                       },
                     ]}
                   >
                     {status}
                   </Text>
                   {vehicleData && (
-                    <Text style={styles.speedText}>({speed} Km/h)</Text>
+<Text style={styles.speedText}>({formatThreeDecimals(speed)} Km/h)</Text>
                   )}
                 </View>
                 <View style={styles.dateContainer}>
@@ -898,6 +974,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                 </View>
               </View>
 
+
               <View style={styles.distanceInfo}>
                 <MapPin size={18} color="#6b7280" />
                 <Text style={styles.distanceText}>
@@ -909,6 +986,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
               <Text style={styles.startTimeText}>
                 Kilometraje total de su unidad
               </Text>
+
 
               <View style={styles.streetViewRow}>
                 <View style={styles.streetViewContainer}>
@@ -953,6 +1031,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                   </TouchableOpacity>
                 </View>
               </View>
+
 
               <TouchableOpacity
                 style={styles.verMasButton}
