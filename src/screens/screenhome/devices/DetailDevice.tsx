@@ -765,8 +765,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
               longitude: longitude,
             }}
             title={device.name}
-            description={`${status} - ${speed} Km/h - ${heading}°`}
-
+key={`marker-${speed}-${heading}-${status}-${latitude}-${longitude}`}
 
           >
             <Image
