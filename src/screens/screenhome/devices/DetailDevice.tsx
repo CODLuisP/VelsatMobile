@@ -598,11 +598,13 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
    });
 
 
-               var statusColor = statusText === 'Movimiento' ? '#10b981' : '#ef4444';
+               var statusColor = statusText === 'Movimiento' ? '#38b000' : '#ef4444';
+
+               
                var popupContent = \`
                    <div style="text-align: center; font-family: Arial, sans-serif; min-width: 200px;">
-                       <h3 style="margin: 8px 0; color: #1e40af; font-size: 16px;">\${deviceName}</h3>
-                       <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+                       <h3 style="margin: 8px 0; color: #f97316; font-size: 14.5px;text-transform: uppercase;font-weight: 800;">\${deviceName}</h3>
+                       <div style="display: flex; flex-direction: column; gap: 3px; text-align: left;">
                            <div style="display: flex; justify-content: space-between;">
                                <span style="font-weight: 600; color: #374151;">Estado:</span>
                                <span style="color: \${statusColor}; font-weight: 600;">\${statusText}</span>
@@ -617,10 +619,10 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                            </div>
                            <div style="display: flex; justify-content: space-between;">
                                <span style="font-weight: 600; color: #374151;">Conexión:</span>
-                               <span style="color: #10b981; font-weight: 600;">Online</span>
+                               <span style="color: #38b000; font-weight: 600;">Online</span>
                            </div>
                            <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
-                               <div style="font-size: 12px; color: #6b7280;">ID: \${deviceId}</div>
+                               <div style="font-size: 12px; color: #6b7280;">Monitoreo activo</div>
                            </div>
                        </div>
                    </div>

@@ -67,7 +67,7 @@ deviceHeaderInfo: {
 
 },
   deviceName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#ffffffff',
     marginBottom: 4,
