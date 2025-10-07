@@ -462,9 +462,18 @@ case 3:
 
 
 
-  const requestStoragePermission = async () => {
+const requestStoragePermission = async () => {
   if (Platform.OS === 'android') {
     try {
+      // Obtener versión de Android
+      const apiLevel = Platform.Version;
+      
+      // Android 13+ (API 33+) no necesita WRITE_EXTERNAL_STORAGE
+      if (apiLevel >= 33) {
+        return true; // ✅ No se necesita permiso
+      }
+      
+      // Android 12 y anteriores
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         {
@@ -481,7 +490,7 @@ case 3:
       return false;
     }
   }
-  return true; // iOS no necesita permisos
+  return true; // iOS
 };
 
   const validateForm = (): { isValid: boolean; message: string } => {
