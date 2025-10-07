@@ -423,6 +423,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
+    paddingTop:30
   },
 
   unitModalTitle: {

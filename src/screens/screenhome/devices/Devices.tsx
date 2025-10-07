@@ -81,7 +81,7 @@ const Devices = () => {
       }
       setError(null);
       
-      const username = user?.username || 'cgacela';
+      const username = user?.username;
       const response = await axios.get<ApiDevice[]>(
         `${server}/api/DeviceList/simplified/${username}`
       );

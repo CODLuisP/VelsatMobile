@@ -64,7 +64,7 @@ reportItemLast: {
   // Reports list styles
   reportsList: {
     flex: 1,
-       backgroundColor: '#f5f5f5',
+       backgroundColor: 'white',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -203,4 +203,87 @@ reportItemLast: {
     fontFamily: 'monospace',
     marginLeft: 20,
   },
+
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginTop: 80,
+},
+loadingText: {
+  marginTop: 10,
+  fontSize: 16,
+  color: '#666',
+},
+errorContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+},
+
+retryButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+
+
+
+
+errorIconContainer: {
+  marginBottom: 20,
+},
+errorTitle: {
+  fontSize: 16,
+  fontWeight: '600',
+  color: '#333',
+  marginBottom: 8,
+},
+errorText: {
+  fontSize: 12,
+  color: '#666',
+  textAlign: 'center',
+  marginBottom: 24,
+},
+retryButton: {
+  backgroundColor: '#1e3a8a',
+  width: 56,
+  height: 56,
+  borderRadius: 28,
+  justifyContent: 'center',
+  alignItems: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 5,
+},
+
+
+
+
+emptyContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 40,
+  paddingTop: 100,
+},
+emptyIconContainer: {
+  marginBottom: 16,
+  opacity: 0.6,
+},
+emptyTitle: {
+  fontSize: 18,
+  fontWeight: '600',
+  color: '#475569',
+  marginBottom: 8,
+},
+emptyText: {
+  fontSize: 14,
+  color: '#94a3b8',
+  textAlign: 'center',
+  lineHeight: 20,
+},
 });
