@@ -62,21 +62,13 @@ export const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+ 
     borderWidth: 2,
     borderColor: 'transparent',
-    transform: [{scale: 1}],
   },
   optionCardSelected: {
     borderColor: '#e36414',
-    shadowOpacity: 0.15,
-    elevation: 6,
+   
   },
   cardContent: {
     flexDirection: 'row',
@@ -141,7 +133,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 24,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     gap: 10,
   },
