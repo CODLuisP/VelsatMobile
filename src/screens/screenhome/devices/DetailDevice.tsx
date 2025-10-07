@@ -887,7 +887,7 @@ const formatThreeDecimals = (num: any) => {
                     },
                   ]}
                 />
-<RadarDot color={connectionDisplay.color} size={8} />
+<RadarDot color={connectionDisplay.color} size={3} pulseCount={3} />
 
                 <Text
                   style={[

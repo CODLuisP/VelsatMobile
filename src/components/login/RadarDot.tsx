@@ -1,97 +1,186 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet } from 'react-native';
+import { View, Animated, StyleSheet, Easing } from 'react-native';
 
 interface RadarDotProps {
   color?: string;
   size?: number;
+  pulseCount?: number;
 }
 
-const RadarDot: React.FC<RadarDotProps> = ({ color = '#00ff00', size = 8 }) => {
-  const scale1 = useRef(new Animated.Value(1)).current;
-  const opacity1 = useRef(new Animated.Value(0.6)).current;
+const RadarDot: React.FC<RadarDotProps> = ({ 
+  color = '#00ff00', 
+  size = 8,
+  pulseCount = 3 
+}) => {
+  const pulses = useRef(
+    Array.from({ length: pulseCount }, () => ({
+      scale: new Animated.Value(1),
+      opacity: new Animated.Value(0.8),
+    }))
+  ).current;
 
-  const scale2 = useRef(new Animated.Value(1)).current;
-  const opacity2 = useRef(new Animated.Value(0.6)).current;
+  const rotation = useRef(new Animated.Value(0)).current;
+  const glowPulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const createPulse = (
-      scaleAnim: Animated.Value,
-      opacityAnim: Animated.Value,
-      delay: number
-    ) => {
+    // Animación de rotación del halo
+    const rotateAnimation = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 4000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+
+    // Animación de brillo del punto central
+    const glowAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowPulse, {
+          toValue: 1.3,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowPulse, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Crear ondas de radar escalonadas
+    const pulseAnimations = pulses.map((pulse, index) => {
+      const delay = (index * 2000) / pulseCount;
+      
       return Animated.loop(
         Animated.sequence([
           Animated.delay(delay),
           Animated.parallel([
-            Animated.timing(scaleAnim, {
-              toValue: 3.5,
+            Animated.timing(pulse.scale, {
+              toValue: 4,
               duration: 2000,
+              easing: Easing.out(Easing.quad),
               useNativeDriver: true,
             }),
-            Animated.timing(opacityAnim, {
+            Animated.timing(pulse.opacity, {
               toValue: 0,
               duration: 2000,
+              easing: Easing.out(Easing.cubic),
               useNativeDriver: true,
             }),
           ]),
-          Animated.timing(scaleAnim, {
-            toValue: 1,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacityAnim, {
-            toValue: 0.6,
-            duration: 0,
-            useNativeDriver: true,
-          }),
+          Animated.parallel([
+            Animated.timing(pulse.scale, {
+              toValue: 1,
+              duration: 0,
+              useNativeDriver: true,
+            }),
+            Animated.timing(pulse.opacity, {
+              toValue: 0.8,
+              duration: 0,
+              useNativeDriver: true,
+            }),
+          ]),
         ])
       );
-    };
+    });
 
-    const pulse1 = createPulse(scale1, opacity1, 0);
-    const pulse2 = createPulse(scale2, opacity2, 1000); // desfase entre ondas
-
-    pulse1.start();
-    pulse2.start();
+    rotateAnimation.start();
+    glowAnimation.start();
+    pulseAnimations.forEach(anim => anim.start());
 
     return () => {
-      pulse1.stop();
-      pulse2.stop();
+      rotateAnimation.stop();
+      glowAnimation.stop();
+      pulseAnimations.forEach(anim => anim.stop());
     };
-  }, [scale1, opacity1, scale2, opacity2]);
+  }, [pulses, rotation, glowPulse, pulseCount]);
+
+  const spin = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
-      {/* Ondas expansivas */}
+    <View style={[styles.container, { width: size * 8, height: size * 8 }]}>
+      {/* Ondas de radar */}
+      {pulses.map((pulse, index) => (
+        <Animated.View
+          key={index}
+          style={[
+            styles.pulse,
+            {
+              backgroundColor: color,
+              opacity: pulse.opacity,
+              transform: [{ scale: pulse.scale }],
+              width: size * 3,
+              height: size * 3,
+            },
+          ]}
+        />
+      ))}
+
+      {/* Halo rotatorio (efecto de barrido de radar) */}
       <Animated.View
         style={[
-          styles.pulse,
+          styles.halo,
           {
-            backgroundColor: `${color}44`, // color con transparencia
-            opacity: opacity1,
-            transform: [{ scale: scale1 }],
-            width: size * 2.3,
-            height: size * 2.3,
+            width: size * 6,
+            height: size * 6,
+            transform: [{ rotate: spin }],
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.haloGradient,
+            { 
+              borderColor: color,
+              borderTopColor: 'transparent',
+              borderLeftColor: 'transparent',
+            },
+          ]}
+        />
+      </Animated.View>
+
+      {/* Anillo exterior */}
+      <View
+        style={[
+          styles.ring,
+          {
+            borderColor: `${color}60`,
+            width: size * 4,
+            height: size * 4,
+            borderWidth: 1.5,
           },
         ]}
       />
+
+      {/* Punto central con brillo */}
       <Animated.View
         style={[
-          styles.pulse,
+          styles.dotGlow,
           {
-            backgroundColor: `${color}44`,
-            opacity: opacity2,
-            transform: [{ scale: scale2 }],
-            width: size * 2.3,
-            height: size * 2.3,
+            backgroundColor: color,
+            width: size * 1.8,
+            height: size * 1.8,
+            shadowColor: color,
+            transform: [{ scale: glowPulse }],
           },
         ]}
       />
-      {/* Punto central */}
       <View
         style={[
           styles.dot,
-          { backgroundColor: color, width: size, height: size },
+          { 
+            backgroundColor: color, 
+            width: size, 
+            height: size,
+            shadowColor: color,
+          },
         ]}
       />
     </View>
@@ -106,12 +195,45 @@ const styles = StyleSheet.create({
   },
   dot: {
     borderRadius: 999,
-    zIndex: 3,
+    zIndex: 5,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  dotGlow: {
+    position: 'absolute',
+    borderRadius: 999,
+    zIndex: 4,
+    opacity: 0.4,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
   },
   pulse: {
     position: 'absolute',
     borderRadius: 999,
     zIndex: 1,
+    opacity: 0.6,
+  },
+  ring: {
+    position: 'absolute',
+    borderRadius: 999,
+    borderWidth: 2,
+    zIndex: 2,
+  },
+  halo: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 3,
+  },
+  haloGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 999,
+    borderWidth: 2,
+    opacity: 0.5,
   },
 });
 

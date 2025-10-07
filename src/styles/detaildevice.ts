@@ -91,7 +91,7 @@ deviceHeaderInfo: {
   onlineStatus: {
     fontSize: 14,
     fontWeight: '600',
-    marginLeft:5,
+    marginLeft:0,
     marginRight:5
   },
   panelContent: {
