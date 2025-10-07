@@ -26,10 +26,11 @@ import {
   getBottomSpace,
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
+import { toUpperCaseText } from '../../utils/textUtils';
 
 const Profile = () => {
   const { user, logout, server, tipo } = useAuthStore();
-  
+
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const insets = useSafeAreaInsets();
@@ -93,43 +94,44 @@ const Profile = () => {
           </View>
         </View>
         {/* User Name */}
-        <Text style={styles.companyName}>
-          {user?.description || user?.name || 'Usuario'}
-        </Text>
+     <Text style={styles.companyName}>
+  {toUpperCaseText(user?.description || user?.name || 'Usuario')}
+</Text>
 
-            <Text
+        {/* <Text
           style={[
             styles.companyName,
             { fontSize: 14, color: '#fff', marginTop: 5 },
           ]}
         >
           {navigationDetection.mode}
-        </Text>
+        </Text> */}
 
-        <Text
-          style={[
-            styles.companyName,
-            { fontSize: 12, color: '#fff', marginTop: 2 },
-          ]}
-        >
-          hasNavBar: {navigationDetection.hasNavigationBar ? 'Sí' : 'No'}
-        </Text>
-        <Text
-          style={[
-            styles.companyName,
-            { fontSize: 12, color: '#fff', marginTop: 2 },
-          ]}
-        >
-          insets.bottom: {insets.bottom}
-        </Text>
-           <Text
-          style={[
-            styles.companyName,
-            { fontSize: 12, color: '#fff', marginTop: 2 },
-          ]}
-        >
-          insets.top: {insets.top}
-        </Text>
+          {/* <Text
+            style={[
+              styles.companyName,
+              { fontSize: 12, color: '#fff', marginTop: 2 },
+            ]}
+          >
+            hasNavBar: {navigationDetection.hasNavigationBar ? 'Sí' : 'No'}
+          </Text>
+          <Text
+            style={[
+              styles.companyName,
+              { fontSize: 12, color: '#fff', marginTop: 2 },
+            ]}
+          >
+            insets.bottom: {insets.bottom}
+          </Text>
+          <Text
+            style={[
+              styles.companyName,
+              { fontSize: 12, color: '#fff', marginTop: 2 },
+            ]}
+          >
+            insets.top: {insets.top}
+          </Text> */}
+
       </View>
 
       {/* Information Section */}
@@ -141,27 +143,27 @@ const Profile = () => {
 
         <View style={styles.infoContent}>
           <View style={styles.infoItem}>
-            <User size={16} color="#999" />
+            <User size={16} color="#1e3a8a" />
             <Text style={styles.infoText}>
               {user?.description || 'Sin nombre'}
             </Text>
           </View>
 
           <View style={styles.infoItem}>
-            <Clipboard size={16} color="#999" />
+            <Clipboard size={16} color="#1e3a8a" />
             <Text style={styles.infoText}>20251234456</Text>
           </View>
 
           {/* Para tipo 'n' mostrar Email */}
           {tipo === 'n' && (
             <View style={styles.infoItem}>
-              <Mail size={16} color="#999" />
+              <Mail size={16} color="#1e3a8a" />
               <Text style={styles.infoText}>gacelacorp@gmail.com</Text>
             </View>
           )}
 
           <View style={styles.infoItem}>
-            <Smartphone size={16} color="#999" />
+            <Smartphone size={16} color="#1e3a8a" />
             <Text style={styles.infoText}>976345098</Text>
           </View>
 
@@ -228,11 +230,29 @@ const Profile = () => {
         </View>
 
         {/* Version */}
+        {/* Version */}
         <View style={styles.versionContainer}>
-          <Text style={styles.versionTextTitle}>VELSAT SAC</Text>
-          <Text style={styles.versionText}>Lima - Perú</Text>
-          <Text style={styles.versionText}>Versión Velsat Mobile 3.0</Text>
-          <Text style={styles.versionText}>RUC: 20202020202202</Text>
+          <View style={styles.versionDivider} />
+
+          <View style={styles.companyInfoContainer}>
+            <Text style={styles.companyNameBold}>VELSAT SAC</Text>
+            <Text style={styles.versionSubtext}>Lima - Perú</Text>
+          </View>
+
+          <View style={styles.versionRow}>
+            <Text style={styles.versionLabel}>Versión:</Text>
+            <Text style={styles.versionLabel}> 3.0</Text>
+          </View>
+
+          <View style={styles.versionRow}>
+            <Text style={styles.versionLabel}>RUC:</Text>
+            <Text style={styles.versionLabel}> 20202020202202</Text>
+          </View>
+
+
+          <Text style={styles.copyrightText}>
+            © 2025 Velsat Mobile. Todos los derechos reservados.
+          </Text>
         </View>
       </ScrollView>
     </View>

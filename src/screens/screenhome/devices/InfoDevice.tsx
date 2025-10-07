@@ -17,7 +17,6 @@ import {
   Gauge,
   Calendar,
   Share as ShareIcon,
-  Radar,
   SatelliteDish,
   BatteryFull,
   TriangleAlert,

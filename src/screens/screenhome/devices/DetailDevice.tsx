@@ -1,14 +1,10 @@
-// DetailDevice.tsx
 import 'react-native-url-polyfill/auto';
-
-
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Platform,
-  PermissionsAndroid,
   Image,
   ScrollView,
   Linking,
@@ -47,6 +43,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 import { toUpperCaseText } from '../../../utils/textUtils';
 import RadarDot from '../../../components/login/RadarDot';
+import { DIRECTION_IMAGES, getDirectionImageData } from '../../../styles/directionImages';
 
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
@@ -77,25 +74,6 @@ interface SignalRData {
 }
 
 
-// Mapeo de imágenes - IMPORTANTE: debe estar fuera del componente
-const DIRECTION_IMAGES = {
-  'up.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/up_f0z0c7.png',
-  'topright.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/topright_ftymue.png',
-  'right.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/right_k9two2.png',
-  'downright.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594559/downright_taregi.png',
-  'down.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/down_oeri45.png',
-  'downleft.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/downleft_pq3a7n.png',
-  'left.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/left_tinfqg.png',
-  'topleft.png':
-    'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594556/topleft_ofml2l.png',
-};
 
 
 const DetailDevice = () => {
@@ -124,9 +102,7 @@ const DetailDevice = () => {
     navigationDetection.hasNavigationBar,
   );
 
- const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
-
-
+  const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -134,9 +110,6 @@ const DetailDevice = () => {
 
     }, []),
   );
-
-
-
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -159,13 +132,9 @@ const DetailDevice = () => {
       return;
     }
 
-
     const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
-
-
     console.log('🔗 Conectando a:', hubUrl);
     setConnectionStatus('connecting');
-
 
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
@@ -282,79 +251,14 @@ const DetailDevice = () => {
 
 
   const status = getStatus();
-
-
   const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
 
-
-  // Función para obtener el nombre de archivo según el ángulo
-  // Función para obtener el nombre de archivo y tamaño según el ángulo
-const getDirectionImageData = (angle: number) => {
-  if (angle >= 0 && angle <= 22.5)
-    return {
-      name: 'up.png' as keyof typeof DIRECTION_IMAGES,
-      size: [30, 40],
-      anchor: [15, 35] // x: mitad del ancho, y: cerca del fondo
-    };
-  if (angle > 22.5 && angle <= 67.5)
-    return {
-      name: 'topright.png' as keyof typeof DIRECTION_IMAGES,
-      size: [55, 35],
-      anchor: [27, 17] // Centro de imagen horizontal
-    };
-  if (angle > 67.5 && angle <= 112.5)
-    return {
-      name: 'right.png' as keyof typeof DIRECTION_IMAGES,
-      size: [55, 35],
-      anchor: [27, 17]
-    };
-  if (angle > 112.5 && angle <= 157.5)
-    return {
-      name: 'downright.png' as keyof typeof DIRECTION_IMAGES,
-      size: [55, 35],
-      anchor: [27, 17]
-    };
-  if (angle > 157.5 && angle <= 202.5)
-    return {
-      name: 'down.png' as keyof typeof DIRECTION_IMAGES,
-      size: [30, 40],
-      anchor: [15, 5] // x: mitad del ancho, y: cerca del tope
-    };
-  if (angle > 202.5 && angle <= 247.5)
-    return {
-      name: 'downleft.png' as keyof typeof DIRECTION_IMAGES,
-      size: [55, 35],
-      anchor: [27, 17]
-    };
-  if (angle > 247.5 && angle <= 292.5)
-    return {
-      name: 'left.png' as keyof typeof DIRECTION_IMAGES,
-      size: [42, 25],
-      anchor: [21, 12]
-    };
-  if (angle > 292.5 && angle <= 337.5)
-    return {
-      name: 'topleft.png' as keyof typeof DIRECTION_IMAGES,
-      size: [55, 35],
-      anchor: [27, 17]
-    };
-  return { 
-    name: 'up.png' as keyof typeof DIRECTION_IMAGES, 
-    size: [30, 40],
-    anchor: [15, 35]
-  };
-};
-
-
-  // Función para obtener solo el nombre (mantener compatibilidad)
   const getDirectionImageName = (
     angle: number,
   ): keyof typeof DIRECTION_IMAGES => {
     return getDirectionImageData(angle).name;
   };
 
-
-  // Función para obtener la imagen según el ángulo
   const getDirectionImage = (angle: number) => {
     const imageName = getDirectionImageName(angle);
     return { uri: DIRECTION_IMAGES[imageName] };
@@ -399,17 +303,13 @@ const getDirectionImageData = (angle: number) => {
   };
 
 
-
-
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-
   const toggleInfo = () => {
     setIsInfoExpanded(!isInfoExpanded);
   };
-
 
   const formatDateTime = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -474,16 +374,16 @@ const getDirectionImageData = (angle: number) => {
 
 
            // Guardar todas las URLs de imágenes
-window.imageUrls = {
- up: '${DIRECTION_IMAGES['up.png']}',
- topright: '${DIRECTION_IMAGES['topright.png']}',
- right: '${DIRECTION_IMAGES['right.png']}',
- downright: '${DIRECTION_IMAGES['downright.png']}',
- down: '${DIRECTION_IMAGES['down.png']}',
- downleft: '${DIRECTION_IMAGES['downleft.png']}',
- left: '${DIRECTION_IMAGES['left.png']}',
- topleft: '${DIRECTION_IMAGES['topleft.png']}'
-};
+              window.imageUrls = {
+              up: '${DIRECTION_IMAGES['up.png']}',
+              topright: '${DIRECTION_IMAGES['topright.png']}',
+              right: '${DIRECTION_IMAGES['right.png']}',
+              downright: '${DIRECTION_IMAGES['downright.png']}',
+              down: '${DIRECTION_IMAGES['down.png']}',
+              downleft: '${DIRECTION_IMAGES['downleft.png']}',
+              left: '${DIRECTION_IMAGES['left.png']}',
+              topleft: '${DIRECTION_IMAGES['topleft.png']}'
+              };
            // Variable para el marcador (se creará cuando lleguen los datos)
            var marker = null;
 
@@ -494,7 +394,6 @@ window.imageUrls = {
            map.on('blur', function() {
                map.scrollWheelZoom.disable();
            });
-
 
            // Función para crear o actualizar el marcador
 window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
@@ -658,10 +557,9 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
 
   const webViewRef = useRef<WebView>(null);
   const mapRef = useRef<MapView>(null);
-const markerRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
 
 
-  // Actualizar el marcadfor cuando cambien los datos
   useEffect(() => {
     if (
       Platform.OS === 'android' &&
@@ -695,23 +593,22 @@ const markerRef = useRef<any>(null);
   }, [vehicleData, latitude, longitude]);
 
 
-useEffect(() => {
-  if (Platform.OS === 'ios' && markerRef.current && vehicleData && !hasShownInitialCallout) {
-    setTimeout(() => {
-      markerRef.current?.showCallout();
-      setHasShownInitialCallout(true); // Marcar como ya mostrado
-    }, 300);
-  }
-}, [vehicleData, hasShownInitialCallout]);
+  useEffect(() => {
+    if (Platform.OS === 'ios' && markerRef.current && vehicleData && !hasShownInitialCallout) {
+      setTimeout(() => {
+        markerRef.current?.showCallout();
+        setHasShownInitialCallout(true);
+      }, 300);
+    }
+  }, [vehicleData, hasShownInitialCallout]);
 
-const formatThreeDecimals = (num: any) => {
-  const number = Number(num);
-  if (Number.isInteger(number)) {
-    return number.toString();
-  }
-  // Redondear a 2 decimales y eliminar ceros innecesarios
-  return parseFloat(number.toFixed(2)).toString();
-};
+  const formatThreeDecimals = (num: any) => {
+    const number = Number(num);
+    if (Number.isInteger(number)) {
+      return number.toString();
+    }
+    return parseFloat(number.toFixed(2)).toString();
+  };
 
 
   const renderMap = () => {
@@ -720,47 +617,47 @@ const formatThreeDecimals = (num: any) => {
       const imageData = getDirectionImageData(heading);
 
       return (
-  <MapView
-  ref={mapRef}
-  provider={PROVIDER_DEFAULT}
-  style={styles.map}
-  region={{
-    latitude: latitude,
-    longitude: longitude,
-    latitudeDelta: 0.008,
-    longitudeDelta: 0.008,
-  }}
+        <MapView
+          ref={mapRef}
+          provider={PROVIDER_DEFAULT}
+          style={styles.map}
+          region={{
+            latitude: latitude,
+            longitude: longitude,
+            latitudeDelta: 0.008,
+            longitudeDelta: 0.008,
+          }}
 
->
-  {vehicleData && (
-    <Marker
-      ref={markerRef} 
-      key={device.id}
-        anchor={{ x: imageData.anchor[0] / imageData.size[0], y: imageData.anchor[1] / imageData.size[1] }}
+        >
+          {vehicleData && (
+            <Marker
+              ref={markerRef}
+              key={device.id}
+              anchor={{ x: imageData.anchor[0] / imageData.size[0], y: imageData.anchor[1] / imageData.size[1] }}
 
-      coordinate={{
-        latitude: latitude,
-        longitude: longitude,
-      }}
-    >
-      <Image
-        source={getDirectionImage(heading)}
-        style={{ width: imageData.size[0], height: imageData.size[1] }}
-        resizeMode="contain"
-      />
-      <Callout>
-        <View style={{ padding: 0, minWidth: 200 }}>
-          <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
-            {toUpperCaseText(device.name)}
-          </Text>
-          <Text style={{ color: '#666' }}>
-            {status} - {formatThreeDecimals(speed)} Km/h - {heading}°
-          </Text>
-        </View>
-      </Callout>
-    </Marker>
-  )}
-</MapView>
+              coordinate={{
+                latitude: latitude,
+                longitude: longitude,
+              }}
+            >
+              <Image
+                source={getDirectionImage(heading)}
+                style={{ width: imageData.size[0], height: imageData.size[1] }}
+                resizeMode="contain"
+              />
+              <Callout>
+                <View style={{ padding: 0, minWidth: 200 }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
+                    {toUpperCaseText(device.name)}
+                  </Text>
+                  <Text style={{ color: '#666' }}>
+                    {status} - {formatThreeDecimals(speed)} Km/h - {heading}°
+                  </Text>
+                </View>
+              </Callout>
+            </Marker>
+          )}
+        </MapView>
       );
     } else {
       return (
@@ -801,9 +698,7 @@ const formatThreeDecimals = (num: any) => {
     }
   };
 
-
   const connectionDisplay = getConnectionDisplay();
-
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
@@ -887,7 +782,7 @@ const formatThreeDecimals = (num: any) => {
                     },
                   ]}
                 />
-<RadarDot color={connectionDisplay.color} size={3} pulseCount={3} />
+                <RadarDot color={connectionDisplay.color} size={3} pulseCount={3} />
 
                 <Text
                   style={[
@@ -897,12 +792,7 @@ const formatThreeDecimals = (num: any) => {
                 >
                   {connectionDisplay.text}
                 </Text>
-
-
-
                 <Text style={styles.deviceId}>Dirección: {obtenerDireccion(heading)}</Text>
-
-
               </View>
             </View>
             {isInfoExpanded ? (
@@ -962,7 +852,6 @@ const formatThreeDecimals = (num: any) => {
                 </View>
               </View>
 
-
               <View style={styles.distanceInfo}>
                 <MapPin size={18} color="#6b7280" />
                 <Text style={styles.distanceText}>
@@ -974,7 +863,6 @@ const formatThreeDecimals = (num: any) => {
               <Text style={styles.startTimeText}>
                 Kilometraje total de su unidad
               </Text>
-
 
               <View style={styles.streetViewRow}>
                 <View style={styles.streetViewContainer}>
@@ -1019,7 +907,6 @@ const formatThreeDecimals = (num: any) => {
                   </TouchableOpacity>
                 </View>
               </View>
-
 
               <TouchableOpacity
                 style={styles.verMasButton}

@@ -20,7 +20,6 @@ export const styles = StyleSheet.create({
     left: 10,
     borderRadius: 8,
     padding: 8,
-
   },
   avatarContainer: {
     marginBottom: 15,
@@ -43,7 +42,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginTop: 0,
     backgroundColor: '#f5f5f5',
-
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -68,9 +66,8 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 18,
     paddingVertical: 8,
-
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#f3be9dff',
   },
   infoTitle: {
     fontSize: 16,
@@ -85,7 +82,7 @@ export const styles = StyleSheet.create({
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 10,
     gap: 10,
   },
   infoLabel: {
@@ -96,7 +93,7 @@ export const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#303030ff',
     flex: 1,
   },
   menuSection: {
@@ -133,26 +130,70 @@ export const styles = StyleSheet.create({
   chevronRight: {
     transform: [{ rotate: '180deg' }],
   },
-  versionContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    marginBottom: 10,
-    gap: 5,
-  },
-  versionText: {
-    fontSize: 12,
-    color: '#585757ff',
-    fontWeight: '600',
-  },
-  versionTextTitle: {
-    fontSize: 12,
-    color: '#585757ff',
-    fontWeight: '600',
-  },
   avatarImage: {
     width: 50,
     height: 50,
     borderRadius: 20,
     resizeMode: 'cover',
+  },
+  // Estilos para la sección de versión profesional
+  versionContainer: {
+    paddingVertical: 0,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  versionDivider: {
+    width: 70,
+    height: 2,
+    backgroundColor: '#e36414',
+    borderRadius: 2,
+    marginBottom: 10,
+  },
+  companyInfoContainer: {
+    alignItems: 'center',
+    marginBottom: 0,
+  },
+  companyNameBold: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e3a8a',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  versionSubtext: {
+    fontSize: 12,
+    color: '#464545ff',
+    fontWeight: '500',
+  },
+  versionDetailsContainer: {
+    width: '100%',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    gap: 4,
+  },
+  versionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 1,
+  },
+  versionLabel: {
+    fontSize: 12,
+    color: '#464545ff',
+    fontWeight: '500',
+  },
+versionValue: {
+  fontSize: 13,
+  color: '#1e3a8a',
+  fontWeight: '600',
+},
+  copyrightText: {
+    fontSize: 11,
+    color: '#575757ff',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 5,
   },
 });

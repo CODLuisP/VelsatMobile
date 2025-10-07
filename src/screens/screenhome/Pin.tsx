@@ -6,7 +6,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { ChevronLeft, Clock } from 'lucide-react-native';
+import { ChevronLeft, Clock, Check } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { styles } from '../../styles/pin';
@@ -47,16 +47,19 @@ const Pin = () => {
     {
       id: 'sedan',
       title: 'Sedán clásico',
+      description: 'Ideal para vehículos ligeros y automóviles',
       image: require('../../../assets/sedan.jpg'),
     },
     {
       id: 'pickup',
       title: 'Pick-up',
+      description: 'Perfecto para camionetas y vehículos medianos',
       image: require('../../../assets/pickup.jpeg'),
     },
     {
       id: 'truck',
       title: 'Camión cisterna',
+      description: 'Diseñado para vehículos de carga pesada',
       image: require('../../../assets/camion.jpg'),
     },
   ];
@@ -86,30 +89,46 @@ const Pin = () => {
       >
         <View style={styles.optionsContainer}>
           {vehicleOptions.map(option => (
-            <View key={option.id} style={styles.optionCard}>
-              <Text style={styles.optionTitle}>{option.title}</Text>
-              <View style={styles.imageContainer}>
-                <Image
-                  source={option.image}
-                  style={styles.vehicleImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.imageOverlay} />
-                <TouchableOpacity
-                  style={styles.selectButton}
-                  onPress={() => handleSelect(option.id)}
-                >
-                  <Text style={styles.selectButtonText}>Seleccionar</Text>
-                </TouchableOpacity>
+            <TouchableOpacity
+              key={option.id}
+              style={[
+                styles.optionCard,
+                selectedOption === option.id && styles.optionCardSelected,
+              ]}
+              onPress={() => handleSelect(option.id)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.cardContent}>
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={option.image}
+                    style={styles.vehicleImage}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.imageGradient} />
+                  {selectedOption === option.id && (
+                    <View style={styles.selectedBadge}>
+                      <Check size={18} color="#fff" strokeWidth={3} />
+                    </View>
+                  )}
+                </View>
+                <View style={styles.textContent}>
+                  <Text style={styles.optionTitle}>{option.title}</Text>
+                  <Text style={styles.optionDescription}>
+                    {option.description}
+                  </Text>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.footerContent}>
-          <Clock size={16} color="#666" />
+          <View style={styles.footerIconWrapper}>
+            <Clock size={18} color="#e36414" />
+          </View>
           <Text style={styles.footerText}>
-            Más modelos disponibles pronto...
+            Más modelos disponibles pronto
           </Text>
         </View>
       </ScrollView>

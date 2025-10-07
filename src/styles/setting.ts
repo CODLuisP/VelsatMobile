@@ -63,7 +63,7 @@ export const styles = StyleSheet.create({
   navOptionText: {
     flex: 1,
     marginLeft: 12,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     color: '#333',
   },
@@ -175,7 +175,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 0,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -186,9 +186,29 @@ export const styles = StyleSheet.create({
     elevation: 6,
   },
 
+  
+
   primaryButtonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
   },
+
+  buttonWrapper: {
+  marginTop: 0,
+},
+
+gradientButton: {
+  width: '100%',
+  height: 48,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+buttonText: {
+  color: '#FFFFFF',
+  fontSize: 14,
+  fontWeight: 'bold',
+},
 });
