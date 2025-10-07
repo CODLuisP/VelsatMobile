@@ -239,7 +239,7 @@ backgroundMap: {
   formContainer: {
     width: '100%',
     flex: 1,
-    marginTop: -140,
+    marginTop: -130,
     justifyContent: 'center',
 
   },
