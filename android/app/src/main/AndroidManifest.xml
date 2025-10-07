@@ -4,11 +4,13 @@
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   
-  <!-- AGREGAR ESTE PERMISO PARA LLAMADAS TELEFÓNICAS -->
+  <!-- PERMISOS PARA LLAMADAS TELEFÓNICAS -->
   <uses-permission android:name="android.permission.CALL_PHONE" />
-  
-  <!-- Opcional: Para abrir el marcador sin hacer la llamada directamente -->
   <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
+  
+  <!-- PERMISOS PARA DESCARGAR Y GUARDAR ARCHIVOS - AGREGAR ESTAS 2 LÍNEAS -->
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
      
   <application
     android:name=".MainApplication"
@@ -34,12 +36,10 @@
       </intent-filter>
     </activity>
     
-    <!-- Opcional: Declarar que la app puede manejar llamadas telefónicas -->
     <activity android:name="android.intent.action.CALL" />
     
   </application>
   
-  <!-- Opcional: Declarar que la app usa funciones de telefonía -->
   <uses-feature 
     android:name="android.hardware.telephony" 
     android:required="false" />
