@@ -20,7 +20,7 @@ import {
 
 const Pin = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [selectedOption, setSelectedOption] = useState<string>('');
+  const [selectedOption, setSelectedOption] = useState<string>('sedan');
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -48,7 +48,7 @@ const Pin = () => {
       id: 'sedan',
       title: 'Sedán clásico',
       description: 'Ideal para vehículos ligeros y automóviles',
-      image: require('../../../assets/sedan.jpg'),
+      image: require('../../../assets/sedannew.jpg'),
     },
     {
       id: 'pickup',
