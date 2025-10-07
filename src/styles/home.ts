@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#04317aff',
   },
 header: {
   height: 190, 
@@ -28,7 +28,7 @@ backgroundImage: {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(30, 58, 138, 0.9)',
+backgroundColor: 'rgba(4, 49, 122, 0.9)'
   },
   satelliteContainer: {
     position: 'absolute',

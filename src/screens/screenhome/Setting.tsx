@@ -104,12 +104,12 @@ const Setting = () => {
   };
 
   const renderUpdateForm = () => (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -170,38 +170,38 @@ const Setting = () => {
           </View>
 
 
-<View style={styles.buttonWrapper}>
-  <TouchableOpacity 
-    onPress={handleUpdateData} 
-    activeOpacity={0.8}
-  >
-    <LinearGradient
-      colors={['#e36414', '#ff7f3f']}
-      start={{x: 0, y: 0}}
-      end={{x: 1, y: 0}}
-      style={styles.gradientButton}
-    >
-      <Text style={styles.buttonText}>
-        Actualizar datos
-      </Text>
-    </LinearGradient>
-  </TouchableOpacity>
-</View>
-   
+          <View style={styles.buttonWrapper}>
+            <TouchableOpacity
+              onPress={handleUpdateData}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#e36414', '#ff7f3f']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>
+                  Actualizar datos
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
 
-          
+
+
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 
   const renderPasswordForm = () => (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -276,37 +276,37 @@ const Setting = () => {
             </View>
           </View>
 
-      <View style={styles.buttonWrapper}>
-  <TouchableOpacity 
-    onPress={handleEstablishPassword} 
-    activeOpacity={0.8}
-  >
-    <LinearGradient
-      colors={['#e36414', '#ff7f3f']}
-      start={{x: 0, y: 0}}
-      end={{x: 1, y: 0}}
-      style={styles.gradientButton}
-    >
-      <Text style={styles.buttonText}>
-        Establecer contraseña
-      </Text>
-    </LinearGradient>
-  </TouchableOpacity>
-</View>
+          <View style={styles.buttonWrapper}>
+            <TouchableOpacity
+              onPress={handleEstablishPassword}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#e36414', '#ff7f3f']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>
+                  Establecer contraseña
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
- 
+
   const topSpace = insets.top + 5;
 
   return (
-      <LinearGradient
-    colors={['#1e3a8a', '#00509d', '#03045e']} // Degradado de azul oscuro a azul más claro
-    style={[styles.container, { paddingBottom: bottomSpace }]}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 0, y: 1 }}
-  >
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#03045e']} 
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <ChevronLeft size={26} color="#fff" />
@@ -377,7 +377,7 @@ const Setting = () => {
       <Animated.View style={[styles.contentContainer, animatedStyle]}>
         {activeForm === 'update' ? renderUpdateForm() : renderPasswordForm()}
       </Animated.View>
-      </LinearGradient>
+    </LinearGradient>
 
   );
 };

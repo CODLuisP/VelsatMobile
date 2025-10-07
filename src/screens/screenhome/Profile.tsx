@@ -27,6 +27,7 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import { toUpperCaseText } from '../../utils/textUtils';
+import LinearGradient from 'react-native-linear-gradient';
 
 const Profile = () => {
   const { user, logout, server, tipo } = useAuthStore();
@@ -73,8 +74,13 @@ const Profile = () => {
   const shouldShowMarkerAndNotifications = tipo === 'n';
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      {/* Header */}
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#03045e']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >     
+    
       <View style={[styles.header, { paddingTop: topSpace }]}>
 
         <TouchableOpacity
@@ -94,9 +100,9 @@ const Profile = () => {
           </View>
         </View>
         {/* User Name */}
-     <Text style={styles.companyName}>
-  {toUpperCaseText(user?.description || user?.name || 'Usuario')}
-</Text>
+        <Text style={styles.companyName}>
+          {toUpperCaseText(user?.description || user?.name || 'Usuario')}
+        </Text>
 
         {/* <Text
           style={[
@@ -107,7 +113,7 @@ const Profile = () => {
           {navigationDetection.mode}
         </Text> */}
 
-          {/* <Text
+        {/* <Text
             style={[
               styles.companyName,
               { fontSize: 12, color: '#fff', marginTop: 2 },
@@ -255,7 +261,7 @@ const Profile = () => {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

@@ -60,16 +60,16 @@ const getBottomSpace = (insets: EdgeInsets) => {
   if (Platform.OS === 'android') {
     const screen = Dimensions.get('screen');
     const window = Dimensions.get('window');
-    
+
     const navBarHeight = screen.height - window.height;
     return navBarHeight > 0 ? navBarHeight + 30 : 70;
   }
-  
+
   return Math.max(insets.bottom, 20);
 };
 
 const Home: React.FC = () => {
-const { user, logout, server, tipo } = useAuthStore();
+  const { user, logout, server, tipo } = useAuthStore();
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
@@ -87,13 +87,13 @@ const { user, logout, server, tipo } = useAuthStore();
 
 
   const insets = useSafeAreaInsets();
-const bottomSpace = getBottomSpace(insets);
+  const bottomSpace = getBottomSpace(insets);
 
-useFocusEffect(
-  React.useCallback(() => {
-    NavigationBarColor('#1e3a8a', false);
-  }, [])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#1e3a8a', false);
+    }, [])
+  );
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -119,7 +119,7 @@ useFocusEffect(
     navigation.navigate('Security');
   };
 
-    const handleNavigateToHelp = () => {
+  const handleNavigateToHelp = () => {
     navigation.navigate('Help');
   };
   // Función para obtener el saludo según la hora
@@ -567,12 +567,14 @@ useFocusEffect(
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#1a237e' }}>
+    <View style={{ flex: 1 }}>
+      
       <StatusBar
         barStyle="light-content"
         backgroundColor="#1a237e"
         translucent={false}
       />
+
       <SafeAreaView style={homeStyles.container}>
         <View style={homeStyles.header}>
           <Image
@@ -629,17 +631,17 @@ useFocusEffect(
                 )}
               </View>
             </View>
-<Text style={homeStyles.companyName}>
-  {user?.username && `Usuario: ${user.username}`}
-  {user?.description && `Description${user.description}`}
-  {server && `\nServidor: ${server}`}
-  {tipo && `\nTipo: ${tipo}`}
-  {location.latitude && location.longitude && (
-    <Text style={{ fontSize: 10, color: '#fff' }}>
-      {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
-    </Text>
-  )}
-</Text>
+            <Text style={homeStyles.companyName}>
+              {user?.username && `Usuario: ${user.username}`}
+              {user?.description && `Description${user.description}`}
+              {server && `\nServidor: ${server}`}
+              {tipo && `\nTipo: ${tipo}`}
+              {location.latitude && location.longitude && (
+                <Text style={{ fontSize: 10, color: '#fff' }}>
+                  {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
+                </Text>
+              )}
+            </Text>
 
             <View style={homeStyles.locationContainer}>
               <MapPin size={25} color="#FFF" />
@@ -649,7 +651,7 @@ useFocusEffect(
                 </Text>
 
                 <Text style={homeStyles.locationLabel}>
-                   {direccionCoordenadas}
+                  {direccionCoordenadas}
                 </Text>
               </View>
             </View>
@@ -657,11 +659,11 @@ useFocusEffect(
         </View>
 
         <ScrollView
-  style={[
-    homeStyles.content,
-    { paddingBottom: bottomSpace }
-  ]}
-  showsVerticalScrollIndicator={false}
+          style={[
+            homeStyles.content,
+            { paddingBottom: bottomSpace }
+          ]}
+          showsVerticalScrollIndicator={false}
         >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
@@ -741,6 +743,8 @@ useFocusEffect(
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      
     </View>
   );
 };
