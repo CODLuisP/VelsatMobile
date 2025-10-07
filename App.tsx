@@ -117,16 +117,15 @@ const App = () => {
     setShowSplash(false);
   };
 
-
-    useEffect(() => {
+  // ✅ AQUÍ VA EL NUEVO useEffect - Después de las funciones pero antes del otro useEffect
+  useEffect(() => {
     // Cuando el usuario se autentica exitosamente, limpiar el estado de loading
     if (isAuthenticated && isLoading) {
       console.log('Usuario autenticado, limpiando estado de loading');
       setLoading(false);
     }
-  }, [isAuthenticated, isLoading, setLoading]); 
+  }, [isAuthenticated, isLoading, setLoading]);
 
-  
   useEffect(() => {
     StatusBar.setBarStyle('dark-content', true);
 
@@ -159,12 +158,18 @@ const App = () => {
               contentStyle: { backgroundColor: '#1e3a8a' },
               animation: 'slide_from_right',
             }}
+            initialRouteName={isAuthenticated ? "Home" : "Login"}
           >
             {isAuthenticated ? (
               <>
-                {tipo === 'n' && <Stack.Screen name="Home" component={Home} />}
-                {tipo === 'c' && <Stack.Screen name="Home" component={HomeDriverPassenger} />}
-                {tipo === 'p' && <Stack.Screen name="Home" component={HomeDriverPassenger} />}
+                <Stack.Screen 
+                  name="Home" 
+                  component={
+                    tipo === 'n' ? Home : 
+                    (tipo === 'c' || tipo === 'p') ? HomeDriverPassenger : 
+                    Home
+                  } 
+                />
                 
                 <Stack.Screen name="Profile" component={Profile} />
                 <Stack.Screen name="Setting" component={Setting} />

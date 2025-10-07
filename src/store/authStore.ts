@@ -35,6 +35,7 @@ interface AuthState {
     username: string | null;
     token: string | null;
     server: string | null;
+    tipo: string | null; // ⭐ AGREGADO
   };
 
   // Actions existentes
@@ -78,6 +79,7 @@ export const useAuthStore = create<AuthState>()(
         username: null,
         token: null,
         server: null,
+        tipo: null, // ⭐ AGREGADO
       },
 
       // Actions existentes
@@ -88,38 +90,42 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
         });
         
-        // CORRECCIÓN: Usar setTimeout para asegurar que el estado se actualice primero
+        // Usar setTimeout para asegurar que el estado se actualice primero
         setTimeout(() => {
           const newState = get();
-          // Solo si la biometría está habilitada Y tenemos token y servidor
-          if (newState.biometric.isEnabled && newState.token && newState.server) {
+          // Solo si la biometría está habilitada Y tenemos token, servidor Y tipo
+          if (newState.biometric.isEnabled && newState.token && newState.server && newState.tipo) {
             console.log('🔐 Guardando credenciales biométricas para:', user.username);
             
-            // CORRECCIÓN CRÍTICA: Usar set con función para asegurar la actualización
             set((currentState) => ({
               ...currentState,
               biometricCredentials: {
                 username: user.username,
                 token: newState.token!,
                 server: newState.server!,
+                tipo: newState.tipo!, // ⭐ AGREGADO
               },
             }));
             
-            // NUEVO: Forzar persistencia inmediata
+            // Forzar persistencia inmediata
             setTimeout(() => {
               const finalState = get();
               if (finalState.biometricCredentials.username) {
-                console.log('Credenciales biométricas guardadas y verificadas');
+                console.log('✅ Credenciales biométricas guardadas y verificadas:', {
+                  username: finalState.biometricCredentials.username,
+                  tipo: finalState.biometricCredentials.tipo
+                });
               } else {
-                console.log('Error: Las credenciales no se guardaron correctamente');
+                console.log('❌ Error: Las credenciales no se guardaron correctamente');
               }
             }, 50);
             
           } else {
-            console.log('No se pudieron guardar credenciales biométricas:', {
+            console.log('❌ No se pudieron guardar credenciales biométricas:', {
               biometricEnabled: newState.biometric.isEnabled,
               hasToken: !!newState.token,
-              hasServer: !!newState.server
+              hasServer: !!newState.server,
+              hasTipo: !!newState.tipo
             });
           }
         }, 100);
@@ -159,7 +165,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: loading });
       },
 
-      // NUEVAS ACTIONS BIOMÉTRICAS
+      // ACTIONS BIOMÉTRICAS
 
       // Verificar disponibilidad biométrica del dispositivo
       checkBiometricAvailability: async () => {
@@ -206,26 +212,27 @@ export const useAuthStore = create<AuthState>()(
               },
             }));
             
-            // NUEVO: Guardar credenciales inmediatamente si ya hay sesión activa
+            // Guardar credenciales inmediatamente si ya hay sesión activa
             const currentState = get();
-            if (currentState.user && currentState.token && currentState.server) {
-              console.log('Guardando credenciales biométricas inmediatamente para:', currentState.user.username);
+            if (currentState.user && currentState.token && currentState.server && currentState.tipo) {
+              console.log('💾 Guardando credenciales biométricas inmediatamente para:', currentState.user.username, 'tipo:', currentState.tipo);
               set((state) => ({
                 biometricCredentials: {
                   username: currentState.user!.username,
                   token: currentState.token,
                   server: currentState.server,
+                  tipo: currentState.tipo, // ⭐ AGREGADO
                 },
               }));
             }
             
-            console.log('Biometric enabled successfully');
+            console.log('✅ Biometric enabled successfully');
             return true;
           }
           
           return false;
         } catch (error) {
-          console.error('Error enabling biometric:', error);
+          console.error('❌ Error enabling biometric:', error);
           return false;
         }
       },
@@ -253,7 +260,10 @@ export const useAuthStore = create<AuthState>()(
           throw new Error('Biometric not available or not enabled');
         }
 
-        if (!state.biometricCredentials.username || !state.biometricCredentials.token || !state.biometricCredentials.server) {
+        if (!state.biometricCredentials.username || 
+            !state.biometricCredentials.token || 
+            !state.biometricCredentials.server ||
+            !state.biometricCredentials.tipo) { // ⭐ AGREGADO
           throw new Error('No credentials saved for biometric login');
         }
 
@@ -265,12 +275,13 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (success) {
-            // Restaurar sesión automáticamente
-            const { username, token, server } = state.biometricCredentials;
+            // Restaurar sesión automáticamente CON tipo
+            const { username, token, server, tipo } = state.biometricCredentials; // ⭐ AGREGADO tipo
             
             set({
               server,
               token,
+              tipo, // ⭐ AGREGADO - ESTO ES CRÍTICO
               user: {
                 id: username!,
                 username: username!,
@@ -281,13 +292,17 @@ export const useAuthStore = create<AuthState>()(
               isLoading: false,
             });
             
-            console.log('Biometric authentication successful');
+            console.log('✅ Autenticación biométrica exitosa:', {
+              username,
+              tipo,
+              server
+            });
             return true;
           }
           
           return false;
         } catch (error) {
-          console.error('Biometric authentication error:', error);
+          console.error('❌ Biometric authentication error:', error);
           return false;
         }
       },
@@ -296,16 +311,22 @@ export const useAuthStore = create<AuthState>()(
       saveBiometricCredentials: (username: string, token: string, server: string) => {
         const state = get();
         
-        // Solo guardar si la biometría está habilitada
-        if (state.biometric.isEnabled) {
+        // Solo guardar si la biometría está habilitada Y hay tipo
+        if (state.biometric.isEnabled && state.tipo) {
           set((state) => ({
             biometricCredentials: {
               username,
               token,
               server,
+              tipo: state.tipo, // ⭐ AGREGADO
             },
           }));
-          console.log('Biometric credentials saved for user:', username);
+          console.log('✅ Biometric credentials saved for user:', username, 'tipo:', state.tipo);
+        } else {
+          console.log('⚠️ No se guardaron credenciales biométricas:', {
+            biometricEnabled: state.biometric.isEnabled,
+            hasTipo: !!state.tipo
+          });
         }
       },
 
@@ -316,6 +337,7 @@ export const useAuthStore = create<AuthState>()(
             username: null,
             token: null,
             server: null,
+            tipo: null, // ⭐ AGREGADO
           },
         }));
         console.log('Biometric credentials cleared');
@@ -340,13 +362,15 @@ export const useAuthStore = create<AuthState>()(
           state.biometric.isAvailable &&
           !!state.biometricCredentials.username &&
           !!state.biometricCredentials.token &&
-          !!state.biometricCredentials.server
+          !!state.biometricCredentials.server &&
+          !!state.biometricCredentials.tipo // ⭐ AGREGADO
         );
         
         console.log('Can use biometric login:', canUse, {
           isEnabled: state.biometric.isEnabled,
           isAvailable: state.biometric.isAvailable,
-          hasCredentials: !!state.biometricCredentials.username
+          hasCredentials: !!state.biometricCredentials.username,
+          hasTipo: !!state.biometricCredentials.tipo
         });
         
         return canUse;
@@ -372,6 +396,8 @@ export const useAuthStore = create<AuthState>()(
             biometricEnabled: state.biometric?.isEnabled,
             hasCredentials: !!state.biometricCredentials?.username,
             credentialsUsername: state.biometricCredentials?.username,
+            credentialsTipo: state.biometricCredentials?.tipo, // ⭐ AGREGADO
+            currentTipo: state.tipo
           });
         } else {
           console.log('❌ Error en hidratación del store');
