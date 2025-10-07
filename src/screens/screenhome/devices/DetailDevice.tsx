@@ -101,7 +101,6 @@ const DIRECTION_IMAGES = {
 const DetailDevice = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<DetailDeviceRouteProp>();
-  const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [isInfoExpanded, setIsInfoExpanded] = useState(true);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -400,38 +399,6 @@ const getDirectionImageData = (angle: number) => {
   };
 
 
-  const requestLocationPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Permiso de Ubicación',
-            message:
-              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
-            buttonNeutral: 'Preguntar después',
-            buttonNegative: 'Cancelar',
-            buttonPositive: 'OK',
-          },
-        );
-
-
-        setHasLocationPermission(
-          granted === PermissionsAndroid.RESULTS.GRANTED,
-        );
-      } catch (err) {
-        console.warn(err);
-        setHasLocationPermission(false);
-      }
-    } else {
-      setHasLocationPermission(true);
-    }
-  };
-
-
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
 
 
   const handleGoBack = () => {
@@ -519,31 +486,6 @@ window.imageUrls = {
 };
            // Variable para el marcador (se creará cuando lleguen los datos)
            var marker = null;
-
-
-           ${hasLocationPermission
-        ? `
-           if (navigator.geolocation) {
-               navigator.geolocation.getCurrentPosition(function(position) {
-                   var userLat = position.coords.latitude;
-                   var userLng = position.coords.longitude;
-                  
-                   var userIcon = L.divIcon({
-                       html: '<div style="background-color: #10b981; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(16,185,129,0.5);"></div>',
-                       iconSize: [18, 18],
-                       iconAnchor: [9, 9],
-                       className: 'user-location-icon'
-                   });
-                  
-                   L.marker([userLat, userLng], {icon: userIcon})
-                       .addTo(map)
-                       .bindPopup('<div style="text-align: center; font-family: Arial, sans-serif;"><strong>Tu ubicación</strong></div>');
-               }, function(error) {
-                   console.log('Error obteniendo ubicación:', error);
-               });
-           }`
-        : ''
-      }
 
 
            map.on('focus', function() {
@@ -711,7 +653,7 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
    </body>
    </html>
  `;
-  }, [hasLocationPermission]);
+  }, []);
 
 
   const webViewRef = useRef<WebView>(null);
@@ -788,8 +730,7 @@ const formatThreeDecimals = (num: any) => {
     latitudeDelta: 0.008,
     longitudeDelta: 0.008,
   }}
-  showsUserLocation={hasLocationPermission}
-  showsMyLocationButton={hasLocationPermission}
+
 >
   {vehicleData && (
     <Marker
@@ -832,7 +773,6 @@ const formatThreeDecimals = (num: any) => {
           startInLoadingState={true}
           scalesPageToFit={true}
           mixedContentMode="compatibility"
-          geolocationEnabled={hasLocationPermission}
           onMessage={event => {
             if (event.nativeEvent.data === 'webview-ready') {
               setIsWebViewReady(true);
