@@ -116,30 +116,68 @@ const Login = () => {
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
 
-  const handleBiometricLogin = async () => {
-    try {
-      setLoading(true);
 
-      const success = await authenticateWithBiometric();
 
-      if (success) {
-      } else {
-        Alert.alert(
-          'Autenticación fallida',
-          'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
-          [{ text: 'Entendido' }],
-        );
-        setLoading(false);
-      }
-    } catch (error) {
+const handleBiometricLogin = async () => {
+  try {
+    // Activar loading ANTES de la autenticación
+    setIsLoggingIn(true);
+    setLoading(true);
+
+    const success = await authenticateWithBiometric();
+
+    if (success) {
+      // ✅ ÉXITO: La autenticación fue exitosa
+      // El authStore ya maneja setUser, setToken, etc.
+      // NO necesitamos resetear isLoggingIn ni loading aquí
+      // porque el cambio de isAuthenticated disparará la navegación
+      
+      console.log('Autenticación biométrica exitosa');
+      
+      // El useEffect de App.tsx detectará isAuthenticated = true
+      // y navegará automáticamente
+    } else {
+      // ❌ FALLO: Usuario canceló o falló la autenticación
+      console.log('Autenticación biométrica fallida');
+      
       Alert.alert(
-        'Error de Autenticación',
-        'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
-        [{ text: 'Entendido' }],
+        'Autenticación fallida',
+        'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
+        [
+          { 
+            text: 'Entendido',
+            onPress: () => {
+              // Resetear estados después de cerrar el alert
+              setIsLoggingIn(false);
+              setLoading(false);
+            }
+          }
+        ],
       );
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    // ⚠️ ERROR: Hubo una excepción
+    console.log('Error en autenticación biométrica:', error);
+    
+    Alert.alert(
+      'Error de Autenticación',
+      'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+      [
+        { 
+          text: 'Entendido',
+          onPress: () => {
+            // Resetear estados después de cerrar el alert
+            setIsLoggingIn(false);
+            setLoading(false);
+          }
+        }
+      ],
+    );
+  }
+};
+
+
+
 
   const loadSavedCredentials = async () => {
     try {

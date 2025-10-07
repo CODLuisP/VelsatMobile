@@ -117,6 +117,16 @@ const App = () => {
     setShowSplash(false);
   };
 
+
+    useEffect(() => {
+    // Cuando el usuario se autentica exitosamente, limpiar el estado de loading
+    if (isAuthenticated && isLoading) {
+      console.log('Usuario autenticado, limpiando estado de loading');
+      setLoading(false);
+    }
+  }, [isAuthenticated, isLoading, setLoading]); 
+
+  
   useEffect(() => {
     StatusBar.setBarStyle('dark-content', true);
 
