@@ -44,7 +44,7 @@ const Profile = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -75,7 +75,7 @@ const Profile = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#03045e']}
+      colors={['#00296b', '#1e3a8a', '#00296b']}
       style={[styles.container, { paddingBottom: bottomSpace }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}

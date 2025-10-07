@@ -10,8 +10,10 @@ import {
 } from 'lucide-react-native';
 import {
   NavigationProp,
+  RouteProp,
   useFocusEffect,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import { styles } from '../../../styles/generalreport';
 import { RootStackParamList } from '../../../../App';
@@ -21,6 +23,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+import { formatDate } from '../../../utils/converUtils';
 
 interface ReportItem {
   id: string;
@@ -35,7 +38,8 @@ interface ReportItem {
 
 const SpeedReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
+const route = useRoute<RouteProp<RootStackParamList, 'SpeedReport'>>();
+const { unit, startDate, endDate, speed } = route.params;
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
@@ -220,12 +224,14 @@ const SpeedReport = () => {
           </TouchableOpacity>
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>Reporte Velocidad</Text>
-            <Text style={styles.headerSubtitle}>Unidad M2L-777</Text>
+            <Text style={styles.headerSubtitle}>Unidad: {unit.plate}</Text>
+              <Text style={styles.headerSubtitle}>Velocidad mayor a: {speed}</Text>
+
             <View style={styles.headerDateContainer}>
               <Calendar size={16} color="#fff" />
               <Text style={styles.headerDate}>
-                18/09/2025 00:00 - 18/09/2025 23:59
-              </Text>
+                                   {formatDate(startDate)} - {formatDate(endDate)}
+                                 </Text>
             </View>
           </View>
         </View>

@@ -371,7 +371,6 @@ const Setting = () => {
           />
         </TouchableOpacity>
 
-
       </View>
 
       <Animated.View style={[styles.contentContainer, animatedStyle]}>

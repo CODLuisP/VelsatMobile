@@ -17,8 +17,10 @@ import {
 } from 'lucide-react-native';
 import {
   NavigationProp,
+  RouteProp,
   useFocusEffect,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import { styles } from '../../../styles/generalreport';
 import { RootStackParamList } from '../../../../App';
@@ -28,6 +30,8 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+import { formatDate } from '../../../utils/converUtils';
+import { useAuthStore } from '../../../store/authStore';
 
 interface ReportItem {
   id: string;
@@ -44,12 +48,16 @@ interface ReportItem {
 const GeneralReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const route = useRoute<RouteProp<RootStackParamList, 'GeneralReport'>>();
+  const { unit, startDate, endDate } = route.params;
+
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
     insets,
     navigationDetection.hasNavigationBar,
   );
+  const { user, logout, server, tipo } = useAuthStore();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -140,6 +148,8 @@ const GeneralReport = () => {
     if (speed <= 30) return '#00AA00';
     return '#0066FF';
   };
+
+
 
   const renderReportItem = ({
     item,
@@ -241,11 +251,11 @@ const GeneralReport = () => {
           </TouchableOpacity>
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>Reporte General</Text>
-            <Text style={styles.headerSubtitle}>Unidad M2L-777</Text>
+            <Text style={styles.headerSubtitle}>Unidad: {unit.plate}</Text>
             <View style={styles.headerDateContainer}>
               <Calendar size={16} color="#fff" />
               <Text style={styles.headerDate}>
-                18/09/2025 00:00 - 18/09/2025 23:59
+                {formatDate(startDate)} - {formatDate(endDate)}
               </Text>
             </View>
           </View>

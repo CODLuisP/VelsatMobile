@@ -9,8 +9,10 @@ import {
 import { ChevronLeft, Calendar, ChevronRight } from 'lucide-react-native';
 import {
   NavigationProp,
+  RouteProp,
   useFocusEffect,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import MapView, { PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
@@ -22,9 +24,14 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+import { formatDate } from '../../../utils/converUtils';
 
 const TourReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  
+      const route = useRoute<RouteProp<RootStackParamList, 'GeneralReport'>>();
+      const { unit, startDate, endDate } = route.params;
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [sidebarCompact, setSidebarCompact] = useState(false);
@@ -226,18 +233,17 @@ const TourReport = () => {
           </TouchableOpacity>
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>Reporte de Recorrido</Text>
-            <Text style={styles.headerSubtitle}>Unidad M2L-777</Text>
+            <Text style={styles.headerSubtitle}>Unidad: {unit.plate}</Text>
             <View style={styles.headerDateContainer}>
               <Calendar size={16} color="#fff" />
               <Text style={styles.headerDate}>
-                18/09/2025 00:00 - 18/09/2025 23:59
+                {formatDate(startDate)} - {formatDate(endDate)}
               </Text>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Contenido con Mapa y Sidebar */}
       <View style={styles.content}>
         {/* Container del Mapa - Ahora siempre ocupa todo el espacio */}
         <View style={styles.mapContainer}>{renderMap()}</View>

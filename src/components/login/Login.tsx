@@ -81,20 +81,7 @@ const Login = () => {
   const formOpacity = useSharedValue(1);
   const formTranslateY = useSharedValue(0);
   const backgroundShift = useSharedValue(0);
-  const orb1 = useSharedValue(0);
-  const orb2 = useSharedValue(0);
-  const orb3 = useSharedValue(0);
 
-  // Animaciones GPS específicas
-  const satellite1 = useSharedValue(0);
-  const satellite2 = useSharedValue(0);
-  const satellite3 = useSharedValue(0);
-  const gpsSignal1 = useSharedValue(0);
-  const gpsSignal2 = useSharedValue(0);
-  const gpsSignal3 = useSharedValue(0);
-  const radarSweep = useSharedValue(0);
-  const antennaSignal = useSharedValue(0);
-  const networkPulse = useSharedValue(0);
 
   // Animación del carro en carretera (footer)
   const carPosition = useSharedValue(-100);
@@ -127,17 +114,11 @@ const handleBiometricLogin = async () => {
     const success = await authenticateWithBiometric();
 
     if (success) {
-      // ✅ ÉXITO: La autenticación fue exitosa
-      // El authStore ya maneja setUser, setToken, etc.
-      // NO necesitamos resetear isLoggingIn ni loading aquí
-      // porque el cambio de isAuthenticated disparará la navegación
+     
       
       console.log('Autenticación biométrica exitosa');
-      
-      // El useEffect de App.tsx detectará isAuthenticated = true
-      // y navegará automáticamente
+   
     } else {
-      // ❌ FALLO: Usuario canceló o falló la autenticación
       console.log('Autenticación biométrica fallida');
       
       Alert.alert(
@@ -147,7 +128,6 @@ const handleBiometricLogin = async () => {
           { 
             text: 'Entendido',
             onPress: () => {
-              // Resetear estados después de cerrar el alert
               setIsLoggingIn(false);
               setLoading(false);
             }
@@ -156,7 +136,6 @@ const handleBiometricLogin = async () => {
       );
     }
   } catch (error) {
-    // ⚠️ ERROR: Hubo una excepción
     console.log('Error en autenticación biométrica:', error);
     
     Alert.alert(
@@ -166,7 +145,6 @@ const handleBiometricLogin = async () => {
         { 
           text: 'Entendido',
           onPress: () => {
-            // Resetear estados después de cerrar el alert
             setIsLoggingIn(false);
             setLoading(false);
           }

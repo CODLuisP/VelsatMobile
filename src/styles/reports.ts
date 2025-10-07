@@ -95,7 +95,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    marginBottom: 20,
+    marginBottom: 10,
     backgroundColor: 'white',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -200,7 +200,7 @@ export const styles = StyleSheet.create({
     padding: 20,
     marginVertical: 8,
     shadowColor: '#000',
-    marginTop:-5
+    marginTop:10
   },
 
   sectionTitle: {
@@ -384,10 +384,9 @@ export const styles = StyleSheet.create({
   },
 
   selectedUnitName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 2,
   },
 
   selectedUnitDetails: {
@@ -396,7 +395,7 @@ export const styles = StyleSheet.create({
   },
 
   clearUnitButton: {
-    padding: 8,
+    padding: 2,
     marginLeft: 8,
   },
 
@@ -424,11 +423,10 @@ export const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
-    paddingTop: 54,
   },
 
   unitModalTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -467,13 +465,14 @@ export const styles = StyleSheet.create({
   unitsList: {
     flex: 1,
     paddingHorizontal: 20,
+    
   },
 
   unitItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     backgroundColor: 'white',
     borderRadius: 8,
@@ -508,7 +507,7 @@ export const styles = StyleSheet.create({
   },
 
   unitName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
@@ -526,7 +525,7 @@ export const styles = StyleSheet.create({
   },
 
   emptyText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#9CA3AF',
     textAlign: 'center',
   },

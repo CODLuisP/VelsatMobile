@@ -86,7 +86,6 @@ const Devices = () => {
         `${server}/api/DeviceList/simplified/${username}`
       );
 
-      // Transformar los datos de la API al formato de Device
       const transformedDevices: Device[] = response.data.map((apiDevice) => ({
         id: apiDevice.deviceId,
         name: apiDevice.deviceId,
@@ -110,23 +109,18 @@ const Devices = () => {
     }
   };
 
-  // Función para manejar el pull-to-refresh manual
   const handleRefresh = () => {
     setIsRefreshing(true);
     fetchDevices(false);
   };
 
-  // Cargar dispositivos al montar el componente y configurar actualización automática
   useEffect(() => {
-    // Cargar datos inmediatamente con indicador de carga
     fetchDevices(true);
 
-    // Configurar intervalo para actualizar cada 10 segundos (sin mostrar loading)
     const interval = setInterval(() => {
       fetchDevices(false);
-    }, 10000); // 10000 ms = 10 segundos
+    }, 10000); 
 
-    // Limpiar el intervalo cuando el componente se desmonte
     return () => clearInterval(interval);
   }, [user?.username, server]);
 

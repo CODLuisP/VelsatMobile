@@ -73,7 +73,7 @@ export type RootStackParamList = {
     deviceName: string;
   };
   Events: {
-    deviceName: string;  
+    deviceName: string;
   };
   MapEvent: {
     notificationData: {
@@ -93,11 +93,31 @@ export type RootStackParamList = {
     };
   };
   Reports: undefined;
-  GeneralReport: undefined;
-  StopReport: undefined;
-  SpeedReport: undefined;
-  MileageReport: undefined;
-  TourReport: undefined;
+  GeneralReport: {
+    unit: { id: number; plate: string };
+    startDate: Date;
+    endDate: Date;
+  };
+  StopReport: {
+    unit: { id: number; plate: string };
+    startDate: Date;
+    endDate: Date;
+  };
+  SpeedReport: {
+    unit: { id: number; plate: string };
+    startDate: Date;
+    endDate: Date;
+    speed: string;
+  };
+MileageReport: {
+  unit: { id: number; plate: string } | 'all';
+  startDate: Date;
+  endDate: Date;
+};  TourReport:  {
+    unit: { id: number; plate: string };
+    startDate: Date;
+    endDate: Date;
+  };
   Security: undefined;
   Help: undefined;
   Central: undefined;
@@ -111,15 +131,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = () => {
   const { isAuthenticated, isLoading, setLoading, tipo } = useAuthStore();
-  const [showSplash, setShowSplash] = useState(true);
 
-  const handleSplashFinish = () => {
-    setShowSplash(false);
-  };
-
-  // ✅ AQUÍ VA EL NUEVO useEffect - Después de las funciones pero antes del otro useEffect
   useEffect(() => {
-    // Cuando el usuario se autentica exitosamente, limpiar el estado de loading
     if (isAuthenticated && isLoading) {
       console.log('Usuario autenticado, limpiando estado de loading');
       setLoading(false);
@@ -131,7 +144,7 @@ const App = () => {
 
     const setNavigationBarColor = () => {
       try {
-        SystemNavigationBar.setNavigationColor('#1e3a8a'); 
+        SystemNavigationBar.setNavigationColor('#1e3a8a');
         console.log('Navigation bar color set to #1e3a8a');
       } catch (error) {
         console.log('Error setting navigation bar color:', error);
@@ -158,19 +171,20 @@ const App = () => {
               contentStyle: { backgroundColor: '#1e3a8a' },
               animation: 'slide_from_right',
             }}
-            initialRouteName={isAuthenticated ? "Home" : "Login"}
+            initialRouteName={isAuthenticated ? 'Home' : 'Login'}
           >
             {isAuthenticated ? (
               <>
-                <Stack.Screen 
-                  name="Home" 
+                <Stack.Screen
+                  name="Home"
                   component={
-                    tipo === 'n' ? Home : 
-                    (tipo === 'c' || tipo === 'p') ? HomeDriverPassenger : 
-                    Home
-                  } 
+                    tipo === 'n'
+                      ? Home
+                      : tipo === 'c' || tipo === 'p'
+                      ? HomeDriverPassenger
+                      : Home
+                  }
                 />
-                
                 <Stack.Screen name="Profile" component={Profile} />
                 <Stack.Screen name="Setting" component={Setting} />
                 <Stack.Screen name="Pin" component={Pin} />
@@ -190,10 +204,22 @@ const App = () => {
                 <Stack.Screen name="Security" component={Security} />
                 <Stack.Screen name="Help" component={Help} />
                 <Stack.Screen name="Central" component={Central} />
-                <Stack.Screen name="ServicesDriver" component={ServicesDriver} />
-                <Stack.Screen name="ServicesPassenger" component={ServicesPassenger} />
-                <Stack.Screen name="ServicesDetailDriver" component={ServicesDetailDriver} />
-                <Stack.Screen name="ServicesDetailPassenger" component={ServicesDetailPassenger} />
+                <Stack.Screen
+                  name="ServicesDriver"
+                  component={ServicesDriver}
+                />
+                <Stack.Screen
+                  name="ServicesPassenger"
+                  component={ServicesPassenger}
+                />
+                <Stack.Screen
+                  name="ServicesDetailDriver"
+                  component={ServicesDetailDriver}
+                />
+                <Stack.Screen
+                  name="ServicesDetailPassenger"
+                  component={ServicesDetailPassenger}
+                />
               </>
             ) : (
               <Stack.Screen name="Login" component={Login} />

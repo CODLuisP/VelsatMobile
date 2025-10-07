@@ -3,8 +3,10 @@ import { Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
 import { ChevronLeft, Calendar, Car, MapPin } from 'lucide-react-native';
 import {
   NavigationProp,
+  RouteProp,
   useFocusEffect,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import { styles } from '../../../styles/mileagereport';
 import { RootStackParamList } from '../../../../App';
@@ -14,6 +16,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+import { formatDate } from '../../../utils/converUtils';
 
 interface VehicleReport {
   id: string;
@@ -25,6 +28,11 @@ interface VehicleReport {
 
 const MileageReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const route = useRoute<RouteProp<RootStackParamList, 'MileageReport'>>();
+  const { unit, startDate, endDate } = route.params;
+
+  const isAllUnits = unit === 'all';
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -153,7 +161,6 @@ const MileageReport = () => {
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <View style={[styles.header, { paddingTop: topSpace }]}>
-  
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -162,13 +169,16 @@ const MileageReport = () => {
             <View style={styles.headerTextContainer}>
               <Text style={styles.headerTitle}>Reporte de Kilometraje</Text>
 
-              <Text style={styles.dateText}>Unidad Bwb 113</Text>
+              <Text style={styles.dateText}>
+                {' '}
+                {isAllUnits ? 'Todas las unidades' : `Unidad:${unit.plate}`}
+              </Text>
 
               <View style={styles.dateContainer}>
                 <View style={styles.dateWrapper}>
                   <Calendar size={16} color="#fff" opacity={0.9} />
                   <Text style={styles.dateText}>
-                    18/09/2025 00:00 - 18/09/2025 23:59
+                    {formatDate(startDate)} - {formatDate(endDate)}
                   </Text>
                 </View>
               </View>
