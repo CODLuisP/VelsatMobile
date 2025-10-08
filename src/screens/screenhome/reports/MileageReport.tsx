@@ -1,6 +1,20 @@
-import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
-import { ChevronLeft, Calendar, Car, MapPin } from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  FlatList,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
+import {
+  ChevronLeft,
+  Calendar,
+  Car,
+  MapPin,
+  AlertCircle,
+  FileX,
+} from 'lucide-react-native';
 import {
   NavigationProp,
   RouteProp,
@@ -8,6 +22,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import axios from 'axios';
 import { styles } from '../../../styles/mileagereport';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +32,7 @@ import {
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
+import { useAuthStore } from '../../../store/authStore';
 
 interface VehicleReport {
   id: string;
@@ -28,7 +44,6 @@ interface VehicleReport {
 
 const MileageReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
   const route = useRoute<RouteProp<RootStackParamList, 'MileageReport'>>();
   const { unit, startDate, endDate } = route.params;
 
@@ -40,12 +55,82 @@ const MileageReport = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+  const { user, server } = useAuthStore();
+
+  const [vehicleData, setVehicleData] = useState<VehicleReport[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#1e3a8a', false);
     }, []),
   );
+
+  useEffect(() => {
+    fetchReportData();
+  }, []);
+
+const fetchReportData = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const username = user?.username;
+
+    // Función para formatear fecha a ISO string
+    const formatDateForAPI = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // Formatear las fechas para la API
+    const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+    const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
+
+    // Construir URL según si es "all" o una unidad específica
+    let url = '';
+    
+    if (isAllUnits) {
+      // API para todas las unidades
+      url = `${server}/api/Kilometer/kilometerall/${formattedStartDate}/${formattedEndDate}/${username}`;
+    } else {
+      // API para una unidad específica
+      const plate = unit.plate;
+      url = `${server}/api/Kilometer/kilometer/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
+    }
+
+    console.log('API URL:', url);
+
+    const response = await axios.get(url);
+
+    if (response.data && response.data.result && response.data.result.listaKilometros) {
+      const transformedData: VehicleReport[] = response.data.result.listaKilometros.map(
+        (item: any) => ({
+          id: item.item.toString(),
+          itemNumber: item.item,
+          unitName: item.deviceId,
+          mileage: parseFloat(item.kilometros.toFixed(2)),
+          carImage: require('../../../../assets/Car.jpg'),
+        })
+      );
+
+      setVehicleData(transformedData);
+    } else {
+      setError('No se encontraron datos');
+    }
+  } catch (err) {
+    console.error('Error fetching report data:', err);
+    setError('Error al cargar los datos del reporte');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -54,67 +139,6 @@ const MileageReport = () => {
   const handleVehiclePress = (vehicle: VehicleReport) => {
     console.log('Clicked on vehicle:', vehicle);
   };
-
-  const [vehicleData] = useState<VehicleReport[]>([
-    {
-      id: '1',
-      itemNumber: 1,
-      unitName: 'BDV-953',
-      mileage: 263.75,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-    {
-      id: '2',
-      itemNumber: 2,
-      unitName: 'BDV-954',
-      mileage: 412.3,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-    {
-      id: '3',
-      itemNumber: 3,
-      unitName: 'BDV-955',
-      mileage: 198.45,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-    {
-      id: '4',
-      itemNumber: 4,
-      unitName: 'BDV-956',
-      mileage: 327.8,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-    {
-      id: '5',
-      itemNumber: 5,
-      unitName: 'BDV-957',
-      mileage: 156.25,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-
-    {
-      id: '6',
-      itemNumber: 5,
-      unitName: 'BDV-957',
-      mileage: 156.25,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-
-    {
-      id: '7',
-      itemNumber: 5,
-      unitName: 'BDV-957',
-      mileage: 156.25,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-    {
-      id: '8',
-      itemNumber: 5,
-      unitName: 'BDV-957',
-      mileage: 156.25,
-      carImage: require('../../../../assets/Car.jpg'),
-    },
-  ]);
 
   const renderVehicleItem = ({ item }: { item: VehicleReport }) => (
     <TouchableOpacity
@@ -156,6 +180,7 @@ const MileageReport = () => {
       </View>
     </TouchableOpacity>
   );
+
   const topSpace = insets.top + 5;
 
   return (
@@ -168,12 +193,9 @@ const MileageReport = () => {
             </TouchableOpacity>
             <View style={styles.headerTextContainer}>
               <Text style={styles.headerTitle}>Reporte de Kilometraje</Text>
-
               <Text style={styles.dateText}>
-                {' '}
-                {isAllUnits ? 'Todas las unidades' : `Unidad:${unit.plate}`}
+                {isAllUnits ? 'Todas las unidades' : `Unidad: ${unit.plate}`}
               </Text>
-
               <View style={styles.dateContainer}>
                 <View style={styles.dateWrapper}>
                   <Calendar size={16} color="#fff" opacity={0.9} />
@@ -187,14 +209,42 @@ const MileageReport = () => {
         </View>
       </View>
 
-      <FlatList
-        data={vehicleData}
-        keyExtractor={item => item.id}
-        renderItem={renderVehicleItem}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+      {/* Contenedor wrapper con borde redondeado */}
+      <View style={styles.listWrapper}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#1e3a8a" />
+            <Text style={styles.loadingText}>Cargando...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <View style={styles.errorIconContainer}>
+              <AlertCircle size={40} color="#FF4444" />
+            </View>
+            <Text style={styles.errorTitle}>Error al cargar datos</Text>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : vehicleData.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconContainer}>
+              <FileX size={70} color="#94a3b8" />
+            </View>
+            <Text style={styles.emptyTitle}>Sin datos</Text>
+            <Text style={styles.emptyText}>
+              No hay datos disponibles para el rango de fechas seleccionado
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={vehicleData}
+            keyExtractor={item => item.id}
+            renderItem={renderVehicleItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+          />
+        )}
+      </View>
     </View>
   );
 };

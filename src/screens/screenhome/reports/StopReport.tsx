@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Text,
   View,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -12,8 +14,17 @@ import {
   Timer,
   Globe,
   Calendar,
+  AlertCircle,
+  FileX,
 } from 'lucide-react-native';
-import { NavigationProp, RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import axios from 'axios';
 import { styles } from '../../../styles/generalreport';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,7 +34,7 @@ import {
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
-
+import { useAuthStore } from '../../../store/authStore';
 
 interface ReportItem {
   id: string;
@@ -40,10 +51,8 @@ interface ReportItem {
 
 const StopReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
-    const route = useRoute<RouteProp<RootStackParamList, 'GeneralReport'>>();
-    const { unit, startDate, endDate } = route.params;
-  
+  const route = useRoute<RouteProp<RootStackParamList, 'StopReport'>>();
+  const { unit, startDate, endDate } = route.params;
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -51,95 +60,93 @@ const StopReport = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+  const { user, server } = useAuthStore();
+
+  const [reportData, setReportData] = useState<ReportItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#1e3a8a', false);
     }, []),
   );
+
+  useEffect(() => {
+    fetchReportData();
+  }, []);
+
+  const fetchReportData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const username = user?.username;
+      const plate = unit.plate;
+
+      // Función para formatear fecha a ISO string
+      const formatDateForAPI = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
+
+      // Formatear las fechas para la API
+      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
+
+      const url = `${server}/api/Reporting/stops/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
+
+      console.log('API URL:', url);
+
+      const response = await axios.get(url);
+
+      if (response.data && response.data.result) {
+        const transformedData: ReportItem[] = response.data.result.map(
+          (item: any) => ({
+            id: item.item.toString(),
+            number: item.item,
+            startDate: item.startDate,
+            startTime: item.startTime,
+            endDate: item.endDate,
+            endTime: item.endTime,
+            totalTime: item.totalTime,
+            location: item.address,
+            latitude: item.latitude,
+            longitude: item.longitude,
+          })
+        );
+
+        setReportData(transformedData);
+      } else {
+        setError('No se encontraron datos');
+      }
+    } catch (err) {
+      console.error('Error fetching report data:', err);
+      setError('Error al cargar los datos del reporte');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoBack = () => {
     navigation.goBack();
   };
 
   const handleReportItemPress = (item: ReportItem) => {
-  
-    console.log('Clicked on report item:', item);
-  };
+    const { latitude, longitude } = item;
 
-  const [reportData] = useState<ReportItem[]>([
-    {
-      id: '1',
-      number: 1,
-      startDate: '18/09/2025',
-      startTime: '00:00',
-      endDate: '18/09/2025',
-      endTime: '01:34',
-      totalTime: '01H:34M:23S',
-      location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.8986,
-      longitude: -79.78812,
-    },
-    {
-      id: '2',
-      number: 2,
-      startDate: '18/09/2025',
-      startTime: '00:00',
-      endDate: '18/09/2025',
-      endTime: '01:34',
-      totalTime: '01H:34M:23S',
-      location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.8986,
-      longitude: -79.78812,
-    },
-    {
-      id: '3',
-      number: 3,
-      startDate: '18/09/2025',
-      startTime: '02:15',
-      endDate: '18/09/2025',
-      endTime: '03:45',
-      totalTime: '01H:30M:15S',
-      location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.8986,
-      longitude: -79.78812,
-    },
-    {
-      id: '4',
-      number: 4,
-      startDate: '18/09/2025',
-      startTime: '04:20',
-      endDate: '18/09/2025',
-      endTime: '05:10',
-      totalTime: '00H:50M:12S',
-      location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.8986,
-      longitude: -79.78812,
-    },
-    {
-      id: '5',
-      number: 5,
-      startDate: '18/09/2025',
-      startTime: '06:30',
-      endDate: '18/09/2025',
-      endTime: '07:25',
-      totalTime: '00H:55M:30S',
-      location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.8986,
-      longitude: -79.78812,
-    },
-    {
-      id: '6',
-      number: 6,
-      startDate: '18/09/2025',
-      startTime: '08:15',
-      endDate: '18/09/2025',
-      endTime: '09:40',
-      totalTime: '01H:25M:45S',
-      location: 'Panamericana Norte, Reque, Chiclayo, Lambayeque, Perú',
-      latitude: -6.8986,
-      longitude: -79.78812,
-    },
-  ]);
+    // URL para Google Maps en Street View
+    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m7!1e1!3m5!1s!2e0!7i16384!8i8192?entry=ttu`;
+
+    Linking.openURL(googleMapsUrl).catch(err =>
+      console.error('Error al abrir Google Maps:', err)
+    );
+  };
 
   const renderReportItem = ({
     item,
@@ -151,7 +158,6 @@ const StopReport = () => {
     const isFirst = index === 0;
     const isLast = index === reportData.length - 1;
 
-    
     return (
       <TouchableOpacity
         style={[
@@ -206,12 +212,12 @@ const StopReport = () => {
                   <Text style={styles.sectionLabel}>Latitud y Longitud</Text>
                 </View>
                 <Text style={styles.coordinatesText}>
-                  {item.latitude}, {item.longitude}
+                  {item.latitude.toFixed(6)}, {item.longitude.toFixed(6)}
                 </Text>
               </View>
             </View>
 
-      
+            {/* Fila inferior - Ubicación ocupa todo el ancho */}
             <View style={styles.bottomRowContent}>
               <View style={styles.locationContainer}>
                 <MapPin size={14} color="#666" />
@@ -225,7 +231,7 @@ const StopReport = () => {
     );
   };
 
-    const topSpace = insets.top + 5;
+  const topSpace = insets.top + 5;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
@@ -240,23 +246,50 @@ const StopReport = () => {
             <Text style={styles.headerSubtitle}>Unidad: {unit.plate}</Text>
             <View style={styles.headerDateContainer}>
               <Calendar size={16} color="#fff" />
-            <Text style={styles.headerDate}>
-                          {formatDate(startDate)} - {formatDate(endDate)}
-                        </Text>
+              <Text style={styles.headerDate}>
+                {formatDate(startDate)} - {formatDate(endDate)}
+              </Text>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Lista de reportes */}
-      <FlatList
-        data={reportData}
-        keyExtractor={item => item.id}
-        renderItem={({ item, index }) => renderReportItem({ item, index })}
-        style={styles.reportsList}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.reportsListContent}
-      />
+      {/* Contenedor para la lista o estados */}
+      <View style={{ flex: 1, backgroundColor: 'white', borderTopLeftRadius: 25, borderTopRightRadius: 25 }}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#1e3a8a" />
+            <Text style={styles.loadingText}>Cargando...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <View style={styles.errorIconContainer}>
+              <AlertCircle size={40} color="#FF4444" />
+            </View>
+            <Text style={styles.errorTitle}>Error al cargar datos</Text>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : reportData.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconContainer}>
+              <FileX size={70} color="#94a3b8" />
+            </View>
+            <Text style={styles.emptyTitle}>Sin datos</Text>
+            <Text style={styles.emptyText}>
+              No hay datos disponibles para el rango de fechas seleccionado
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={reportData}
+            keyExtractor={item => item.id}
+            renderItem={({ item, index }) => renderReportItem({ item, index })}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.reportsListContent}
+            style={{ paddingHorizontal: 10, paddingVertical: 10 }}
+          />
+        )}
+      </View>
     </View>
   );
 };

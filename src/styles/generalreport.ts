@@ -64,9 +64,10 @@ reportItemLast: {
   // Reports list styles
   reportsList: {
     flex: 1,
-       backgroundColor: 'white',
+    backgroundColor: 'white',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    
   },
   reportsListContent: {
     paddingVertical: 10,
@@ -208,7 +209,6 @@ reportItemLast: {
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
-  marginTop: 80,
 },
 loadingText: {
   marginTop: 10,

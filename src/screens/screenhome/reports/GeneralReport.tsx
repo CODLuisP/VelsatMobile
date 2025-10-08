@@ -137,16 +137,16 @@ const GeneralReport = () => {
     navigation.goBack();
   };
 
-const handleReportItemPress = (item: ReportItem) => {
-  const { latitude, longitude } = item;
-  
-  // URL para Google Maps en Street View
-  const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m7!1e1!3m5!1s!2e0!7i16384!8i8192?entry=ttu`;
-  
-  Linking.openURL(googleMapsUrl).catch(err => 
-    console.error('Error al abrir Google Maps:', err)
-  );
-};
+  const handleReportItemPress = (item: ReportItem) => {
+    const { latitude, longitude } = item;
+    
+    // URL para Google Maps en Street View
+    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m7!1e1!3m5!1s!2e0!7i16384!8i8192?entry=ttu`;
+    
+    Linking.openURL(googleMapsUrl).catch(err => 
+      console.error('Error al abrir Google Maps:', err)
+    );
+  };
 
   const getSpeedColor = (speed: number) => {
     if (speed === 0) return '#FF4444';
@@ -266,42 +266,42 @@ const handleReportItemPress = (item: ReportItem) => {
         </View>
       </View>
 
-      {/* Lista de reportes */}
-      <FlatList
-        data={reportData}
-        keyExtractor={item => item.id}
-        renderItem={({ item, index }) => renderReportItem({ item, index })}
-        style={styles.reportsList}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.reportsListContent}
-        ListEmptyComponent={
-          loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#1e3a8a" />
-              <Text style={styles.loadingText}>Cargando...</Text>
+      {/* Contenedor para la lista o estados */}
+      <View style={{ flex: 1, backgroundColor: 'white', borderTopLeftRadius: 25, borderTopRightRadius: 25 }}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#1e3a8a" />
+            <Text style={styles.loadingText}>Cargando...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <View style={styles.errorIconContainer}>
+              <AlertCircle size={40} color="#FF4444" />
             </View>
-          ) : error ? (
-            <View style={styles.errorContainer}>
-              <View style={styles.errorIconContainer}>
-                <AlertCircle size={40} color="#FF4444" />
-              </View>
-              <Text style={styles.errorTitle}>Error al cargar datos</Text>
-              <Text style={styles.errorText}>{error}</Text>
-
+            <Text style={styles.errorTitle}>Error al cargar datos</Text>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : reportData.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconContainer}>
+              <FileX size={70} color="#94a3b8" />
             </View>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <View style={styles.emptyIconContainer}>
-                <FileX size={70} color="#94a3b8" />
-              </View>
-              <Text style={styles.emptyTitle}>Sin datos</Text>
-              <Text style={styles.emptyText}>
-                No hay datos disponibles para el rango de fechas seleccionado
-              </Text>
-            </View>
-          )
-        }
-      />
+            <Text style={styles.emptyTitle}>Sin datos</Text>
+            <Text style={styles.emptyText}>
+              No hay datos disponibles para el rango de fechas seleccionado
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={reportData}
+            keyExtractor={item => item.id}
+            renderItem={({ item, index }) => renderReportItem({ item, index })}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.reportsListContent}
+            style={{ paddingHorizontal: 10, paddingVertical: 10 }}
+          />
+        )}
+      </View>
     </View>
   );
 };

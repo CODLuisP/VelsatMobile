@@ -194,5 +194,29 @@ export const styles = StyleSheet.create({
   },
   sidebarRago:{
     marginTop:5
-  }
+  },
+
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#f5f5f5',
+},
+loadingText: {
+  marginTop: 10,
+  fontSize: 16,
+  color: '#666',
+},
+errorContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#f5f5f5',
+  padding: 20,
+},
+errorText: {
+  fontSize: 16,
+  color: '#FF4444',
+  textAlign: 'center',
+},
 });

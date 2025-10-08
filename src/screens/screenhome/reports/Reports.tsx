@@ -167,95 +167,143 @@ const Reports: React.FC = () => {
     { id: 4, name: 'Recorrido', icon: FileText },
   ];
 
-const handleDownloadExcel = async () => {
-  const validation = validateForm();
+  const handleDownloadExcel = async () => {
+    const validation = validateForm();
 
-  if (!validation.isValid) {
-    Alert.alert('Campos requeridos', validation.message);
-    return;
-  }
-
-  // Pedir permisos primero (solo Android)
-  const hasPermission = await requestStoragePermission();
-  if (!hasPermission) {
-    Alert.alert('Error', 'Se necesitan permisos de almacenamiento');
-    return;
-  }
-
-  try {
-    setDownloadingExcel(true);
-
-    const username = user?.username;
-    const plate = selectedUnit?.plate;
-
-    // Función para formatear fecha a ISO string
-    const formatDateForAPI = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-
-    // Formatear las fechas para la API
-    const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
-    const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
-
-    // Construir URL
-    const url = `${server}/api/Reporting/downloadExcelG/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
-
-    console.log('URL de descarga:', url);
-
-    // Configurar ruta de descarga
-    const { dirs } = RNFetchBlob.fs;
-    const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
-    const fileName = `reporte_general_${plate}_${new Date().getTime()}.xlsx`;
-    const filePath = `${downloadDir}/${fileName}`;
-
-    // Descargar archivo
-    const response = await RNFetchBlob.config({
-      fileCache: true,
-      path: filePath,
-      addAndroidDownloads: {
-        useDownloadManager: true,
-        notification: true,
-        path: filePath,
-        description: 'Descargando reporte Excel',
-        mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      },
-    }).fetch('GET', url);
-
-    console.log('Descarga completada:', filePath);
-
-    // Compartir archivo según la plataforma
-    if (Platform.OS === 'ios') {
-      // En iOS, abrir el menú de compartir directamente
-      await Share.open({
-        url: `file://${filePath}`,
-        title: 'Reporte Excel',
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        subject: `Reporte General - ${plate}`,
-        failOnCancel: false,
-      });
-      setDownloadingExcel(false);
-    } else {
-      // En Android, mostrar alerta de éxito
-      setDownloadingExcel(false);
-      Alert.alert(
-        'Descarga exitosa',
-        'Archivo guardado en Descargas',
-        [{ text: 'OK' }]
-      );
+    if (!validation.isValid) {
+      Alert.alert('Campos requeridos', validation.message);
+      return;
     }
 
-  } catch (error) {
-    console.error('Error al descargar:', error);
-    setDownloadingExcel(false);
-    Alert.alert('Error', 'No se pudo descargar el archivo Excel');
+    // Pedir permisos primero (solo Android)
+    const hasPermission = await requestStoragePermission();
+    if (!hasPermission) {
+      Alert.alert('Error', 'Se necesitan permisos de almacenamiento');
+      return;
+    }
+
+    try {
+      setDownloadingExcel(true);
+
+      const username = user?.username;
+      const plate = selectedUnit?.plate;
+
+      // Función para formatear fecha a ISO string
+      const formatDateForAPI = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
+
+      // Formatear las fechas para la API
+      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
+
+      // Construir URL según el reporte seleccionado
+      let apiEndpoint = '';
+      let reportName = '';
+
+      switch (selectedReport) {
+        case 0: // General
+          apiEndpoint = 'downloadExcelG';
+          reportName = 'general';
+          break;
+        case 1: // Paradas
+          apiEndpoint = 'downloadExcelS';
+          reportName = 'paradas';
+          break;
+        case 2: // Velocidad
+          apiEndpoint = 'downloadExcelV';
+          reportName = 'velocidad';
+          break;
+        case 3: // Kilometraje
+          apiEndpoint = 'downloadExcelK';
+          reportName = 'kilometraje';
+          break;
+        case 4: // Recorrido
+          apiEndpoint = 'downloadExcelT';
+          reportName = 'recorrido';
+          break;
+        default:
+          apiEndpoint = 'downloadExcelG';
+          reportName = 'general';
+      }
+
+      // Construir URL según el reporte seleccionado
+// Construir URL según el reporte seleccionado
+let url = '';
+
+if (selectedReport === 2) {
+  // Velocidad necesita el parámetro speed
+  url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${speedValue}/${username}`;
+} else if (selectedReport === 3) {
+  // Kilometraje tiene dos APIs diferentes
+  if (allUnitsEnabled) {
+    // Todas las unidades - usa downloadExcelKall (sin placa)
+    url = `${server}/api/Kilometer/downloadExcelKall/${formattedStartDate}/${formattedEndDate}/${username}`;
+  } else {
+    // Una unidad específica - usa downloadExcelK (con placa)
+    url = `${server}/api/Kilometer/downloadExcelK/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
   }
-};
+} else {
+  // Otros reportes
+  url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
+}
+
+      console.log('URL de descarga:', url);
+
+      // Configurar ruta de descarga
+      const { dirs } = RNFetchBlob.fs;
+      const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+      const fileName = `reporte_${reportName}_${plate}_${new Date().getTime()}.xlsx`;
+      const filePath = `${downloadDir}/${fileName}`;
+
+      // Descargar archivo
+      const response = await RNFetchBlob.config({
+        fileCache: true,
+        path: filePath,
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          path: filePath,
+          description: 'Descargando reporte Excel',
+          mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      }).fetch('GET', url);
+
+      console.log('Descarga completada:', filePath);
+
+      // Compartir archivo según la plataforma
+      if (Platform.OS === 'ios') {
+        // En iOS, abrir el menú de compartir directamente
+        await Share.open({
+          url: `file://${filePath}`,
+          title: 'Reporte Excel',
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          subject: `Reporte General - ${plate}`,
+          failOnCancel: false,
+        });
+        setDownloadingExcel(false);
+      } else {
+        // En Android, mostrar alerta de éxito
+        setDownloadingExcel(false);
+        Alert.alert(
+          'Descarga exitosa',
+          'Archivo guardado en Descargas',
+          [{ text: 'OK' }]
+        );
+      }
+
+    } catch (error) {
+      console.error('Error al descargar:', error);
+      setDownloadingExcel(false);
+      Alert.alert('Error', 'No se pudo descargar el archivo Excel');
+    }
+  };
 
   const handleShowReport = () => {
     const validation = validateForm();
@@ -280,21 +328,21 @@ const handleDownloadExcel = async () => {
           endDate: endDate,
         });
         break;
-   case 2:
-  navigation.navigate('SpeedReport', {
-    unit: selectedUnit!,
-    startDate: startDate,
-    endDate: endDate,
-    speed: speedValue,
-  });
-  break;
-case 3:
-  navigation.navigate('MileageReport', {
-    unit: selectedUnit ? selectedUnit : 'all',
-    startDate: startDate,
-    endDate: endDate,
-  });
-  break;
+      case 2:
+        navigation.navigate('SpeedReport', {
+          unit: selectedUnit!,
+          startDate: startDate,
+          endDate: endDate,
+          speed: speedValue,
+        });
+        break;
+      case 3:
+        navigation.navigate('MileageReport', {
+          unit: selectedUnit ? selectedUnit : 'all',
+          startDate: startDate,
+          endDate: endDate,
+        });
+        break;
       case 4:
         navigation.navigate('TourReport', {
           unit: selectedUnit!,
@@ -462,36 +510,33 @@ case 3:
 
 
 
-const requestStoragePermission = async () => {
-  if (Platform.OS === 'android') {
-    try {
-      // Obtener versión de Android
-      const apiLevel = Platform.Version;
-      
-      // Android 13+ (API 33+) no necesita WRITE_EXTERNAL_STORAGE
-      if (apiLevel >= 33) {
-        return true; // ✅ No se necesita permiso
-      }
-      
-      // Android 12 y anteriores
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Permiso de almacenamiento',
-          message: 'La app necesita acceso para guardar el archivo Excel',
-          buttonNeutral: 'Preguntar después',
-          buttonNegative: 'Cancelar',
-          buttonPositive: 'OK',
+  const requestStoragePermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const apiLevel = Platform.Version;
+
+        if (apiLevel >= 33) {
+          return true; 
         }
-      );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    } catch (err) {
-      console.warn(err);
-      return false;
+
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: 'Permiso de almacenamiento',
+            message: 'La app necesita acceso para guardar el archivo Excel',
+            buttonNeutral: 'Preguntar después',
+            buttonNegative: 'Cancelar',
+            buttonPositive: 'OK',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
     }
-  }
-  return true; // iOS
-};
+    return true; // iOS
+  };
 
   const validateForm = (): { isValid: boolean; message: string } => {
     if (!selectedUnit && !allUnitsEnabled) {
@@ -548,8 +593,8 @@ const requestStoragePermission = async () => {
     const minimumDate = isStartPicker
       ? new Date(2020, 0, 1)
       : startDateSelected
-      ? startDate
-      : new Date(2020, 0, 1);
+        ? startDate
+        : new Date(2020, 0, 1);
 
     if (Platform.OS === 'ios') {
       return (
@@ -756,10 +801,14 @@ const requestStoragePermission = async () => {
         </View>
 
         <View style={styles.buttonsContainer}>
-<TouchableOpacity
-  style={[styles.excelButton, downloadingExcel && { opacity: 0.7 }]}
+    <TouchableOpacity
+  style={[
+    styles.excelButton, 
+    downloadingExcel && { opacity: 0.7 },
+    selectedReport === 4 && { opacity: 0.5, backgroundColor: '#ccc' }  // Agregar esta línea
+  ]}
   onPress={handleDownloadExcel}
-  disabled={downloadingExcel}
+  disabled={downloadingExcel || selectedReport === 4}  // Modificar esta línea
 >
   {downloadingExcel ? (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

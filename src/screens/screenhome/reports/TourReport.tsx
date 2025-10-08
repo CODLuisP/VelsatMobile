@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Platform,
   PermissionsAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import { ChevronLeft, Calendar, ChevronRight } from 'lucide-react-native';
 import {
@@ -14,8 +15,9 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import MapView, { PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { PROVIDER_DEFAULT, Marker, Polyline } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
+import axios from 'axios';
 import { styles } from '../../../styles/tourreport';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,16 +27,29 @@ import {
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
+import { useAuthStore } from '../../../store/authStore';
+
+interface RoutePoint {
+  date: string;
+  time: string;
+  speed: number;
+  longitude: number;
+  latitude: number;
+}
 
 const TourReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { user, server } = useAuthStore();
 
-  
-      const route = useRoute<RouteProp<RootStackParamList, 'GeneralReport'>>();
-      const { unit, startDate, endDate } = route.params;
+  const route = useRoute<RouteProp<RootStackParamList, 'TourReport'>>();
+  const { unit, startDate, endDate } = route.params;
+
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [sidebarCompact, setSidebarCompact] = useState(false);
+  const [routeData, setRouteData] = useState<RoutePoint[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -49,8 +64,49 @@ const TourReport = () => {
     }, []),
   );
 
-  const latitude = -12.0464;
-  const longitude = -77.0428;
+  useEffect(() => {
+    requestLocationPermission();
+    fetchRouteData();
+  }, []);
+
+  const fetchRouteData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const username = user?.username;
+      const plate = unit.plate;
+
+      const formatDateForAPI = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
+
+      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
+
+      const url = `${server}/api/Reporting/details/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
+
+      console.log('API URL:', url);
+
+      const response = await axios.get(url);
+
+      if (response.data && response.data.result) {
+        setRouteData(response.data.result);
+      } else {
+        setError('No se encontraron datos de ruta');
+      }
+    } catch (err) {
+      console.error('Error fetching route data:', err);
+      setError('Error al cargar los datos de la ruta');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const requestLocationPermission = async () => {
     if (Platform.OS === 'android') {
@@ -59,30 +115,28 @@ const TourReport = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Permiso de Ubicación',
-            message:
-              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
+            message: 'Esta app necesita acceso a tu ubicación para mostrar el mapa',
             buttonNeutral: 'Preguntar después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
           },
         );
-
-        setHasLocationPermission(
-          granted === PermissionsAndroid.RESULTS.GRANTED,
-        );
+        setHasLocationPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
       } catch (err) {
         console.warn(err);
         setHasLocationPermission(false);
       }
     } else {
-      // iOS usa Apple Maps nativo
       setHasLocationPermission(true);
     }
   };
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
+  const getSpeedColor = (speed: number): string => {
+    if (speed === 0) return '#ef4444';
+    if (speed <= 10) return '#22c55e';
+    if (speed <= 30) return '#eab308';
+    return '#3b82f6';
+  };
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -90,7 +144,7 @@ const TourReport = () => {
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
-    setSidebarCompact(false); // Reset compact mode when toggling
+    setSidebarCompact(false);
   };
 
   const toggleSidebarCompact = () => {
@@ -121,84 +175,176 @@ const TourReport = () => {
                 width: 100vw;
                 z-index: 0;
             }
-
-                .leaflet-top.leaflet-left {
+            .leaflet-top.leaflet-left {
                 left: auto !important;
                 right: 5px !important;
                 top: 25px !important;
+            }
+            .custom-marker {
+                background-color: white;
+                border: 3px solid;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            }
+            .custom-popup {
+                font-family: Arial, sans-serif;
+            }
+            .popup-title {
+                font-weight: bold;
+                margin-bottom: 5px;
+                color: #1e3a8a;
+            }
+            .popup-info {
+                font-size: 13px;
+                line-height: 1.6;
             }
         </style>
     </head>
     <body>
         <div id="map"></div>
         <script>
-            // Inicializar el mapa
-            var map = L.map('map', {
-                zoomControl: true,
-                scrollWheelZoom: true,
-                doubleClickZoom: true,
-                touchZoom: true
-            }).setView([${latitude}, ${longitude}], 13);
+            var routeData = ${JSON.stringify(routeData)};
+            
+            if (routeData.length === 0) {
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;">No hay datos de ruta</div>';
+            } else {
+                var firstPoint = routeData[0];
+                var map = L.map('map', {
+                    zoomControl: true,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                    touchZoom: true
+                }).setView([firstPoint.latitude, firstPoint.longitude], 15);
 
-            // Agregar capa de OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19
-            }).addTo(map);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
 
-            // Agregar ubicación del usuario si hay permisos
-            ${
-              hasLocationPermission
-                ? `
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var userLat = position.coords.latitude;
-                    var userLng = position.coords.longitude;
+                function getSpeedColor(speed) {
+                    if (speed === 0) return '#ef4444';
+                    if (speed <= 10) return '#22c55e';
+                    if (speed <= 30) return '#eab308';
+                    return '#3b82f6';
+                }
+
+                // Dibujar línea de ruta
+                var latlngs = routeData.map(point => [point.latitude, point.longitude]);
+                var polyline = L.polyline(latlngs, {
+                    color: '#1e3a8a',
+                    weight: 4,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                }).addTo(map);
+
+                // Agregar marcadores numerados
+                routeData.forEach((point, index) => {
+                    var color = getSpeedColor(point.speed);
+                    var markerNumber = index + 1;
                     
-                    var userIcon = L.divIcon({
-                        html: '<div style="background-color: #3b82f6; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(59,130,246,0.5);"></div>',
-                        iconSize: [16, 16],
-                        iconAnchor: [8, 8],
-                        className: 'user-location-icon'
+                    var customIcon = L.divIcon({
+                        html: '<div class="custom-marker" style="border-color:' + color + '; color:' + color + ';">' + markerNumber + '</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15],
+                        popupAnchor: [0, -15],
+                        className: 'custom-marker-icon'
                     });
                     
-                    L.marker([userLat, userLng], {icon: userIcon})
+                    var popupContent = '<div class="custom-popup">' +
+                        '<div class="popup-title">Punto ' + markerNumber + '</div>' +
+                        '<div class="popup-info">' +
+                        '<strong>Fecha:</strong> ' + point.date + '<br>' +
+                        '<strong>Hora:</strong> ' + point.time + '<br>' +
+                        '<strong>Velocidad:</strong> ' + point.speed + ' km/h' +
+                        '</div>' +
+                        '</div>';
+                    
+                    L.marker([point.latitude, point.longitude], {icon: customIcon})
                         .addTo(map)
-                        .bindPopup('<div style="text-align: center;"><strong>Tu ubicación</strong></div>');
-                }, function(error) {
-                    console.log('Error obteniendo ubicación:', error);
+                        .bindPopup(popupContent);
                 });
-            }`
-                : ''
-            }
 
-            // Evitar scroll en el contenedor padre
-            map.on('focus', function() { 
-                map.scrollWheelZoom.enable(); 
-            });
-            map.on('blur', function() { 
-                map.scrollWheelZoom.disable(); 
-            });
+                // Ajustar vista para mostrar toda la ruta
+                map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
+            }
         </script>
     </body>
     </html>
   `;
 
   const renderMap = () => {
+    if (loading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1e3a8a" />
+          <Text style={styles.loadingText}>Cargando ruta...</Text>
+        </View>
+      );
+    }
+
+    if (error || routeData.length === 0) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            {error || 'No hay datos de ruta disponibles'}
+          </Text>
+        </View>
+      );
+    }
+
     if (Platform.OS === 'ios') {
+      const coordinates = routeData.map(point => ({
+        latitude: point.latitude,
+        longitude: point.longitude,
+      }));
+
+      const initialRegion = routeData.length > 0
+        ? {
+            latitude: routeData[0].latitude,
+            longitude: routeData[0].longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }
+        : {
+            latitude: -12.0464,
+            longitude: -77.0428,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          };
+
       return (
         <MapView
           provider={PROVIDER_DEFAULT}
           style={styles.map}
-          initialRegion={{
-            latitude: latitude,
-            longitude: longitude,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
+          initialRegion={initialRegion}
           showsUserLocation={hasLocationPermission}
           showsMyLocationButton={hasLocationPermission}
-        />
+        >
+          <Polyline
+            coordinates={coordinates}
+            strokeColor="#1e3a8a"
+            strokeWidth={4}
+          />
+          {routeData.map((point, index) => (
+            <Marker
+              key={index}
+              coordinate={{
+                latitude: point.latitude,
+                longitude: point.longitude,
+              }}
+              title={`Punto ${index + 1}`}
+              description={`Fecha: ${point.date} ${point.time}\nVelocidad: ${point.speed} km/h`}
+              pinColor={getSpeedColor(point.speed)}
+            />
+          ))}
+        </MapView>
       );
     } else {
       return (
@@ -224,9 +370,7 @@ const TourReport = () => {
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-      {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
-       
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={26} color="#fff" />
@@ -245,10 +389,8 @@ const TourReport = () => {
       </View>
 
       <View style={styles.content}>
-        {/* Container del Mapa - Ahora siempre ocupa todo el espacio */}
         <View style={styles.mapContainer}>{renderMap()}</View>
 
-        {/* Botón para mostrar sidebar cuando está oculto */}
         {!sidebarVisible && (
           <TouchableOpacity
             style={styles.showSidebarButton}
@@ -258,11 +400,8 @@ const TourReport = () => {
           </TouchableOpacity>
         )}
 
-        {/* Sidebar - Solo se muestra cuando sidebarVisible es true */}
         {sidebarVisible && (
-          <View
-            style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}
-          >
+          <View style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}>
             <View
               style={[
                 styles.sidebarHeader,
@@ -273,9 +412,6 @@ const TourReport = () => {
                 <>
                   <View style={styles.sidebarHeaderContent}>
                     <Text style={styles.sidebarTitle}>LEYENDA</Text>
-                    <View style={styles.sidebarHeaderIcon}>
-                      {/* Aquí puedes agregar el ícono que aparece en la imagen */}
-                    </View>
                   </View>
                   <View style={{ flexDirection: 'row' }}>
                     <TouchableOpacity
@@ -306,68 +442,56 @@ const TourReport = () => {
 
             {!sidebarCompact && (
               <View style={styles.sidebarContent}>
-                {/* Información de la Unidad */}
                 <View style={styles.sidebarSection}>
                   <Text style={styles.sidebarSectionTitle}>UNIDAD</Text>
-                  <Text style={styles.sidebarText}>64-808763</Text>
+                  <Text style={styles.sidebarText}>{unit.plate}</Text>
                 </View>
 
-                {/* Rango de Fechas */}
                 <View style={styles.sidebarSection}>
                   <Text style={styles.sidebarSectionTitle}>RANGO FECHAS</Text>
                   <Text style={styles.sidebarText}>
-                    18/09/2025 00:00 - 18/09/2025 23:59
+                    {formatDate(startDate)} - {formatDate(endDate)}
                   </Text>
                 </View>
 
-                {/* Rango de Velocidad */}
                 <View style={styles.sidebarSection}>
-                  <Text style={styles.sidebarSectionTitle}>
-                    RANGO VELOCIDAD
-                  </Text>
-
+                  <Text style={styles.sidebarSectionTitle}>RANGO VELOCIDAD</Text>
                   <View style={styles.sidebarRago}>
                     <View style={styles.legendItem}>
                       <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#ef4444' },
-                        ]}
+                        style={[styles.legendDot, { backgroundColor: '#ef4444' }]}
                       />
                       <Text style={styles.legendText}>0 km/h</Text>
                     </View>
-
                     <View style={styles.legendItem}>
                       <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#22c55e' },
-                        ]}
+                        style={[styles.legendDot, { backgroundColor: '#22c55e' }]}
                       />
                       <Text style={styles.legendText}>1 - 10 km/h</Text>
                     </View>
-
                     <View style={styles.legendItem}>
                       <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#eab308' },
-                        ]}
+                        style={[styles.legendDot, { backgroundColor: '#eab308' }]}
                       />
                       <Text style={styles.legendText}>11 - 30 km/h</Text>
                     </View>
-
                     <View style={styles.legendItem}>
                       <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#3b82f6' },
-                        ]}
+                        style={[styles.legendDot, { backgroundColor: '#3b82f6' }]}
                       />
-                      <Text style={styles.legendText}> 60 km/h</Text>
+                      <Text style={styles.legendText}>&gt; 30 km/h</Text>
                     </View>
                   </View>
                 </View>
+
+                {routeData.length > 0 && (
+                  <View style={styles.sidebarSection}>
+                    <Text style={styles.sidebarSectionTitle}>PUNTOS DE RUTA</Text>
+                    <Text style={styles.sidebarText}>
+                      Total: {routeData.length} puntos
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
           </View>

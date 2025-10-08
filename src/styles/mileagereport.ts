@@ -1,7 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
-
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -10,11 +8,12 @@ export const styles = StyleSheet.create({
 
   header: {
     paddingBottom: 10,
+    backgroundColor: '#1e3a8a',
   },
 
   headerContent: {
     paddingHorizontal: 20,
-    marginTop:10
+    marginTop: 10,
   },
 
   headerTop: {
@@ -28,8 +27,8 @@ export const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
-    marginLeft:-10
+    marginRight: 5,
+    marginLeft: -10,
   },
 
   headerTextContainer: {
@@ -65,18 +64,19 @@ export const styles = StyleSheet.create({
     color: '#fff',
   },
 
-  listContainer: {
+  // NUEVO: Contenedor wrapper que mantiene el borde redondeado fijo
+  listWrapper: {
     flex: 1,
-    paddingTop: 20,
-  },
-
-  listContent: {
-    flexGrow: 1, // Cambiar de flex: 1 a flexGrow: 1
-    paddingHorizontal: 20,
-    paddingVertical: 20,
     backgroundColor: '#f5f5f5',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    overflow: 'hidden', // CRÍTICO: mantiene el borde durante el scroll
+  },
+
+  listContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
 
   separator: {
@@ -245,4 +245,59 @@ export const styles = StyleSheet.create({
     marginLeft: 2,
     textAlign: 'center',
   },
+
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+loadingText: {
+  marginTop: 10,
+  fontSize: 16,
+  color: '#666',
+},
+errorContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 40,
+},
+errorIconContainer: {
+  marginBottom: 20,
+},
+errorTitle: {
+  fontSize: 18,
+  fontWeight: '600',
+  color: '#333',
+  marginBottom: 8,
+},
+errorText: {
+  fontSize: 14,
+  color: '#666',
+  textAlign: 'center',
+  marginBottom: 24,
+},
+emptyContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 40,
+  paddingTop: 100,
+},
+emptyIconContainer: {
+  marginBottom: 16,
+  opacity: 0.6,
+},
+emptyTitle: {
+  fontSize: 18,
+  fontWeight: '600',
+  color: '#475569',
+  marginBottom: 8,
+},
+emptyText: {
+  fontSize: 14,
+  color: '#94a3b8',
+  textAlign: 'center',
+  lineHeight: 20,
+},
 });
