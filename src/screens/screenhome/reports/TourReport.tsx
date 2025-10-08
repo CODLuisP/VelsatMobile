@@ -47,13 +47,13 @@ const RadarPulse = ({ color, delay = 0 }: { color: string; delay?: number }) => 
       Animated.parallel([
         Animated.timing(scaleAnim, {
           toValue: 2.5,
-          duration: 2000,
+          duration: 3000,
           delay: delay,
           useNativeDriver: true,
         }),
         Animated.timing(opacityAnim, {
           toValue: 0,
-          duration: 2000,
+          duration: 3000,
           delay: delay,
           useNativeDriver: true,
         }),
@@ -134,6 +134,7 @@ const TourReport = () => {
   const [routeData, setRouteData] = useState<RoutePoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRadar, setShowRadar] = useState(false);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -230,18 +231,83 @@ const TourReport = () => {
       <style>
         body { margin: 0; padding: 0; overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
-        .custom-marker {
-          background-color: white;
-          border: 3px solid;
+        
+        /* Marcador GPS con radar animado */
+        .gps-marker-container {
+          position: relative;
+          width: 70px;
+          height: 80px;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          flex-direction: column;
+        }
+
+        /* Ondas de radar - centradas con el marcador */
+        .radar-pulse {
+          position: absolute;
+          top: 10px;
+          left: 50%;
+          transform: translateX(-50%) scale(0.5);
+          width: 34px;
+          height: 34px;
           border-radius: 50%;
-          width: 30px;
-          height: 30px;
+          animation: radar-animation 3s infinite;
+          pointer-events: none;
+          display: none; /* Oculto por defecto */
+        }
+
+        .radar-pulse:nth-child(2) {
+          animation-delay: 1s;
+        }
+
+        .radar-pulse:nth-child(3) {
+          animation-delay: 2s;
+        }
+
+        @keyframes radar-animation {
+          0% {
+            transform: translateX(-50%) scale(0.5);
+            opacity: 0.8;
+          }
+          100% {
+            transform: translateX(-50%) scale(2.5);
+            opacity: 0;
+          }
+        }
+
+        /* Círculo principal del marcador GPS */
+        .gps-marker-pin {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: bold;
-          font-size: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          font-size: 11px;
+          color: white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+          margin-top: 10px;
+          z-index: 10;
+          position: relative;
+        }
+
+        /* Punta del marcador GPS */
+        .gps-marker-tip {
+          width: 0;
+          height: 0;
+          border-left: 9px solid transparent;
+          border-right: 9px solid transparent;
+          border-top: 12px solid;
+          margin-top: -3px;
+          z-index: 10;
+        }
+
+        .leaflet-top.leaflet-left {
+          left: auto !important;
+          right: 5px !important;
+          top: 25px !important;
         }
       </style>
     </head>
@@ -249,33 +315,81 @@ const TourReport = () => {
       <div id="map"></div>
       <script>
         var routeData = ${JSON.stringify(routeData)};
+        
         if (routeData.length === 0) {
           document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;">No hay datos de ruta</div>';
         } else {
           var firstPoint = routeData[0];
           var map = L.map('map').setView([firstPoint.latitude, firstPoint.longitude], 15);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+          
           function getSpeedColor(speed) {
             if (speed === 0) return '#ef4444';
             if (speed > 0 && speed < 11) return '#eab308';
             if (speed >= 11 && speed < 60) return '#22c55e';
             return '#3b82f6';
           }
+
+          function getSpeedColorLight(speed) {
+            if (speed === 0) return 'rgba(239, 68, 68, 0.2)';
+            if (speed > 0 && speed < 11) return 'rgba(234, 179, 8, 0.2)';
+            if (speed >= 11 && speed < 60) return 'rgba(34, 197, 94, 0.2)';
+            return 'rgba(59, 130, 246, 0.2)';
+          }
+
+          // Función para mostrar/ocultar radar según zoom
+          function updateRadarVisibility() {
+            var currentZoom = map.getZoom();
+            var radars = document.querySelectorAll('.radar-pulse');
+            
+            radars.forEach(function(radar) {
+              if (currentZoom >= 15) {
+                radar.style.display = 'block';
+              } else {
+                radar.style.display = 'none';
+              }
+            });
+          }
+
+          // Escuchar cambios de zoom
+          map.on('zoomend', updateRadarVisibility);
+          
           var latlngs = routeData.map(p => [p.latitude, p.longitude]);
           var polyline = L.polyline(latlngs, { color: '#1e3a8a', weight: 4, opacity: 0.7 }).addTo(map);
+          
           routeData.forEach((p, i) => {
             var color = getSpeedColor(p.speed);
+            var colorLight = getSpeedColorLight(p.speed);
+            
+            // Crear el HTML del marcador GPS con radar
+            var markerHTML = 
+              '<div class="gps-marker-container">' +
+                '<div class="radar-pulse" style="background-color: ' + colorLight + ';"></div>' +
+                '<div class="radar-pulse" style="background-color: ' + colorLight + ';"></div>' +
+                '<div class="radar-pulse" style="background-color: ' + colorLight + ';"></div>' +
+                '<div class="gps-marker-pin" style="background-color: ' + color + ';">' +
+                  (i + 1) +
+                '</div>' +
+                '<div class="gps-marker-tip" style="border-top-color: ' + color + ';"></div>' +
+              '</div>';
+            
             var customIcon = L.divIcon({
-              html: '<div class="custom-marker" style="border-color:' + color + '; color:' + color + ';">' + (i+1) + '</div>',
-              iconSize: [30, 30],
-              iconAnchor: [15, 15],
-              popupAnchor: [0, -15]
+              html: markerHTML,
+              iconSize: [70, 80],
+              iconAnchor: [35, 55],
+              popupAnchor: [0, -50],
+              className: 'custom-gps-icon'
             });
+            
             L.marker([p.latitude, p.longitude], { icon: customIcon })
               .bindPopup('<b>Punto ' + (i+1) + '</b><br>Fecha: ' + p.date + ' ' + p.time + '<br>Velocidad: ' + p.speed + ' km/h')
               .addTo(map);
           });
+          
           map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+          
+          // Verificar visibilidad inicial de radares
+          updateRadarVisibility();
         }
       </script>
     </body>
@@ -329,6 +443,10 @@ const TourReport = () => {
           provider={PROVIDER_DEFAULT}
           style={styles.map}
           initialRegion={initialRegion}
+          onRegionChangeComplete={(region) => {
+            // Mostrar radar solo cuando latitudeDelta es menor (más zoom)
+            setShowRadar(region.latitudeDelta < 0.01);
+          }}
         >
           <Polyline
             coordinates={coordinates}
@@ -357,9 +475,9 @@ const TourReport = () => {
                   }}
                 >
                   {/* Ondas de radar animadas (3 ondas con diferentes delays) - NO son clickeables */}
-                  <RadarPulse color={getSpeedColorLight(point.speed)} delay={0} />
-                  <RadarPulse color={getSpeedColorLight(point.speed)} delay={700} />
-                  <RadarPulse color={getSpeedColorLight(point.speed)} delay={1400} />
+                  {showRadar && <RadarPulse color={getSpeedColorLight(point.speed)} delay={0} />}
+                  {showRadar && <RadarPulse color={getSpeedColorLight(point.speed)} delay={1000} />}
+                  {showRadar && <RadarPulse color={getSpeedColorLight(point.speed)} delay={2000} />}
 
                   {/* Pin de GPS - círculo principal - SOLO ESTE es clickeable */}
                   <View
@@ -415,7 +533,7 @@ const TourReport = () => {
         </MapView>
       );
     } else {
-      // --- Android: usar Leaflet en WebView ---
+      // --- Android: usar Leaflet en WebView con marcadores GPS animados ---
       return (
         <WebView
           source={{ html: leafletHTML }}
