@@ -5,8 +5,6 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  ScrollView,
-  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import {
@@ -35,6 +33,7 @@ import {
 } from '../../hooks/useNavigationMode';
 import { useAuthStore } from '../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const Setting = () => {
   const { user, logout, server, tipo } = useAuthStore();
@@ -104,198 +103,192 @@ const Setting = () => {
   };
 
   const renderUpdateForm = () => (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    <KeyboardAwareScrollView
+      style={styles.scrollContent}
+      contentContainerStyle={{ paddingBottom: 120 }}
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
+      extraScrollHeight={30}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bounces={false}
     >
-      <ScrollView
-        style={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <View style={styles.formContainer}>
-          <View style={styles.infoSection}>
-            <Text style={styles.infoTitle}>
-              {tipo === 'n' ? '¿Nuevo correo o celular?' : '¿Nuevo usuario o celular?'}
-            </Text>
+      <View style={styles.formContainer}>
+        <View style={styles.infoSection}>
+          <Text style={styles.infoTitle}>
+            {tipo === 'n' ? '¿Nuevo correo o celular?' : '¿Nuevo usuario o celular?'}
+          </Text>
 
-            <Text style={styles.infoSubtitle}>
-              No te preocupes, en este apartado podrás actualizar estos datos rápidamente; si
-              deseas cambiar otra información, por favor contáctanos.
-            </Text>
-          </View>
-
-          <View style={styles.inputSection}>
-            {/* Para tipo 'n' mostrar "Razón social", para 'c' o 'p' mostrar "Nombres" */}
-            <Text style={styles.inputLabel}>
-              {tipo === 'n' ? 'Razón social' : 'Nombres'}
-            </Text>
-            <TextInput
-              style={styles.input}
-              value={updateData.usuario}
-              onChangeText={text =>
-                setUpdateData({ ...updateData, usuario: text })
-              }
-              placeholder={tipo === 'n' ? 'Razón social' : 'Nombres'}
-              placeholderTextColor="#999"
-            />
-
-            {/* Para tipo 'n' mostrar "Correo asociado", para 'c' o 'p' mostrar "Usuario" */}
-            <Text style={styles.inputLabel}>
-              {tipo === 'n' ? 'Correo asociado' : 'Usuario'}
-            </Text>
-            <TextInput
-              style={styles.input}
-              value={updateData.correo}
-              onChangeText={text =>
-                setUpdateData({ ...updateData, correo: text })
-              }
-              placeholder={tipo === 'n' ? 'correo@ejemplo.com' : 'Usuario'}
-              placeholderTextColor="#999"
-              keyboardType={tipo === 'n' ? 'email-address' : 'default'}
-            />
-
-            <Text style={styles.inputLabel}>Celular asociado</Text>
-            <TextInput
-              style={styles.input}
-              value={updateData.celular}
-              onChangeText={text =>
-                setUpdateData({ ...updateData, celular: text })
-              }
-              placeholder="000000000"
-              placeholderTextColor="#999"
-              keyboardType="phone-pad"
-            />
-          </View>
-
-
-          <View style={styles.buttonWrapper}>
-            <TouchableOpacity
-              onPress={handleUpdateData}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={['#e36414', '#ff7f3f']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientButton}
-              >
-                <Text style={styles.buttonText}>
-                  Actualizar datos
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-
-
-
+          <Text style={styles.infoSubtitle}>
+            No te preocupes, en este apartado podrás actualizar estos datos rápidamente; si
+            deseas cambiar otra información, por favor contáctanos.
+          </Text>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <View style={styles.inputSection}>
+          {/* Para tipo 'n' mostrar "Razón social", para 'c' o 'p' mostrar "Nombres" */}
+          <Text style={styles.inputLabel}>
+            {tipo === 'n' ? 'Razón social' : 'Nombres'}
+          </Text>
+          <TextInput
+            style={styles.input}
+            value={updateData.usuario}
+            onChangeText={text =>
+              setUpdateData({ ...updateData, usuario: text })
+            }
+            placeholder={tipo === 'n' ? 'Razón social' : 'Nombres'}
+            placeholderTextColor="#999"
+          />
+
+          {/* Para tipo 'n' mostrar "Correo asociado", para 'c' o 'p' mostrar "Usuario" */}
+          <Text style={styles.inputLabel}>
+            {tipo === 'n' ? 'Correo asociado' : 'Usuario'}
+          </Text>
+          <TextInput
+            style={styles.input}
+            value={updateData.correo}
+            onChangeText={text =>
+              setUpdateData({ ...updateData, correo: text })
+            }
+            placeholder={tipo === 'n' ? 'correo@ejemplo.com' : 'Usuario'}
+            placeholderTextColor="#999"
+            keyboardType={tipo === 'n' ? 'email-address' : 'default'}
+          />
+
+          <Text style={styles.inputLabel}>Celular asociado</Text>
+          <TextInput
+            style={styles.input}
+            value={updateData.celular}
+            onChangeText={text =>
+              setUpdateData({ ...updateData, celular: text })
+            }
+            placeholder="000000000"
+            placeholderTextColor="#999"
+            keyboardType="phone-pad"
+          />
+        </View>
+
+        <View style={styles.buttonWrapper}>
+          <TouchableOpacity
+            onPress={handleUpdateData}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#e36414', '#ff7f3f']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>
+                Actualizar datos
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAwareScrollView>
   );
 
   const renderPasswordForm = () => (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    <KeyboardAwareScrollView
+      style={styles.scrollContent}
+      contentContainerStyle={{ paddingBottom: 120 }}
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
+      extraScrollHeight={30}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bounces={false}
     >
-      <ScrollView
-        style={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <View style={styles.formContainer}>
-          <View style={styles.infoSection}>
-            <Text style={styles.infoTitle}>Olvidaste tu contraseña?</Text>
-            <Text style={styles.infoSubtitle}>
-              No te preocupes! Suele pasar. Por favor crea una nueva contraseña
-              asociando tu usuario correcto.
-            </Text>
-          </View>
+      <View style={styles.formContainer}>
+        <View style={styles.infoSection}>
+          <Text style={styles.infoTitle}>¿Olvidaste tu contraseña?</Text>
+          <Text style={styles.infoSubtitle}>
+            No te preocupes! Suele pasar. Por favor crea una nueva contraseña
+            asociando tu usuario correcto.
+          </Text>
+        </View>
 
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Usuario</Text>
+        <View style={styles.inputSection}>
+          <Text style={styles.inputLabel}>Usuario</Text>
+          <TextInput
+            style={styles.input}
+            value={passwordData.usuario}
+            onChangeText={text =>
+              setPasswordData({ ...passwordData, usuario: text })
+            }
+            placeholder="Usuario existente"
+            placeholderTextColor="#999"
+          />
+
+          <Text style={styles.inputLabel}>Crea una contraseña</Text>
+          <View style={styles.passwordContainer}>
             <TextInput
-              style={styles.input}
-              value={passwordData.usuario}
+              style={styles.passwordInput}
+              value={passwordData.password}
               onChangeText={text =>
-                setPasswordData({ ...passwordData, usuario: text })
+                setPasswordData({ ...passwordData, password: text })
               }
-              placeholder="Usuario existente"
+              placeholder="Debe tener mínimo 3 caracteres"
               placeholderTextColor="#999"
+              secureTextEntry={!showPassword}
             />
-
-            <Text style={styles.inputLabel}>Crea una contraseña</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                value={passwordData.password}
-                onChangeText={text =>
-                  setPasswordData({ ...passwordData, password: text })
-                }
-                placeholder="Debe tener mínimo 3 caracteres"
-                placeholderTextColor="#999"
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff size={20} color="#999" />
-                ) : (
-                  <Eye size={20} color="#999" />
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.inputLabel}>Confirma tu contraseña</Text>
-            <View style={styles.passwordContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                value={passwordData.confirmPassword}
-                onChangeText={text =>
-                  setPasswordData({ ...passwordData, confirmPassword: text })
-                }
-                placeholder="Repetir contraseña"
-                placeholderTextColor="#999"
-                secureTextEntry={!showConfirmPassword}
-              />
-              <TouchableOpacity
-                style={styles.eyeButton}
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff size={20} color="#999" />
-                ) : (
-                  <Eye size={20} color="#999" />
-                )}
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff size={20} color="#999" />
+              ) : (
+                <Eye size={20} color="#999" />
+              )}
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.buttonWrapper}>
+          <Text style={styles.inputLabel}>Confirma tu contraseña</Text>
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              value={passwordData.confirmPassword}
+              onChangeText={text =>
+                setPasswordData({ ...passwordData, confirmPassword: text })
+              }
+              placeholder="Repetir contraseña"
+              placeholderTextColor="#999"
+              secureTextEntry={!showConfirmPassword}
+            />
             <TouchableOpacity
-              onPress={handleEstablishPassword}
-              activeOpacity={0.8}
+              style={styles.eyeButton}
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
             >
-              <LinearGradient
-                colors={['#e36414', '#ff7f3f']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientButton}
-              >
-                <Text style={styles.buttonText}>
-                  Establecer contraseña
-                </Text>
-              </LinearGradient>
+              {showConfirmPassword ? (
+                <EyeOff size={20} color="#999" />
+              ) : (
+                <Eye size={20} color="#999" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <View style={styles.buttonWrapper}>
+          <TouchableOpacity
+            onPress={handleEstablishPassword}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['#e36414', '#ff7f3f']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>
+                Establecer contraseña
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAwareScrollView>
   );
 
   const topSpace = insets.top + 5;
@@ -370,14 +363,12 @@ const Setting = () => {
             style={styles.chevronRight}
           />
         </TouchableOpacity>
-
       </View>
 
       <Animated.View style={[styles.contentContainer, animatedStyle]}>
         {activeForm === 'update' ? renderUpdateForm() : renderPasswordForm()}
       </Animated.View>
     </LinearGradient>
-
   );
 };
 
