@@ -78,6 +78,7 @@ const RadarPulse = ({ color, delay = 0 }: { color: string; delay?: number }) => 
         transform: [{ scale: scaleAnim }],
         opacity: opacityAnim,
       }}
+      
     />
   );
 };
@@ -423,13 +424,27 @@ const TourReport = () => {
         longitude: point.longitude,
       }));
 
+      // Calcular los límites de todos los puntos para mostrar vista general
+      const latitudes = routeData.map(p => p.latitude);
+      const longitudes = routeData.map(p => p.longitude);
+      
+      const minLat = Math.min(...latitudes);
+      const maxLat = Math.max(...latitudes);
+      const minLng = Math.min(...longitudes);
+      const maxLng = Math.max(...longitudes);
+      
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLng = (minLng + maxLng) / 2;
+      const deltaLat = (maxLat - minLat) * 1.3; // Añadir 30% de padding
+      const deltaLng = (maxLng - minLng) * 1.3;
+
       const initialRegion =
         routeData.length > 0
           ? {
-              latitude: routeData[0].latitude,
-              longitude: routeData[0].longitude,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
+              latitude: centerLat,
+              longitude: centerLng,
+              latitudeDelta: Math.max(deltaLat, 0.01), // Mínimo zoom
+              longitudeDelta: Math.max(deltaLng, 0.01),
             }
           : {
               latitude: -12.0464,
@@ -462,6 +477,7 @@ const TourReport = () => {
               }}
               title={`Punto ${index + 1}`}
               description={`Fecha: ${point.date} ${point.time} - ${point.speed} km/h`}
+              centerOffset={{ x: 0, y: -12 }}
             >
               {/* Marcador profesional con efecto radar animado - todos aparecen al mismo tiempo */}
               <AnimatedMarker>
