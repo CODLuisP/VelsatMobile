@@ -46,6 +46,7 @@ import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
 import RNFetchBlob from 'react-native-blob-util';
 import Share from 'react-native-share';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 interface ReportType {
   id: number;
   name: string;
@@ -234,25 +235,25 @@ const Reports: React.FC = () => {
       }
 
       // Construir URL según el reporte seleccionado
-// Construir URL según el reporte seleccionado
-let url = '';
+      // Construir URL según el reporte seleccionado
+      let url = '';
 
-if (selectedReport === 2) {
-  // Velocidad necesita el parámetro speed
-  url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${speedValue}/${username}`;
-} else if (selectedReport === 3) {
-  // Kilometraje tiene dos APIs diferentes
-  if (allUnitsEnabled) {
-    // Todas las unidades - usa downloadExcelKall (sin placa)
-    url = `${server}/api/Kilometer/downloadExcelKall/${formattedStartDate}/${formattedEndDate}/${username}`;
-  } else {
-    // Una unidad específica - usa downloadExcelK (con placa)
-    url = `${server}/api/Kilometer/downloadExcelK/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
-  }
-} else {
-  // Otros reportes
-  url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
-}
+      if (selectedReport === 2) {
+        // Velocidad necesita el parámetro speed
+        url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${speedValue}/${username}`;
+      } else if (selectedReport === 3) {
+        // Kilometraje tiene dos APIs diferentes
+        if (allUnitsEnabled) {
+          // Todas las unidades - usa downloadExcelKall (sin placa)
+          url = `${server}/api/Kilometer/downloadExcelKall/${formattedStartDate}/${formattedEndDate}/${username}`;
+        } else {
+          // Una unidad específica - usa downloadExcelK (con placa)
+          url = `${server}/api/Kilometer/downloadExcelK/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
+        }
+      } else {
+        // Otros reportes
+        url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
+      }
 
       console.log('URL de descarga:', url);
 
@@ -516,7 +517,7 @@ if (selectedReport === 2) {
         const apiLevel = Platform.Version;
 
         if (apiLevel >= 33) {
-          return true; 
+          return true;
         }
 
         const granted = await PermissionsAndroid.request(
@@ -676,8 +677,18 @@ if (selectedReport === 2) {
         </ScrollView>
       </View>
 
-      <ScrollView style={styles.content}>
-        <Text style={styles.sectionTitle}>Unidad</Text>
+      <KeyboardAwareScrollView
+        style={styles.content}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={30}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >        
+      
+      <Text style={styles.sectionTitle}>Unidad</Text>
         <TouchableOpacity
           style={[
             styles.unitInputContainer,
@@ -801,24 +812,24 @@ if (selectedReport === 2) {
         </View>
 
         <View style={styles.buttonsContainer}>
-    <TouchableOpacity
-  style={[
-    styles.excelButton, 
-    downloadingExcel && { opacity: 0.7 },
-    selectedReport === 4 && { opacity: 0.5, backgroundColor: '#ccc' }  // Agregar esta línea
-  ]}
-  onPress={handleDownloadExcel}
-  disabled={downloadingExcel || selectedReport === 4}  // Modificar esta línea
->
-  {downloadingExcel ? (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <ActivityIndicator size="small" color="#fff" />
-      <Text style={styles.buttonText}>Descargando...</Text>
-    </View>
-  ) : (
-    <Text style={styles.buttonText}>Descargar Excel</Text>
-  )}
-</TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.excelButton,
+              downloadingExcel && { opacity: 0.7 },
+              selectedReport === 4 && { opacity: 0.5, backgroundColor: '#ccc' }  // Agregar esta línea
+            ]}
+            onPress={handleDownloadExcel}
+            disabled={downloadingExcel || selectedReport === 4}  // Modificar esta línea
+          >
+            {downloadingExcel ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.buttonText}>Descargando...</Text>
+              </View>
+            ) : (
+              <Text style={styles.buttonText}>Descargar Excel</Text>
+            )}
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.showButton}
@@ -827,7 +838,7 @@ if (selectedReport === 2) {
             <Text style={styles.buttonText}>Mostrar</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {renderDateTimePicker()}
 
