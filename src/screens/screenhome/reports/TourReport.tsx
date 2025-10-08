@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Text,
   View,
   TouchableOpacity,
   Platform,
-  PermissionsAndroid,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { ChevronLeft, Calendar, ChevronRight } from 'lucide-react-native';
 import {
@@ -37,6 +37,91 @@ interface RoutePoint {
   latitude: number;
 }
 
+// Componente animado para el radar
+const RadarPulse = ({ color, delay = 0 }: { color: string; delay?: number }) => {
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
+  const opacityAnim = useRef(new Animated.Value(0.8)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 2.5,
+          duration: 2000,
+          delay: delay,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 2000,
+          delay: delay,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    animation.start();
+
+    return () => animation.stop();
+  }, []);
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: 10,
+        width: 34,
+        height: 34,
+        backgroundColor: color,
+        borderRadius: 17,
+        transform: [{ scale: scaleAnim }],
+        opacity: opacityAnim,
+      }}
+    />
+  );
+};
+
+// Componente animado para el marcador con entrada desde arriba (todos al mismo tiempo)
+const AnimatedMarker = ({ 
+  children, 
+}: { 
+  children: React.ReactNode; 
+}) => {
+  const translateY = useRef(new Animated.Value(-100)).current;
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(translateY, {
+        toValue: 0,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        transform: [
+          { translateY },
+          { scale: scaleAnim },
+        ],
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+};
+
 const TourReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user, server } = useAuthStore();
@@ -44,7 +129,6 @@ const TourReport = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'TourReport'>>();
   const { unit, startDate, endDate } = route.params;
 
-  const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [sidebarCompact, setSidebarCompact] = useState(false);
   const [routeData, setRouteData] = useState<RoutePoint[]>([]);
@@ -65,7 +149,6 @@ const TourReport = () => {
   );
 
   useEffect(() => {
-    requestLocationPermission();
     fetchRouteData();
   }, []);
 
@@ -108,34 +191,18 @@ const TourReport = () => {
     }
   };
 
-  const requestLocationPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Permiso de Ubicación',
-            message: 'Esta app necesita acceso a tu ubicación para mostrar el mapa',
-            buttonNeutral: 'Preguntar después',
-            buttonNegative: 'Cancelar',
-            buttonPositive: 'OK',
-          },
-        );
-        setHasLocationPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
-      } catch (err) {
-        console.warn(err);
-        setHasLocationPermission(false);
-      }
-    } else {
-      setHasLocationPermission(true);
-    }
+  const getSpeedColor = (speed: number): string => {
+    if (speed === 0) return '#ef4444'; // ROJO
+    if (speed > 0 && speed < 11) return '#eab308'; // AMARILLO
+    if (speed >= 11 && speed < 60) return '#22c55e'; // VERDE
+    return '#3b82f6'; // AZUL
   };
 
-  const getSpeedColor = (speed: number): string => {
-    if (speed === 0) return '#ef4444';
-    if (speed <= 10) return '#22c55e';
-    if (speed <= 30) return '#eab308';
-    return '#3b82f6';
+  const getSpeedColorLight = (speed: number): string => {
+    if (speed === 0) return 'rgba(239, 68, 68, 0.2)'; // ROJO
+    if (speed > 0 && speed < 11) return 'rgba(234, 179, 8, 0.2)'; // AMARILLO
+    if (speed >= 11 && speed < 60) return 'rgba(34, 197, 94, 0.2)'; // VERDE
+    return 'rgba(59, 130, 246, 0.2)'; // AZUL
   };
 
   const handleGoBack = () => {
@@ -155,126 +222,62 @@ const TourReport = () => {
     <!DOCTYPE html>
     <html>
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Reporte de Recorrido</title>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-            crossorigin=""/>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
-        <style>
-            body { 
-                margin: 0; 
-                padding: 0; 
-                overflow: hidden;
-            }
-            #map { 
-                height: 100vh; 
-                width: 100vw;
-                z-index: 0;
-            }
-            .leaflet-top.leaflet-left {
-                left: auto !important;
-                right: 5px !important;
-                top: 25px !important;
-            }
-            .custom-marker {
-                background-color: white;
-                border: 3px solid;
-                border-radius: 50%;
-                width: 30px;
-                height: 30px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 12px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            }
-            .custom-popup {
-                font-family: Arial, sans-serif;
-            }
-            .popup-title {
-                font-weight: bold;
-                margin-bottom: 5px;
-                color: #1e3a8a;
-            }
-            .popup-info {
-                font-size: 13px;
-                line-height: 1.6;
-            }
-        </style>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <title>Reporte de Recorrido</title>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+      <style>
+        body { margin: 0; padding: 0; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; }
+        .custom-marker {
+          background-color: white;
+          border: 3px solid;
+          border-radius: 50%;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+      </style>
     </head>
     <body>
-        <div id="map"></div>
-        <script>
-            var routeData = ${JSON.stringify(routeData)};
-            
-            if (routeData.length === 0) {
-                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;">No hay datos de ruta</div>';
-            } else {
-                var firstPoint = routeData[0];
-                var map = L.map('map', {
-                    zoomControl: true,
-                    scrollWheelZoom: true,
-                    doubleClickZoom: true,
-                    touchZoom: true
-                }).setView([firstPoint.latitude, firstPoint.longitude], 15);
-
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors',
-                    maxZoom: 19
-                }).addTo(map);
-
-                function getSpeedColor(speed) {
-                    if (speed === 0) return '#ef4444';
-                    if (speed <= 10) return '#22c55e';
-                    if (speed <= 30) return '#eab308';
-                    return '#3b82f6';
-                }
-
-                // Dibujar línea de ruta
-                var latlngs = routeData.map(point => [point.latitude, point.longitude]);
-                var polyline = L.polyline(latlngs, {
-                    color: '#1e3a8a',
-                    weight: 4,
-                    opacity: 0.7,
-                    smoothFactor: 1
-                }).addTo(map);
-
-                // Agregar marcadores numerados
-                routeData.forEach((point, index) => {
-                    var color = getSpeedColor(point.speed);
-                    var markerNumber = index + 1;
-                    
-                    var customIcon = L.divIcon({
-                        html: '<div class="custom-marker" style="border-color:' + color + '; color:' + color + ';">' + markerNumber + '</div>',
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15],
-                        popupAnchor: [0, -15],
-                        className: 'custom-marker-icon'
-                    });
-                    
-                    var popupContent = '<div class="custom-popup">' +
-                        '<div class="popup-title">Punto ' + markerNumber + '</div>' +
-                        '<div class="popup-info">' +
-                        '<strong>Fecha:</strong> ' + point.date + '<br>' +
-                        '<strong>Hora:</strong> ' + point.time + '<br>' +
-                        '<strong>Velocidad:</strong> ' + point.speed + ' km/h' +
-                        '</div>' +
-                        '</div>';
-                    
-                    L.marker([point.latitude, point.longitude], {icon: customIcon})
-                        .addTo(map)
-                        .bindPopup(popupContent);
-                });
-
-                // Ajustar vista para mostrar toda la ruta
-                map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
-            }
-        </script>
+      <div id="map"></div>
+      <script>
+        var routeData = ${JSON.stringify(routeData)};
+        if (routeData.length === 0) {
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;">No hay datos de ruta</div>';
+        } else {
+          var firstPoint = routeData[0];
+          var map = L.map('map').setView([firstPoint.latitude, firstPoint.longitude], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+          function getSpeedColor(speed) {
+            if (speed === 0) return '#ef4444';
+            if (speed > 0 && speed < 11) return '#eab308';
+            if (speed >= 11 && speed < 60) return '#22c55e';
+            return '#3b82f6';
+          }
+          var latlngs = routeData.map(p => [p.latitude, p.longitude]);
+          var polyline = L.polyline(latlngs, { color: '#1e3a8a', weight: 4, opacity: 0.7 }).addTo(map);
+          routeData.forEach((p, i) => {
+            var color = getSpeedColor(p.speed);
+            var customIcon = L.divIcon({
+              html: '<div class="custom-marker" style="border-color:' + color + '; color:' + color + ';">' + (i+1) + '</div>',
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+              popupAnchor: [0, -15]
+            });
+            L.marker([p.latitude, p.longitude], { icon: customIcon })
+              .bindPopup('<b>Punto ' + (i+1) + '</b><br>Fecha: ' + p.date + ' ' + p.time + '<br>Velocidad: ' + p.speed + ' km/h')
+              .addTo(map);
+          });
+          map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+        }
+      </script>
     </body>
     </html>
   `;
@@ -299,33 +302,33 @@ const TourReport = () => {
       );
     }
 
+    // --- iOS: Marcadores personalizados con forma de GPS y efecto radar animado ---
     if (Platform.OS === 'ios') {
       const coordinates = routeData.map(point => ({
         latitude: point.latitude,
         longitude: point.longitude,
       }));
 
-      const initialRegion = routeData.length > 0
-        ? {
-            latitude: routeData[0].latitude,
-            longitude: routeData[0].longitude,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }
-        : {
-            latitude: -12.0464,
-            longitude: -77.0428,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          };
+      const initialRegion =
+        routeData.length > 0
+          ? {
+              latitude: routeData[0].latitude,
+              longitude: routeData[0].longitude,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            }
+          : {
+              latitude: -12.0464,
+              longitude: -77.0428,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            };
 
       return (
         <MapView
           provider={PROVIDER_DEFAULT}
           style={styles.map}
           initialRegion={initialRegion}
-          showsUserLocation={hasLocationPermission}
-          showsMyLocationButton={hasLocationPermission}
         >
           <Polyline
             coordinates={coordinates}
@@ -340,13 +343,79 @@ const TourReport = () => {
                 longitude: point.longitude,
               }}
               title={`Punto ${index + 1}`}
-              description={`Fecha: ${point.date} ${point.time}\nVelocidad: ${point.speed} km/h`}
-              pinColor={getSpeedColor(point.speed)}
-            />
+              description={`Fecha: ${point.date} ${point.time} - ${point.speed} km/h`}
+            >
+              {/* Marcador profesional con efecto radar animado - todos aparecen al mismo tiempo */}
+              <AnimatedMarker>
+                <View
+                  pointerEvents="box-none"
+                  style={{
+                    width: 70,
+                    height: 80,
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                  }}
+                >
+                  {/* Ondas de radar animadas (3 ondas con diferentes delays) - NO son clickeables */}
+                  <RadarPulse color={getSpeedColorLight(point.speed)} delay={0} />
+                  <RadarPulse color={getSpeedColorLight(point.speed)} delay={700} />
+                  <RadarPulse color={getSpeedColorLight(point.speed)} delay={1400} />
+
+                  {/* Pin de GPS - círculo principal - SOLO ESTE es clickeable */}
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      backgroundColor: getSpeedColor(point.speed),
+                      borderRadius: 17,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      shadowColor: '#000',
+                      shadowOpacity: 0.4,
+                      shadowRadius: 6,
+                      shadowOffset: { width: 0, height: 2 },
+                      elevation: 8,
+                      marginTop: 10,
+                      zIndex: 10,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: 11,
+                      }}
+                    >
+                      {index + 1}
+                    </Text>
+                  </View>
+
+                  {/* Punta del marcador GPS sin bordes */}
+                  <View style={{ position: 'relative', zIndex: 10 }}>
+                    <View
+                      style={{
+                        width: 0,
+                        height: 0,
+                        backgroundColor: 'transparent',
+                        borderStyle: 'solid',
+                        borderLeftWidth: 9,
+                        borderRightWidth: 9,
+                        borderTopWidth: 12,
+                        borderLeftColor: 'transparent',
+                        borderRightColor: 'transparent',
+                        borderTopColor: getSpeedColor(point.speed),
+                        marginTop: -3,
+                      }}
+                    />
+                  </View>
+                </View>
+              </AnimatedMarker>
+            </Marker>
           ))}
         </MapView>
       );
     } else {
+      // --- Android: usar Leaflet en WebView ---
       return (
         <WebView
           source={{ html: leafletHTML }}
@@ -356,11 +425,6 @@ const TourReport = () => {
           startInLoadingState={true}
           scalesPageToFit={true}
           mixedContentMode="compatibility"
-          geolocationEnabled={hasLocationPermission}
-          onError={syntheticEvent => {
-            const { nativeEvent } = syntheticEvent;
-            console.warn('WebView error: ', nativeEvent);
-          }}
         />
       );
     }
@@ -465,21 +529,21 @@ const TourReport = () => {
                     </View>
                     <View style={styles.legendItem}>
                       <View
-                        style={[styles.legendDot, { backgroundColor: '#22c55e' }]}
+                        style={[styles.legendDot, { backgroundColor: '#eab308' }]}
                       />
                       <Text style={styles.legendText}>1 - 10 km/h</Text>
                     </View>
                     <View style={styles.legendItem}>
                       <View
-                        style={[styles.legendDot, { backgroundColor: '#eab308' }]}
+                        style={[styles.legendDot, { backgroundColor: '#22c55e' }]}
                       />
-                      <Text style={styles.legendText}>11 - 30 km/h</Text>
+                      <Text style={styles.legendText}>11 - 59 km/h</Text>
                     </View>
                     <View style={styles.legendItem}>
                       <View
                         style={[styles.legendDot, { backgroundColor: '#3b82f6' }]}
                       />
-                      <Text style={styles.legendText}>&gt; 30 km/h</Text>
+                      <Text style={styles.legendText}>&gt;= 60 km/h</Text>
                     </View>
                   </View>
                 </View>
@@ -496,6 +560,7 @@ const TourReport = () => {
             )}
           </View>
         )}
+        
       </View>
     </View>
   );
