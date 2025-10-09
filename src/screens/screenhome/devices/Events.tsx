@@ -1,4 +1,10 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import {
   Battery,
@@ -26,6 +32,7 @@ import {
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Interfaz para el tipo de evento de la API
 interface EventAPI {
@@ -56,7 +63,7 @@ const Events = () => {
   const route = useRoute<EventsRouteProp>();
 
   const { deviceName } = route.params;
-const { user, logout, server, tipo } = useAuthStore();
+  const { user, logout, server, tipo } = useAuthStore();
   const username = user?.username;
 
   const [events, setEvents] = useState<Event[]>([]);
@@ -72,11 +79,10 @@ const { user, logout, server, tipo } = useAuthStore();
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
-  // Función para convertir timestamp Unix a fecha legible
   const formatUnixTimestamp = (unixTimestamp: number): string => {
     const date = new Date(unixTimestamp * 1000);
     const day = String(date.getDate()).padStart(2, '0');
@@ -88,7 +94,6 @@ const { user, logout, server, tipo } = useAuthStore();
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
-  // Función para obtener el título basado en el statusCode
   const getEventTitle = (statusCode: number): string => {
     switch (statusCode) {
       case 62477:
@@ -104,7 +109,6 @@ const { user, logout, server, tipo } = useAuthStore();
     }
   };
 
-  // Función para obtener el tipo de evento basado en el statusCode
   const getEventType = (statusCode: number): string => {
     switch (statusCode) {
       case 62477:
@@ -120,7 +124,6 @@ const { user, logout, server, tipo } = useAuthStore();
     }
   };
 
-  // Función para obtener el icono basado en el statusCode
   const getEventIcon = (statusCode: number): any => {
     switch (statusCode) {
       case 62477:
@@ -136,7 +139,6 @@ const { user, logout, server, tipo } = useAuthStore();
     }
   };
 
-  // Función para obtener el nombre del icono basado en el tipo
   const getIconName = (type: string): string => {
     switch (type) {
       case 'battery':
@@ -152,19 +154,17 @@ const { user, logout, server, tipo } = useAuthStore();
     }
   };
 
-  // Función para obtener eventos de la API usando Axios
   const fetchEvents = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await axios.get<EventAPI[]>(
-        `${server}/api/Aplicativo/notifications/${username}/${deviceName}`
+        `${server}/api/Aplicativo/notifications/${username}/${deviceName}`,
       );
 
       const data = response.data;
 
-      // Transformar los datos de la API al formato de eventos
       const transformedEvents: Event[] = data.map((apiEvent, index) => ({
         id: index + 1,
         type: getEventType(apiEvent.statusCode),
@@ -197,7 +197,6 @@ const { user, logout, server, tipo } = useAuthStore();
     navigation.goBack();
   };
 
-  // Función para manejar el click en un evento
   const handleEventPress = (event: Event) => {
     navigation.navigate('MapEvent', {
       notificationData: {
@@ -236,7 +235,12 @@ const { user, logout, server, tipo } = useAuthStore();
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -261,88 +265,106 @@ const { user, logout, server, tipo } = useAuthStore();
       >
         <View style={styles.formContainer}>
           {loading ? (
-            <View style={{ 
-              flex: 1, 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              paddingVertical: 60
-            }}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingVertical: 60,
+              }}
+            >
               <ActivityIndicator size="large" color="#FF8C42" />
               <Text style={{ color: '#fff', marginTop: 16, fontSize: 16 }}>
                 Cargando eventos...
               </Text>
             </View>
           ) : error ? (
-            <View style={{ 
-              flex: 1, 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              paddingVertical: 60,
-              paddingHorizontal: 40
-            }}>
-              <View style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            <View
+              style={{
+                flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginBottom: 5
-              }}>
+                paddingVertical: 60,
+                paddingHorizontal: 40,
+              }}
+            >
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 5,
+                }}
+              >
                 <ServerCrash size={40} color="#ef4444" />
               </View>
-              <Text style={{ 
-                color: '#f1f5f9', 
-                fontSize: 18, 
-                fontWeight: '600',
-                textAlign: 'center',
-                marginBottom: 0
-              }}>
+              <Text
+                style={{
+                  color: '#f1f5f9',
+                  fontSize: 18,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  marginBottom: 0,
+                }}
+              >
                 Error al cargar eventos
               </Text>
-              <Text style={{ 
-                color: '#94a3b8', 
-                fontSize: 14, 
-                textAlign: 'center',
-                lineHeight: 20
-              }}>
+              <Text
+                style={{
+                  color: '#94a3b8',
+                  fontSize: 14,
+                  textAlign: 'center',
+                  lineHeight: 20,
+                }}
+              >
                 No se pudieron obtener los eventos de esta unidad.
               </Text>
             </View>
           ) : events.length === 0 ? (
-            <View style={{ 
-              flex: 1, 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              paddingVertical: 60,
-              paddingHorizontal: 40
-            }}>
-              <View style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: 'rgba(148, 163, 184, 0.1)',
+            <View
+              style={{
+                flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginBottom: 20
-              }}>
+                paddingVertical: 60,
+                paddingHorizontal: 40,
+              }}
+            >
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: 20,
+                }}
+              >
                 <AlertTriangle size={40} color="#94a3b8" />
               </View>
-              <Text style={{ 
-                color: '#f1f5f9', 
-                fontSize: 18, 
-                fontWeight: '600',
-                textAlign: 'center',
-                marginBottom: 8
-              }}>
+              <Text
+                style={{
+                  color: '#f1f5f9',
+                  fontSize: 18,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  marginBottom: 8,
+                }}
+              >
                 No hay eventos disponibles
               </Text>
-              <Text style={{ 
-                color: '#94a3b8', 
-                fontSize: 14, 
-                textAlign: 'center',
-                lineHeight: 20
-              }}>
+              <Text
+                style={{
+                  color: '#94a3b8',
+                  fontSize: 14,
+                  textAlign: 'center',
+                  lineHeight: 20,
+                }}
+              >
                 Esta unidad no tiene eventos registrados en el sistema
               </Text>
             </View>
@@ -361,7 +383,9 @@ const { user, logout, server, tipo } = useAuthStore();
                       <IconComponent size={24} color="#FF8C42" />
                     </View>
                     <View style={styles.notificationContent}>
-                      <Text style={styles.notificationTitle}>{event.title}</Text>
+                      <Text style={styles.notificationTitle}>
+                        {event.title}
+                      </Text>
                       <Text style={styles.deviceName}>{event.device}</Text>
                       <Text style={styles.timestamp}>{event.timestamp}</Text>
                     </View>
@@ -372,7 +396,7 @@ const { user, logout, server, tipo } = useAuthStore();
           )}
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

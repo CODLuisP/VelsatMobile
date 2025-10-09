@@ -7,9 +7,7 @@ import {
   TextInput,
   Platform,
   Modal,
-  NativeModules,
   Animated,
-  FlatList,
   Alert,
   PermissionsAndroid,
   ActivityIndicator,
@@ -23,9 +21,7 @@ import {
   FileText,
   ChevronDown,
   Calendar,
-  Search,
   X,
-  Truck,
 } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { styles } from '../../../styles/reports';
@@ -47,6 +43,7 @@ import axios from 'axios';
 import RNFetchBlob from 'react-native-blob-util';
 import Share from 'react-native-share';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import LinearGradient from 'react-native-linear-gradient';
 interface ReportType {
   id: number;
   name: string;
@@ -70,7 +67,7 @@ const Reports: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -176,7 +173,6 @@ const Reports: React.FC = () => {
       return;
     }
 
-    // Pedir permisos primero (solo Android)
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) {
       Alert.alert('Error', 'Se necesitan permisos de almacenamiento');
@@ -189,7 +185,6 @@ const Reports: React.FC = () => {
       const username = user?.username;
       const plate = selectedUnit?.plate;
 
-      // Función para formatear fecha a ISO string
       const formatDateForAPI = (date: Date): string => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -200,11 +195,9 @@ const Reports: React.FC = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
-      // Formatear las fechas para la API
       const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
       const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
-      // Construir URL según el reporte seleccionado
       let apiEndpoint = '';
       let reportName = '';
 
@@ -234,36 +227,28 @@ const Reports: React.FC = () => {
           reportName = 'general';
       }
 
-      // Construir URL según el reporte seleccionado
-      // Construir URL según el reporte seleccionado
+    
       let url = '';
 
       if (selectedReport === 2) {
-        // Velocidad necesita el parámetro speed
         url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${speedValue}/${username}`;
       } else if (selectedReport === 3) {
-        // Kilometraje tiene dos APIs diferentes
         if (allUnitsEnabled) {
-          // Todas las unidades - usa downloadExcelKall (sin placa)
           url = `${server}/api/Kilometer/downloadExcelKall/${formattedStartDate}/${formattedEndDate}/${username}`;
         } else {
-          // Una unidad específica - usa downloadExcelK (con placa)
           url = `${server}/api/Kilometer/downloadExcelK/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
         }
       } else {
-        // Otros reportes
         url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
       }
 
       console.log('URL de descarga:', url);
 
-      // Configurar ruta de descarga
       const { dirs } = RNFetchBlob.fs;
       const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
       const fileName = `reporte_${reportName}_${plate}_${new Date().getTime()}.xlsx`;
       const filePath = `${downloadDir}/${fileName}`;
 
-      // Descargar archivo
       const response = await RNFetchBlob.config({
         fileCache: true,
         path: filePath,
@@ -278,9 +263,7 @@ const Reports: React.FC = () => {
 
       console.log('Descarga completada:', filePath);
 
-      // Compartir archivo según la plataforma
       if (Platform.OS === 'ios') {
-        // En iOS, abrir el menú de compartir directamente
         await Share.open({
           url: `file://${filePath}`,
           title: 'Reporte Excel',
@@ -290,7 +273,6 @@ const Reports: React.FC = () => {
         });
         setDownloadingExcel(false);
       } else {
-        // En Android, mostrar alerta de éxito
         setDownloadingExcel(false);
         Alert.alert(
           'Descarga exitosa',
@@ -536,7 +518,7 @@ const Reports: React.FC = () => {
         return false;
       }
     }
-    return true; // iOS
+    return true;
   };
 
   const validateForm = (): { isValid: boolean; message: string } => {
@@ -659,7 +641,12 @@ const Reports: React.FC = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+        <LinearGradient
+          colors={['#00296b', '#1e3a8a', '#00296b']}
+          style={[styles.container, { paddingBottom: bottomSpace }]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        >
       <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
@@ -848,7 +835,7 @@ const Reports: React.FC = () => {
         onClose={handleCloseUnitModal}
         onSelectUnit={handleSelectUnit}
       />
-    </View>
+    </LinearGradient>
   );
 };
 

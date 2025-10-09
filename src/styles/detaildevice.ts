@@ -4,7 +4,6 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
   mapContainer: {
     flex: 1,
@@ -52,8 +51,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e3a8a',
-    backgroundColor: '#1e3a8a',
+    borderBottomColor: '#00296b',
+    backgroundColor: '#00296b',
   },
   panelHeaderContent: {
     flexDirection: 'row',

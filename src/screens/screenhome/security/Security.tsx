@@ -17,13 +17,21 @@ import {
   Loader,
   X,
 } from 'lucide-react-native';
-import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { styles } from '../../../styles/security';
 import { RootStackParamList } from '../../../../App';
 import { useAuthStore } from '../../../store/authStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Configuración del botón
 interface ButtonConfig {
@@ -51,10 +59,9 @@ const Security: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
-
 
   const {
     biometric,
@@ -329,14 +336,15 @@ const Security: React.FC = () => {
     }
   };
 
-
-    const topSpace = insets.top + 5;
-
-
+  const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -351,8 +359,8 @@ const Security: React.FC = () => {
             {isLoading
               ? 'Detectando...'
               : isAlreadyEnabled
-                ? 'Biometría Activada'
-                : 'Configuración de Seguridad'}
+              ? 'Biometría Activada'
+              : 'Configuración de Seguridad'}
           </Text>
         </View>
       </View>
@@ -386,8 +394,8 @@ const Security: React.FC = () => {
                   {isAlreadyEnabled
                     ? 'Autenticación biométrica activa'
                     : biometric.isAvailable
-                      ? 'Acceso instantáneo en menos de 1 segundo'
-                      : 'Acceso rápido y seguro'}
+                    ? 'Acceso instantáneo en menos de 1 segundo'
+                    : 'Acceso rápido y seguro'}
                 </Text>
               </View>
               <View style={styles.featureItem}>
@@ -431,7 +439,7 @@ const Security: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

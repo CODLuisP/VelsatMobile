@@ -35,6 +35,7 @@ import {
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface ReportItem {
   id: string;
@@ -68,7 +69,7 @@ const StopReport = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -234,7 +235,12 @@ const StopReport = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+       <LinearGradient
+          colors={['#00296b', '#1e3a8a', '#00296b']}
+          style={[styles.container, { paddingBottom: bottomSpace }]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
@@ -290,7 +296,7 @@ const StopReport = () => {
           />
         )}
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 

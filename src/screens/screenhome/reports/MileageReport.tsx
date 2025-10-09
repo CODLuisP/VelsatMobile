@@ -33,6 +33,7 @@ import {
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface VehicleReport {
   id: string;
@@ -63,7 +64,7 @@ const MileageReport = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -71,66 +72,67 @@ const MileageReport = () => {
     fetchReportData();
   }, []);
 
-const fetchReportData = async () => {
-  try {
-    setLoading(true);
-    setError(null);
+  const fetchReportData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const username = user?.username;
+      const username = user?.username;
 
-    // Función para formatear fecha a ISO string
-    const formatDateForAPI = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
+      // Función para formatear fecha a ISO string
+      const formatDateForAPI = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
 
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
 
-    // Formatear las fechas para la API
-    const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
-    const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
-
-    // Construir URL según si es "all" o una unidad específica
-    let url = '';
-    
-    if (isAllUnits) {
-      // API para todas las unidades
-      url = `${server}/api/Kilometer/kilometerall/${formattedStartDate}/${formattedEndDate}/${username}`;
-    } else {
-      // API para una unidad específica
-      const plate = unit.plate;
-      url = `${server}/api/Kilometer/kilometer/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
-    }
-
-    console.log('API URL:', url);
-
-    const response = await axios.get(url);
-
-    if (response.data && response.data.result && response.data.result.listaKilometros) {
-      const transformedData: VehicleReport[] = response.data.result.listaKilometros.map(
-        (item: any) => ({
-          id: item.item.toString(),
-          itemNumber: item.item,
-          unitName: item.deviceId,
-          mileage: parseFloat(item.kilometros.toFixed(2)),
-          carImage: require('../../../../assets/Car.jpg'),
-        })
+      const formattedStartDate = encodeURIComponent(
+        formatDateForAPI(startDate),
       );
+      const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
-      setVehicleData(transformedData);
-    } else {
-      setError('No se encontraron datos');
+      let url = '';
+
+      if (isAllUnits) {
+        url = `${server}/api/Kilometer/kilometerall/${formattedStartDate}/${formattedEndDate}/${username}`;
+      } else {
+        const plate = unit.plate;
+        url = `${server}/api/Kilometer/kilometer/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
+      }
+
+      console.log('API URL:', url);
+
+      const response = await axios.get(url);
+
+      if (
+        response.data &&
+        response.data.result &&
+        response.data.result.listaKilometros
+      ) {
+        const transformedData: VehicleReport[] =
+          response.data.result.listaKilometros.map((item: any) => ({
+            id: item.item.toString(),
+            itemNumber: item.item,
+            unitName: item.deviceId,
+            mileage: parseFloat(item.kilometros.toFixed(2)),
+            carImage: require('../../../../assets/Car.jpg'),
+          }));
+
+        setVehicleData(transformedData);
+      } else {
+        setError('No se encontraron datos');
+      }
+    } catch (err) {
+      console.error('Error fetching report data:', err);
+      setError('Error al cargar los datos del reporte');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error fetching report data:', err);
-    setError('Error al cargar los datos del reporte');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -184,7 +186,13 @@ const fetchReportData = async () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
@@ -208,7 +216,6 @@ const fetchReportData = async () => {
           </View>
         </View>
       </View>
-
       {/* Contenedor wrapper con borde redondeado */}
       <View style={styles.listWrapper}>
         {loading ? (
@@ -245,7 +252,7 @@ const fetchReportData = async () => {
           />
         )}
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 

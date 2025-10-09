@@ -39,6 +39,7 @@ import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
+import LinearGradient from 'react-native-linear-gradient';
 
 type InfoDeviceRouteProp = RouteProp<RootStackParamList, 'InfoDevice'>;
 
@@ -85,7 +86,7 @@ const InfoDevice = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -184,7 +185,13 @@ Compartido desde Velsat Mobile
     : '0.000';
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <ChevronLeft size={24} color="#fff" />
@@ -204,7 +211,6 @@ Compartido desde Velsat Mobile
           </View>
         </View>
       </View>
-
       {/* Scrollable Content */}
       <ScrollView
         style={styles.scrollContent}
@@ -374,7 +380,7 @@ Compartido desde Velsat Mobile
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

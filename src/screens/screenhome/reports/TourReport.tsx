@@ -28,6 +28,7 @@ import {
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface RoutePoint {
   date: string;
@@ -37,7 +38,6 @@ interface RoutePoint {
   latitude: number;
 }
 
-// Componente animado para el radar
 const RadarPulse = ({ color, delay = 0 }: { color: string; delay?: number }) => {
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0.8)).current;
@@ -83,7 +83,6 @@ const RadarPulse = ({ color, delay = 0 }: { color: string; delay?: number }) => 
   );
 };
 
-// Componente animado para el marcador con entrada desde arriba (todos al mismo tiempo)
 const AnimatedMarker = ({ 
   children, 
 }: { 
@@ -146,7 +145,7 @@ const TourReport = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -194,17 +193,17 @@ const TourReport = () => {
   };
 
   const getSpeedColor = (speed: number): string => {
-    if (speed === 0) return '#ef4444'; // ROJO
-    if (speed > 0 && speed < 11) return '#eab308'; // AMARILLO
-    if (speed >= 11 && speed < 60) return '#22c55e'; // VERDE
-    return '#3b82f6'; // AZUL
+    if (speed === 0) return '#ef4444'; 
+    if (speed > 0 && speed < 11) return '#eab308'; 
+    if (speed >= 11 && speed < 60) return '#22c55e'; 
+    return '#3b82f6'; 
   };
 
   const getSpeedColorLight = (speed: number): string => {
-    if (speed === 0) return 'rgba(239, 68, 68, 0.2)'; // ROJO
-    if (speed > 0 && speed < 11) return 'rgba(234, 179, 8, 0.2)'; // AMARILLO
-    if (speed >= 11 && speed < 60) return 'rgba(34, 197, 94, 0.2)'; // VERDE
-    return 'rgba(59, 130, 246, 0.2)'; // AZUL
+    if (speed === 0) return 'rgba(239, 68, 68, 0.2)'; 
+    if (speed > 0 && speed < 11) return 'rgba(234, 179, 8, 0.2)'; 
+    if (speed >= 11 && speed < 60) return 'rgba(34, 197, 94, 0.2)'; 
+    return 'rgba(59, 130, 246, 0.2)'; 
   };
 
   const handleGoBack = () => {
@@ -549,7 +548,6 @@ const TourReport = () => {
         </MapView>
       );
     } else {
-      // --- Android: usar Leaflet en WebView con marcadores GPS animados ---
       return (
         <WebView
           source={{ html: leafletHTML }}
@@ -567,7 +565,12 @@ const TourReport = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+     <LinearGradient
+             colors={['#00296b', '#1e3a8a', '#00296b']}
+             style={[styles.container, { paddingBottom: bottomSpace }]}
+             start={{ x: 0, y: 0 }}
+             end={{ x: 0, y: 1 }}
+           >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -696,7 +699,7 @@ const TourReport = () => {
         )}
         
       </View>
-    </View>
+   </LinearGradient>
   );
 };
 

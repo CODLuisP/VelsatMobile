@@ -17,7 +17,6 @@ import {
   Calendar,
   AlertCircle,
   FileX,
-
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -37,6 +36,7 @@ import {
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface ReportItem {
   id: string;
@@ -69,7 +69,7 @@ const GeneralReport = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -85,7 +85,6 @@ const GeneralReport = () => {
       const username = user?.username;
       const plate = unit.plate;
 
-      // Función para formatear fecha a ISO string con zona horaria
       const formatDateForAPI = (date: Date): string => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -96,19 +95,23 @@ const GeneralReport = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
-      // Formatear las fechas para la API
-      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedStartDate = encodeURIComponent(
+        formatDateForAPI(startDate),
+      );
       const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
       const url = `${server}/api/Reporting/general/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
 
-      console.log('API URL:', url); // Para debug
-
+      console.log('API URL:', url);
       const response = await axios.get(url);
 
-      if (response.data && response.data.result && response.data.result.listaTablas) {
-        const transformedData: ReportItem[] = response.data.result.listaTablas.map(
-          (item: any) => ({
+      if (
+        response.data &&
+        response.data.result &&
+        response.data.result.listaTablas
+      ) {
+        const transformedData: ReportItem[] =
+          response.data.result.listaTablas.map((item: any) => ({
             id: item.item.toString(),
             number: item.item,
             date: item.fecha,
@@ -118,8 +121,7 @@ const GeneralReport = () => {
             location: item.address,
             latitude: item.latitude,
             longitude: item.longitude,
-          })
-        );
+          }));
 
         setReportData(transformedData);
       } else {
@@ -139,12 +141,11 @@ const GeneralReport = () => {
 
   const handleReportItemPress = (item: ReportItem) => {
     const { latitude, longitude } = item;
-    
-    // URL para Google Maps en Street View
+
     const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m7!1e1!3m5!1s!2e0!7i16384!8i8192?entry=ttu`;
-    
-    Linking.openURL(googleMapsUrl).catch(err => 
-      console.error('Error al abrir Google Maps:', err)
+
+    Linking.openURL(googleMapsUrl).catch(err =>
+      console.error('Error al abrir Google Maps:', err),
     );
   };
 
@@ -246,7 +247,13 @@ const GeneralReport = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+     
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
@@ -265,9 +272,15 @@ const GeneralReport = () => {
           </View>
         </View>
       </View>
-
       {/* Contenedor para la lista o estados */}
-      <View style={{ flex: 1, backgroundColor: 'white', borderTopLeftRadius: 25, borderTopRightRadius: 25 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: 'white',
+          borderTopLeftRadius: 25,
+          borderTopRightRadius: 25,
+        }}
+      >
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#1e3a8a" />
@@ -302,7 +315,7 @@ const GeneralReport = () => {
           />
         )}
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 

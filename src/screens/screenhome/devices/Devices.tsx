@@ -27,6 +27,7 @@ import {
 } from '../../../hooks/useNavigationMode';
 import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface Device {
   id: string;
@@ -69,24 +70,23 @@ const Devices = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
-  // Función para obtener los dispositivos de la API
   const fetchDevices = async (showLoading: boolean = false) => {
     try {
       if (showLoading) {
         setLoading(true);
       }
       setError(null);
-      
+
       const username = user?.username;
       const response = await axios.get<ApiDevice[]>(
-        `${server}/api/DeviceList/simplified/${username}`
+        `${server}/api/DeviceList/simplified/${username}`,
       );
 
-      const transformedDevices: Device[] = response.data.map((apiDevice) => ({
+      const transformedDevices: Device[] = response.data.map(apiDevice => ({
         id: apiDevice.deviceId,
         name: apiDevice.deviceId,
         status: apiDevice.lastValidSpeed === 0 ? 'Detenido' : 'Movimiento',
@@ -119,7 +119,7 @@ const Devices = () => {
 
     const interval = setInterval(() => {
       fetchDevices(false);
-    }, 10000); 
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [user?.username, server]);
@@ -129,24 +129,16 @@ const Devices = () => {
   };
 
   const getStatusColor = (speed: number, status: string) => {
-    // velocidad 0: rojo
     if (status === 'Detenido' || speed === 0) return '#FF4444';
-    // velocidad >= 1 and velocidad <= 20: amarillo
     if (speed >= 1 && speed <= 20) return '#FFA500';
-    // velocidad > 20 and <= 45: verde
     if (speed > 20 && speed <= 45) return '#00AA00';
-    // mayor que 45: azul
     return '#0066FF';
   };
 
   const getSpeedColor = (speed: number, status: string) => {
-    // velocidad 0: rojo
     if (status === 'Detenido' || speed === 0) return '#FF4444';
-    // velocidad >= 1 and velocidad <= 20: amarillo
     if (speed >= 1 && speed <= 20) return '#FFA500';
-    // velocidad > 20 and <= 45: verde
     if (speed > 20 && speed <= 45) return '#00AA00';
-    // mayor que 45: azul
     return '#0066FF';
   };
 
@@ -182,7 +174,6 @@ const Devices = () => {
                 style={styles.carImage}
               />
             </View>
-            {/* Indicador de velocidad */}
             <View
               style={[
                 styles.speedIndicator,
@@ -266,11 +257,13 @@ const Devices = () => {
               marginTop: 16,
             }}
           >
-            <Text style={{
-              color: '#fff',
-              fontSize: 16,
-              fontWeight: '600',
-            }}>
+            <Text
+              style={{
+                color: '#fff',
+                fontSize: 16,
+                fontWeight: '600',
+              }}
+            >
               Reintentar
             </Text>
           </TouchableOpacity>
@@ -288,7 +281,9 @@ const Devices = () => {
           <Text style={styles.emptySubtitle}>
             No hay vehículos que coincidan con "{searchText}"
           </Text>
-          <Text style={styles.emptyHint}>Intenta con otro término de búsqueda</Text>
+          <Text style={styles.emptyHint}>
+            Intenta con otro término de búsqueda
+          </Text>
         </View>
       );
     }
@@ -306,7 +301,12 @@ const Devices = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
@@ -347,7 +347,7 @@ const Devices = () => {
         refreshing={isRefreshing}
         onRefresh={handleRefresh}
       />
-    </View>
+    </LinearGradient>
   );
 };
 

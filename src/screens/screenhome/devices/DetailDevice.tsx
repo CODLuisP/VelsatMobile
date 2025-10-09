@@ -21,7 +21,12 @@ import {
   Forward,
   ChevronRight,
 } from 'lucide-react-native';
-import MapView, { Callout, Circle, Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, {
+  Callout,
+  Circle,
+  Marker,
+  PROVIDER_DEFAULT,
+} from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 import {
   NavigationProp,
@@ -43,13 +48,13 @@ import { useAuthStore } from '../../../store/authStore';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 import { toUpperCaseText } from '../../../utils/textUtils';
 import RadarDot from '../../../components/login/RadarDot';
-import { DIRECTION_IMAGES, getDirectionImageData } from '../../../styles/directionImages';
-import RadarMarker from '../../../components/RadarMarker';
-import RadarMarkerSVG from '../../../components/RadarMarker';
+import {
+  DIRECTION_IMAGES,
+  getDirectionImageData,
+} from '../../../styles/directionImages';
 
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
-
 
 interface VehicleData {
   deviceId: string;
@@ -68,7 +73,6 @@ interface VehicleData {
   servicio: string | null;
   datosGeocercausu: any | null;
 }
-
 
 interface SignalRData {
   fechaActual: string;
@@ -89,11 +93,8 @@ const DetailDevice = () => {
   >('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
 
-
   const { device } = route.params;
   const { user, logout, server, tipo } = useAuthStore();
-  const [pulseRadius, setPulseRadius] = useState([25, 50, 80]);
-
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -106,14 +107,11 @@ const DetailDevice = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
-
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
 
-  // Animación del radar para iOS
-  // Estado diferente - cada círculo tiene su propio ciclo
   const [radarPulse, setRadarPulse] = useState({
     wave1: 0,
     wave2: 0.25,
@@ -121,8 +119,6 @@ const DetailDevice = () => {
     wave4: 0.75,
   });
 
-
-  // Animación del radar para iOS - SIN PARPADEO VERDE
   useEffect(() => {
     if (Platform.OS === 'ios' && vehicleData) {
       const interval = setInterval(() => {
@@ -130,7 +126,7 @@ const DetailDevice = () => {
           wave1: (prev.wave1 + 0.01) % 1,
           wave2: (prev.wave2 + 0.01) % 1,
           wave3: (prev.wave3 + 0.01) % 1,
-          wave4: (prev.wave4 + 0.01) % 1,  // ← AGREGAR ESTA LÍNEA
+          wave4: (prev.wave4 + 0.01) % 1, 
         }));
       }, 40);
 
@@ -138,30 +134,26 @@ const DetailDevice = () => {
     }
   }, [vehicleData]);
 
-
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
-
     return () => clearInterval(timer);
   }, []);
-
 
   useEffect(() => {
     const username = user?.username;
     const placa = device.name;
 
-
     if (!username || !placa) {
-      console.error('❌ Faltan datos para conectar SignalR');
+      console.error('Faltan datos para conectar SignalR');
       setConnectionStatus('error');
       return;
     }
 
     const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
-    console.log('🔗 Conectando a:', hubUrl);
+    console.log('Conectando a:', hubUrl);
     setConnectionStatus('connecting');
 
     const newConnection = new signalR.HubConnectionBuilder()
@@ -188,7 +180,6 @@ const DetailDevice = () => {
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
-
     newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
       console.log('📡 Datos recibidos:', JSON.stringify(datos, null, 2));
       if (datos.vehiculo) {
@@ -197,51 +188,39 @@ const DetailDevice = () => {
       }
     });
 
-
     newConnection.on('ConectadoExitosamente', data => {
-      console.log('✅ Conectado exitosamente:', data);
+      console.log('Conectado exitosamente:', data);
       setConnectionStatus('connected');
     });
 
-
     newConnection.on('Error', msg => {
-      console.error('❌ Error desde SignalR:', msg);
+      console.error('Error desde SignalR:', msg);
       setConnectionStatus('error');
     });
 
-
     newConnection.onreconnecting(error => {
-      console.log('🔄 Reconectando...', error);
       setConnectionStatus('connecting');
     });
 
-
     newConnection.onreconnected(connectionId => {
-      console.log('✅ Reconectado con ID:', connectionId);
       setConnectionStatus('connected');
     });
-
 
     newConnection.onclose(error => {
       console.log('🔌 Conexión cerrada', error);
       setConnectionStatus('disconnected');
     });
 
-
     newConnection
       .start()
       .then(() => {
-        console.log('✅ SignalR conectado exitosamente');
         setConnectionStatus('connected');
       })
       .catch(err => {
-        console.error('❌ Error al conectar SignalR:', err);
         setConnectionStatus('error');
       });
 
-
     setConnection(newConnection);
-
 
     return () => {
       if (
@@ -255,13 +234,11 @@ const DetailDevice = () => {
     };
   }, [device.name, user?.username]);
 
-
   const handleInfiDevice = () => {
     navigation.navigate('InfoDevice', {
       deviceName: device.name,
     });
   };
-
 
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
@@ -270,13 +247,11 @@ const DetailDevice = () => {
   const gpsTimestamp = vehicleData?.lastGPSTimestamp || Date.now() / 1000;
   const heading = vehicleData?.lastValidHeading || 0;
 
-
   const getStatus = () => {
     if (!vehicleData) return 'Cargando...';
     if (speed > 0) return 'Movimiento';
     return 'Detenido';
   };
-
 
   const status = getStatus();
   const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
@@ -292,20 +267,16 @@ const DetailDevice = () => {
     return { uri: DIRECTION_IMAGES[imageName] };
   };
 
-
   const openGoogleMaps = () => {
     if (!vehicleData) return;
 
-
     const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
-
 
     const nativeUrl = Platform.select({
       ios: `maps://app?daddr=${latitude},${longitude}&dirflg=d`,
       android: `google.navigation:q=${latitude},${longitude}&mode=d`,
       default: webUrl,
     });
-
 
     if (nativeUrl) {
       Linking.canOpenURL(nativeUrl)
@@ -325,11 +296,9 @@ const DetailDevice = () => {
     }
   };
 
-
   const getStreetViewUrl = () => {
     return `https://maps.googleapis.com/maps/api/streetview?size=300x150&location=${latitude},${longitude}&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`;
   };
-
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -348,7 +317,6 @@ const DetailDevice = () => {
     const seconds = String(date.getSeconds()).padStart(2, '0');
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
-
 
   const leafletHTML = useMemo(() => {
     return `
@@ -703,11 +671,9 @@ if (marker === null) {
  `;
   }, []);
 
-
   const webViewRef = useRef<WebView>(null);
   const mapRef = useRef<MapView>(null);
   const markerRef = useRef<any>(null);
-
 
   useEffect(() => {
     if (
@@ -729,7 +695,6 @@ if (marker === null) {
     isWebViewReady,
   ]);
 
-
   useEffect(() => {
     if (Platform.OS === 'ios' && mapRef.current && vehicleData) {
       setTimeout(() => {
@@ -741,9 +706,13 @@ if (marker === null) {
     }
   }, [vehicleData, latitude, longitude]);
 
-
   useEffect(() => {
-    if (Platform.OS === 'ios' && markerRef.current && vehicleData && !hasShownInitialCallout) {
+    if (
+      Platform.OS === 'ios' &&
+      markerRef.current &&
+      vehicleData &&
+      !hasShownInitialCallout
+    ) {
       setTimeout(() => {
         markerRef.current?.showCallout();
         setHasShownInitialCallout(true);
@@ -767,24 +736,23 @@ if (marker === null) {
         speed === 0
           ? '#ef4444'
           : speed > 0 && speed < 11
-            ? '#ff8000'
-            : speed >= 11 && speed < 60
-              ? '#38b000'
-              : '#00509d';
+          ? '#ff8000'
+          : speed >= 11 && speed < 60
+          ? '#38b000'
+          : '#00509d';
 
       // Calcular radios
-      const wave1Radius = 10 + (radarPulse.wave1 * 90);
-      const wave2Radius = 10 + (radarPulse.wave2 * 90);
-      const wave3Radius = 10 + (radarPulse.wave3 * 90);
-      const wave4Radius = 10 + (radarPulse.wave4 * 90);
-
+      const wave1Radius = 10 + radarPulse.wave1 * 90;
+      const wave2Radius = 10 + radarPulse.wave2 * 90;
+      const wave3Radius = 10 + radarPulse.wave3 * 90;
+      const wave4Radius = 10 + radarPulse.wave4 * 90;
 
       const getOpacity = (progress: number) => {
-        if (progress < 0.03 || progress > 0.80) {
+        if (progress < 0.03 || progress > 0.8) {
           return 0;
         }
         if (progress < 0.08) {
-          return ((progress - 0.03) / 0.05) * 0.20;
+          return ((progress - 0.03) / 0.05) * 0.2;
         }
         return (1 - progress) * 0.25;
       };
@@ -812,8 +780,12 @@ if (marker === null) {
                 <Circle
                   center={{ latitude, longitude }}
                   radius={wave1Radius}
-                  fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
+                  fillColor={`${radarColor}${Math.floor(wave1Opacity * 255)
+                    .toString(16)
+                    .padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200)
+                    .toString(16)
+                    .padStart(2, '0')}`}
                   strokeWidth={2}
                 />
               )}
@@ -821,8 +793,12 @@ if (marker === null) {
                 <Circle
                   center={{ latitude, longitude }}
                   radius={wave2Radius}
-                  fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
+                  fillColor={`${radarColor}${Math.floor(wave2Opacity * 255)
+                    .toString(16)
+                    .padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200)
+                    .toString(16)
+                    .padStart(2, '0')}`}
                   strokeWidth={2}
                 />
               )}
@@ -830,8 +806,12 @@ if (marker === null) {
                 <Circle
                   center={{ latitude, longitude }}
                   radius={wave3Radius}
-                  fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
+                  fillColor={`${radarColor}${Math.floor(wave3Opacity * 255)
+                    .toString(16)
+                    .padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200)
+                    .toString(16)
+                    .padStart(2, '0')}`}
                   strokeWidth={2}
                 />
               )}
@@ -839,8 +819,12 @@ if (marker === null) {
                 <Circle
                   center={{ latitude, longitude }}
                   radius={wave4Radius}
-                  fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
+                  fillColor={`${radarColor}${Math.floor(wave4Opacity * 255)
+                    .toString(16)
+                    .padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200)
+                    .toString(16)
+                    .padStart(2, '0')}`}
                   strokeWidth={2}
                 />
               )}
@@ -851,7 +835,7 @@ if (marker === null) {
                 key={device.id}
                 anchor={{
                   x: imageData.anchor[0] / imageData.size[0],
-                  y: imageData.anchor[1] / imageData.size[1]
+                  y: imageData.anchor[1] / imageData.size[1],
                 }}
                 coordinate={{
                   latitude: latitude,
@@ -862,23 +846,28 @@ if (marker === null) {
                   source={getDirectionImage(heading)}
                   style={{
                     width: imageData.size[0],
-                    height: imageData.size[1]
+                    height: imageData.size[1],
                   }}
                   resizeMode="contain"
                 />
 
                 <Callout>
                   <View style={{ padding: 0, minWidth: 230 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        marginBottom: 5,
+                      }}
+                    >
                       {toUpperCaseText(device.name)}
                     </Text>
                     <Text style={{ color: '#666' }}>
-                      {status} - {formatThreeDecimals(speed)} Km/h - {obtenerDireccion(heading)}
+                      {status} - {formatThreeDecimals(speed)} Km/h -{' '}
+                      {obtenerDireccion(heading)}
                     </Text>
                   </View>
                 </Callout>
-
-                
               </Marker>
             </>
           )}
@@ -930,7 +919,6 @@ if (marker === null) {
       <View style={styles.mapContainer}>
         {renderMap()}
 
-
         {!vehicleData && (
           <View
             style={{
@@ -968,13 +956,12 @@ if (marker === null) {
                 {connectionStatus === 'connecting'
                   ? 'Conectando al servidor...'
                   : connectionStatus === 'error'
-                    ? 'Error de conexión'
-                    : 'Esperando datos...'}
+                  ? 'Error de conexión'
+                  : 'Esperando datos...'}
               </Text>
             </View>
           </View>
         )}
-
 
         <TouchableOpacity
           style={[styles.floatingBackButton, { top: insets.top + 10 }]}
@@ -983,7 +970,6 @@ if (marker === null) {
           <ChevronLeft size={26} color="#1f2937" />
         </TouchableOpacity>
       </View>
-
 
       <View
         style={[
@@ -998,7 +984,9 @@ if (marker === null) {
         <TouchableOpacity style={styles.panelHeader} onPress={toggleInfo}>
           <View style={styles.panelHeaderContent}>
             <View style={styles.deviceHeaderInfo}>
-              <Text style={styles.deviceName}>{toUpperCaseText(device.name)}</Text>
+              <Text style={styles.deviceName}>
+                {toUpperCaseText(device.name)}
+              </Text>
               <View style={styles.deviceStatusRow}>
                 <View
                   style={[
@@ -1007,7 +995,11 @@ if (marker === null) {
                     },
                   ]}
                 />
-                <RadarDot color={connectionDisplay.color} size={3} pulseCount={3} />
+                <RadarDot
+                  color={connectionDisplay.color}
+                  size={3}
+                  pulseCount={3}
+                />
 
                 <Text
                   style={[
@@ -1017,7 +1009,9 @@ if (marker === null) {
                 >
                   {connectionDisplay.text}
                 </Text>
-                <Text style={styles.deviceId}>Dirección: {obtenerDireccion(heading)}</Text>
+                <Text style={styles.deviceId}>
+                  Dirección: {obtenerDireccion(heading)}
+                </Text>
               </View>
             </View>
             {isInfoExpanded ? (
@@ -1027,7 +1021,6 @@ if (marker === null) {
             )}
           </View>
         </TouchableOpacity>
-
 
         {isInfoExpanded && (
           <View style={styles.panelContent}>
@@ -1043,8 +1036,8 @@ if (marker === null) {
                       status === 'Movimiento'
                         ? '#38b000'
                         : status === 'Detenido'
-                          ? '#ef4444'
-                          : '#6b7280'
+                        ? '#ef4444'
+                        : '#6b7280'
                     }
                   />
                   <Text
@@ -1055,15 +1048,17 @@ if (marker === null) {
                           status === 'Movimiento'
                             ? '#38b000'
                             : status === 'Detenido'
-                              ? '#ef4444'
-                              : '#6b7280',
+                            ? '#ef4444'
+                            : '#6b7280',
                       },
                     ]}
                   >
                     {status}
                   </Text>
                   {vehicleData && (
-                    <Text style={styles.speedText}>({formatThreeDecimals(speed)} Km/h)</Text>
+                    <Text style={styles.speedText}>
+                      ({formatThreeDecimals(speed)} Km/h)
+                    </Text>
                   )}
                 </View>
                 <View style={styles.dateContainer}>

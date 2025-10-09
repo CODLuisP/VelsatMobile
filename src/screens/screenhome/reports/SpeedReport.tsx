@@ -35,6 +35,7 @@ import {
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface ReportItem {
   id: string;
@@ -66,7 +67,7 @@ const SpeedReport = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -94,7 +95,9 @@ const SpeedReport = () => {
       };
 
       // Formatear las fechas para la API
-      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedStartDate = encodeURIComponent(
+        formatDateForAPI(startDate),
+      );
       const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
       const url = `${server}/api/Reporting/speed/${formattedStartDate}/${formattedEndDate}/${plate}/${speed}/${username}`;
@@ -114,7 +117,7 @@ const SpeedReport = () => {
             location: item.address,
             latitude: item.latitude,
             longitude: item.longitude,
-          })
+          }),
         );
 
         setReportData(transformedData);
@@ -140,7 +143,7 @@ const SpeedReport = () => {
     const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m7!1e1!3m5!1s!2e0!7i16384!8i8192?entry=ttu`;
 
     Linking.openURL(googleMapsUrl).catch(err =>
-      console.error('Error al abrir Google Maps:', err)
+      console.error('Error al abrir Google Maps:', err),
     );
   };
 
@@ -234,7 +237,12 @@ const SpeedReport = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
@@ -258,7 +266,14 @@ const SpeedReport = () => {
       </View>
 
       {/* Contenedor para la lista o estados */}
-      <View style={{ flex: 1, backgroundColor: 'white', borderTopLeftRadius: 25, borderTopRightRadius: 25 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: 'white',
+          borderTopLeftRadius: 25,
+          borderTopRightRadius: 25,
+        }}
+      >
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#1e3a8a" />
@@ -293,7 +308,7 @@ const SpeedReport = () => {
           />
         )}
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
