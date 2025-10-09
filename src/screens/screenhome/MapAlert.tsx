@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   Platform,
   PermissionsAndroid,
+  Image,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -298,19 +299,27 @@ const MapAlert = () => {
           showsUserLocation={hasLocationPermission}
           showsMyLocationButton={hasLocationPermission}
         >
-          <Marker
-            coordinate={{
-              latitude: latitude,
-              longitude: longitude,
-            }}
-            title={notificationData?.title || 'Alerta'}
-            description={`${notificationData?.device || 'Dispositivo'} - ${
-              notificationData?.timestamp || ''
-            }`}
-            image={{
-              uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
-            }}
-          />
+     <Marker
+  coordinate={{
+    latitude: latitude,
+    longitude: longitude,
+  }}
+  title={notificationData?.title || 'Alerta'}
+  description={`${notificationData?.device || 'Dispositivo'} - ${
+    notificationData?.timestamp || ''
+  }`}
+  anchor={{ x: 0.5, y: 0.5 }}
+>
+  <View style={{ width: 60, height: 36 }}>
+    <Image
+      source={{
+        uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
+      }}
+      style={{ width: 75, height: 60 }}
+      resizeMode="contain"
+    />
+  </View>
+</Marker>
         </MapView>
       );
     } else {
@@ -358,7 +367,7 @@ const MapAlert = () => {
       style={[styles.container, { paddingBottom: bottomSpace }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-    >     
+    >
       <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
