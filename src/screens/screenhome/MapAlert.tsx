@@ -5,8 +5,9 @@ import {
   Platform,
   PermissionsAndroid,
   Image,
+  Animated,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   ChevronLeft,
   Battery,
@@ -27,6 +28,7 @@ import {
 } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { styles } from '../../styles/mapalert';
+import Svg, { Circle } from 'react-native-svg';
 
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
@@ -47,6 +49,92 @@ interface MapAlertRouteParams {
     iconName: string;
   };
 }
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+// Componente de radar animado con SVG
+const RadarPulse = ({ color, delay = 0 }: { color: string; delay?: number }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(0.7)).current;
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      Animated.loop(
+        Animated.parallel([
+          Animated.timing(scaleAnim, {
+            toValue: 50,
+            duration: 3000,
+            useNativeDriver: false,
+          }),
+          Animated.sequence([
+            Animated.timing(opacityAnim, {
+              toValue: 0.4,
+              duration: 1500,
+              useNativeDriver: false,
+            }),
+            Animated.timing(opacityAnim, {
+              toValue: 0,
+              duration: 1500,
+              useNativeDriver: false,
+            }),
+          ]),
+        ])
+      ).start();
+    }, delay);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  return (
+    <AnimatedCircle
+      cx="60"
+      cy="60"
+      r={scaleAnim}
+      fill={color}
+      opacity={opacityAnim}
+    />
+  );
+};
+
+// Componente de marcador personalizado con radar para iOS
+const CustomMarker = ({ color }: { color: string }) => {
+  return (
+    <View
+      style={{
+        width: 120,  // <--- CAMBIA ESTO (era 60)
+        height: 120, // <--- CAMBIA ESTO (era 60)
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {/* SVG con los radares */}
+      <Svg
+        height="120"  // <--- CAMBIA ESTO (era 60)
+        width="120"   // <--- CAMBIA ESTO (era 60)
+        style={{
+          position: 'absolute',
+        }}
+      >
+        <RadarPulse color={color} delay={0} />
+        <RadarPulse color={color} delay={1000} />
+        <RadarPulse color={color} delay={2000} />
+      </Svg>
+      
+      {/* Imagen del carro encima */}
+      <Image
+        source={{
+          uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
+        }}
+        style={{
+          width: 70,
+          height: 45,
+          zIndex: 10,
+        }}
+        resizeMode="contain"
+      />
+    </View>
+  );
+};
 
 const MapAlert = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -194,7 +282,6 @@ const MapAlert = () => {
     <body>
         <div id="map"></div>
         <script>
-            // Inicializar el mapa
             var map = L.map('map', {
                 zoomControl: true,
                 scrollWheelZoom: true,
@@ -202,13 +289,11 @@ const MapAlert = () => {
                 touchZoom: true
             }).setView([${latitude}, ${longitude}], 15);
 
-            // Agregar capa de OpenStreetMap (GRATUITO)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 19
             }).addTo(map);
 
-            // Crear icono personalizado con imagen de carro y radar
             var carIcon = L.divIcon({
                 html: \`
                     <div style="position: relative; width: 60px; height: 40px; display: flex; justify-content: center; align-items: center;">
@@ -225,31 +310,19 @@ const MapAlert = () => {
                 className: 'custom-car-icon'
             });
 
-            // Agregar marcador de alerta con la imagen del carro
             var marker = L.marker([${latitude}, ${longitude}], {icon: carIcon}).addTo(map);
             
-            // Agregar popup con información
             marker.bindPopup(\`
                 <div style="text-align: center; font-family: Arial, sans-serif;">
-                    <h3 style="margin: 5px 0; color: ${alertColor};">${
-    notificationData?.title || 'Alerta'
-  }</h3>
-                    <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${
-                      notificationData?.device || 'Sin información'
-                    }</p>
-                    <p style="margin: 3px 0;"><strong>ID:</strong> ${
-                      notificationData?.id || 'N/A'
-                    }</p>
-                    <p style="margin: 3px 0;"><strong>Fecha:</strong> ${
-                      notificationData?.timestamp || 'Sin fecha'
-                    }</p>
+                    <h3 style="margin: 5px 0; color: ${alertColor};">${notificationData?.title || 'Alerta'}</h3>
+                    <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${notificationData?.device || 'Sin información'}</p>
+                    <p style="margin: 3px 0;"><strong>ID:</strong> ${notificationData?.id || 'N/A'}</p>
+                    <p style="margin: 3px 0;"><strong>Fecha:</strong> ${notificationData?.timestamp || 'Sin fecha'}</p>
                 </div>
             \`).openPopup();
 
-            // Agregar ubicación del usuario si hay permisos
-            ${
-              hasLocationPermission
-                ? `
+            ${hasLocationPermission
+      ? `
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var userLat = position.coords.latitude;
@@ -269,10 +342,9 @@ const MapAlert = () => {
                     console.log('Error obteniendo ubicación:', error);
                 });
             }`
-                : ''
-            }
+      : ''
+    }
 
-            // Evitar scroll en el contenedor padre
             map.on('focus', function() { 
                 map.scrollWheelZoom.enable(); 
             });
@@ -299,27 +371,16 @@ const MapAlert = () => {
           showsUserLocation={hasLocationPermission}
           showsMyLocationButton={hasLocationPermission}
         >
-     <Marker
-  coordinate={{
-    latitude: latitude,
-    longitude: longitude,
-  }}
-  title={notificationData?.title || 'Alerta'}
-  description={`${notificationData?.device || 'Dispositivo'} - ${
-    notificationData?.timestamp || ''
-  }`}
-  anchor={{ x: 0.5, y: 0.5 }}
->
-  <View style={{ width: 60, height: 36 }}>
-    <Image
-      source={{
-        uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
-      }}
-      style={{ width: 75, height: 60 }}
-      resizeMode="contain"
-    />
-  </View>
-</Marker>
+          <Marker
+            coordinate={{
+              latitude: latitude,
+              longitude: longitude,
+            }}
+            title={notificationData?.title || 'Alerta'}
+            description={`${notificationData?.device || 'Dispositivo'} - ${notificationData?.timestamp || ''}`}
+          >
+            <CustomMarker color={alertColor} />
+          </Marker>
         </MapView>
       );
     } else {
@@ -402,7 +463,6 @@ const MapAlert = () => {
       </View>
 
       <View style={styles.content}>
-        {/* Map Container */}
         <View style={styles.mapContainer}>{renderMap()}</View>
       </View>
     </LinearGradient>

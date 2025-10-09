@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import {
   ChevronLeft,
   Info,
@@ -28,9 +28,29 @@ import {
 } from '../../hooks/useNavigationMode';
 import { toUpperCaseText } from '../../utils/textUtils';
 import LinearGradient from 'react-native-linear-gradient';
+import axios from 'axios';
+
+interface UserDetailsResponse {
+  accountID: string | null;
+  password: string | null;
+  description: string | null;
+  ruc: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  codigo: string | null;
+  apellidos: string | null;
+  dni: string | null;
+  telefono: string | null;
+  codlan: string | null;
+  empresa: string | null;
+  nombres: string | null;
+  login: string | null;
+}
 
 const Profile = () => {
   const { user, logout, server, tipo } = useAuthStore();
+  const [userDetails, setUserDetails] = useState<UserDetailsResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -47,6 +67,26 @@ const Profile = () => {
       NavigationBarColor('#00296b', false);
     }, []),
   );
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      if ((tipo === 'n' || tipo === 'c' || tipo === 'p') && user?.username) {
+        setLoading(true);
+        try {
+          const response = await axios.get<UserDetailsResponse>(
+            `https://velsat.pe:2087/api/User/MobileDetailsUser?accountID=${user.username}&tipo=${tipo}`
+          );
+          setUserDetails(response.data);
+        } catch (error) {
+          console.error('Error al obtener detalles del usuario:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUserDetails();
+  }, [tipo, user?.username]);
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -73,14 +113,36 @@ const Profile = () => {
   // Determinar si debe mostrar las opciones de Marcadores y Notificaciones
   const shouldShowMarkerAndNotifications = tipo === 'n';
 
+  // Obtener el primer email si hay múltiples separados por punto y coma
+  const getFirstEmail = (emailString: string | null | undefined): string => {
+    if (!emailString || emailString.trim() === '') return '-';
+    const emails = emailString.split(';');
+    return emails[0].trim();
+  };
+
+  // Obtener el nombre completo para tipo 'c' y 'p'
+  const getFullName = (apellidos: string | null | undefined, nombres: string | null | undefined): string => {
+    const parts = [];
+    if (apellidos) parts.push(apellidos.trim());
+    if (nombres) parts.push(nombres.trim());
+    return parts.length > 0 ? parts.join(' ') : 'Sin nombre';
+  };
+
+  // Obtener los últimos 8 dígitos del codlan
+  const getLast8Digits = (codlan: string | null | undefined): string => {
+    if (!codlan) return '-';
+    const digits = codlan.replace(/\D/g, ''); // Eliminar todo excepto números
+    return digits.length >= 8 ? digits.slice(-8) : digits;
+  };
+
   return (
     <LinearGradient
       colors={['#00296b', '#1e3a8a', '#00296b']}
       style={[styles.container, { paddingBottom: bottomSpace }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-    >     
-    
+    >
+
       <View style={[styles.header, { paddingTop: topSpace }]}>
 
         <TouchableOpacity
@@ -104,40 +166,6 @@ const Profile = () => {
           {toUpperCaseText(user?.description || user?.name || 'Usuario')}
         </Text>
 
-        {/* <Text
-          style={[
-            styles.companyName,
-            { fontSize: 14, color: '#fff', marginTop: 5 },
-          ]}
-        >
-          {navigationDetection.mode}
-        </Text> */}
-
-        {/* <Text
-            style={[
-              styles.companyName,
-              { fontSize: 12, color: '#fff', marginTop: 2 },
-            ]}
-          >
-            hasNavBar: {navigationDetection.hasNavigationBar ? 'Sí' : 'No'}
-          </Text>
-          <Text
-            style={[
-              styles.companyName,
-              { fontSize: 12, color: '#fff', marginTop: 2 },
-            ]}
-          >
-            insets.bottom: {insets.bottom}
-          </Text>
-          <Text
-            style={[
-              styles.companyName,
-              { fontSize: 12, color: '#fff', marginTop: 2 },
-            ]}
-          >
-            insets.top: {insets.top}
-          </Text> */}
-
       </View>
 
       {/* Information Section */}
@@ -147,47 +175,146 @@ const Profile = () => {
           <Text style={styles.infoTitle}>Información</Text>
         </View>
 
-        <View style={styles.infoContent}>
-          <View style={styles.infoItem}>
-            <User size={16} color="#1e3a8a" />
-            <Text style={styles.infoText}>
-              {user?.description || 'Sin nombre'}
-            </Text>
+        {loading ? (
+          <View style={{ padding: 20, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#e36414" />
           </View>
+        ) : (
+          <View style={styles.infoContent}>
+            {/* Para tipo 'n' mostrar datos de la API */}
+            {tipo === 'n' && userDetails ? (
+              <>
+                <View style={styles.infoItem}>
+                  <User size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {userDetails.description || 'Sin nombre'}
+                  </Text>
+                </View>
 
-          <View style={styles.infoItem}>
-            <Clipboard size={16} color="#1e3a8a" />
-            <Text style={styles.infoText}>20251234456</Text>
+                <View style={styles.infoItem}>
+                  <Clipboard size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {userDetails.ruc || '-'}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Mail size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {getFirstEmail(userDetails.contactEmail)}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Smartphone size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {userDetails.contactPhone || '-'}
+                  </Text>
+                </View>
+              </>
+            ) : tipo === 'c' && userDetails ? (
+              <>
+                <View style={styles.infoItem}>
+                  <User size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {getFullName(userDetails.apellidos, userDetails.nombres)}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Clipboard size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {userDetails.dni || '-'}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Smartphone size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {userDetails.telefono || '-'}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Smartphone size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {userDetails.login || '-'}
+                  </Text>
+                </View>
+              </>
+            ) : tipo === 'p' && userDetails ? (
+              <>
+                <View style={styles.infoItem}>
+                  <User size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {getFullName(userDetails.apellidos, userDetails.nombres)}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Clipboard size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {getLast8Digits(userDetails.codlan)}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Smartphone size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {userDetails.telefono || '-'}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Smartphone size={16} color="#999" />
+                  <Text style={styles.infoText}>
+                    {userDetails.codlan || '-'}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Clipboard size={16} color="#999" />
+                  <Text style={styles.infoText}>
+                    {userDetails.empresa || '-'}
+                  </Text>
+                </View>
+              </>
+            ) : (tipo === 'n' || tipo === 'c' || tipo === 'p') ? (
+              <>
+                <View style={styles.infoItem}>
+                  <User size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>
+                    {user?.description || 'Sin nombre'}
+                  </Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Clipboard size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>-</Text>
+                </View>
+
+                <View style={styles.infoItem}>
+                  <Smartphone size={16} color="#1e3a8a" />
+                  <Text style={styles.infoText}>-</Text>
+                </View>
+
+                {(tipo === 'c' || tipo === 'p') && (
+                  <View style={styles.infoItem}>
+                    <Smartphone size={16} color="#999" />
+                    <Text style={styles.infoText}>-</Text>
+                  </View>
+                )}
+
+                {tipo === 'p' && (
+                  <View style={styles.infoItem}>
+                    <Clipboard size={16} color="#999" />
+                    <Text style={styles.infoText}>-</Text>
+                  </View>
+                )}
+              </>
+            ) : null}
           </View>
-
-          {/* Para tipo 'n' mostrar Email */}
-          {tipo === 'n' && (
-            <View style={styles.infoItem}>
-              <Mail size={16} color="#1e3a8a" />
-              <Text style={styles.infoText}>gacelacorp@gmail.com</Text>
-            </View>
-          )}
-
-          <View style={styles.infoItem}>
-            <Smartphone size={16} color="#1e3a8a" />
-            <Text style={styles.infoText}>976345098</Text>
-          </View>
-
-          {/* Para tipo 'c' o 'p' mostrar TALMA y código */}
-          {(tipo === 'c' || tipo === 'p') && (
-            <>
-              <View style={styles.infoItem}>
-                <Smartphone size={16} color="#999" />
-                <Text style={styles.infoText}>TALMA</Text>
-              </View>
-
-              <View style={styles.infoItem}>
-                <Clipboard size={16} color="#999" />
-                <Text style={styles.infoText}>TALM4738</Text>
-              </View>
-            </>
-          )}
-        </View>
+        )}
       </View>
 
       <ScrollView style={styles.scrollContent}>
@@ -236,7 +363,6 @@ const Profile = () => {
         </View>
 
         {/* Version */}
-        {/* Version */}
         <View style={styles.versionContainer}>
           <View style={styles.versionDivider} />
 
@@ -254,7 +380,6 @@ const Profile = () => {
             <Text style={styles.versionLabel}>RUC:</Text>
             <Text style={styles.versionLabel}> 20202020202202</Text>
           </View>
-
 
           <Text style={styles.copyrightText}>
             © 2025 Velsat Mobile. Todos los derechos reservados.

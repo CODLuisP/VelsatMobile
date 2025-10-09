@@ -155,8 +155,6 @@ const handleBiometricLogin = async () => {
 };
 
 
-
-
   const loadSavedCredentials = async () => {
     try {
       const savedUser = await AsyncStorage.getItem('savedUser');
