@@ -348,6 +348,29 @@ const DetailDevice = () => {
                z-index: 0;
            }
 
+.radar-pulse {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    animation: pulse 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+    animation-fill-mode: both;
+    pointer-events: none;
+}
+@keyframes pulse {
+    0% {
+        transform: scale(0.2);
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        transform: scale(6);
+        opacity: 0;
+    }
+}
+
 
            .leaflet-top.leaflet-left {
                left: auto !important;
@@ -431,13 +454,32 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
    }
 
 
-   var vehicleIcon = L.icon({
-       iconUrl: imageUrl,
-       iconSize: iconSize, // Usar tamaño dinámico
-       iconAnchor: [iconSize[0] / 2, iconSize[1] / 2], // Centrar dinámicamente
-       popupAnchor: [0, -30]
-   });
+// Determinar color del radar según velocidad
+var radarColor = '';
+if (speed === 0) {
+    radarColor = '#ef4444'; // ROJO
+} else if (speed > 0 && speed < 11) {
+    radarColor = '#ff8000'; // AMARILLO
+} else if (speed >= 11 && speed < 60) {
+    radarColor = '#38b000'; // VERDE
+} else {
+    radarColor = '#00509d'; // AZUL
+}
 
+
+
+var vehicleIcon = L.divIcon({
+    html: '<div style="position: relative; width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px; display: flex; justify-content: center; align-items: center;">' +
+        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px;"></div>' +
+        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px; animation-delay: 1s;"></div>' +
+        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px; animation-delay: 2s;"></div>' +
+        '<img src="' + imageUrl + '" style="position: relative; z-index: 10; width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />' +
+        '</div>',
+    iconSize: iconSize,
+    iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+    popupAnchor: [0, -30],
+    className: 'custom-vehicle-icon'
+});
 
                var statusColor = statusText === 'Movimiento' ? '#38b000' : '#ef4444';
 
@@ -470,42 +512,121 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                \`;
 
 
-               // Si es la primera vez, crear el marcador
-               if (marker === null) {
-                   marker = L.marker([lat, lng], {
-                       icon: vehicleIcon,
-                       autoPan: false
-                   }).addTo(map);
+// Si es la primera vez, crear el marcador Y el radar como capa separada
+if (marker === null) {
+    // Crear overlay SVG para el radar (permanente)
+    var RadarOverlay = L.Layer.extend({
+        onAdd: function(map) {
+            this._map = map;
+            this._container = L.DomUtil.create('div', 'radar-overlay');
+            this._container.style.position = 'absolute';
+            this._container.style.pointerEvents = 'none';
+            this._container.style.width = '100%';
+            this._container.style.height = '100%';
+            this._container.style.top = '0';
+            this._container.style.left = '0';
+            this._container.style.zIndex = '400';
+            
+            this._container.innerHTML = '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute;"></div>' +
+                '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute; animation-delay: 1s;"></div>' +
+                '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute; animation-delay: 2s;"></div>';
+            
+            map.getPanes().overlayPane.appendChild(this._container);
+            this._update();
+            map.on('viewreset zoom move', this._update, this);
+        },
+        
+        onRemove: function(map) {
+            L.DomUtil.remove(this._container);
+            map.off('viewreset zoom move', this._update, this);
+        },
+        
+        _update: function() {
+            if (!this._map || !marker) return;
+            var point = this._map.latLngToLayerPoint(marker.getLatLng());
+            var pulses = this._container.getElementsByClassName('radar-pulse');
+            for (var i = 0; i < pulses.length; i++) {
+                pulses[i].style.left = (point.x - 10) + 'px';
+                pulses[i].style.top = (point.y - 10) + 'px';
+            }
+        },
+        
+        updateColor: function(color) {
+            var pulses = this._container.getElementsByClassName('radar-pulse');
+            for (var i = 0; i < pulses.length; i++) {
+                pulses[i].style.backgroundColor = color;
+            }
+        }
+    });
+    
+    window.radarLayer = new RadarOverlay().addTo(map);
+    
+    // Crear marcador simple sin radar
+    var vehicleIcon = L.divIcon({
+        html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
+        iconSize: iconSize,
+        iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+        popupAnchor: [0, -30],
+        className: 'custom-vehicle-icon'
+    });
+    
+    marker = L.marker([lat, lng], {
+        icon: vehicleIcon,
+        autoPan: false
+    }).addTo(map);
+    
+    marker.bindPopup(popupContent, {
+        autoPan: false,
+        closeButton: true,
+        autoClose: false,
+        closeOnClick: false
+    }).openPopup();
+    
+    map.setView([lat, lng], 16);
+} else {
+    // Actualizar imagen solo si cambió la dirección
+    if (!marker.lastHeading || Math.abs(marker.lastHeading - heading) > 22.5) {
+        var vehicleIcon = L.divIcon({
+            html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
+            iconSize: iconSize,
+            iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+            popupAnchor: [0, -30],
+            className: 'custom-vehicle-icon'
+        });
+        marker.setIcon(vehicleIcon);
+        marker.lastHeading = heading;
+    }
+    
+    // Actualizar posición
+    marker.setLatLng([lat, lng]);
+    
+    // Actualizar color del radar si cambió
+    var oldColor = marker.lastSpeed === 0 ? '#ef4444' : 
+                  (marker.lastSpeed > 0 && marker.lastSpeed < 11) ? '#fbbf24' :
+                  (marker.lastSpeed >= 11 && marker.lastSpeed < 60) ? '#10b981' : '#3b82f6';
+    
+    if (oldColor !== radarColor && window.radarLayer) {
+        window.radarLayer.updateColor(radarColor);
+    }
+    marker.lastSpeed = speed;
+    
+    // Actualizar posición del radar
+    if (window.radarLayer) {
+        window.radarLayer._update();
+    }
+    
+    marker.getPopup().setContent(popupContent);
+    map.setView([lat, lng], map.getZoom());
+    
+    if (!marker.isPopupOpen()) {
+        marker.openPopup();
+    }
+}
 
 
-                   marker.bindPopup(popupContent, {
-                       autoPan: false,
-                       closeButton: true,
-                       autoClose: false,
-                       closeOnClick: false
-                   }).openPopup();
-
-
-                   // Centrar el mapa en el marcador
-                   map.setView([lat, lng], 16);
-               } else {
-                   // Actualizar marcador existente
-                   marker.setIcon(vehicleIcon);
-                   marker.setLatLng([lat, lng]);
-                   marker.getPopup().setContent(popupContent);
-                  
-                   // Centrar el mapa en el marcador
-                   map.setView([lat, lng], map.getZoom());
-                  
-                   // Mantener el popup abierto
-                   if (!marker.isPopupOpen()) {
-                       marker.openPopup();
-                   }
-               }
  };
 
 
-           // ⭐ SOLUCIÓN: Escuchar eventos de visibilidad
            document.addEventListener('visibilitychange', function() {
                if (!document.hidden && map) {
                    setTimeout(function() {

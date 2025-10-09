@@ -18,6 +18,7 @@ import {
   getBottomSpace,
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Interfaz para el tipo de notificación
 interface Notification {
@@ -30,7 +31,6 @@ interface Notification {
 }
 
 const Notifications = () => {
-  
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const insets = useSafeAreaInsets();
@@ -42,7 +42,7 @@ const Notifications = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -113,7 +113,7 @@ const Notifications = () => {
     },
 
     {
-      id: 4,
+      id: 5,
       type: 'panic',
       title: 'Botón de pánico',
       device: 'M2L-777',
@@ -122,7 +122,7 @@ const Notifications = () => {
     },
 
     {
-      id: 4,
+      id: 6,
       type: 'panic',
       title: 'Botón de pánico',
       device: 'M2L-777',
@@ -131,7 +131,7 @@ const Notifications = () => {
     },
 
     {
-      id: 4,
+      id: 7,
       type: 'panic',
       title: 'Botón de pánico',
       device: 'M2L-777',
@@ -139,7 +139,7 @@ const Notifications = () => {
       icon: AlertTriangle,
     },
     {
-      id: 4,
+      id: 8,
       type: 'panic',
       title: 'Botón de pánico luis',
       device: 'M2L-777',
@@ -166,7 +166,13 @@ const Notifications = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -182,7 +188,6 @@ const Notifications = () => {
           </Text>
         </View>
       </View>
-
       <ScrollView
         style={styles.notificationsList}
         showsVerticalScrollIndicator={false}
@@ -219,7 +224,7 @@ const Notifications = () => {
           })}
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

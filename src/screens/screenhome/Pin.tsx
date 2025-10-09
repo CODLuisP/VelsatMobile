@@ -17,6 +17,7 @@ import {
   getBottomSpace,
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
+import LinearGradient from 'react-native-linear-gradient';
 
 const Pin = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -31,7 +32,7 @@ const Pin = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -66,7 +67,14 @@ const Pin = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >     
+
+
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -132,7 +140,7 @@ const Pin = () => {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

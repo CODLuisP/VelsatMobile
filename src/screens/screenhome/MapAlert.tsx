@@ -34,6 +34,7 @@ import {
   getBottomSpace,
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface MapAlertRouteParams {
   notificationData: {
@@ -61,7 +62,7 @@ const MapAlert = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -166,6 +167,27 @@ const MapAlert = () => {
                 width: 100vw;
                 z-index: 0;
             }
+            .radar-pulse {
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                animation: pulse 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+                pointer-events: none;
+            }
+            @keyframes pulse {
+                0% {
+                    transform: scale(0.2);
+                    opacity: 0.7;
+                }
+                50% {
+                    opacity: 0.4;
+                }
+                100% {
+                    transform: scale(6);
+                    opacity: 0;
+                }
+            }
         </style>
     </head>
     <body>
@@ -185,16 +207,25 @@ const MapAlert = () => {
                 maxZoom: 19
             }).addTo(map);
 
-            // Crear icono personalizado con color de alerta
-            var alertIcon = L.divIcon({
-                html: '<div style="background-color: ${alertColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13],
-                className: 'custom-div-icon'
+            // Crear icono personalizado con imagen de carro y radar
+            var carIcon = L.divIcon({
+                html: \`
+                    <div style="position: relative; width: 60px; height: 40px; display: flex; justify-content: center; align-items: center;">
+                        <div class="radar-pulse" style="background-color: ${alertColor}; top: 10px; left: 20px;"></div>
+                        <div class="radar-pulse" style="background-color: ${alertColor}; top: 10px; left: 20px; animation-delay: 1s;"></div>
+                        <div class="radar-pulse" style="background-color: ${alertColor}; top: 10px; left: 20px; animation-delay: 2s;"></div>
+                        <img src="https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png" 
+                             style="position: relative; z-index: 10; width: 60px; height: 40px;" />
+                    </div>
+                \`,
+                iconSize: [60, 40],
+                iconAnchor: [30, 40],
+                popupAnchor: [0, -60],
+                className: 'custom-car-icon'
             });
 
-            // Agregar marcador de alerta
-            var marker = L.marker([${latitude}, ${longitude}], {icon: alertIcon}).addTo(map);
+            // Agregar marcador de alerta con la imagen del carro
+            var marker = L.marker([${latitude}, ${longitude}], {icon: carIcon}).addTo(map);
             
             // Agregar popup con información
             marker.bindPopup(\`
@@ -276,7 +307,9 @@ const MapAlert = () => {
             description={`${notificationData?.device || 'Dispositivo'} - ${
               notificationData?.timestamp || ''
             }`}
-            pinColor={alertColor}
+            image={{
+              uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
+            }}
           />
         </MapView>
       );
@@ -320,8 +353,12 @@ const MapAlert = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-     
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >     
       <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
@@ -359,7 +396,7 @@ const MapAlert = () => {
         {/* Map Container */}
         <View style={styles.mapContainer}>{renderMap()}</View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
