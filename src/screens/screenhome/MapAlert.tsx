@@ -3,7 +3,6 @@ import {
   Text,
   TouchableOpacity,
   Platform,
-  PermissionsAndroid,
   Image,
   Animated,
 } from 'react-native';
@@ -14,9 +13,6 @@ import {
   Zap,
   Power,
   AlertTriangle,
-  MapPin,
-  Clock,
-  Smartphone,
 } from 'lucide-react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
@@ -101,16 +97,16 @@ const CustomMarker = ({ color }: { color: string }) => {
   return (
     <View
       style={{
-        width: 120,  // <--- CAMBIA ESTO (era 60)
-        height: 120, // <--- CAMBIA ESTO (era 60)
+        width: 120, 
+        height: 120,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
       {/* SVG con los radares */}
       <Svg
-        height="120"  // <--- CAMBIA ESTO (era 60)
-        width="120"   // <--- CAMBIA ESTO (era 60)
+        height="120"  
+        width="120"   
         style={{
           position: 'absolute',
         }}
@@ -140,7 +136,7 @@ const MapAlert = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route =
     useRoute<RouteProp<{ params: MapAlertRouteParams }, 'params'>>();
-  const [hasLocationPermission, setHasLocationPermission] = useState(false);
+  const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('standard');
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -159,37 +155,6 @@ const MapAlert = () => {
 
   const latitude = -12.0464;
   const longitude = -77.0428;
-
-  const requestLocationPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Permiso de Ubicación',
-            message:
-              'Esta app necesita acceso a tu ubicación para mostrar el mapa',
-            buttonNeutral: 'Preguntar después',
-            buttonNegative: 'Cancelar',
-            buttonPositive: 'OK',
-          },
-        );
-
-        setHasLocationPermission(
-          granted === PermissionsAndroid.RESULTS.GRANTED,
-        );
-      } catch (err) {
-        console.warn(err);
-        setHasLocationPermission(false);
-      }
-    } else {
-      setHasLocationPermission(true);
-    }
-  };
-
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -321,30 +286,6 @@ const MapAlert = () => {
                 </div>
             \`).openPopup();
 
-            ${hasLocationPermission
-      ? `
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var userLat = position.coords.latitude;
-                    var userLng = position.coords.longitude;
-                    
-                    var userIcon = L.divIcon({
-                        html: '<div style="background-color: #3b82f6; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(59,130,246,0.5);"></div>',
-                        iconSize: [16, 16],
-                        iconAnchor: [8, 8],
-                        className: 'user-location-icon'
-                    });
-                    
-                    L.marker([userLat, userLng], {icon: userIcon})
-                        .addTo(map)
-                        .bindPopup('<div style="text-align: center;"><strong>Tu ubicación</strong></div>');
-                }, function(error) {
-                    console.log('Error obteniendo ubicación:', error);
-                });
-            }`
-      : ''
-    }
-
             map.on('focus', function() { 
                 map.scrollWheelZoom.enable(); 
             });
@@ -359,29 +300,78 @@ const MapAlert = () => {
   const renderMap = () => {
     if (Platform.OS === 'ios') {
       return (
-        <MapView
-          provider={PROVIDER_DEFAULT}
-          style={styles.map}
-          initialRegion={{
-            latitude: latitude,
-            longitude: longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          showsUserLocation={hasLocationPermission}
-          showsMyLocationButton={hasLocationPermission}
-        >
-          <Marker
-            coordinate={{
+        <>
+          <MapView
+            provider={PROVIDER_DEFAULT}
+            style={styles.map}
+            mapType={mapType}
+            initialRegion={{
               latitude: latitude,
               longitude: longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
             }}
-            title={notificationData?.title || 'Alerta'}
-            description={`${notificationData?.device || 'Dispositivo'} - ${notificationData?.timestamp || ''}`}
           >
-            <CustomMarker color={alertColor} />
-          </Marker>
-        </MapView>
+            <Marker
+              coordinate={{
+                latitude: latitude,
+                longitude: longitude,
+              }}
+              title={notificationData?.title || 'Alerta'}
+              description={`${notificationData?.device || 'Dispositivo'} - ${notificationData?.timestamp || ''}`}
+            >
+              <CustomMarker color={alertColor} />
+            </Marker>
+          </MapView>
+
+          {/* Controles para cambiar tipo de mapa */}
+          <View style={styles.mapTypeSelector}>
+            <TouchableOpacity
+              style={[
+                styles.mapTypeButton,
+                mapType === 'standard' && styles.mapTypeButtonActive
+              ]}
+              onPress={() => setMapType('standard')}
+            >
+              <Text style={[
+                styles.mapTypeButtonText,
+                mapType === 'standard' && styles.mapTypeButtonTextActive
+              ]}>
+                Calles
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.mapTypeButton,
+                mapType === 'satellite' && styles.mapTypeButtonActive
+              ]}
+              onPress={() => setMapType('satellite')}
+            >
+              <Text style={[
+                styles.mapTypeButtonText,
+                mapType === 'satellite' && styles.mapTypeButtonTextActive
+              ]}>
+                Satélite
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.mapTypeButton,
+                mapType === 'hybrid' && styles.mapTypeButtonActive
+              ]}
+              onPress={() => setMapType('hybrid')}
+            >
+              <Text style={[
+                styles.mapTypeButtonText,
+                mapType === 'hybrid' && styles.mapTypeButtonTextActive
+              ]}>
+                Híbrido
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
       );
     } else {
       return (
@@ -393,7 +383,6 @@ const MapAlert = () => {
           startInLoadingState={true}
           scalesPageToFit={true}
           mixedContentMode="compatibility"
-          geolocationEnabled={hasLocationPermission}
           onError={syntheticEvent => {
             const { nativeEvent } = syntheticEvent;
             console.warn('WebView error: ', nativeEvent);

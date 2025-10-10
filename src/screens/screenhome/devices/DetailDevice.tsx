@@ -46,7 +46,7 @@ import {
 } from '../../../hooks/useNavigationMode';
 import { useAuthStore } from '../../../store/authStore';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
-import { toUpperCaseText } from '../../../utils/textUtils';
+import { formatDateTime, formatThreeDecimals, openGoogleMaps, toUpperCaseText } from '../../../utils/textUtils';
 import RadarDot from '../../../components/login/RadarDot';
 import {
   DIRECTION_IMAGES,
@@ -102,7 +102,7 @@ const DetailDevice = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
-
+const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('standard');
   const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
 
   useFocusEffect(
@@ -267,34 +267,7 @@ const DetailDevice = () => {
     return { uri: DIRECTION_IMAGES[imageName] };
   };
 
-  const openGoogleMaps = () => {
-    if (!vehicleData) return;
 
-    const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
-
-    const nativeUrl = Platform.select({
-      ios: `maps://app?daddr=${latitude},${longitude}&dirflg=d`,
-      android: `google.navigation:q=${latitude},${longitude}&mode=d`,
-      default: webUrl,
-    });
-
-    if (nativeUrl) {
-      Linking.canOpenURL(nativeUrl)
-        .then(supported => {
-          if (supported) {
-            return Linking.openURL(nativeUrl);
-          } else {
-            return Linking.openURL(webUrl);
-          }
-        })
-        .catch(err => {
-          console.error('Error al abrir Google Maps:', err);
-          Linking.openURL(webUrl);
-        });
-    } else {
-      Linking.openURL(webUrl);
-    }
-  };
 
   const getStreetViewUrl = () => {
     return `https://maps.googleapis.com/maps/api/streetview?size=300x150&location=${latitude},${longitude}&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`;
@@ -308,15 +281,7 @@ const DetailDevice = () => {
     setIsInfoExpanded(!isInfoExpanded);
   };
 
-  const formatDateTime = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-  };
+ 
 
   const leafletHTML = useMemo(() => {
     return `
@@ -344,29 +309,28 @@ const DetailDevice = () => {
                z-index: 0;
            }
 
-.radar-pulse {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    animation: pulse 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
-    animation-fill-mode: both;
-    pointer-events: none;
-}
-@keyframes pulse {
-    0% {
-        transform: scale(0.2);
-        opacity: 0.4;
-    }
-    50% {
-        opacity: 0.2;
-    }
-    100% {
-        transform: scale(6);
-        opacity: 0;
-    }
-}
-
+            .radar-pulse {
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                animation: pulse 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+                animation-fill-mode: both;
+                pointer-events: none;
+            }
+              @keyframes pulse {
+                  0% {
+                      transform: scale(0.2);
+                      opacity: 0.4;
+                  }
+                  50% {
+                      opacity: 0.2;
+                  }
+                  100% {
+                      transform: scale(6);
+                      opacity: 0;
+                  }
+              }
 
            .leaflet-top.leaflet-left {
                left: auto !important;
@@ -414,68 +378,66 @@ const DetailDevice = () => {
                map.scrollWheelZoom.disable();
            });
 
-           // Función para crear o actualizar el marcador
-window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
-   // Determinar qué imagen y tamaño usar según el ángulo
-   var imageUrl = '';
-   var iconSize = [42, 25]; // Tamaño por defecto
-  
-   if (heading >= 0 && heading <= 22.5) {
-       imageUrl = window.imageUrls.up;
-       iconSize = [30,40]; // Vertical
-   } else if (heading > 22.5 && heading <= 67.5) {
-       imageUrl = window.imageUrls.topright;
-       iconSize = [55, 35]; // Horizontal
-   } else if (heading > 67.5 && heading <= 112.5) {
-       imageUrl = window.imageUrls.right;
-       iconSize = [55, 35]; // Horizontal
-   } else if (heading > 112.5 && heading <= 157.5) {
-       imageUrl = window.imageUrls.downright;
-       iconSize = [55, 35]; // Horizontal
-   } else if (heading > 157.5 && heading <= 202.5) {
-       imageUrl = window.imageUrls.down;
-       iconSize = [30,40]; // Vertical
-   } else if (heading > 202.5 && heading <= 247.5) {
-       imageUrl = window.imageUrls.downleft;
-       iconSize = [55, 35]; // Horizontal
-   } else if (heading > 247.5 && heading <= 292.5) {
-       imageUrl = window.imageUrls.left;
-       iconSize = [55, 35]; // Horizontal
-   } else if (heading > 292.5 && heading <= 337.5) {
-       imageUrl = window.imageUrls.topleft;
-       iconSize = [55, 35]; // Horizontal
-   } else {
-       imageUrl = window.imageUrls.up;
-       iconSize = [30,40]; // Vertical
-   }
+          // Función para crear o actualizar el marcador
+          window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
+            // Determinar qué imagen y tamaño usar según el ángulo
+            var imageUrl = '';
+            var iconSize = [42, 25]; // Tamaño por defecto
+            
+            if (heading >= 0 && heading <= 22.5) {
+                imageUrl = window.imageUrls.up;
+                iconSize = [30,40]; // Vertical
+            } else if (heading > 22.5 && heading <= 67.5) {
+                imageUrl = window.imageUrls.topright;
+                iconSize = [55, 35]; // Horizontal
+            } else if (heading > 67.5 && heading <= 112.5) {
+                imageUrl = window.imageUrls.right;
+                iconSize = [55, 35]; // Horizontal
+            } else if (heading > 112.5 && heading <= 157.5) {
+                imageUrl = window.imageUrls.downright;
+                iconSize = [55, 35]; // Horizontal
+            } else if (heading > 157.5 && heading <= 202.5) {
+                imageUrl = window.imageUrls.down;
+                iconSize = [30,40]; // Vertical
+            } else if (heading > 202.5 && heading <= 247.5) {
+                imageUrl = window.imageUrls.downleft;
+                iconSize = [55, 35]; // Horizontal
+            } else if (heading > 247.5 && heading <= 292.5) {
+                imageUrl = window.imageUrls.left;
+                iconSize = [55, 35]; // Horizontal
+            } else if (heading > 292.5 && heading <= 337.5) {
+                imageUrl = window.imageUrls.topleft;
+                iconSize = [55, 35]; // Horizontal
+            } else {
+                imageUrl = window.imageUrls.up;
+                iconSize = [30,40]; // Vertical
+            }
 
 
-// Determinar color del radar según velocidad
-var radarColor = '';
-if (speed === 0) {
-    radarColor = '#ef4444'; // ROJO
-} else if (speed > 0 && speed < 11) {
-    radarColor = '#ff8000'; // AMARILLO
-} else if (speed >= 11 && speed < 60) {
-    radarColor = '#38b000'; // VERDE
-} else {
-    radarColor = '#00509d'; // AZUL
-}
+              // Determinar color del radar según velocidad
+              var radarColor = '';
+              if (speed === 0) {
+                  radarColor = '#ef4444'; // ROJO
+              } else if (speed > 0 && speed < 11) {
+                  radarColor = '#ff8000'; // AMARILLO
+              } else if (speed >= 11 && speed < 60) {
+                  radarColor = '#38b000'; // VERDE
+              } else {
+                  radarColor = '#00509d'; // AZUL
+              }
 
-
-
-var vehicleIcon = L.divIcon({
-    html: '<div style="position: relative; width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px; display: flex; justify-content: center; align-items: center;">' +
-        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px;"></div>' +
-        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px; animation-delay: 1s;"></div>' +
-        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px; animation-delay: 2s;"></div>' +
-        '<img src="' + imageUrl + '" style="position: relative; z-index: 10; width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />' +
-        '</div>',
-    iconSize: iconSize,
-    iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
-    popupAnchor: [0, -30],
-    className: 'custom-vehicle-icon'
-});
+                var vehicleIcon = L.divIcon({
+                    html: '<div style="position: relative; width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px; display: flex; justify-content: center; align-items: center;">' +
+                        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px;"></div>' +
+                        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px; animation-delay: 1s;"></div>' +
+                        '<div class="radar-pulse" style="background-color: ' + radarColor + '; top: ' + (iconSize[1]/2 - 10) + 'px; left: ' + (iconSize[0]/2 - 10) + 'px; animation-delay: 2s;"></div>' +
+                        '<img src="' + imageUrl + '" style="position: relative; z-index: 10; width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />' +
+                        '</div>',
+                    iconSize: iconSize,
+                    iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+                    popupAnchor: [0, -30],
+                    className: 'custom-vehicle-icon'
+                });
 
                var statusColor = statusText === 'Movimiento' ? '#38b000' : '#ef4444';
 
@@ -720,52 +682,48 @@ if (marker === null) {
     }
   }, [vehicleData, hasShownInitialCallout]);
 
-  const formatThreeDecimals = (num: any) => {
-    const number = Number(num);
-    if (Number.isInteger(number)) {
-      return number.toString();
-    }
-    return parseFloat(number.toFixed(2)).toString();
-  };
 
-  const renderMap = () => {
-    if (Platform.OS === 'ios') {
-      const imageData = getDirectionImageData(heading);
 
-      const radarColor =
-        speed === 0
-          ? '#ef4444'
-          : speed > 0 && speed < 11
-          ? '#ff8000'
-          : speed >= 11 && speed < 60
-          ? '#38b000'
-          : '#00509d';
+const renderMap = () => {
+  if (Platform.OS === 'ios') {
+    const imageData = getDirectionImageData(heading);
 
-      // Calcular radios
-      const wave1Radius = 10 + radarPulse.wave1 * 90;
-      const wave2Radius = 10 + radarPulse.wave2 * 90;
-      const wave3Radius = 10 + radarPulse.wave3 * 90;
-      const wave4Radius = 10 + radarPulse.wave4 * 90;
+    const radarColor =
+      speed === 0
+        ? '#ef4444'
+        : speed > 0 && speed < 11
+        ? '#ff8000'
+        : speed >= 11 && speed < 60
+        ? '#38b000'
+        : '#00509d';
 
-      const getOpacity = (progress: number) => {
-        if (progress < 0.03 || progress > 0.8) {
-          return 0;
-        }
-        if (progress < 0.08) {
-          return ((progress - 0.03) / 0.05) * 0.2;
-        }
-        return (1 - progress) * 0.25;
-      };
-      const wave1Opacity = getOpacity(radarPulse.wave1);
-      const wave2Opacity = getOpacity(radarPulse.wave2);
-      const wave3Opacity = getOpacity(radarPulse.wave3);
-      const wave4Opacity = getOpacity(radarPulse.wave4);
+    // Calcular radios
+    const wave1Radius = 10 + radarPulse.wave1 * 90;
+    const wave2Radius = 10 + radarPulse.wave2 * 90;
+    const wave3Radius = 10 + radarPulse.wave3 * 90;
+    const wave4Radius = 10 + radarPulse.wave4 * 90;
 
-      return (
+    const getOpacity = (progress: number) => {
+      if (progress < 0.03 || progress > 0.8) {
+        return 0;
+      }
+      if (progress < 0.08) {
+        return ((progress - 0.03) / 0.05) * 0.2;
+      }
+      return (1 - progress) * 0.25;
+    };
+    const wave1Opacity = getOpacity(radarPulse.wave1);
+    const wave2Opacity = getOpacity(radarPulse.wave2);
+    const wave3Opacity = getOpacity(radarPulse.wave3);
+    const wave4Opacity = getOpacity(radarPulse.wave4);
+
+    return (
+      <>
         <MapView
           ref={mapRef}
           provider={PROVIDER_DEFAULT}
           style={styles.map}
+          mapType={mapType}
           region={{
             latitude: latitude,
             longitude: longitude,
@@ -872,32 +830,81 @@ if (marker === null) {
             </>
           )}
         </MapView>
-      );
-    } else {
-      // Android - WebView con Leaflet
-      return (
-        <WebView
-          ref={webViewRef}
-          source={{ html: leafletHTML }}
-          style={styles.map}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          scalesPageToFit={true}
-          mixedContentMode="compatibility"
-          onMessage={event => {
-            if (event.nativeEvent.data === 'webview-ready') {
-              setIsWebViewReady(true);
-            }
-          }}
-          onError={syntheticEvent => {
-            const { nativeEvent } = syntheticEvent;
-            console.warn('WebView error: ', nativeEvent);
-          }}
-        />
-      );
-    }
-  };
+
+        {/* Controles para cambiar tipo de mapa */}
+        <View style={styles.mapTypeSelector}>
+          <TouchableOpacity
+            style={[
+              styles.mapTypeButton,
+              mapType === 'standard' && styles.mapTypeButtonActive
+            ]}
+            onPress={() => setMapType('standard')}
+          >
+            <Text style={[
+              styles.mapTypeButtonText,
+              mapType === 'standard' && styles.mapTypeButtonTextActive
+            ]}>
+              Calles
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.mapTypeButton,
+              mapType === 'satellite' && styles.mapTypeButtonActive
+            ]}
+            onPress={() => setMapType('satellite')}
+          >
+            <Text style={[
+              styles.mapTypeButtonText,
+              mapType === 'satellite' && styles.mapTypeButtonTextActive
+            ]}>
+              Satélite
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.mapTypeButton,
+              mapType === 'hybrid' && styles.mapTypeButtonActive
+            ]}
+            onPress={() => setMapType('hybrid')}
+          >
+            <Text style={[
+              styles.mapTypeButtonText,
+              mapType === 'hybrid' && styles.mapTypeButtonTextActive
+            ]}>
+              Híbrido
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  } else {
+    // Android - WebView con Leaflet
+    return (
+      <WebView
+        ref={webViewRef}
+        source={{ html: leafletHTML }}
+        style={styles.map}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        startInLoadingState={true}
+        scalesPageToFit={true}
+        mixedContentMode="compatibility"
+        onMessage={event => {
+          if (event.nativeEvent.data === 'webview-ready') {
+            setIsWebViewReady(true);
+          }
+        }}
+        onError={syntheticEvent => {
+          const { nativeEvent } = syntheticEvent;
+          console.warn('WebView error: ', nativeEvent);
+        }}
+      />
+    );
+  }
+};
 
   const getConnectionDisplay = () => {
     switch (connectionStatus) {
@@ -1120,7 +1127,7 @@ if (marker === null) {
                       styles.locationButton,
                       { opacity: vehicleData ? 1 : 0.5 },
                     ]}
-                    onPress={openGoogleMaps}
+onPress={() => openGoogleMaps(latitude, longitude)}
                     disabled={!vehicleData}
                   >
                     <Forward size={15} color="#fff" />

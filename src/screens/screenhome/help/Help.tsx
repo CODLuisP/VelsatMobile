@@ -25,6 +25,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import { styles } from '../../../styles/help';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Interfaz para las opciones de ayuda
 interface HelpOption {
@@ -50,7 +51,7 @@ const Help = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -58,20 +59,42 @@ const Help = () => {
     navigation.goBack();
   };
 
-    const handleCentral = () => {
+  const handleCentral = () => {
     navigation.navigate('Central');
+  };
+
+  const handleWhatsAppPress = () => {
+    const phoneNumber = '51983287180'; // Número con código de país (51 para Perú)
+    const message = 'Hola, somos de Velsat Monitoreo. ¿En qué podemos ayudarte?';
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          return Linking.openURL(url);
+        } else {
+          console.log('WhatsApp no está instalado');
+          // Opción alternativa: abrir en el navegador
+          const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+          return Linking.openURL(webUrl);
+        }
+      })
+      .catch((err) => console.error('Error al abrir WhatsApp:', err));
+  };
+
+  const handleWebsitePress = () => {
+    Linking.openURL('https://velsat.com.pe/');
   };
 
   const handleOptionPress = (option: HelpOption) => {
     // Aquí puedes manejar las diferentes acciones
     switch (option.action) {
       case 'contact':
-      handleCentral();
+        handleCentral();
         console.log('Contactar central');
         break;
       case 'whatsapp':
-        // Abrir WhatsApp
-        console.log('Abrir WhatsApp');
+        handleWhatsAppPress();
         break;
       case 'faq':
         // Navegar a preguntas frecuentes
@@ -84,10 +107,6 @@ const Help = () => {
       default:
         break;
     }
-  };
-
-  const handleWebsitePress = () => {
-    Linking.openURL('https://velsat.com.pe/');
   };
 
   const helpOptions: HelpOption[] = [
@@ -136,9 +155,13 @@ const Help = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
- 
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
@@ -181,8 +204,8 @@ const Help = () => {
                       style={[
                         styles.iconContainer,
                         {
-                          backgroundColor: `${option.color}15`, // Fondo con opacidad
-                          borderColor: `${option.color}30`, // Borde con opacidad
+                          backgroundColor: `${option.color}15`, 
+                          borderColor: `${option.color}30`, 
                         },
                       ]}
                     >
@@ -222,7 +245,7 @@ const Help = () => {
           </View>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   Phone,
   User,
   Clock,
+  Calendar,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
@@ -22,6 +23,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import { styles } from '../../../styles/central';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface ContactPerson {
   id: number;
@@ -45,7 +47,7 @@ const Central = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -61,7 +63,7 @@ const Central = () => {
     {
       id: 1,
       name: 'Karolinth Montalvo',
-      schedule: 'De Lunes a Sábado',
+      schedule: 'Lunes a Sábado',
       hours: '6:00 AM - 2:00 PM',
       phone: '989112975',
       avatar: '👩',
@@ -69,7 +71,7 @@ const Central = () => {
     {
       id: 2,
       name: 'Yerson Monsalve',
-      schedule: 'De Lunes a Sábado',
+      schedule: 'Lunes a Sábado',
       hours: '2:00 PM - 10:00 PM',
       phone: '914698905',
       avatar: '👨',
@@ -77,9 +79,9 @@ const Central = () => {
     {
       id: 3,
       name: 'Willy Ruiz',
-      schedule: 'De Lunes a Sábado',
+      schedule: 'Lunes a Sábado',
       hours: '10:00 PM - 6:00 AM',
-      extraInfo: 'Domingos y feriados\nTodo el día',
+      extraInfo: 'Domingos y feriados todo el día',
       phone: '983287180',
       avatar: '👨',
     },
@@ -88,7 +90,12 @@ const Central = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -107,65 +114,93 @@ const Central = () => {
       <ScrollView
         style={styles.contentList}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={styles.formContainer}>
           {contacts.map((contact, index) => (
-            <View
-              key={contact.id}
-              style={[
-                styles.contactCard,
-                index === contacts.length - 1 && styles.lastContactCard,
-              ]}
-            >
-              <View style={styles.contactContent}>
-                <View style={styles.avatarContainer}>
+            <View key={contact.id} style={styles.contactCard}>
+              {/* Header de la tarjeta */}
+              <View style={styles.cardHeader}>
+                <View style={styles.avatarSection}>
                   <View style={styles.avatarCircle}>
-                    <User size={32} color="#1e3a8a" strokeWidth={1.5} />
+                    <User size={28} color="#1e3a8a" strokeWidth={2} />
                   </View>
-                  <View style={styles.statusDot} />
+                  <View style={styles.statusIndicator}>
+                    <View style={styles.statusDot} />
+                    <Text style={styles.statusText}>Disponible</Text>
+                  </View>
                 </View>
-
-                <View style={styles.contactInfo}>
+                <View style={styles.nameSection}>
                   <Text style={styles.contactName}>{contact.name}</Text>
-                  
-                  <View style={styles.scheduleContainer}>
-                    <Clock size={14} color="#718096" />
-                    <Text style={styles.scheduleText}>{contact.schedule}</Text>
+                  <Text style={styles.operatorLabel}>Operador de turno</Text>
+                </View>
+              </View>
+
+              {/* Divisor */}
+              <View style={styles.divider} />
+
+              {/* Información de horario */}
+              <View style={styles.scheduleSection}>
+                <View style={styles.scheduleItem}>
+                  <View style={styles.iconWrapper}>
+                    <Calendar size={18} color="#1e3a8a" />
                   </View>
-                  
-                  <Text style={styles.hoursText}>{contact.hours}</Text>
-                  
-                  {contact.extraInfo && (
-                    <Text style={styles.extraInfoText}>{contact.extraInfo}</Text>
-                  )}
-                  
-                  <View style={styles.phoneContainer}>
-                    <Phone size={14} color="#1e3a8a" />
-                    <Text style={styles.phoneText}>{contact.phone}</Text>
+                  <View style={styles.scheduleTextContainer}>
+                    <Text style={styles.scheduleLabel}>Días</Text>
+                    <Text style={styles.scheduleValue}>{contact.schedule}</Text>
                   </View>
                 </View>
 
+                <View style={styles.scheduleItem}>
+                  <View style={styles.iconWrapper}>
+                    <Clock size={18} color="#1e3a8a" />
+                  </View>
+                  <View style={styles.scheduleTextContainer}>
+                    <Text style={styles.scheduleLabel}>Horario</Text>
+                    <Text style={styles.scheduleValue}>{contact.hours}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Información extra */}
+              {contact.extraInfo && (
+                <View style={styles.extraInfoContainer}>
+                  <Text style={styles.extraInfoText}>{contact.extraInfo}</Text>
+                </View>
+              )}
+
+              {/* Footer con teléfono y botón */}
+              <View style={styles.cardFooter}>
+                <View style={styles.phoneInfo}>
+                  <Text style={styles.phoneNumber}>{contact.phone}</Text>
+                </View>
                 <TouchableOpacity
                   style={styles.callButton}
                   onPress={() => handleCall(contact.phone)}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
-                  <Phone size={22} color="#FFFFFF" />
+                  <Phone size={20} color="#FFFFFF" />
+                  <Text style={styles.callButtonText}>Llamar</Text>
                 </TouchableOpacity>
               </View>
+
             </View>
           ))}
 
-          <View style={styles.infoFooter}>
-            <Text style={styles.infoFooterText}>
-              Nuestro equipo está disponible para atenderte.{'\n'}
-              Llama en el horario correspondiente.
+          {/* Información adicional */}
+          <View style={styles.infoCard}>
+            <View style={styles.infoIconContainer}>
+              <Phone size={20} color="#1e3a8a" />
+            </View>
+            <Text style={styles.infoTitle}>Atención 24/7</Text>
+            <Text style={styles.infoDescription}>
+              Nuestro equipo está disponible para atenderte en los horarios indicados.
+              Para emergencias, siempre tendrás un operador disponible.
             </Text>
           </View>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

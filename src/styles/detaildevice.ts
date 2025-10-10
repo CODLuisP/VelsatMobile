@@ -242,4 +242,42 @@ deviceHeaderInfo: {
     fontWeight: 'bold',
     marginTop: 4,
   },
+
+
+  // NUEVOS ESTILOS PARA SELECTOR DE TIPO DE MAPA
+mapTypeSelector: {
+  position: 'absolute',
+  top: 80,
+  right: 16,
+  flexDirection: 'row',
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  borderRadius: 12,
+  overflow: 'hidden',
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 5,
+},
+mapTypeButton: {
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+
+},
+mapTypeButtonActive: {
+  backgroundColor: '#f35b04',
+},
+mapTypeButtonText: {
+  fontSize: 14,
+  fontWeight: '500',
+  color: '#333',
+  textAlign: 'center',
+},
+mapTypeButtonTextActive: {
+  color: '#fff',
+  fontWeight: '600',
+},
 });

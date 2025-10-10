@@ -131,7 +131,7 @@ const Profile = () => {
   // Obtener los últimos 8 dígitos del codlan
   const getLast8Digits = (codlan: string | null | undefined): string => {
     if (!codlan) return '-';
-    const digits = codlan.replace(/\D/g, ''); // Eliminar todo excepto números
+    const digits = codlan.replace(/\D/g, ''); 
     return digits.length >= 8 ? digits.slice(-8) : digits;
   };
 
