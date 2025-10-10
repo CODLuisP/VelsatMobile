@@ -247,7 +247,7 @@ deviceHeaderInfo: {
   // NUEVOS ESTILOS PARA SELECTOR DE TIPO DE MAPA
 mapTypeSelector: {
   position: 'absolute',
-  top: 80,
+  top: 75,
   right: 16,
   flexDirection: 'row',
   backgroundColor: 'rgba(255, 255, 255, 0.95)',
