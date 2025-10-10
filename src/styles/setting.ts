@@ -186,8 +186,6 @@ export const styles = StyleSheet.create({
     elevation: 6,
   },
 
-  
-
   primaryButtonText: {
     color: '#fff',
     fontSize: 14,
@@ -195,20 +193,52 @@ export const styles = StyleSheet.create({
   },
 
   buttonWrapper: {
-  marginTop: 0,
-},
+    marginTop: 0,
+  },
 
-gradientButton: {
-  width: '100%',
-  height: 48,
-  borderRadius: 12,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+  gradientButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
-buttonText: {
-  color: '#FFFFFF',
-  fontSize: 14,
-  fontWeight: 'bold',
-},
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  requiredAsterisk: {
+    color: '#e36414',
+  },
 });
+
+// Estilos para AlertPro (fuera de StyleSheet.create)
+export const alertStyles = {
+  mask: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  container: {
+    borderRadius: 15,
+    backgroundColor: '#fff',
+  },
+  title: {
+    color: '#e36414',
+    fontSize: 18,
+    fontWeight: 'bold' as 'bold',
+  },
+  message: {
+    color: '#333',
+    fontSize: 14,
+  },
+  buttonCancel: {
+    backgroundColor: '#e36414',
+    borderRadius: 10,
+  },
+  buttonCancelText: {
+    color: '#fff',
+    fontWeight: 'bold' as 'bold',
+  },
+};
