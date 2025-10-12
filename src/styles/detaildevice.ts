@@ -244,40 +244,39 @@ deviceHeaderInfo: {
   },
 
 
-  // NUEVOS ESTILOS PARA SELECTOR DE TIPO DE MAPA
-mapTypeSelector: {
-  position: 'absolute',
-  top: 75,
-  right: 16,
-  flexDirection: 'row',
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  borderRadius: 12,
-  overflow: 'hidden',
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 2,
+ mapTypeSelector: {
+    position: 'absolute',
+    top: 45,
+    right: 20,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  shadowOpacity: 0.25,
-  shadowRadius: 3.84,
-  elevation: 5,
-},
-mapTypeButton: {
-  paddingVertical: 8,
-  paddingHorizontal: 14,
+  mapTypeButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  mapTypeButtonActive: {
+    backgroundColor: '#f35b04',
+  },
+  mapTypeButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+    textAlign: 'center',
+  },
+  mapTypeButtonTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
 
-},
-mapTypeButtonActive: {
-  backgroundColor: '#f35b04',
-},
-mapTypeButtonText: {
-  fontSize: 14,
-  fontWeight: '500',
-  color: '#333',
-  textAlign: 'center',
-},
-mapTypeButtonTextActive: {
-  color: '#fff',
-  fontWeight: '600',
-},
 });

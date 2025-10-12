@@ -584,7 +584,7 @@ const handleBiometricLogin = async () => {
 
             <View style={styles.statusContainer}>
               <View style={styles.statusDot} />
-              <Text style={styles.statusText}>V. 20.0.1 - App Móvil</Text>
+              <Text style={styles.statusText}>V. 2.2.1</Text>
             </View>
           </View>
         </Animated.View>

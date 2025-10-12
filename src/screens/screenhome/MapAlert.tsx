@@ -197,6 +197,32 @@ const MapAlert = () => {
     ? getAlertColor(notificationData.type)
     : '#6b7280';
 
+  // Función para obtener el tipo de capa de Leaflet según el tipo de mapa
+  const getLeafletTileLayer = (type: 'standard' | 'satellite' | 'hybrid') => {
+    switch (type) {
+      case 'satellite':
+        return {
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri'
+        };
+      case 'hybrid':
+        return {
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri',
+          overlay: true,
+          overlayUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          overlayAttribution: '&copy; OpenStreetMap'
+        };
+      default: // 'standard'
+        return {
+          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        };
+    }
+  };
+
+  const tileConfig = getLeafletTileLayer(mapType);
+
   const leafletHTML = `
     <!DOCTYPE html>
     <html>
@@ -214,7 +240,7 @@ const MapAlert = () => {
             body { 
                 margin: 0; 
                 padding: 0; 
-                overflow: hidden;
+                overflow: hidden;s
             }
             #map { 
                 height: 100vh; 
@@ -242,6 +268,8 @@ const MapAlert = () => {
                     opacity: 0;
                 }
             }
+
+
         </style>
     </head>
     <body>
@@ -254,10 +282,20 @@ const MapAlert = () => {
                 touchZoom: true
             }).setView([${latitude}, ${longitude}], 15);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            // Capa base
+            var baseLayer = L.tileLayer('${tileConfig.url}', {
+                attribution: '${tileConfig.attribution}',
                 maxZoom: 19
             }).addTo(map);
+
+            ${tileConfig.overlay ? `
+            // Capa de etiquetas para el modo híbrido
+            var overlayLayer = L.tileLayer('${tileConfig.overlayUrl}', {
+                attribution: '${tileConfig.overlayAttribution}',
+                maxZoom: 19,
+                opacity: 0.5
+            }).addTo(map);
+            ` : ''}
 
             var carIcon = L.divIcon({
                 html: \`
@@ -323,59 +361,12 @@ const MapAlert = () => {
               <CustomMarker color={alertColor} />
             </Marker>
           </MapView>
-
-          {/* Controles para cambiar tipo de mapa */}
-          <View style={styles.mapTypeSelector}>
-            <TouchableOpacity
-              style={[
-                styles.mapTypeButton,
-                mapType === 'standard' && styles.mapTypeButtonActive
-              ]}
-              onPress={() => setMapType('standard')}
-            >
-              <Text style={[
-                styles.mapTypeButtonText,
-                mapType === 'standard' && styles.mapTypeButtonTextActive
-              ]}>
-                Calles
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.mapTypeButton,
-                mapType === 'satellite' && styles.mapTypeButtonActive
-              ]}
-              onPress={() => setMapType('satellite')}
-            >
-              <Text style={[
-                styles.mapTypeButtonText,
-                mapType === 'satellite' && styles.mapTypeButtonTextActive
-              ]}>
-                Satélite
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.mapTypeButton,
-                mapType === 'hybrid' && styles.mapTypeButtonActive
-              ]}
-              onPress={() => setMapType('hybrid')}
-            >
-              <Text style={[
-                styles.mapTypeButtonText,
-                mapType === 'hybrid' && styles.mapTypeButtonTextActive
-              ]}>
-                Híbrido
-              </Text>
-            </TouchableOpacity>
-          </View>
         </>
       );
     } else {
       return (
         <WebView
+          key={mapType} // Forzar recarga del WebView cuando cambia el tipo de mapa
           source={{ html: leafletHTML }}
           style={styles.map}
           javaScriptEnabled={true}
@@ -453,6 +444,54 @@ const MapAlert = () => {
 
       <View style={styles.content}>
         <View style={styles.mapContainer}>{renderMap()}</View>
+
+        {/* Controles para cambiar tipo de mapa - Ahora funciona en ambas plataformas */}
+        <View style={styles.mapTypeSelector}>
+          <TouchableOpacity
+            style={[
+              styles.mapTypeButton,
+              mapType === 'standard' && styles.mapTypeButtonActive
+            ]}
+            onPress={() => setMapType('standard')}
+          >
+            <Text style={[
+              styles.mapTypeButtonText,
+              mapType === 'standard' && styles.mapTypeButtonTextActive
+            ]}>
+              Calles
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.mapTypeButton,
+              mapType === 'satellite' && styles.mapTypeButtonActive
+            ]}
+            onPress={() => setMapType('satellite')}
+          >
+            <Text style={[
+              styles.mapTypeButtonText,
+              mapType === 'satellite' && styles.mapTypeButtonTextActive
+            ]}>
+              Satélite
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.mapTypeButton,
+              mapType === 'hybrid' && styles.mapTypeButtonActive
+            ]}
+            onPress={() => setMapType('hybrid')}
+          >
+            <Text style={[
+              styles.mapTypeButtonText,
+              mapType === 'hybrid' && styles.mapTypeButtonTextActive
+            ]}>
+              Híbrido
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </LinearGradient>
   );

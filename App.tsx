@@ -144,8 +144,7 @@ const App = () => {
 
     const setNavigationBarColor = () => {
       try {
-        SystemNavigationBar.setNavigationColor('#1e3a8a');
-        console.log('Navigation bar color set to #1e3a8a');
+        SystemNavigationBar.setNavigationColor('#00296b');
       } catch (error) {
         console.log('Error setting navigation bar color:', error);
       }
@@ -162,13 +161,13 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <View style={{ flex: 1, backgroundColor: '#1e3a8a' }}>
-        <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
+      <View style={{ flex: 1, backgroundColor: '#00296b' }}>
+        <StatusBar barStyle="light-content" backgroundColor="#00296b" />
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{
               headerShown: false,
-              contentStyle: { backgroundColor: '#1e3a8a' },
+              contentStyle: { backgroundColor: '#00296b' },
               animation: 'slide_from_right',
             }}
             initialRouteName={isAuthenticated ? 'Home' : 'Login'}
