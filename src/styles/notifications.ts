@@ -147,4 +147,75 @@ export const styles = StyleSheet.create({
     fontWeight: '400',
   },
 
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+loadingText: {
+  color: '#000',
+  marginTop: 10,
+  fontSize: 16,
+},
+errorContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+},
+errorText: {
+  color: '#FF6B6B',
+  fontSize: 16,
+  textAlign: 'center',
+  marginBottom: 20,
+},
+retryButton: {
+  backgroundColor: '#FF8C42',
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  borderRadius: 8,
+},
+retryButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: 'bold',
+},
+emptyContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+emptyText: {
+  color: '#fff',
+  fontSize: 16,
+  marginTop: 10,
+  opacity: 0.7,
+},
+
+counterText: {
+  color: '#fff',
+  fontSize: 12,
+  marginTop: 5,
+  opacity: 0.8,
+},
+loadingMoreContainer: {
+  padding: 20,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+loadingMoreText: {
+  color: '#000',
+  marginTop: 10,
+  fontSize: 14,
+},
+endContainer: {
+  padding: 20,
+  alignItems: 'center',
+},
+endText: {
+  color: '#fff',
+  fontSize: 14,
+  opacity: 0.6,
+},
+
 });

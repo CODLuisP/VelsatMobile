@@ -62,6 +62,10 @@ export type RootStackParamList = {
       device: string;
       timestamp: string;
       iconName: string;
+      speed: number;
+      latitude: number;
+      longitude: number;
+      statusCode: number;
     };
   };
   Devices: undefined;
@@ -109,11 +113,12 @@ export type RootStackParamList = {
     endDate: Date;
     speed: string;
   };
-MileageReport: {
-  unit: { id: number; plate: string } | 'all';
-  startDate: Date;
-  endDate: Date;
-};  TourReport:  {
+  MileageReport: {
+    unit: { id: number; plate: string } | 'all';
+    startDate: Date;
+    endDate: Date;
+  };
+  TourReport: {
     unit: { id: number; plate: string };
     startDate: Date;
     endDate: Date;

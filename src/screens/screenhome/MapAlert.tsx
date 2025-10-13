@@ -43,6 +43,10 @@ interface MapAlertRouteParams {
     device: string;
     timestamp: string;
     iconName: string;
+    speed: number;
+    latitude: number;
+    longitude: number;
+    statusCode: number;
   };
 }
 
@@ -153,8 +157,11 @@ const MapAlert = () => {
 
   const notificationData = route.params?.notificationData;
 
-  const latitude = -12.0464;
-  const longitude = -77.0428;
+  // Usar los datos dinámicos de los parámetros
+  const latitude = notificationData?.latitude ;
+  const longitude = notificationData?.longitude ;
+  const speed = notificationData?.speed || 0;
+  const statusCode = notificationData?.statusCode || 0;
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -240,7 +247,7 @@ const MapAlert = () => {
             body { 
                 margin: 0; 
                 padding: 0; 
-                overflow: hidden;s
+                overflow: hidden;
             }
             #map { 
                 height: 100vh; 
@@ -268,8 +275,6 @@ const MapAlert = () => {
                     opacity: 0;
                 }
             }
-
-
         </style>
     </head>
     <body>
@@ -320,6 +325,9 @@ const MapAlert = () => {
                     <h3 style="margin: 5px 0; color: ${alertColor};">${notificationData?.title || 'Alerta'}</h3>
                     <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${notificationData?.device || 'Sin información'}</p>
                     <p style="margin: 3px 0;"><strong>ID:</strong> ${notificationData?.id || 'N/A'}</p>
+                    <p style="margin: 3px 0;"><strong>Velocidad:</strong> ${speed} km/h</p>
+                    <p style="margin: 3px 0;"><strong>Código:</strong> ${statusCode}</p>
+                    <p style="margin: 3px 0;"><strong>Coordenadas:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
                     <p style="margin: 3px 0;"><strong>Fecha:</strong> ${notificationData?.timestamp || 'Sin fecha'}</p>
                 </div>
             \`).openPopup();
@@ -356,7 +364,7 @@ const MapAlert = () => {
                 longitude: longitude,
               }}
               title={notificationData?.title || 'Alerta'}
-              description={`${notificationData?.device || 'Dispositivo'} - ${notificationData?.timestamp || ''}`}
+              description={`${notificationData?.device || 'Dispositivo'} - Velocidad: ${speed} km/h - Código: ${statusCode}`}
             >
               <CustomMarker color={alertColor} />
             </Marker>
@@ -432,11 +440,12 @@ const MapAlert = () => {
                 {notificationData.title}
               </Text>
               <Text style={styles.headerAlertSubtitle}>
-                {notificationData.device} • ID: {notificationData.id}
+                {notificationData.device} 
               </Text>
               <Text style={styles.headerAlertTimestamp}>
                 {notificationData.timestamp}
               </Text>
+        
             </View>
           </View>
         </View>
