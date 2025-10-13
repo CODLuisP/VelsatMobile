@@ -74,7 +74,7 @@ const Profile = () => {
         setLoading(true);
         try {
           const response = await axios.get<UserDetailsResponse>(
-            `https://velsat.pe:2087/api/User/MobileDetailsUser?accountID=${user.username}&tipo=${tipo}`
+            `${server}/api/User/MobileDetailsUser?accountID=${user.username}&tipo=${tipo}`
           );
           setUserDetails(response.data);
         } catch (error) {
