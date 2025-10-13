@@ -28,6 +28,7 @@ interface AuthState {
   server: string | null;
   token: string | null;
   tipo: string | null;
+  selectedVehiclePin: 's' | 'p' | 'c'; // ⭐ NUEVO: s=sedan, p=pickup, c=camion cisterna
   
   // Estados biométricos
   biometric: BiometricConfig;
@@ -35,7 +36,7 @@ interface AuthState {
     username: string | null;
     token: string | null;
     server: string | null;
-    tipo: string | null; // ⭐ AGREGADO
+    tipo: string | null;
   };
 
   // Actions existentes
@@ -43,6 +44,7 @@ interface AuthState {
   setServer: (server: string) => void;
   setToken: (token: string) => void;
   setTipo: (tipo: string) => void;
+  setSelectedVehiclePin: (pin: 's' | 'p' | 'c') => void; // ⭐ NUEVO
   logout: () => void;
   setLoading: (loading: boolean) => void;
   
@@ -67,6 +69,7 @@ export const useAuthStore = create<AuthState>()(
       server: null,
       token: null,
       tipo: null,
+      selectedVehiclePin: 's', // ⭐ NUEVO: Por defecto sedan
       
       // Estados biométricos
       biometric: {
@@ -79,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
         username: null,
         token: null,
         server: null,
-        tipo: null, // ⭐ AGREGADO
+        tipo: null,
       },
 
       // Actions existentes
@@ -103,7 +106,7 @@ export const useAuthStore = create<AuthState>()(
                 username: user.username,
                 token: newState.token!,
                 server: newState.server!,
-                tipo: newState.tipo!, // ⭐ AGREGADO
+                tipo: newState.tipo!,
               },
             }));
             
@@ -141,6 +144,12 @@ export const useAuthStore = create<AuthState>()(
 
       setTipo: (tipo: string) => {
         set({ tipo });
+      },
+
+      // ⭐ NUEVO: Action para guardar el pin seleccionado
+      setSelectedVehiclePin: (pin: 's' | 'p' | 'c') => {
+        set({ selectedVehiclePin: pin });
+        console.log('📍 Pin de vehículo actualizado:', pin);
       },
 
       logout: async () => {
@@ -221,7 +230,7 @@ export const useAuthStore = create<AuthState>()(
                   username: currentState.user!.username,
                   token: currentState.token,
                   server: currentState.server,
-                  tipo: currentState.tipo, // ⭐ AGREGADO
+                  tipo: currentState.tipo,
                 },
               }));
             }
@@ -263,7 +272,7 @@ export const useAuthStore = create<AuthState>()(
         if (!state.biometricCredentials.username || 
             !state.biometricCredentials.token || 
             !state.biometricCredentials.server ||
-            !state.biometricCredentials.tipo) { // ⭐ AGREGADO
+            !state.biometricCredentials.tipo) {
           throw new Error('No credentials saved for biometric login');
         }
 
@@ -276,12 +285,12 @@ export const useAuthStore = create<AuthState>()(
 
           if (success) {
             // Restaurar sesión automáticamente CON tipo
-            const { username, token, server, tipo } = state.biometricCredentials; // ⭐ AGREGADO tipo
+            const { username, token, server, tipo } = state.biometricCredentials;
             
             set({
               server,
               token,
-              tipo, // ⭐ AGREGADO - ESTO ES CRÍTICO
+              tipo,
               user: {
                 id: username!,
                 username: username!,
@@ -318,7 +327,7 @@ export const useAuthStore = create<AuthState>()(
               username,
               token,
               server,
-              tipo: state.tipo, // ⭐ AGREGADO
+              tipo: state.tipo,
             },
           }));
           console.log('✅ Biometric credentials saved for user:', username, 'tipo:', state.tipo);
@@ -337,7 +346,7 @@ export const useAuthStore = create<AuthState>()(
             username: null,
             token: null,
             server: null,
-            tipo: null, // ⭐ AGREGADO
+            tipo: null,
           },
         }));
         console.log('Biometric credentials cleared');
@@ -363,7 +372,7 @@ export const useAuthStore = create<AuthState>()(
           !!state.biometricCredentials.username &&
           !!state.biometricCredentials.token &&
           !!state.biometricCredentials.server &&
-          !!state.biometricCredentials.tipo // ⭐ AGREGADO
+          !!state.biometricCredentials.tipo
         );
         
         console.log('Can use biometric login:', canUse, {
@@ -385,6 +394,7 @@ export const useAuthStore = create<AuthState>()(
         server: state.server,
         token: state.token,
         tipo: state.tipo,
+        selectedVehiclePin: state.selectedVehiclePin, // ⭐ NUEVO
         biometric: state.biometric,
         biometricCredentials: state.biometricCredentials,
       }),
@@ -396,8 +406,9 @@ export const useAuthStore = create<AuthState>()(
             biometricEnabled: state.biometric?.isEnabled,
             hasCredentials: !!state.biometricCredentials?.username,
             credentialsUsername: state.biometricCredentials?.username,
-            credentialsTipo: state.biometricCredentials?.tipo, // ⭐ AGREGADO
-            currentTipo: state.tipo
+            credentialsTipo: state.biometricCredentials?.tipo,
+            currentTipo: state.tipo,
+            selectedVehiclePin: state.selectedVehiclePin // ⭐ NUEVO
           });
         } else {
           console.log('❌ Error en hidratación del store');

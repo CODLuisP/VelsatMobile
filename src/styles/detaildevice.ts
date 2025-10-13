@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
     left: 20,
     width: 44,
     height: 44,
-    backgroundColor: '#fff',
+    backgroundColor: '#00296b',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -246,7 +246,6 @@ deviceHeaderInfo: {
 
  mapTypeSelector: {
     position: 'absolute',
-    top: 76,
     right: 20,
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',

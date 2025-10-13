@@ -102,7 +102,7 @@ const DetailDevice = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
-const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('standard');
+  const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('standard');
   const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
 
   useFocusEffect(
@@ -126,7 +126,7 @@ const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('sta
           wave1: (prev.wave1 + 0.01) % 1,
           wave2: (prev.wave2 + 0.01) % 1,
           wave3: (prev.wave3 + 0.01) % 1,
-          wave4: (prev.wave4 + 0.01) % 1, 
+          wave4: (prev.wave4 + 0.01) % 1,
         }));
       }, 40);
 
@@ -281,31 +281,31 @@ const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('sta
     setIsInfoExpanded(!isInfoExpanded);
   };
 
- 
-const getLeafletTileLayer = (type: 'standard' | 'satellite' | 'hybrid') => {
-  switch (type) {
-    case 'satellite':
-      return {
-        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        attribution: '&copy; Esri'
-      };
-    case 'hybrid':
-      return {
-        baseUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        overlayUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '&copy; Esri &copy; OpenStreetMap'
-      };
-    default: // 'standard'
-      return {
-        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '&copy; OpenStreetMap contributors'
-      };
-  }
-};
 
-const tileConfig = getLeafletTileLayer(mapType);
+  const getLeafletTileLayer = (type: 'standard' | 'satellite' | 'hybrid') => {
+    switch (type) {
+      case 'satellite':
+        return {
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri'
+        };
+      case 'hybrid':
+        return {
+          baseUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          overlayUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          attribution: '&copy; Esri &copy; OpenStreetMap'
+        };
+      default: // 'standard'
+        return {
+          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          attribution: '&copy; OpenStreetMap contributors'
+        };
+    }
+  };
 
-const leafletHTML = `
+  const tileConfig = getLeafletTileLayer(mapType);
+
+  const leafletHTML = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -645,176 +645,177 @@ const leafletHTML = `
   const webViewRef = useRef<WebView>(null);
   const mapRef = useRef<MapView>(null);
   const markerRef = useRef<any>(null);
-useEffect(() => {
-  if (
-    Platform.OS === 'android' &&
-    webViewRef.current &&
-    vehicleData &&
-    isWebViewReady
-  ) {
-    // Pequeño delay para asegurar que el mapa esté completamente cargado
-    setTimeout(() => {
-      const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device.name}', '${device.id}'); true;`;
-      webViewRef.current?.injectJavaScript(script);
-    }, 100);
-  }
-}, [
-  latitude,
-  longitude,
-  heading,
-  speed,
-  status,
-  vehicleData,
-  isWebViewReady,
-  mapType, // ← IMPORTANTE: Agregar mapType
-]);
+  useEffect(() => {
+    if (
+      Platform.OS === 'android' &&
+      webViewRef.current &&
+      vehicleData &&
+      isWebViewReady
+    ) {
+      // Pequeño delay para asegurar que el mapa esté completamente cargado
+      setTimeout(() => {
+        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device.name}', '${device.id}'); true;`;
+        webViewRef.current?.injectJavaScript(script);
+      }, 100);
+    }
+  }, [
+    latitude,
+    longitude,
+    heading,
+    speed,
+    status,
+    vehicleData,
+    isWebViewReady,
+    mapType, // ← IMPORTANTE: Agregar mapType
+  ]);
 
 
 
-useEffect(() => {
-  if (Platform.OS === 'ios' && mapRef.current && vehicleData) {
-    setTimeout(() => {
-      mapRef.current?.animateCamera({
-        center: { latitude, longitude },
-        zoom: 16,
-      });
-    }, 300);
-  }
-}, [vehicleData, latitude, longitude]);
+  useEffect(() => {
+    if (Platform.OS === 'ios' && mapRef.current && vehicleData) {
+      setTimeout(() => {
+        mapRef.current?.animateCamera({
+          center: { latitude, longitude },
+          zoom: 16,
+        });
+      }, 300);
+    }
+  }, [vehicleData, latitude, longitude]);
 
 
-useEffect(() => {
-  if (
-    Platform.OS === 'ios' &&
-    markerRef.current &&
-    vehicleData &&
-    !hasShownInitialCallout
-  ) {
-    setTimeout(() => {
-      markerRef.current?.showCallout();
-      setHasShownInitialCallout(true);
-    }, 300);
-  }
-}, [vehicleData, hasShownInitialCallout]);
+  useEffect(() => {
+    if (
+      Platform.OS === 'ios' &&
+      markerRef.current &&
+      vehicleData &&
+      !hasShownInitialCallout
+    ) {
+      setTimeout(() => {
+        markerRef.current?.showCallout();
+        setHasShownInitialCallout(true);
+      }, 300);
+    }
+  }, [vehicleData, hasShownInitialCallout]);
 
 
 
-const renderMap = () => {
-  if (Platform.OS === 'ios') {
-    const imageData = getDirectionImageData(heading);
-    const radarColor =
-      speed === 0
-        ? '#ef4444'
-        : speed > 0 && speed < 11
-        ? '#ff8000'
-        : speed >= 11 && speed < 60
-        ? '#38b000'
-        : '#00509d';
+  const renderMap = () => {
+    if (Platform.OS === 'ios') {
+      const imageData = getDirectionImageData(heading);
+      const radarColor =
+        speed === 0
+          ? '#ef4444'
+          : speed > 0 && speed < 11
+            ? '#ff8000'
+            : speed >= 11 && speed < 60
+              ? '#38b000'
+              : '#00509d';
 
-    const wave1Radius = 10 + radarPulse.wave1 * 90;
-    const wave2Radius = 10 + radarPulse.wave2 * 90;
-    const wave3Radius = 10 + radarPulse.wave3 * 90;
-    const wave4Radius = 10 + radarPulse.wave4 * 90;
+      const wave1Radius = 10 + radarPulse.wave1 * 90;
+      const wave2Radius = 10 + radarPulse.wave2 * 90;
+      const wave3Radius = 10 + radarPulse.wave3 * 90;
+      const wave4Radius = 10 + radarPulse.wave4 * 90;
 
-    const getOpacity = (progress: number) => {
-      if (progress < 0.03 || progress > 0.8) return 0;
-      if (progress < 0.08) return ((progress - 0.03) / 0.05) * 0.2;
-      return (1 - progress) * 0.25;
-    };
-    
-    const wave1Opacity = getOpacity(radarPulse.wave1);
-    const wave2Opacity = getOpacity(radarPulse.wave2);
-    const wave3Opacity = getOpacity(radarPulse.wave3);
-    const wave4Opacity = getOpacity(radarPulse.wave4);
+      const getOpacity = (progress: number) => {
+        if (progress < 0.03 || progress > 0.8) return 0;
+        if (progress < 0.08) return ((progress - 0.03) / 0.05) * 0.2;
+        return (1 - progress) * 0.25;
+      };
 
-    return (
-      <>
-        <MapView
-          ref={mapRef}
-          provider={PROVIDER_DEFAULT}
-          style={styles.map}
-          mapType={mapType}
-          region={{
-            latitude: latitude,
-            longitude: longitude,
-            latitudeDelta: 0.008,
-            longitudeDelta: 0.008,
-          }}
-        >
-          {vehicleData && (
-            <>
-              {wave1Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave1Radius}
-                  fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
-              {wave2Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave2Radius}
-                  fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
-              {wave3Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave3Radius}
-                  fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
-              {wave4Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave4Radius}
-                  fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
+      const wave1Opacity = getOpacity(radarPulse.wave1);
+      const wave2Opacity = getOpacity(radarPulse.wave2);
+      const wave3Opacity = getOpacity(radarPulse.wave3);
+      const wave4Opacity = getOpacity(radarPulse.wave4);
 
-              <Marker
-                ref={markerRef}
-                key={device.id}
-                anchor={{
-                  x: imageData.anchor[0] / imageData.size[0],
-                  y: imageData.anchor[1] / imageData.size[1],
-                }}
-                coordinate={{ latitude, longitude }}
-              >
-                <Image
-                  source={getDirectionImage(heading)}
-                  style={{
-                    width: imageData.size[0],
-                    height: imageData.size[1],
+      return (
+        <>
+          <MapView
+            ref={mapRef}
+            provider={PROVIDER_DEFAULT}
+            style={styles.map}
+            mapType={mapType}
+            region={{
+              latitude: latitude,
+              longitude: longitude,
+              latitudeDelta: 0.008,
+              longitudeDelta: 0.008,
+            }}
+          >
+            {vehicleData && (
+              <>
+                {wave1Opacity > 0 && (
+                  <Circle
+                    center={{ latitude, longitude }}
+                    radius={wave1Radius}
+                    fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
+                    strokeWidth={2}
+                  />
+                )}
+                {wave2Opacity > 0 && (
+                  <Circle
+                    center={{ latitude, longitude }}
+                    radius={wave2Radius}
+                    fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
+                    strokeWidth={2}
+                  />
+                )}
+                {wave3Opacity > 0 && (
+                  <Circle
+                    center={{ latitude, longitude }}
+                    radius={wave3Radius}
+                    fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
+                    strokeWidth={2}
+                  />
+                )}
+                {wave4Opacity > 0 && (
+                  <Circle
+                    center={{ latitude, longitude }}
+                    radius={wave4Radius}
+                    fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
+                    strokeWidth={2}
+                  />
+                )}
+
+                <Marker
+                  ref={markerRef}
+                  key={device.id}
+                  anchor={{
+                    x: imageData.anchor[0] / imageData.size[0],
+                    y: imageData.anchor[1] / imageData.size[1],
                   }}
-                  resizeMode="contain"
-                />
-                <Callout>
-                  <View style={{ padding: 0, minWidth: 230 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
-                      {toUpperCaseText(device.name)}
-                    </Text>
-                    <Text style={{ color: '#666' }}>
-                      {status} - {formatThreeDecimals(speed)} Km/h - {obtenerDireccion(heading)}
-                    </Text>
-                  </View>
-                </Callout>
-              </Marker>
-            </>
-          )}
-        </MapView>
+                  coordinate={{ latitude, longitude }}
+                >
+                  <Image
+                    source={getDirectionImage(heading)}
+                    style={{
+                      width: imageData.size[0],
+                      height: imageData.size[1],
+                    }}
+                    resizeMode="contain"
+                  />
+                  <Callout>
+                    <View style={{ padding: 0, minWidth: 230 }}>
+                      <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
+                        {toUpperCaseText(device.name)}
+                      </Text>
+                      <Text style={{ color: '#666' }}>
+                        {status} - {formatThreeDecimals(speed)} Km/h - {obtenerDireccion(heading)}
+                      </Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              </>
+            )}
+          </MapView>
 
-        {/* Botones de tipo de mapa para iOS */}
-        <View style={styles.mapTypeSelector}>
-          <TouchableOpacity
+          {/* Botones de tipo de mapa para iOS */}
+          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>          
+            
+            <TouchableOpacity
             style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
             onPress={() => setMapType('standard')}
           >
@@ -822,81 +823,81 @@ const renderMap = () => {
               Calles
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
-            onPress={() => setMapType('satellite')}
-          >
-            <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
-              Satélite
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
-            onPress={() => setMapType('hybrid')}
-          >
-            <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
-              Híbrido
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </>
-    );
-  } else {
-    // Android - WebView con Leaflet
-    return (
-      <>
-        <WebView
-          
-          ref={webViewRef}
-          source={{ html: leafletHTML }}
-          style={styles.map}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          scalesPageToFit={true}
-          mixedContentMode="compatibility"
-          onMessage={event => {
-            if (event.nativeEvent.data === 'webview-ready') {
-              setIsWebViewReady(true);
-            }
-          }}
-          onError={syntheticEvent => {
-            const { nativeEvent } = syntheticEvent;
-            console.warn('WebView error: ', nativeEvent);
-          }}
-        />
+            <TouchableOpacity
+              style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
+              onPress={() => setMapType('satellite')}
+            >
+              <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
+                Satélite
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
+              onPress={() => setMapType('hybrid')}
+            >
+              <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
+                Híbrido
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      );
+    } else {
+      // Android - WebView con Leaflet
+      return (
+        <>
+          <WebView
 
-        {/* Botones de tipo de mapa para Android */}
-        <View style={styles.mapTypeSelector}>
-          <TouchableOpacity
-            style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
-            onPress={() => setMapType('standard')}
-          >
-            <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
-              Calles
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
-            onPress={() => setMapType('satellite')}
-          >
-            <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
-              Satélite
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
-            onPress={() => setMapType('hybrid')}
-          >
-            <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
-              Híbrido
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </>
-    );
-  }
-};
+            ref={webViewRef}
+            source={{ html: leafletHTML }}
+            style={styles.map}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+            mixedContentMode="compatibility"
+            onMessage={event => {
+              if (event.nativeEvent.data === 'webview-ready') {
+                setIsWebViewReady(true);
+              }
+            }}
+            onError={syntheticEvent => {
+              const { nativeEvent } = syntheticEvent;
+              console.warn('WebView error: ', nativeEvent);
+            }}
+          />
+
+          {/* Botones de tipo de mapa para Android */}
+          <View style={styles.mapTypeSelector}>
+            <TouchableOpacity
+              style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
+              onPress={() => setMapType('standard')}
+            >
+              <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
+                Calles
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
+              onPress={() => setMapType('satellite')}
+            >
+              <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
+                Satélite
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
+              onPress={() => setMapType('hybrid')}
+            >
+              <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
+                Híbrido
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      );
+    }
+  };
 
   const getConnectionDisplay = () => {
     switch (connectionStatus) {
@@ -955,8 +956,8 @@ const renderMap = () => {
                 {connectionStatus === 'connecting'
                   ? 'Conectando al servidor...'
                   : connectionStatus === 'error'
-                  ? 'Error de conexión'
-                  : 'Esperando datos...'}
+                    ? 'Error de conexión'
+                    : 'Esperando datos...'}
               </Text>
             </View>
           </View>
@@ -966,7 +967,7 @@ const renderMap = () => {
           style={[styles.floatingBackButton, { top: insets.top + 10 }]}
           onPress={handleGoBack}
         >
-          <ChevronLeft size={26} color="#1f2937" />
+          <ChevronLeft size={26} color="#ffffffff" />
         </TouchableOpacity>
       </View>
 
@@ -1035,8 +1036,8 @@ const renderMap = () => {
                       status === 'Movimiento'
                         ? '#38b000'
                         : status === 'Detenido'
-                        ? '#ef4444'
-                        : '#6b7280'
+                          ? '#ef4444'
+                          : '#6b7280'
                     }
                   />
                   <Text
@@ -1047,8 +1048,8 @@ const renderMap = () => {
                           status === 'Movimiento'
                             ? '#38b000'
                             : status === 'Detenido'
-                            ? '#ef4444'
-                            : '#6b7280',
+                              ? '#ef4444'
+                              : '#6b7280',
                       },
                     ]}
                   >
@@ -1119,7 +1120,7 @@ const renderMap = () => {
                       styles.locationButton,
                       { opacity: vehicleData ? 1 : 0.5 },
                     ]}
-onPress={() => openGoogleMaps(latitude, longitude)}
+                    onPress={() => openGoogleMaps(latitude, longitude)}
                     disabled={!vehicleData}
                   >
                     <Forward size={15} color="#fff" />

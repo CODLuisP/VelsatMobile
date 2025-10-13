@@ -6,7 +6,7 @@ export const homeStyles = StyleSheet.create({
     backgroundColor: '#00296b',
   },
 header: {
-  height: 190, 
+  height: 170, 
   width: '100%',
   position: 'relative', 
   overflow: 'hidden',
@@ -62,7 +62,7 @@ backgroundColor: 'rgba(4, 49, 122, 0.9)'
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   greeting: {
     color: 'white',
@@ -126,9 +126,9 @@ backgroundColor: 'rgba(4, 49, 122, 0.9)'
   },
   companyName: {
     color: 'white',
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '500',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   locationContainer: {
     flexDirection: 'row',

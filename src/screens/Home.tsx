@@ -69,16 +69,16 @@ const getBottomSpace = (insets: EdgeInsets) => {
 };
 
 const Home: React.FC = () => {
-  const { user, logout, server, tipo } = useAuthStore();
-  const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  const [weather, setWeather] = useState<WeatherState>({
+const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
+const [showDropdown, setShowDropdown] = useState<boolean>(false);
+const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
     weatherCode: null,
     isDay: null,
     loading: true,
     error: null,
   });
-  const [location, setLocation] = useState<LocationState>({
+const [location, setLocation] = useState<LocationState>({
     latitude: null,
     longitude: null,
     loading: true,
@@ -632,15 +632,8 @@ const Home: React.FC = () => {
               </View>
             </View>
             <Text style={homeStyles.companyName}>
-              {user?.username && `Usuario: ${user.username}`}
-              {user?.description && `Description${user.description}`}
-              {server && `\nServidor: ${server}`}
-              {tipo && `\nTipo: ${tipo}`}
-              {location.latitude && location.longitude && (
-                <Text style={{ fontSize: 10, color: '#fff' }}>
-                  {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
-                </Text>
-              )}
+              {user?.description && `${user.description}`}
+              {selectedVehiclePin}
             </Text>
 
             <View style={homeStyles.locationContainer}>
@@ -669,6 +662,8 @@ const Home: React.FC = () => {
 
           {/* Grid de opciones principales */}
           <View style={homeStyles.optionsGrid}>
+
+            
             <TouchableOpacity
               style={homeStyles.optionCard}
               onPress={handleNavigateToProfile}
@@ -742,6 +737,8 @@ const Home: React.FC = () => {
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+
       </SafeAreaView>
 
       

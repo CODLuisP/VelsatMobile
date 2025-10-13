@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, BackHandler } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Battery,
   Zap,
@@ -7,6 +7,8 @@ import {
   AlertTriangle,
   ChevronLeft,
   Bell,
+  Lightbulb,
+  AlertCircle,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
@@ -48,26 +50,28 @@ interface ApiNotification {
 }
 
 // Configurar axios con timeout más corto
-const apiClient = axios.create({
-  baseURL: 'https://velsat.pe:2087/api/Aplicativo',
-  timeout: 15000, // 15 segundos
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+
 
 const Notifications = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user, logout, server, tipo } = useAuthStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [displayedNotifications, setDisplayedNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<number>(1);
+
   
-  const ITEMS_PER_PAGE = 50; // Mostrar 50 notificaciones por página
+  const apiClient = axios.create({
+    baseURL: `${server}/api/Aplicativo`,
+    timeout: 15000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  // Refs para controlar el estado del componente
+  const isMountedRef = useRef(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -81,6 +85,36 @@ const Notifications = () => {
       NavigationBarColor('#00296b', false);
     }, []),
   );
+
+  // Cleanup cuando el componente se desmonta
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      console.log('Desmontando componente...');
+      isMountedRef.current = false;
+      
+      // Cancelar cualquier petición pendiente
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      
+      // Limpiar estados
+      setLoading(false);
+      setRefreshing(false);
+    };
+  }, []);
+
+  // Listener para el botón de hardware back (Android)
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      handleGoBack();
+      return true; // Prevenir el comportamiento por defecto
+    });
+
+    return () => backHandler.remove();
+  }, []);
 
   // Función para obtener el tipo de notificación según el statusCode
   const getNotificationType = (statusCode: number): string => {
@@ -130,32 +164,44 @@ const Notifications = () => {
     }
   };
 
-  // Función para cargar más notificaciones
-  const loadMoreNotifications = () => {
-    const startIndex = currentPage * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const moreNotifications = notifications.slice(startIndex, endIndex);
-    
-    if (moreNotifications.length > 0) {
-      setDisplayedNotifications(prev => [...prev, ...moreNotifications]);
-      setCurrentPage(prev => prev + 1);
-    }
-  };
-
   // Función para cargar las notificaciones desde la API
   const fetchNotifications = async (isRefreshing = false) => {
+    // Verificar ANTES de comenzar
+    if (!isMountedRef.current) {
+      console.log('Componente desmontado, cancelando fetch');
+      return;
+    }
+
     const startTime = Date.now();
     console.log('Iniciando petición...');
     
+    // Cancelar petición anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Crear nuevo AbortController
+    abortControllerRef.current = new AbortController();
+    
     try {
+      // Verificar antes de actualizar estado
+      if (!isMountedRef.current) return;
+      
       if (!isRefreshing) {
         setLoading(true);
       }
       setError('');
       
       const response = await apiClient.get<ApiNotification[]>(
-        `/notifications/${user?.username}`
+        `/notifications/${user?.username}`,
+        { signal: abortControllerRef.current.signal }
       );
+
+      // Verificar INMEDIATAMENTE después de la respuesta
+      if (!isMountedRef.current) {
+        console.log('Componente desmontado después de respuesta');
+        return;
+      }
 
       const endTime = Date.now();
       console.log(`Petición completada en ${endTime - startTime}ms`);
@@ -178,15 +224,24 @@ const Notifications = () => {
         };
       });
 
-      // Guardar todos los datos
+      // Verificar una vez más antes de actualizar
+      if (!isMountedRef.current) {
+        console.log('Componente desmontado antes de actualizar estado');
+        return;
+      }
+
       setNotifications(transformedNotifications);
       
-      // Mostrar solo los primeros 50
-      setDisplayedNotifications(transformedNotifications.slice(0, ITEMS_PER_PAGE));
-      setCurrentPage(1);
-      
-      console.log(`Mostrando ${ITEMS_PER_PAGE} de ${transformedNotifications.length} notificaciones`);
+      console.log(`Mostrando ${transformedNotifications.length} notificaciones`);
     } catch (err: any) {
+      // Si la petición fue cancelada, no hacer nada
+      if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+        console.log('Petición cancelada');
+        return;
+      }
+
+      if (!isMountedRef.current) return;
+
       const endTime = Date.now();
       console.error('Error al cargar notificaciones:', err);
       console.log(`Error después de ${endTime - startTime}ms`);
@@ -201,46 +256,49 @@ const Notifications = () => {
         setError('Error al cargar las notificaciones');
       }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      // Verificar antes del finally
+      if (isMountedRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   };
 
   // Función para refrescar
   const onRefresh = () => {
+    if (!isMountedRef.current) return;
     setRefreshing(true);
     fetchNotifications(true);
   };
 
   // Cargar notificaciones al montar el componente
   useEffect(() => {
-    if (user?.username) {
+    if (user?.username && isMountedRef.current) {
       fetchNotifications();
     }
   }, [user]);
 
-  // Detectar cuando llega al final del scroll
-  const handleScroll = (event: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const paddingToBottom = 20;
-    
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      // Si no está cargando más y hay más datos disponibles
-      if (!loadingMore && displayedNotifications.length < notifications.length) {
-        setLoadingMore(true);
-        setTimeout(() => {
-          loadMoreNotifications();
-          setLoadingMore(false);
-        }, 500);
-      }
-    }
-  };
-
   const handleGoBack = () => {
+    // Marcar como desmontado PRIMERO
+    isMountedRef.current = false;
+    
+    // Cancelar operaciones pendientes
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    
+    // Limpiar estados antes de navegar
+    setLoading(false);
+    setRefreshing(false);
+    
+    // Navegar después de la limpieza
     navigation.goBack();
   };
 
   const handleNotificationPress = (notification: Notification) => {
+    if (!isMountedRef.current) return;
+
     navigation.navigate('MapAlert', {
       notificationData: {
         id: notification.id,
@@ -309,19 +367,24 @@ const Notifications = () => {
             Visualiza el detalle de los eventos de tus unidades, falla de energía,
             motor apagado, motor encendido y botón de pánico.
           </Text>
-          {notifications.length > 0 && !loading && (
-            <Text style={styles.counterText}>
-              Mostrando {displayedNotifications.length} de {notifications.length} notificaciones
-            </Text>
-          )}
+          
+        
+            <View style={styles.counterContainer}>
+              <View style={styles.counterTextContainer}>
+                <Text style={styles.counterText}>
+                  Total de notificaciones: 
+                  <Text style={styles.counterNumber}> {notifications.length}</Text>
+                </Text>
+              </View>
+            </View>
+       
+        
         </View>
       </View>
 
       <ScrollView
         style={styles.notificationsList}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={400}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -338,15 +401,10 @@ const Notifications = () => {
               <Text style={styles.loadingText}>Cargando notificaciones...</Text>
             </View>
           ) : error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-              <TouchableOpacity 
-                style={styles.retryButton} 
-                onPress={() => fetchNotifications()}
-              >
-                <Text style={styles.retryButtonText}>Reintentar</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.errorContainer}>
+    <AlertCircle size={60} color="#FFB74D" />
+    <Text style={styles.errorText}>{error}</Text>
+  </View>
           ) : notifications.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Bell size={48} color="#fff" style={{ opacity: 0.5 }} />
@@ -354,7 +412,7 @@ const Notifications = () => {
             </View>
           ) : (
             <>
-              {displayedNotifications.map(notification => {
+              {notifications.map(notification => {
                 const IconComponent = notification.icon;
                 return (
                   <TouchableOpacity
@@ -383,19 +441,6 @@ const Notifications = () => {
                   </TouchableOpacity>
                 );
               })}
-              
-              {loadingMore && (
-                <View style={styles.loadingMoreContainer}>
-                  <ActivityIndicator size="small" color="#FF8C42" />
-                  <Text style={styles.loadingMoreText}>Cargando más...</Text>
-                </View>
-              )}
-              
-              {displayedNotifications.length >= notifications.length && notifications.length > ITEMS_PER_PAGE && (
-                <View style={styles.endContainer}>
-                  <Text style={styles.endText}>No hay más notificaciones</Text>
-                </View>
-              )}
             </>
           )}
         </View>

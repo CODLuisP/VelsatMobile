@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -164,10 +164,11 @@ errorContainer: {
   padding: 20,
 },
 errorText: {
-  color: '#FF6B6B',
+  color: '#232323ff',
   fontSize: 16,
   textAlign: 'center',
   marginBottom: 20,
+  marginTop: 10,
 },
 retryButton: {
   backgroundColor: '#FF8C42',
@@ -195,7 +196,7 @@ emptyText: {
 counterText: {
   color: '#fff',
   fontSize: 12,
-  marginTop: 5,
+
   opacity: 0.8,
 },
 loadingMoreContainer: {
@@ -216,6 +217,44 @@ endText: {
   color: '#fff',
   fontSize: 14,
   opacity: 0.6,
+},
+
+// Agregar estos estilos a tu archivo de estilos (notifications.ts o donde tengas tus estilos)
+
+counterContainer: {
+  borderRadius: 8,
+  paddingVertical: 10,
+  marginTop: 12,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+counterTextContainer: {
+  flex: 1,
+},
+
+
+
+counterNumber: {
+  color: '#FF8C42',
+  fontSize: 12,
+  fontWeight: '700',
+  marginLeft: 4,
+},
+
+counterBadge: {
+  backgroundColor: '#FF8C42',
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 12,
+  marginLeft: 10,
+},
+
+counterBadgeText: {
+  color: '#00296b',
+  fontSize: 12,
+  fontWeight: '700',
 },
 
 });
