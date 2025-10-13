@@ -246,7 +246,7 @@ deviceHeaderInfo: {
 
  mapTypeSelector: {
     position: 'absolute',
-    top: 45,
+    top: 76,
     right: 20,
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
