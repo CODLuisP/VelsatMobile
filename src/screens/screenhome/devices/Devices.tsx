@@ -51,7 +51,7 @@ interface ApiDevice {
 const Devices = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [searchText, setSearchText] = useState('');
-  const { user, logout, server, tipo } = useAuthStore();
+  const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -170,7 +170,13 @@ const Devices = () => {
           <View style={styles.vehicleImageContainer}>
             <View style={styles.vehicleImage}>
               <Image
-                source={require('../../../../assets/Car.jpg')}
+                source={{
+                  uri: selectedVehiclePin === 's'
+                    ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png'
+                    : selectedVehiclePin === 'p'
+                      ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407171/base_ahivtq.png'
+                      : 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/base_yhxknp.png'
+                }}
                 style={styles.carImage}
               />
             </View>
