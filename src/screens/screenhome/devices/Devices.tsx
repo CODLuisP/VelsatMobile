@@ -130,15 +130,15 @@ const Devices = () => {
 
   const getStatusColor = (speed: number, status: string) => {
     if (status === 'Detenido' || speed === 0) return '#FF4444';
-    if (speed >= 1 && speed <= 20) return '#FFA500';
-    if (speed > 20 && speed <= 45) return '#00AA00';
+    if (speed > 0 && speed < 11) return '#FFA500';
+    if (speed >= 11 && speed < 60) return '#00AA00';
     return '#0066FF';
   };
 
   const getSpeedColor = (speed: number, status: string) => {
     if (status === 'Detenido' || speed === 0) return '#FF4444';
-    if (speed >= 1 && speed <= 20) return '#FFA500';
-    if (speed > 20 && speed <= 45) return '#00AA00';
+    if (speed > 0 && speed < 11) return '#FFA500';
+    if (speed >= 11 && speed < 60) return '#00AA00';
     return '#0066FF';
   };
 

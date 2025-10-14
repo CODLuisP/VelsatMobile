@@ -717,6 +717,16 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
   const renderMap = () => {
     if (Platform.OS === 'ios') {
 const imageData = getDirectionImageData(heading);
+
+// Ajustar tamaños según el tipo de vehículo (solo para iOS)
+const iosImageSize: [number, number] = 
+  imageData.name === 'up.png' || imageData.name === 'down.png'
+    ? (pinType === 'c' ? [35, 90] : imageData.size)  // Vertical: camiones más grandes
+    : (pinType === 'c' ? [90, 50] : imageData.size); // Horizontal: camiones más grandes
+
+
+
+
 const radarColor =
         speed === 0
           ? '#ef4444'
@@ -807,8 +817,8 @@ const radarColor =
 <Image
   source={getDirectionImage(heading, pinType)}
   style={{
-    width: imageData.size[0],
-    height: imageData.size[1],
+    width: iosImageSize[0],
+    height: iosImageSize[1],
   }}
   resizeMode="contain"
 />
