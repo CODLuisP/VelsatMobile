@@ -716,8 +716,8 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
 
   const renderMap = () => {
     if (Platform.OS === 'ios') {
-      const imageData = getDirectionImageData(heading);
-      const radarColor =
+const imageData = getDirectionImageData(heading);
+const radarColor =
         speed === 0
           ? '#ef4444'
           : speed > 0 && speed < 11
@@ -804,14 +804,14 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
                   }}
                   coordinate={{ latitude, longitude }}
                 >
-                  <Image
-                    source={getDirectionImage(heading)}
-                    style={{
-                      width: imageData.size[0],
-                      height: imageData.size[1],
-                    }}
-                    resizeMode="contain"
-                  />
+<Image
+  source={getDirectionImage(heading, pinType)}
+  style={{
+    width: imageData.size[0],
+    height: imageData.size[1],
+  }}
+  resizeMode="contain"
+/>
                   <Callout>
                     <View style={{ padding: 0, minWidth: 230 }}>
                       <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
