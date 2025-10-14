@@ -70,6 +70,15 @@ const Login = () => {
     React.useCallback(() => {
       SystemNavigationBar.setNavigationColor('#00296b');
 
+      // 🔍 LOG: Verificar estado cuando el Login toma foco
+      const state = useAuthStore.getState();
+      console.log('👁️ Login tomó foco. Estado actual:', {
+        isAuthenticated: state.isAuthenticated,
+        hasUser: !!state.user,
+        hasToken: !!state.token,
+        hasServer: !!state.server,
+      });
+
       return () => {
         SystemNavigationBar.setNavigationColor('#00296b');
       };
@@ -81,7 +90,6 @@ const Login = () => {
   const formOpacity = useSharedValue(1);
   const formTranslateY = useSharedValue(0);
   const backgroundShift = useSharedValue(0);
-
 
   // Animación del carro en carretera (footer)
   const carPosition = useSharedValue(-100);
@@ -99,31 +107,46 @@ const Login = () => {
     authenticateWithBiometric,
     getBiometricDisplayName,
     canUseBiometricLogin,
+    logout, // 🆕 Importar logout
   } = useAuthStore();
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
 
-
-
-const handleBiometricLogin = async () => {
-  try {
-    // Activar loading ANTES de la autenticación
-    setIsLoggingIn(true);
-    setLoading(true);
-
-    const success = await authenticateWithBiometric();
-
-    if (success) {
-     
+  const handleBiometricLogin = async () => {
+    try {
+      console.log('🔐 Usuario presionó botón de login biométrico');
       
-      console.log('Autenticación biométrica exitosa');
-   
-    } else {
-      console.log('Autenticación biométrica fallida');
+      // Activar loading ANTES de la autenticación
+      setIsLoggingIn(true);
+      setLoading(true);
+
+      const success = await authenticateWithBiometric();
+
+      if (success) {
+        console.log('✅ Autenticación biométrica exitosa');
+      } else {
+        console.log('❌ Autenticación biométrica fallida');
+        
+        Alert.alert(
+          'Autenticación fallida',
+          'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
+          [
+            { 
+              text: 'Entendido',
+              onPress: () => {
+                setIsLoggingIn(false);
+                setLoading(false);
+              }
+            }
+          ],
+        );
+      }
+    } catch (error) {
+      console.log('❌ Error en autenticación biométrica:', error);
       
       Alert.alert(
-        'Autenticación fallida',
-        'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
+        'Error de Autenticación',
+        'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
         [
           { 
             text: 'Entendido',
@@ -135,25 +158,7 @@ const handleBiometricLogin = async () => {
         ],
       );
     }
-  } catch (error) {
-    console.log('Error en autenticación biométrica:', error);
-    
-    Alert.alert(
-      'Error de Autenticación',
-      'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
-      [
-        { 
-          text: 'Entendido',
-          onPress: () => {
-            setIsLoggingIn(false);
-            setLoading(false);
-          }
-        }
-      ],
-    );
-  }
-};
-
+  };
 
   const loadSavedCredentials = async () => {
     try {
@@ -161,13 +166,19 @@ const handleBiometricLogin = async () => {
       const savedPassword = await AsyncStorage.getItem('savedPassword');
       const rememberFlag = await AsyncStorage.getItem('rememberMe');
 
+      console.log('📂 Credenciales guardadas encontradas:', {
+        hasSavedUser: !!savedUser,
+        hasSavedPassword: !!savedPassword,
+        rememberFlag,
+      });
+
       if (rememberFlag === 'true' && savedUser && savedPassword) {
         setUsuario(savedUser);
         setPassword(savedPassword);
         setRememberMe(true);
       }
     } catch (error) {
-      console.log('Error loading saved credentials:', error);
+      console.log('❌ Error cargando credenciales guardadas:', error);
     }
   };
 
@@ -177,11 +188,12 @@ const handleBiometricLogin = async () => {
         await AsyncStorage.setItem('savedUser', usuario);
         await AsyncStorage.setItem('savedPassword', password);
         await AsyncStorage.setItem('rememberMe', 'true');
+        console.log('💾 Credenciales guardadas en AsyncStorage');
       } else {
         await clearCredentials();
       }
     } catch (error) {
-      console.log('Error saving credentials:', error);
+      console.log('❌ Error guardando credenciales:', error);
     }
   };
 
@@ -190,8 +202,9 @@ const handleBiometricLogin = async () => {
       await AsyncStorage.removeItem('savedUser');
       await AsyncStorage.removeItem('savedPassword');
       await AsyncStorage.removeItem('rememberMe');
+      console.log('🧹 Credenciales limpiadas de AsyncStorage');
     } catch (error) {
-      console.log('Error clearing credentials:', error);
+      console.log('❌ Error limpiando credenciales:', error);
     }
   };
 
@@ -201,10 +214,10 @@ const handleBiometricLogin = async () => {
 
     Linking.openURL(phoneUrl)
       .then(() => {
-        console.log('Marcador abierto exitosamente');
+        console.log('📞 Marcador abierto exitosamente');
       })
       .catch(error => {
-        console.log('Error abriendo marcador:', error);
+        console.log('❌ Error abriendo marcador:', error);
 
         Alert.alert(
           'No se pudo abrir el marcador',
@@ -226,6 +239,8 @@ const handleBiometricLogin = async () => {
     }
 
     try {
+      console.log('🚀 Iniciando login para usuario:', usuario);
+      
       // Activar estado de carga INMEDIATAMENTE
       setIsLoggingIn(true);
       setLoading(true);
@@ -255,6 +270,7 @@ const handleBiometricLogin = async () => {
       );
 
       const serverData = serverResponse.data;
+      console.log('🌐 Servidor obtenido:', serverData.servidor, 'tipo:', serverData.tipo);
 
       if (!serverData.servidor) {
         Alert.alert(
@@ -282,6 +298,7 @@ const handleBiometricLogin = async () => {
       );
 
       const loginData = loginResponse.data;
+      console.log('✅ Login exitoso:', loginData.username);
 
       if (loginData.token && loginData.username && loginData.account) {
         await saveCredentials();
@@ -301,6 +318,7 @@ const handleBiometricLogin = async () => {
         };
 
         setUser(userObj);
+        console.log('👤 Usuario establecido, navegando a Home...');
       } else {
         Alert.alert('Error', 'Respuesta de login inválida');
         setIsLoggingIn(false);
@@ -326,11 +344,13 @@ const handleBiometricLogin = async () => {
         }
       }
 
+      console.log('❌ Error en login:', errorMessage);
       Alert.alert('Error de Login', errorMessage);
       setIsLoggingIn(false);
       setLoading(false);
     }
   };
+
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: buttonScale.value }],
     backgroundColor: isLoggingIn ? '#22c55e' : '#f97316',
@@ -340,64 +360,76 @@ const handleBiometricLogin = async () => {
     transform: [{ rotate: `${loadingRotation.value}deg` }],
   }));
 
-  useEffect(() => {
-    loadSavedCredentials();
 
-    const checkBiometricWithDelay = async (): Promise<void> => {
-      try {
-        await checkBiometricAvailability();
 
-        const canUse = canUseBiometricLogin();
+useEffect(() => {
+  loadSavedCredentials();
 
-        if (canUse) {
-          setShowBiometricOption(true);
-        } else {
-          console.log('No se puede usar biometría:', {
-            enabled: biometric.isEnabled,
-            available: biometric.isAvailable,
-            hasCredentials:
-              !!useAuthStore.getState().biometricCredentials.username,
-          });
-        }
-      } catch (error) {
-        console.log('Error en verificación biométrica:', error);
+  const checkBiometricWithDelay = async (): Promise<void> => {
+    try {
+      await checkBiometricAvailability();
+
+      const canUse = canUseBiometricLogin();
+
+      if (canUse) {
+        console.log('✅ Login biométrico disponible');
+        setShowBiometricOption(true);
+        
+        // 🆕 Auto-ejecutar login biométrico
+        setTimeout(() => {
+          handleBiometricLogin();
+        }, 500);
+        
+      } else {
+        console.log('⚠️ Login biométrico no disponible:', {
+          enabled: biometric.isEnabled,
+          available: biometric.isAvailable,
+          hasCredentials:
+            !!useAuthStore.getState().biometricCredentials.username,
+        });
       }
-    };
+    } catch (error) {
+      console.log('❌ Error en verificación biométrica:', error);
+    }
+  };
 
-    checkBiometricWithDelay();
+  checkBiometricWithDelay();
 
-    backgroundShift.value = withRepeat(
-      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
+  backgroundShift.value = withRepeat(
+    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+    -1,
+    true,
+  );
 
-    const startCarAnimation = (): void => {
-      carPosition.value = -200;
-      carPosition.value = withTiming(
-        width + 100,
-        {
-          duration: 8000,
-          easing: Easing.linear,
-        },
-        (finished?: boolean) => {
-          if (finished) {
-            runOnJS(startCarAnimation)();
-          }
-        },
-      );
-    };
-    startCarAnimation();
-
-    roadOffset.value = withRepeat(
-      withTiming(80, {
-        duration: 800,
+  const startCarAnimation = (): void => {
+    carPosition.value = -200;
+    carPosition.value = withTiming(
+      width + 100,
+      {
+        duration: 8000,
         easing: Easing.linear,
-      }),
-      -1,
-      false,
+      },
+      (finished?: boolean) => {
+        if (finished) {
+          runOnJS(startCarAnimation)();
+        }
+      },
     );
-  }, []);
+  };
+  startCarAnimation();
+
+  roadOffset.value = withRepeat(
+    withTiming(80, {
+      duration: 800,
+      easing: Easing.linear,
+    }),
+    -1,
+    false,
+  );
+}, []);
+
+
+
 
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
@@ -431,14 +463,10 @@ const handleBiometricLogin = async () => {
         style={styles.backgroundMap}
         resizeMode="cover"
       />
-      {/* Fondo gradiente animado */}
 
-      {/* Contenido principal */}
       <View style={styles.mainContent}>
-        {/* Formulario moderno */}
         <Animated.View style={[styles.formContainer, formStyle]}>
           <View style={styles.formCard}>
-            {/* Logo con glow effect */}
             <Animated.View style={[styles.logoContainer, logoStyle]}>
               <View style={styles.logoMain}>
                 <Image
@@ -473,7 +501,6 @@ const handleBiometricLogin = async () => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Separador visual */}
                 <View style={styles.loginSeparator}>
                   <View style={styles.separatorLine} />
                   <Text style={styles.separatorText}>o</Text>
@@ -482,7 +509,6 @@ const handleBiometricLogin = async () => {
               </>
             )}
 
-            {/* Inputs con diseño moderno */}
             <View style={styles.inputGroup}>
               <View style={styles.inputContainer}>
                 <View style={styles.inputIconContainer}>

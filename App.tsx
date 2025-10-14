@@ -5,11 +5,8 @@ import { View, StatusBar } from 'react-native';
 import Profile from './src/screens/screenhome/Profile';
 import ServicesDriver from './src/screens/screenhomedp/ServicesDriver';
 import ServicesPassenger from './src/screens/screenhomedp/ServicesPassenger';
-
 import ServicesDetailDriver from './src/screens/screenhomedp/ServicesDetailDriver';
-
 import ServicesDetailPassenger from './src/screens/screenhomedp/ServicesDetailPassenger';
-
 import Setting from './src/screens/screenhome/Setting';
 import Pin from './src/screens/screenhome/Pin';
 import Notifications from './src/screens/screenhome/Notifications';
@@ -72,7 +69,6 @@ export type RootStackParamList = {
   DetailDevice: {
     device: Device;
   };
-
   InfoDevice: {
     deviceName: string;
   };
@@ -137,21 +133,24 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const App = () => {
   const { isAuthenticated, isLoading, setLoading, tipo } = useAuthStore();
 
+  // Limpiar loading si el usuario está autenticado
   useEffect(() => {
     if (isAuthenticated && isLoading) {
-      console.log('Usuario autenticado, limpiando estado de loading');
+      console.log('✅ Usuario autenticado, limpiando estado de loading');
       setLoading(false);
     }
   }, [isAuthenticated, isLoading, setLoading]);
 
+  // Configurar barra de navegación del sistema
   useEffect(() => {
-    StatusBar.setBarStyle('dark-content', true);
+    StatusBar.setBarStyle('light-content', true);
 
     const setNavigationBarColor = () => {
       try {
         SystemNavigationBar.setNavigationColor('#00296b');
+        console.log('✅ Color de barra de navegación establecido');
       } catch (error) {
-        console.log('Error setting navigation bar color:', error);
+        console.log('❌ Error estableciendo color de barra de navegación:', error);
       }
     };
 
@@ -175,9 +174,9 @@ const App = () => {
               contentStyle: { backgroundColor: '#00296b' },
               animation: 'slide_from_right',
             }}
-            initialRouteName={isAuthenticated ? 'Home' : 'Login'}
           >
             {isAuthenticated ? (
+              // ✅ Pantallas cuando está AUTENTICADO
               <>
                 <Stack.Screen
                   name="Home"
@@ -226,6 +225,7 @@ const App = () => {
                 />
               </>
             ) : (
+              // ✅ Pantalla cuando NO está autenticado
               <Stack.Screen name="Login" component={Login} />
             )}
           </Stack.Navigator>
