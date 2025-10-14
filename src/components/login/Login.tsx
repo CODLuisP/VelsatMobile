@@ -430,7 +430,6 @@ useEffect(() => {
 
 
 
-
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
   }));
