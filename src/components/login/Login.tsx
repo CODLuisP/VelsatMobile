@@ -416,6 +416,7 @@ useEffect(() => {
       },
     );
   };
+  
   startCarAnimation();
 
   roadOffset.value = withRepeat(
