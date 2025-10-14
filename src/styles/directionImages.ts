@@ -1,17 +1,38 @@
-// src/utils/directionImages.ts
-
 export const DIRECTION_IMAGES = {
-  'up.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/up_f0z0c7.png',
-  'topright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/topright_ftymue.png',
-  'right.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/right_k9two2.png',
-  'downright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594559/downright_taregi.png',
-  'down.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/down_oeri45.png',
-  'downleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/downleft_pq3a7n.png',
-  'left.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/left_tinfqg.png',
-  'topleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594556/topleft_ofml2l.png',
+  s: {
+    'up.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/up_f0z0c7.png',
+    'topright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/topright_ftymue.png',
+    'right.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/right_k9two2.png',
+    'downright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594559/downright_taregi.png',
+    'down.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/down_oeri45.png',
+    'downleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/downleft_pq3a7n.png',
+    'left.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594554/left_tinfqg.png',
+    'topleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594556/topleft_ofml2l.png',
+  },
+  p: {
+    'up.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407170/up_kjdkui.png',
+    'topright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407179/topright_dwemw2.png',
+    'right.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407175/right_jvw4hu.png',
+    'downright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407175/downright_wcx6zk.png',
+    'down.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407171/down_vzvah0.png',
+    'downleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407173/downleftt_jprnqk.png',
+    'left.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407174/left_whnkql.png',
+    'topleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407177/topleft_bjy3cz.png',
+  },
+  c: {
+    'up.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/up_t9tkih.png',
+    'topright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407148/topright_dmxqvt.png',
+    'right.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407144/right_j1telm.png',
+    'downright.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407144/downright_jv5ntw.png',
+    'down.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/down_jbwmwf.png',
+    'downleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407144/downleft_ssf2zx.png',
+    'left.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407144/left_t7zdal.png',
+    'topleft.png': 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407144/topleft_ev8psj.png',
+  },
 } as const;
 
-export type DirectionImageName = keyof typeof DIRECTION_IMAGES;
+export type VehiclePinType = 's' | 'p' | 'c';
+export type DirectionImageName = keyof typeof DIRECTION_IMAGES.s;
 
 export interface DirectionImageData {
   name: DirectionImageName;
@@ -83,11 +104,13 @@ export const getDirectionImageData = (angle: number): DirectionImageData => {
   };
 };
 
-export const getDirectionImageName = (angle: number): DirectionImageName => {
+// ESTA FUNCIÓN YA NO SE EXPORTA - se usa internamente
+const getDirectionImageName = (angle: number): DirectionImageName => {
   return getDirectionImageData(angle).name;
 };
 
-export const getDirectionImage = (angle: number) => {
+// NUEVA FUNCIÓN con parámetro pinType
+export const getDirectionImage = (angle: number, pinType: VehiclePinType = 's') => {
   const imageName = getDirectionImageName(angle);
-  return { uri: DIRECTION_IMAGES[imageName] };
+  return { uri: DIRECTION_IMAGES[pinType][imageName] };
 };

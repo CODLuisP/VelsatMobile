@@ -50,6 +50,7 @@ import { formatDateTime, formatThreeDecimals, openGoogleMaps, toUpperCaseText } 
 import RadarDot from '../../../components/login/RadarDot';
 import {
   DIRECTION_IMAGES,
+  getDirectionImage,
   getDirectionImageData,
 } from '../../../styles/directionImages';
 
@@ -94,7 +95,7 @@ const DetailDevice = () => {
   const [isWebViewReady, setIsWebViewReady] = useState(false);
 
   const { device } = route.params;
-  const { user, logout, server, tipo } = useAuthStore();
+const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -256,17 +257,6 @@ const DetailDevice = () => {
   const status = getStatus();
   const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
 
-  const getDirectionImageName = (
-    angle: number,
-  ): keyof typeof DIRECTION_IMAGES => {
-    return getDirectionImageData(angle).name;
-  };
-
-  const getDirectionImage = (angle: number) => {
-    const imageName = getDirectionImageName(angle);
-    return { uri: DIRECTION_IMAGES[imageName] };
-  };
-
 
 
   const getStreetViewUrl = () => {
@@ -304,6 +294,23 @@ const DetailDevice = () => {
   };
 
   const tileConfig = getLeafletTileLayer(mapType);
+
+const pinType = selectedVehiclePin || 's';
+
+
+const iconSizes = pinType === 'c' 
+  ? {
+      vertical: [35, 90],    // up y down para camiones
+      horizontal: [90, 45],  // resto para camiones
+    }
+  : {
+      vertical: [30, 40],    // up y down para autos/personas
+      horizontal: [55, 35],  // resto para autos/personas
+    };
+
+
+  const popupOffset = pinType === 'c' ? -50 : -30;
+
 
   const leafletHTML = `
 <!DOCTYPE html>
@@ -390,16 +397,18 @@ const DetailDevice = () => {
         `}
 
         // Guardar todas las URLs de imágenes
-        window.imageUrls = {
-            up: '${DIRECTION_IMAGES['up.png']}',
-            topright: '${DIRECTION_IMAGES['topright.png']}',
-            right: '${DIRECTION_IMAGES['right.png']}',
-            downright: '${DIRECTION_IMAGES['downright.png']}',
-            down: '${DIRECTION_IMAGES['down.png']}',
-            downleft: '${DIRECTION_IMAGES['downleft.png']}',
-            left: '${DIRECTION_IMAGES['left.png']}',
-            topleft: '${DIRECTION_IMAGES['topleft.png']}'
-        };
+    // Guardar todas las URLs de imágenes
+// Guardar todas las URLs de imágenes
+window.imageUrls = {
+    up: '${DIRECTION_IMAGES[pinType]['up.png']}',
+    topright: '${DIRECTION_IMAGES[pinType]['topright.png']}',
+    right: '${DIRECTION_IMAGES[pinType]['right.png']}',
+    downright: '${DIRECTION_IMAGES[pinType]['downright.png']}',
+    down: '${DIRECTION_IMAGES[pinType]['down.png']}',
+    downleft: '${DIRECTION_IMAGES[pinType]['downleft.png']}',
+    left: '${DIRECTION_IMAGES[pinType]['left.png']}',
+    topleft: '${DIRECTION_IMAGES[pinType]['topleft.png']}'
+};
         
         var marker = null;
 
@@ -410,41 +419,47 @@ const DetailDevice = () => {
             map.scrollWheelZoom.disable();
         });
 
+   
         // Función para crear o actualizar el marcador
-        window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
-            // Determinar qué imagen y tamaño usar según el ángulo
-            var imageUrl = '';
-            var iconSize = [42, 25]; // Tamaño por defecto
-            
-            if (heading >= 0 && heading <= 22.5) {
-                imageUrl = window.imageUrls.up;
-                iconSize = [30,40]; // Vertical
-            } else if (heading > 22.5 && heading <= 67.5) {
-                imageUrl = window.imageUrls.topright;
-                iconSize = [55, 35]; // Horizontal
-            } else if (heading > 67.5 && heading <= 112.5) {
-                imageUrl = window.imageUrls.right;
-                iconSize = [55, 35]; // Horizontal
-            } else if (heading > 112.5 && heading <= 157.5) {
-                imageUrl = window.imageUrls.downright;
-                iconSize = [55, 35]; // Horizontal
-            } else if (heading > 157.5 && heading <= 202.5) {
-                imageUrl = window.imageUrls.down;
-                iconSize = [30,40]; // Vertical
-            } else if (heading > 202.5 && heading <= 247.5) {
-                imageUrl = window.imageUrls.downleft;
-                iconSize = [55, 35]; // Horizontal
-            } else if (heading > 247.5 && heading <= 292.5) {
-                imageUrl = window.imageUrls.left;
-                iconSize = [55, 35]; // Horizontal
-            } else if (heading > 292.5 && heading <= 337.5) {
-                imageUrl = window.imageUrls.topleft;
-                iconSize = [55, 35]; // Horizontal
-            } else {
-                imageUrl = window.imageUrls.up;
-                iconSize = [30,40]; // Vertical
-            }
-
+window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
+    // Determinar qué imagen y tamaño usar según el ángulo
+    var imageUrl = '';
+    var iconSize = [42, 25]; // Tamaño por defecto
+    
+    // Tamaños configurados desde React Native
+    var verticalSize = ${JSON.stringify(iconSizes.vertical)};
+    var horizontalSize = ${JSON.stringify(iconSizes.horizontal)};
+    
+    if (heading >= 0 && heading <= 22.5) {
+        imageUrl = window.imageUrls.up;
+        iconSize = verticalSize;
+    } else if (heading > 22.5 && heading <= 67.5) {
+        imageUrl = window.imageUrls.topright;
+        iconSize = horizontalSize;
+    } else if (heading > 67.5 && heading <= 112.5) {
+        imageUrl = window.imageUrls.right;
+        iconSize = horizontalSize;
+    } else if (heading > 112.5 && heading <= 157.5) {
+        imageUrl = window.imageUrls.downright;
+        iconSize = horizontalSize;
+    } else if (heading > 157.5 && heading <= 202.5) {
+        imageUrl = window.imageUrls.down;
+        iconSize = verticalSize;
+    } else if (heading > 202.5 && heading <= 247.5) {
+        imageUrl = window.imageUrls.downleft;
+        iconSize = horizontalSize;
+    } else if (heading > 247.5 && heading <= 292.5) {
+        imageUrl = window.imageUrls.left;
+        iconSize = horizontalSize;
+    } else if (heading > 292.5 && heading <= 337.5) {
+        imageUrl = window.imageUrls.topleft;
+        iconSize = horizontalSize;
+    } else {
+        imageUrl = window.imageUrls.up;
+        iconSize = verticalSize;
+    }
+    
+    
             // Determinar color del radar según velocidad
             var radarColor = '';
             if (speed === 0) {
@@ -540,7 +555,7 @@ const DetailDevice = () => {
                     html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
                     iconSize: iconSize,
                     iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
-                    popupAnchor: [0, -30],
+                    popupAnchor: [0, ${popupOffset}],
                     className: 'custom-vehicle-icon'
                 });
                 
@@ -564,7 +579,7 @@ const DetailDevice = () => {
                         html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
                         iconSize: iconSize,
                         iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
-                        popupAnchor: [0, -30],
+                        popupAnchor: [0, ${popupOffset}], 
                         className: 'custom-vehicle-icon'
                     });
                     marker.setIcon(vehicleIcon);
@@ -868,7 +883,7 @@ const DetailDevice = () => {
           />
 
           {/* Botones de tipo de mapa para Android */}
-          <View style={styles.mapTypeSelector}>
+          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>          
             <TouchableOpacity
               style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
               onPress={() => setMapType('standard')}
