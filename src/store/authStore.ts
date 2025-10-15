@@ -10,7 +10,7 @@ export interface User {
   email?: string;
   name?: string;
   description?: string;
-  codigo?: string; // 🆕 Agregado
+  codigo?: string;
 }
 
 // Configuración biométrica
@@ -41,7 +41,7 @@ interface AuthState {
     server: string | null;
     tipo: string | null;
     description: string | null;
-    codigo: string | null; // 🆕 Agregado
+    codigo: string | null;
   };
 
   // Actions existentes
@@ -90,7 +90,7 @@ export const useAuthStore = create<AuthState>()(
         server: null,
         tipo: null,
         description: null,
-        codigo: null, // 🆕 Agregado
+        codigo: null,
       },
 
       // Actions existentes
@@ -115,7 +115,7 @@ export const useAuthStore = create<AuthState>()(
                 server: newState.server!,
                 tipo: newState.tipo!,
                 description: user.description || null,
-                codigo: user.codigo || null, // 🆕 Agregado
+                codigo: user.codigo || null,
               },
             }));
             
@@ -126,7 +126,7 @@ export const useAuthStore = create<AuthState>()(
                   username: finalState.biometricCredentials.username,
                   tipo: finalState.biometricCredentials.tipo,
                   description: finalState.biometricCredentials.description,
-                  codigo: finalState.biometricCredentials.codigo, // 🆕 Agregado
+                  codigo: finalState.biometricCredentials.codigo,
                 });
               } else {
                 console.log('❌ Error: Las credenciales no se guardaron correctamente');
@@ -247,7 +247,7 @@ export const useAuthStore = create<AuthState>()(
                   server: currentState.server,
                   tipo: currentState.tipo,
                   description: currentState.user!.description || null,
-                  codigo: currentState.user!.codigo || null, // 🆕 Agregado
+                  codigo: currentState.user!.codigo || null,
                 },
               }));
             }
@@ -276,6 +276,7 @@ export const useAuthStore = create<AuthState>()(
         console.log('✅ Biometría deshabilitada');
       },
 
+      // 🆕 MODIFICADO: Lanza error específico al cancelar
       authenticateWithBiometric: async (): Promise<boolean> => {
         const state = get();
         
@@ -296,13 +297,12 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const rnBiometrics = new ReactNativeBiometrics();
-          const { success } = await rnBiometrics.simplePrompt({
+          const { success, error } = await rnBiometrics.simplePrompt({
             promptMessage: `Usa tu ${get().getBiometricDisplayName()} para acceder`,
             cancelButtonText: 'Cancelar'
           });
 
           if (success) {
-            // 🆕 Incluir codigo al restaurar sesión
             const { username, token, server, tipo, description, codigo } = state.biometricCredentials;
             
             console.log('✅ Autenticación biométrica exitosa, restaurando sesión:', {
@@ -310,7 +310,7 @@ export const useAuthStore = create<AuthState>()(
               tipo,
               server,
               description,
-              codigo, // 🆕 Agregado
+              codigo,
             });
             
             set({
@@ -323,7 +323,7 @@ export const useAuthStore = create<AuthState>()(
                 email: `${username}@velsat.com`,
                 name: username!.charAt(0).toUpperCase() + username!.slice(1),
                 description: description || undefined,
-                codigo: codigo || undefined, // 🆕 Agregado
+                codigo: codigo || undefined,
               },
               isAuthenticated: true,
               isLoading: false,
@@ -333,11 +333,20 @@ export const useAuthStore = create<AuthState>()(
             return true;
           }
           
-          console.log('❌ Autenticación biométrica cancelada por el usuario');
-          return false;
-        } catch (error) {
+          // 🆕 Si no tuvo éxito, verificar si fue cancelado
+          if (error && (error === 'User cancellation' || error === 'cancelled' || error === 'user_cancel')) {
+            console.log('⚠️ Usuario canceló la autenticación biométrica');
+            throw new Error('USER_CANCELLED');
+          }
+          
+          // Si no fue cancelado, entonces falló
+          console.log('❌ Autenticación biométrica fallida:', error);
+          throw new Error('BIOMETRIC_FAILED');
+          
+        } catch (error: any) {
+          // Re-lanzar el error para que Login.tsx lo maneje
           console.error('❌ Error en autenticación biométrica:', error);
-          return false;
+          throw error;
         }
       },
 
@@ -352,7 +361,7 @@ export const useAuthStore = create<AuthState>()(
               server,
               tipo: state.tipo,
               description: state.user?.description || null,
-              codigo: state.user?.codigo || null, // 🆕 Agregado
+              codigo: state.user?.codigo || null,
             },
           }));
           console.log('✅ Credenciales biométricas guardadas para usuario:', username, 'codigo:', state.user?.codigo);
@@ -372,7 +381,7 @@ export const useAuthStore = create<AuthState>()(
             server: null,
             tipo: null,
             description: null,
-            codigo: null, // 🆕 Agregado
+            codigo: null,
           },
         }));
         console.log('✅ Credenciales biométricas limpiadas');
@@ -405,7 +414,7 @@ export const useAuthStore = create<AuthState>()(
           hasCredentials: !!state.biometricCredentials.username,
           hasTipo: !!state.biometricCredentials.tipo,
           hasDescription: !!state.biometricCredentials.description,
-          hasCodigo: !!state.biometricCredentials.codigo, // 🆕 Agregado
+          hasCodigo: !!state.biometricCredentials.codigo,
         });
         
         return canUse;
@@ -439,7 +448,7 @@ export const useAuthStore = create<AuthState>()(
             credentialsUsername: state.biometricCredentials?.username,
             credentialsTipo: state.biometricCredentials?.tipo,
             credentialsDescription: state.biometricCredentials?.description,
-            credentialsCodigo: state.biometricCredentials?.codigo, // 🆕 Agregado
+            credentialsCodigo: state.biometricCredentials?.codigo,
             hasActiveSession: state.hasActiveSession,
             isAuthenticated: state.isAuthenticated,
             hasToken: !!state.token,

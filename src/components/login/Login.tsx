@@ -107,58 +107,67 @@ const Login = () => {
     authenticateWithBiometric,
     getBiometricDisplayName,
     canUseBiometricLogin,
-    logout, // 🆕 Importar logout
+    logout, 
   } = useAuthStore();
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
 
-  const handleBiometricLogin = async () => {
-    try {
-      console.log('🔐 Usuario presionó botón de login biométrico');
-      
-      // Activar loading ANTES de la autenticación
-      setIsLoggingIn(true);
-      setLoading(true);
+const handleBiometricLogin = async () => {
+  try {
+    console.log('🔐 Usuario presionó botón de login biométrico');
 
-      const success = await authenticateWithBiometric();
+    // Activar loading ANTES de la autenticación
+    setIsLoggingIn(true);
+    setLoading(true);
 
-      if (success) {
-        console.log('✅ Autenticación biométrica exitosa');
-      } else {
-        console.log('❌ Autenticación biométrica fallida');
-        
-        Alert.alert(
-          'Autenticación fallida',
-          'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
-          [
-            { 
-              text: 'Entendido',
-              onPress: () => {
-                setIsLoggingIn(false);
-                setLoading(false);
-              }
-            }
-          ],
-        );
-      }
-    } catch (error) {
-      console.log('❌ Error en autenticación biométrica:', error);
-      
+    const success = await authenticateWithBiometric();
+
+    if (success) {
+      console.log('✅ Autenticación biométrica exitosa');
+    } else {
+      console.log('❌ Autenticación biométrica fallida');
+
       Alert.alert(
-        'Error de Autenticación',
-        'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+        'Autenticación fallida',
+        'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
         [
-          { 
+          {
             text: 'Entendido',
             onPress: () => {
               setIsLoggingIn(false);
               setLoading(false);
-            }
-          }
+            },
+          },
         ],
       );
     }
-  };
+  } catch (error: any) {
+    console.log('❌ Error en autenticación biométrica:', error);
+
+    // 🆕 NO mostrar Alert si el usuario canceló
+    if (error?.message === 'USER_CANCELLED') {
+      console.log('⚠️ Usuario canceló la autenticación, no se muestra Alert');
+      setIsLoggingIn(false);
+      setLoading(false);
+      return;
+    }
+
+    // 🆕 Solo mostrar Alert para errores reales
+    Alert.alert(
+      'Error de Autenticación',
+      'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+      [
+        {
+          text: 'Entendido',
+          onPress: () => {
+            setIsLoggingIn(false);
+            setLoading(false);
+          },
+        },
+      ],
+    );
+  }
+};
 
   const loadSavedCredentials = async () => {
     try {
@@ -240,7 +249,7 @@ const Login = () => {
 
     try {
       console.log('🚀 Iniciando login para usuario:', usuario);
-      
+
       // Activar estado de carga INMEDIATAMENTE
       setIsLoggingIn(true);
       setLoading(true);
@@ -270,7 +279,12 @@ const Login = () => {
       );
 
       const serverData = serverResponse.data;
-      console.log('🌐 Servidor obtenido:', serverData.servidor, 'tipo:', serverData.tipo);
+      console.log(
+        '🌐 Servidor obtenido:',
+        serverData.servidor,
+        'tipo:',
+        serverData.tipo,
+      );
 
       if (!serverData.servidor) {
         Alert.alert(
@@ -307,17 +321,17 @@ const Login = () => {
         setToken(loginData.token);
         setTipo(serverData.tipo);
 
-  // Busca esta sección en tu handleLogin (alrededor de la línea 268)
-const userObj: UserType = {
-  id: loginData.username,
-  username: loginData.username,
-  email: `${loginData.username}@velsat.com`,
-  name:
-    loginData.username.charAt(0).toUpperCase() +
-    loginData.username.slice(1),
-  description: loginData.account.description,
-  codigo: loginData.account.codigo, // 🆕 Agregar esta línea
-};
+        // Busca esta sección en tu handleLogin (alrededor de la línea 268)
+        const userObj: UserType = {
+          id: loginData.username,
+          username: loginData.username,
+          email: `${loginData.username}@velsat.com`,
+          name:
+            loginData.username.charAt(0).toUpperCase() +
+            loginData.username.slice(1),
+          description: loginData.account.description,
+          codigo: loginData.account.codigo,
+        };
 
         setUser(userObj);
         console.log('👤 Usuario establecido, navegando a Home...');
@@ -362,76 +376,71 @@ const userObj: UserType = {
     transform: [{ rotate: `${loadingRotation.value}deg` }],
   }));
 
+  useEffect(() => {
+    loadSavedCredentials();
 
+    const checkBiometricWithDelay = async (): Promise<void> => {
+      try {
+        await checkBiometricAvailability();
 
-useEffect(() => {
-  loadSavedCredentials();
+        const canUse = canUseBiometricLogin();
 
-  const checkBiometricWithDelay = async (): Promise<void> => {
-    try {
-      await checkBiometricAvailability();
+        if (canUse) {
+          console.log('✅ Login biométrico disponible');
+          setShowBiometricOption(true);
 
-      const canUse = canUseBiometricLogin();
-
-      if (canUse) {
-        console.log('✅ Login biométrico disponible');
-        setShowBiometricOption(true);
-        
-        // 🆕 Auto-ejecutar login biométrico
-        setTimeout(() => {
-          handleBiometricLogin();
-        }, 500);
-        
-      } else {
-        console.log('⚠️ Login biométrico no disponible:', {
-          enabled: biometric.isEnabled,
-          available: biometric.isAvailable,
-          hasCredentials:
-            !!useAuthStore.getState().biometricCredentials.username,
-        });
-      }
-    } catch (error) {
-      console.log('❌ Error en verificación biométrica:', error);
-    }
-  };
-
-  checkBiometricWithDelay();
-
-  backgroundShift.value = withRepeat(
-    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
-
-  const startCarAnimation = (): void => {
-    carPosition.value = -200;
-    carPosition.value = withTiming(
-      width + 100,
-      {
-        duration: 8000,
-        easing: Easing.linear,
-      },
-      (finished?: boolean) => {
-        if (finished) {
-          runOnJS(startCarAnimation)();
+          // 🆕 Auto-ejecutar login biométrico
+          setTimeout(() => {
+            handleBiometricLogin();
+          }, 500);
+        } else {
+          console.log('⚠️ Login biométrico no disponible:', {
+            enabled: biometric.isEnabled,
+            available: biometric.isAvailable,
+            hasCredentials:
+              !!useAuthStore.getState().biometricCredentials.username,
+          });
         }
-      },
+      } catch (error) {
+        console.log('❌ Error en verificación biométrica:', error);
+      }
+    };
+
+    checkBiometricWithDelay();
+
+    backgroundShift.value = withRepeat(
+      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
     );
-  };
-  
-  startCarAnimation();
 
-  roadOffset.value = withRepeat(
-    withTiming(80, {
-      duration: 800,
-      easing: Easing.linear,
-    }),
-    -1,
-    false,
-  );
-}, []);
+    const startCarAnimation = (): void => {
+      carPosition.value = -200;
+      carPosition.value = withTiming(
+        width + 100,
+        {
+          duration: 8000,
+          easing: Easing.linear,
+        },
+        (finished?: boolean) => {
+          if (finished) {
+            runOnJS(startCarAnimation)();
+          }
+        },
+      );
+    };
 
+    startCarAnimation();
 
+    roadOffset.value = withRepeat(
+      withTiming(80, {
+        duration: 800,
+        easing: Easing.linear,
+      }),
+      -1,
+      false,
+    );
+  }, []);
 
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
