@@ -307,15 +307,17 @@ const Login = () => {
         setToken(loginData.token);
         setTipo(serverData.tipo);
 
-        const userObj: UserType = {
-          id: loginData.username,
-          username: loginData.username,
-          email: `${loginData.username}@velsat.com`,
-          name:
-            loginData.username.charAt(0).toUpperCase() +
-            loginData.username.slice(1),
-          description: loginData.account.description,
-        };
+  // Busca esta sección en tu handleLogin (alrededor de la línea 268)
+const userObj: UserType = {
+  id: loginData.username,
+  username: loginData.username,
+  email: `${loginData.username}@velsat.com`,
+  name:
+    loginData.username.charAt(0).toUpperCase() +
+    loginData.username.slice(1),
+  description: loginData.account.description,
+  codigo: loginData.account.codigo, // 🆕 Agregar esta línea
+};
 
         setUser(userObj);
         console.log('👤 Usuario establecido, navegando a Home...');

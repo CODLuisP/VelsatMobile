@@ -10,6 +10,7 @@ export interface User {
   email?: string;
   name?: string;
   description?: string;
+  codigo?: string; // 🆕 Agregado
 }
 
 // Configuración biométrica
@@ -28,7 +29,9 @@ interface AuthState {
   server: string | null;
   token: string | null;
   tipo: string | null;
-  selectedVehiclePin: 's' | 'p' | 'c'; // s=sedan, p=pickup, c=camion cisterna
+  selectedVehiclePin: 's' | 'p' | 'c';
+  
+  hasActiveSession: boolean;
   
   // Estados biométricos
   biometric: BiometricConfig;
@@ -37,6 +40,8 @@ interface AuthState {
     token: string | null;
     server: string | null;
     tipo: string | null;
+    description: string | null;
+    codigo: string | null; // 🆕 Agregado
   };
 
   // Actions existentes
@@ -69,7 +74,8 @@ export const useAuthStore = create<AuthState>()(
       server: null,
       token: null,
       tipo: null,
-      selectedVehiclePin: 's', // Por defecto sedan
+      selectedVehiclePin: 's',
+      hasActiveSession: false,
       
       // Estados biométricos
       biometric: {
@@ -83,6 +89,8 @@ export const useAuthStore = create<AuthState>()(
         token: null,
         server: null,
         tipo: null,
+        description: null,
+        codigo: null, // 🆕 Agregado
       },
 
       // Actions existentes
@@ -91,12 +99,11 @@ export const useAuthStore = create<AuthState>()(
           user,
           isAuthenticated: true,
           isLoading: false,
+          hasActiveSession: true,
         });
         
-        // Usar setTimeout para asegurar que el estado se actualice primero
         setTimeout(() => {
           const newState = get();
-          // Solo si la biometría está habilitada Y tenemos token, servidor Y tipo
           if (newState.biometric.isEnabled && newState.token && newState.server && newState.tipo) {
             console.log('🔐 Guardando credenciales biométricas para:', user.username);
             
@@ -107,16 +114,19 @@ export const useAuthStore = create<AuthState>()(
                 token: newState.token!,
                 server: newState.server!,
                 tipo: newState.tipo!,
+                description: user.description || null,
+                codigo: user.codigo || null, // 🆕 Agregado
               },
             }));
             
-            // Forzar persistencia inmediata
             setTimeout(() => {
               const finalState = get();
               if (finalState.biometricCredentials.username) {
-                console.log('✅ Credenciales biométricas guardadas y verificadas:', {
+                console.log('✅ Credenciales biométricas guardadas:', {
                   username: finalState.biometricCredentials.username,
-                  tipo: finalState.biometricCredentials.tipo
+                  tipo: finalState.biometricCredentials.tipo,
+                  description: finalState.biometricCredentials.description,
+                  codigo: finalState.biometricCredentials.codigo, // 🆕 Agregado
                 });
               } else {
                 console.log('❌ Error: Las credenciales no se guardaron correctamente');
@@ -149,7 +159,6 @@ export const useAuthStore = create<AuthState>()(
         console.log('👤 Tipo establecido:', tipo);
       },
 
-      // Action para guardar el pin seleccionado
       setSelectedVehiclePin: (pin: 's' | 'p' | 'c') => {
         set({ selectedVehiclePin: pin });
         console.log('📍 Pin de vehículo actualizado:', pin);
@@ -165,6 +174,7 @@ export const useAuthStore = create<AuthState>()(
           server: null,
           token: null,
           tipo: null,
+          hasActiveSession: false,
         });
         
         const currentState = get();
@@ -184,7 +194,6 @@ export const useAuthStore = create<AuthState>()(
 
       // ACTIONS BIOMÉTRICAS
 
-      // Verificar disponibilidad biométrica del dispositivo
       checkBiometricAvailability: async () => {
         try {
           const rnBiometrics = new ReactNativeBiometrics();
@@ -210,7 +219,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Activar biometría
       enableBiometric: async (type: string): Promise<boolean> => {
         try {
           const rnBiometrics = new ReactNativeBiometrics();
@@ -229,16 +237,17 @@ export const useAuthStore = create<AuthState>()(
               },
             }));
             
-            // Guardar credenciales inmediatamente si ya hay sesión activa
             const currentState = get();
             if (currentState.user && currentState.token && currentState.server && currentState.tipo) {
-              console.log('💾 Guardando credenciales biométricas inmediatamente para:', currentState.user.username, 'tipo:', currentState.tipo);
+              console.log('💾 Guardando credenciales biométricas inmediatamente para:', currentState.user.username);
               set((state) => ({
                 biometricCredentials: {
                   username: currentState.user!.username,
                   token: currentState.token,
                   server: currentState.server,
                   tipo: currentState.tipo,
+                  description: currentState.user!.description || null,
+                  codigo: currentState.user!.codigo || null, // 🆕 Agregado
                 },
               }));
             }
@@ -254,7 +263,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Desactivar biometría
       disableBiometric: async () => {
         set((state) => ({
           biometric: {
@@ -264,12 +272,10 @@ export const useAuthStore = create<AuthState>()(
           },
         }));
         
-        // Limpiar credenciales al desactivar
         get().clearBiometricCredentials();
         console.log('✅ Biometría deshabilitada');
       },
 
-      // Autenticar con biometría
       authenticateWithBiometric: async (): Promise<boolean> => {
         const state = get();
         
@@ -296,13 +302,15 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (success) {
-            // Restaurar sesión automáticamente CON tipo
-            const { username, token, server, tipo } = state.biometricCredentials;
+            // 🆕 Incluir codigo al restaurar sesión
+            const { username, token, server, tipo, description, codigo } = state.biometricCredentials;
             
             console.log('✅ Autenticación biométrica exitosa, restaurando sesión:', {
               username,
               tipo,
-              server
+              server,
+              description,
+              codigo, // 🆕 Agregado
             });
             
             set({
@@ -314,9 +322,12 @@ export const useAuthStore = create<AuthState>()(
                 username: username!,
                 email: `${username}@velsat.com`,
                 name: username!.charAt(0).toUpperCase() + username!.slice(1),
+                description: description || undefined,
+                codigo: codigo || undefined, // 🆕 Agregado
               },
               isAuthenticated: true,
               isLoading: false,
+              hasActiveSession: true,
             });
             
             return true;
@@ -330,11 +341,9 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Guardar credenciales para login biométrico
       saveBiometricCredentials: (username: string, token: string, server: string) => {
         const state = get();
         
-        // Solo guardar si la biometría está habilitada Y hay tipo
         if (state.biometric.isEnabled && state.tipo) {
           set((state) => ({
             biometricCredentials: {
@@ -342,9 +351,11 @@ export const useAuthStore = create<AuthState>()(
               token,
               server,
               tipo: state.tipo,
+              description: state.user?.description || null,
+              codigo: state.user?.codigo || null, // 🆕 Agregado
             },
           }));
-          console.log('✅ Credenciales biométricas guardadas para usuario:', username, 'tipo:', state.tipo);
+          console.log('✅ Credenciales biométricas guardadas para usuario:', username, 'codigo:', state.user?.codigo);
         } else {
           console.log('⚠️ No se guardaron credenciales biométricas:', {
             biometricEnabled: state.biometric.isEnabled,
@@ -353,7 +364,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Limpiar credenciales biométricas
       clearBiometricCredentials: () => {
         set((state) => ({
           biometricCredentials: {
@@ -361,12 +371,13 @@ export const useAuthStore = create<AuthState>()(
             token: null,
             server: null,
             tipo: null,
+            description: null,
+            codigo: null, // 🆕 Agregado
           },
         }));
         console.log('✅ Credenciales biométricas limpiadas');
       },
 
-      // Obtener nombre amigable de la biometría
       getBiometricDisplayName: (): string => {
         const { biometric } = get();
         switch (biometric.type) {
@@ -377,7 +388,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Verificar si se puede usar login biométrico
       canUseBiometricLogin: (): boolean => {
         const state = get();
         const canUse = (
@@ -393,7 +403,9 @@ export const useAuthStore = create<AuthState>()(
           isEnabled: state.biometric.isEnabled,
           isAvailable: state.biometric.isAvailable,
           hasCredentials: !!state.biometricCredentials.username,
-          hasTipo: !!state.biometricCredentials.tipo
+          hasTipo: !!state.biometricCredentials.tipo,
+          hasDescription: !!state.biometricCredentials.description,
+          hasCodigo: !!state.biometricCredentials.codigo, // 🆕 Agregado
         });
         
         return canUse;
@@ -402,17 +414,22 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      // ✅ CRÍTICO: Solo persistir configuración biométrica y pin de vehículo
-      // NO persistir datos de sesión (user, isAuthenticated, server, token, tipo)
       partialize: (state: AuthState) => ({
         selectedVehiclePin: state.selectedVehiclePin,
         biometric: state.biometric,
         biometricCredentials: state.biometricCredentials,
-        // ❌ NO persistir: user, isAuthenticated, isLoading, server, token, tipo
       }),
       version: 1,
       onRehydrateStorage: () => (state: AuthState | undefined) => {
         if (state) {
+          state.user = null;
+          state.isAuthenticated = false;
+          state.isLoading = false;
+          state.server = null;
+          state.token = null;
+          state.tipo = null;
+          state.hasActiveSession = false;
+          
           console.log('🔄 Store hidratado correctamente:', {
             selectedVehiclePin: state.selectedVehiclePin,
             hasBiometric: !!state.biometric,
@@ -421,7 +438,9 @@ export const useAuthStore = create<AuthState>()(
             hasCredentials: !!state.biometricCredentials?.username,
             credentialsUsername: state.biometricCredentials?.username,
             credentialsTipo: state.biometricCredentials?.tipo,
-            // Estos deberían ser null/false al cargar:
+            credentialsDescription: state.biometricCredentials?.description,
+            credentialsCodigo: state.biometricCredentials?.codigo, // 🆕 Agregado
+            hasActiveSession: state.hasActiveSession,
             isAuthenticated: state.isAuthenticated,
             hasToken: !!state.token,
             hasServer: !!state.server,

@@ -70,6 +70,8 @@ const getBottomSpace = (insets: EdgeInsets) => {
 
 const Home: React.FC = () => {
 const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
+const codigo = user?.codigo;
+
 const [showDropdown, setShowDropdown] = useState<boolean>(false);
 const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
@@ -634,6 +636,7 @@ const [location, setLocation] = useState<LocationState>({
             <Text style={homeStyles.companyName}>
               {user?.description && `${user.description}`}
               {selectedVehiclePin}
+              {codigo && ` - ${codigo}`}
             </Text>
 
             <View style={homeStyles.locationContainer}>
