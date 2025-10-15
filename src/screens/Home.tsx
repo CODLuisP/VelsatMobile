@@ -770,7 +770,7 @@ const Home: React.FC = () => {
   onPress={handleNavigateToSecurity}
 >
   <ImageBackground
-    source={require('../../assets/seguridad.jpg')} // 🔄 Cambia por tu imagen
+    source={require('../../assets/biometria.jpg')} // 🔄 Cambia por tu imagen
     style={{
       position: 'absolute',
       top: 0,
