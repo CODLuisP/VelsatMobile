@@ -68,6 +68,8 @@ const getBottomSpace = (insets: EdgeInsets) => {
 
 const HomeDriverPassenger: React.FC = () => {
   const { user, logout, server, tipo } = useAuthStore();
+  const codigo = user?.codigo;
+
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
@@ -624,11 +626,7 @@ const HomeDriverPassenger: React.FC = () => {
          {user?.description && `Description${user.description}`}
          {server && `\nServidor: ${server}`}
          {tipo && `\nTipo: ${tipo}`}
-         {location.latitude && location.longitude && (
-           <Text style={{ fontSize: 10, color: '#fff' }}>
-             {`\nLat: ${location.latitude}, Lng: ${location.longitude}`}
-           </Text>
-         )}
+          {codigo && ` - Código: ${codigo}`}
        </Text>
 
             <View style={homeStyles.locationContainer}>

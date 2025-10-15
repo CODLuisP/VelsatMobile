@@ -10,6 +10,7 @@ export interface User {
   email?: string;
   name?: string;
   description?: string;
+  codigo?: string;
 }
 
 // Configuración biométrica
@@ -28,7 +29,9 @@ interface AuthState {
   server: string | null;
   token: string | null;
   tipo: string | null;
-  selectedVehiclePin: 's' | 'p' | 'c'; // s=sedan, p=pickup, c=camion cisterna
+  selectedVehiclePin: 's' | 'p' | 'c';
+  
+  hasActiveSession: boolean;
   
   // Estados biométricos
   biometric: BiometricConfig;
@@ -37,6 +40,8 @@ interface AuthState {
     token: string | null;
     server: string | null;
     tipo: string | null;
+    description: string | null;
+    codigo: string | null;
   };
 
   // Actions existentes
@@ -69,7 +74,8 @@ export const useAuthStore = create<AuthState>()(
       server: null,
       token: null,
       tipo: null,
-      selectedVehiclePin: 's', // Por defecto sedan
+      selectedVehiclePin: 's',
+      hasActiveSession: false,
       
       // Estados biométricos
       biometric: {
@@ -83,6 +89,8 @@ export const useAuthStore = create<AuthState>()(
         token: null,
         server: null,
         tipo: null,
+        description: null,
+        codigo: null,
       },
 
       // Actions existentes
@@ -91,6 +99,7 @@ export const useAuthStore = create<AuthState>()(
           user,
           isAuthenticated: true,
           isLoading: false,
+          hasActiveSession: true,
         });
         
         setTimeout(() => {
@@ -103,8 +112,31 @@ export const useAuthStore = create<AuthState>()(
                 token: newState.token!,
                 server: newState.server!,
                 tipo: newState.tipo!,
+                description: user.description || null,
+                codigo: user.codigo || null,
               },
             }));
+            
+            // Forzar persistencia inmediata
+            setTimeout(() => {
+              const finalState = get();
+              if (finalState.biometricCredentials.username) {
+                console.log('✅ Credenciales biométricas guardadas y verificadas:', {
+                  username: finalState.biometricCredentials.username,
+                  tipo: finalState.biometricCredentials.tipo
+                });
+              } else {
+                console.log('❌ Error: Las credenciales no se guardaron correctamente');
+              }
+            }, 50);
+            
+          } else {
+            console.log('⚠️ No se pudieron guardar credenciales biométricas:', {
+              biometricEnabled: newState.biometric.isEnabled,
+              hasToken: !!newState.token,
+              hasServer: !!newState.server,
+              hasTipo: !!newState.tipo
+            });
           }
         }, 100);
       },
@@ -133,6 +165,7 @@ export const useAuthStore = create<AuthState>()(
           server: null,
           token: null,
           tipo: null,
+          hasActiveSession: false,
         });
         
         const currentState = get();
@@ -189,12 +222,15 @@ export const useAuthStore = create<AuthState>()(
             
             const currentState = get();
             if (currentState.user && currentState.token && currentState.server && currentState.tipo) {
+              console.log('💾 Guardando credenciales biométricas inmediatamente para:', currentState.user.username, 'tipo:', currentState.tipo);
               set((state) => ({
                 biometricCredentials: {
                   username: currentState.user!.username,
                   token: currentState.token,
                   server: currentState.server,
                   tipo: currentState.tipo,
+                  description: currentState.user!.description || null,
+                  codigo: currentState.user!.codigo || null,
                 },
               }));
             }
@@ -220,6 +256,7 @@ export const useAuthStore = create<AuthState>()(
         get().clearBiometricCredentials();
       },
 
+      // Autenticar con biometría
       authenticateWithBiometric: async (): Promise<boolean> => {
         const state = get();
         
@@ -236,13 +273,20 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const rnBiometrics = new ReactNativeBiometrics();
-          const { success } = await rnBiometrics.simplePrompt({
+          const { success, error } = await rnBiometrics.simplePrompt({
             promptMessage: `Usa tu ${get().getBiometricDisplayName()} para acceder`,
             cancelButtonText: 'Cancelar'
           });
 
           if (success) {
+            // Restaurar sesión automáticamente CON tipo
             const { username, token, server, tipo } = state.biometricCredentials;
+            
+            console.log('✅ Autenticación biométrica exitosa, restaurando sesión:', {
+              username,
+              tipo,
+              server
+            });
             
             set({
               server,
@@ -253,16 +297,21 @@ export const useAuthStore = create<AuthState>()(
                 username: username!,
                 email: `${username}@velsat.com`,
                 name: username!.charAt(0).toUpperCase() + username!.slice(1),
+                description: description || undefined,
+                codigo: codigo || undefined,
               },
               isAuthenticated: true,
               isLoading: false,
+              hasActiveSession: true,
             });
             
             return true;
           }
           
+          console.log('❌ Autenticación biométrica cancelada por el usuario');
           return false;
         } catch (error) {
+          console.error('❌ Error en autenticación biométrica:', error);
           return false;
         }
       },
@@ -277,8 +326,16 @@ export const useAuthStore = create<AuthState>()(
               token,
               server,
               tipo: state.tipo,
+              description: state.user?.description || null,
+              codigo: state.user?.codigo || null,
             },
           }));
+          console.log('✅ Credenciales biométricas guardadas para usuario:', username, 'tipo:', state.tipo);
+        } else {
+          console.log('⚠️ No se guardaron credenciales biométricas:', {
+            biometricEnabled: state.biometric.isEnabled,
+            hasTipo: !!state.tipo
+          });
         }
       },
 
@@ -289,6 +346,8 @@ export const useAuthStore = create<AuthState>()(
             token: null,
             server: null,
             tipo: null,
+            description: null,
+            codigo: null,
           },
         }));
       },
@@ -313,6 +372,15 @@ export const useAuthStore = create<AuthState>()(
           !!state.biometricCredentials.server &&
           !!state.biometricCredentials.tipo
         );
+        
+        console.log('🔍 ¿Puede usar login biométrico?:', canUse, {
+          isEnabled: state.biometric.isEnabled,
+          isAvailable: state.biometric.isAvailable,
+          hasCredentials: !!state.biometricCredentials.username,
+          hasTipo: !!state.biometricCredentials.tipo
+        });
+        
+        return canUse;
       },
     }),
     {
@@ -324,6 +392,27 @@ export const useAuthStore = create<AuthState>()(
         biometricCredentials: state.biometricCredentials,
       }),
       version: 1,
+      onRehydrateStorage: () => (state: AuthState | undefined) => {
+        if (state) {
+          console.log('🔄 Store hidratado correctamente:', {
+            selectedVehiclePin: state.selectedVehiclePin,
+            hasBiometric: !!state.biometric,
+            biometricEnabled: state.biometric?.isEnabled,
+            biometricType: state.biometric?.type,
+            hasCredentials: !!state.biometricCredentials?.username,
+            credentialsUsername: state.biometricCredentials?.username,
+            credentialsTipo: state.biometricCredentials?.tipo,
+            // Estos deberían ser null/false al cargar:
+            isAuthenticated: state.isAuthenticated,
+            hasToken: !!state.token,
+            hasServer: !!state.server,
+            hasTipo: !!state.tipo,
+            hasUser: !!state.user
+          });
+        } else {
+          console.log('❌ Error en hidratación del store');
+        }
+      },
     }
   )
 );

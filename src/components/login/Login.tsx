@@ -108,9 +108,13 @@ const Login = () => {
       setIsLoggingIn(true);
       setLoading(true);
 
-      const success = await authenticateWithBiometric();
+    const success = await authenticateWithBiometric();
 
-      if (!success) {
+      if (success) {
+        console.log('✅ Autenticación biométrica exitosa');
+      } else {
+        console.log('❌ Autenticación biométrica fallida');
+        
         Alert.alert(
           'Autenticación fallida',
           'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
@@ -126,6 +130,8 @@ const Login = () => {
         );
       }
     } catch (error) {
+      console.log('❌ Error en autenticación biométrica:', error);
+      
       Alert.alert(
         'Error de Autenticación',
         'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
@@ -208,6 +214,9 @@ const Login = () => {
     }
 
     try {
+      console.log('🚀 Iniciando login para usuario:', usuario);
+      
+      // Activar estado de carga INMEDIATAMENTE
       setIsLoggingIn(true);
       setLoading(true);
 
@@ -233,6 +242,7 @@ const Login = () => {
       );
 
       const serverData = serverResponse.data;
+      console.log('🌐 Servidor obtenido:', serverData.servidor, 'tipo:', serverData.tipo);
 
       if (!serverData.servidor) {
         Alert.alert(
@@ -268,6 +278,7 @@ const Login = () => {
         setToken(loginData.token);
         setTipo(serverData.tipo);
 
+        // Busca esta sección en tu handleLogin (alrededor de la línea 268)
         const userObj: UserType = {
           id: loginData.username,
           username: loginData.username,
@@ -276,6 +287,7 @@ const Login = () => {
             loginData.username.charAt(0).toUpperCase() +
             loginData.username.slice(1),
           description: loginData.account.description,
+          codigo: loginData.account.codigo,
         };
 
         setUser(userObj);
@@ -328,17 +340,27 @@ const Login = () => {
 
         const canUse = canUseBiometricLogin();
 
-        if (canUse) {
-          setShowBiometricOption(true);
-          
-          setTimeout(() => {
-            handleBiometricLogin();
-          }, 500);
-        }
-      } catch (error) {
-        // Error handling silently
+      if (canUse) {
+        console.log('✅ Login biométrico disponible');
+        setShowBiometricOption(true);
+        
+        // 🆕 Auto-ejecutar login biométrico
+        setTimeout(() => {
+          handleBiometricLogin();
+        }, 500);
+        
+      } else {
+        console.log('⚠️ Login biométrico no disponible:', {
+          enabled: biometric.isEnabled,
+          available: biometric.isAvailable,
+          hasCredentials:
+            !!useAuthStore.getState().biometricCredentials.username,
+        });
       }
-    };
+    } catch (error) {
+      console.log('❌ Error en verificación biométrica:', error);
+    }
+  };
 
     checkBiometricWithDelay();
 
