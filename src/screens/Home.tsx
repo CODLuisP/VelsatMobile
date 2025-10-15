@@ -801,21 +801,43 @@ const Home: React.FC = () => {
 
           </View>
 
-          <View style={homeStyles.customerCareContainer}>
-            <TouchableOpacity style={homeStyles.customerCareCard} onPress={handleNavigateToHelp}>
-              <View style={homeStyles.customerCareIcon}>
-                <Headphones size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.customerCareTitle}>
-                Ayuda
-              </Text>
-              <Text style={homeStyles.customerCareSubtitle}>
-                Conoce nuestros números telefónicos, llámanos a la central de
-                monitoreo, escríbenos al Whatsapp, revisa las preguntas
-                frecuentes y visualiza tutoriales útiles.
-              </Text>
-            </TouchableOpacity>
-          </View>
+       <View style={homeStyles.customerCareContainer}>
+  <TouchableOpacity 
+    style={[homeStyles.customerCareCard, homeStyles.optionCardWithBackground]} 
+    onPress={handleNavigateToHelp}
+  >
+    <ImageBackground
+      source={require('../../assets/ayuda.jpg')} // 🔄 Cambia por tu imagen
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+      imageStyle={{ borderRadius: 12 }}
+      resizeMode="cover"
+    >
+      {/* Overlay naranja transparente */}
+      <View style={homeStyles.optionCardOverlay} />
+    </ImageBackground>
+
+    {/* Contenido por encima */}
+    <View style={[homeStyles.customerCareIcon, homeStyles.optionContentAbove]}>
+      <Headphones size={24} color="#e36414" />
+    </View>
+    <Text style={[homeStyles.customerCareTitle, homeStyles.optionContentAbove]}>
+      Ayuda
+    </Text>
+    <Text style={[homeStyles.customerCareSubtitle, homeStyles.optionContentAbove]}>
+      Conoce nuestros números telefónicos, llámanos a la central de
+      monitoreo, escríbenos al Whatsapp, revisa las preguntas
+      frecuentes y visualiza tutoriales útiles.
+    </Text>
+  </TouchableOpacity>
+</View>
+
+
         </ScrollView>
 
 
