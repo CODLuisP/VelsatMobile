@@ -9,6 +9,7 @@ import {
   PermissionsAndroid,
   Platform,
   Dimensions,
+  ImageBackground,
 } from 'react-native';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
@@ -664,19 +665,37 @@ const [location, setLocation] = useState<LocationState>({
           <View style={homeStyles.optionsGrid}>
 
             
-            <TouchableOpacity
-              style={homeStyles.optionCard}
-              onPress={handleNavigateToProfile}
-            >
-              <View style={homeStyles.optionIcon}>
-                <User size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Perfil</Text>
+<TouchableOpacity 
+  style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]} 
+  onPress={handleNavigateToProfile}
+>
+  <ImageBackground
+    source={require('../../assets/perfil.jpg')}
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    }}
+    imageStyle={{ borderRadius: 12 }}
+    resizeMode="cover"
+  >
+    {/* Overlay naranja transparente */}
+    <View style={homeStyles.optionCardOverlay} />
+  </ImageBackground>
+
+  {/* Contenido por encima */}
+  <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
+    <User size={24} color="#e36414" />
+  </View>
+                <Text style={homeStyles.optionTitle}>Perfil</Text>
+
               <Text style={homeStyles.optionSubtitle}>
-                Revisa tu información personal, actualiza tus datos y
-                credenciales y personaliza tus marcadores.
-              </Text>
-            </TouchableOpacity>
+    Revisa tu información personal, actualiza tus datos y
+    credenciales y personaliza tus marcadores.
+  </Text>
+</TouchableOpacity>
 
             <TouchableOpacity
               style={homeStyles.optionCard}
