@@ -70,18 +70,18 @@ const getBottomSpace = (insets: EdgeInsets) => {
 };
 
 const Home: React.FC = () => {
-const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
-const codigo = user?.codigo;
+  const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
+  const codigo = user?.codigo;
 
-const [showDropdown, setShowDropdown] = useState<boolean>(false);
-const [weather, setWeather] = useState<WeatherState>({
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
     weatherCode: null,
     isDay: null,
     loading: true,
     error: null,
   });
-const [location, setLocation] = useState<LocationState>({
+  const [location, setLocation] = useState<LocationState>({
     latitude: null,
     longitude: null,
     loading: true,
@@ -571,7 +571,7 @@ const [location, setLocation] = useState<LocationState>({
 
   return (
     <View style={{ flex: 1 }}>
-      
+
       <StatusBar
         barStyle="light-content"
         backgroundColor="#1a237e"
@@ -667,13 +667,77 @@ const [location, setLocation] = useState<LocationState>({
           {/* Grid de opciones principales */}
           <View style={homeStyles.optionsGrid}>
 
-            
-<TouchableOpacity 
-  style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]} 
-  onPress={handleNavigateToProfile}
+
+            <TouchableOpacity
+              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
+              onPress={handleNavigateToProfile}
+            >
+              <ImageBackground
+                source={require('../../assets/perfil.jpg')}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                {/* Overlay naranja transparente */}
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              {/* Contenido por encima */}
+              <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
+                <User size={24} color="#e36414" />
+              </View>
+              <Text style={homeStyles.optionTitle}>Perfil</Text>
+
+              <Text style={homeStyles.optionSubtitle}>
+                Revisa tu información personal, actualiza tus datos y
+                credenciales y personaliza tus marcadores.
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
+              onPress={handleNavigateToDevice}
+            >
+              <ImageBackground
+                source={require('../../assets/auto.jpg')} // 🔄 Cambia por tu imagen
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                {/* Overlay naranja transparente */}
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              {/* Contenido por encima */}
+              <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
+                <Car size={24} color="#e36414" />
+              </View>
+              <Text style={homeStyles.optionTitle}>Unidades</Text>
+
+              <Text style={homeStyles.optionSubtitle}>
+                Rastrea tus unidades, conoce su última ubicación, velocidad,
+                dirección y estado.
+              </Text>
+            </TouchableOpacity>
+
+        <TouchableOpacity
+  style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
+  onPress={handleNavigateToReports}
 >
   <ImageBackground
-    source={require('../../assets/perfil.jpg')}
+    source={require('../../assets/reportes.jpg')} // 🔄 Cambia por tu imagen
     style={{
       position: 'absolute',
       top: 0,
@@ -690,57 +754,51 @@ const [location, setLocation] = useState<LocationState>({
 
   {/* Contenido por encima */}
   <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
-    <User size={24} color="#e36414" />
+    <BarChart3 size={24} color="#e36414" />
   </View>
-                <Text style={homeStyles.optionTitle}>Perfil</Text>
+  <Text style={homeStyles.optionTitle}>Reportes</Text>
 
-              <Text style={homeStyles.optionSubtitle}>
-    Revisa tu información personal, actualiza tus datos y
-    credenciales y personaliza tus marcadores.
+  <Text style={homeStyles.optionSubtitle}>
+    Genera reportes de tus unidades, general, velocidad,
+    kilometraje, paradas y detalle de recorrido.
   </Text>
 </TouchableOpacity>
 
-            <TouchableOpacity
-              style={homeStyles.optionCard}
-              onPress={handleNavigateToDevice}
-            >
-              <View style={homeStyles.optionIcon}>
-                <Car size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Unidades</Text>
-              <Text style={homeStyles.optionSubtitle}>
-                Rastrea tus unidades, conoce su última ubicación, velocidad,
-                dirección y estado.
-              </Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity
-              style={homeStyles.optionCard}
-              onPress={handleNavigateToReports}
-            >
-              <View style={homeStyles.optionIcon}>
-                <BarChart3 size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Reportes</Text>
-              <Text style={homeStyles.optionSubtitle}>
-                Genera reportes de tus unidades, general, velocidad,
-                kilometraje, paradas y detalle de recorrido.
-              </Text>
-            </TouchableOpacity>
+<TouchableOpacity
+  style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
+  onPress={handleNavigateToSecurity}
+>
+  <ImageBackground
+    source={require('../../assets/seguridad.jpg')} // 🔄 Cambia por tu imagen
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    }}
+    imageStyle={{ borderRadius: 12 }}
+    resizeMode="cover"
+  >
+    {/* Overlay naranja transparente */}
+    <View style={homeStyles.optionCardOverlay} />
+  </ImageBackground>
 
-            <TouchableOpacity
-              style={homeStyles.optionCard}
-              onPress={handleNavigateToSecurity}
-            >
-              <View style={homeStyles.optionIcon}>
-                <Shield size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Seguridad</Text>
-              <Text style={homeStyles.optionSubtitle}>
-                Activa la autenticación con datos biométricos y habilita o
-                deshabilita las notificaciones.
-              </Text>
-            </TouchableOpacity>
+  {/* Contenido por encima */}
+  <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
+    <Shield size={24} color="#e36414" />
+  </View>
+  <Text style={homeStyles.optionTitle}>Seguridad</Text>
+
+  <Text style={homeStyles.optionSubtitle}>
+    Activa la autenticación con datos biométricos y habilita o
+    deshabilita las notificaciones.
+  </Text>
+</TouchableOpacity>
+
+
+
           </View>
 
           <View style={homeStyles.customerCareContainer}>
@@ -763,7 +821,7 @@ const [location, setLocation] = useState<LocationState>({
 
       </SafeAreaView>
 
-      
+
     </View>
   );
 };

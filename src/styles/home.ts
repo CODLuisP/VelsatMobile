@@ -175,7 +175,7 @@ optionCard: {
   shadowRadius: 4,
   elevation: 3,
   position: 'relative',
-  overflow: 'hidden', // 🆕 AGREGAR ESTA LÍNEA
+  overflow: 'hidden', 
 },
   driverLabel: {
     position: 'absolute',
@@ -198,8 +198,8 @@ optionCardBackgroundImage: {
   position: 'absolute',
   top: 0,
   left: 0,
-  right: 0,    // 🆕 AGREGAR
-  bottom: 0,   // 🆕 AGREGAR
+  right: 0,    
+  bottom: 0,   
   width: '100%',
   height: '100%',
 },
@@ -208,11 +208,11 @@ optionCardOverlay: {
   position: 'absolute',
   top: 0,
   left: 0,
-  right: 0,    // 🆕 AGREGAR
-  bottom: 0,   // 🆕 AGREGAR
+  right: 0,    
+  bottom: 0,  
   width: '100%',
   height: '100%',
-  backgroundColor: 'rgba(231, 231, 231, 0.9)',
+  backgroundColor: 'rgba(255, 255, 255, 0.89)',
 },
 
 optionContentAbove: {
