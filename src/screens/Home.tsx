@@ -736,7 +736,7 @@ const Home: React.FC = () => {
 
             <TouchableOpacity
               style={[homeStyles.optionCard, homeStyles.optionCardWithBackground,
-                 homeStyles.optionCardWithBorder]}
+              homeStyles.optionCardWithBorder]}
               onPress={handleNavigateToReports}
               activeOpacity={0.85}
             >
@@ -813,7 +813,7 @@ const Home: React.FC = () => {
               activeOpacity={0.85}
             >
               <ImageBackground
-                source={require('../../assets/ayuda.jpg')} // 🔄 Cambia por tu imagen
+                source={require('../../assets/ayuda.jpg')}
                 style={{
                   position: 'absolute',
                   top: 0,

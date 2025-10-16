@@ -70,15 +70,6 @@ const Login = () => {
     React.useCallback(() => {
       SystemNavigationBar.setNavigationColor('#00296b');
 
-      // 🔍 LOG: Verificar estado cuando el Login toma foco
-      const state = useAuthStore.getState();
-      console.log('👁️ Login tomó foco. Estado actual:', {
-        isAuthenticated: state.isAuthenticated,
-        hasUser: !!state.user,
-        hasToken: !!state.token,
-        hasServer: !!state.server,
-      });
-
       return () => {
         SystemNavigationBar.setNavigationColor('#00296b');
       };
@@ -114,19 +105,14 @@ const Login = () => {
 
 const handleBiometricLogin = async () => {
   try {
-    console.log('🔐 Usuario presionó botón de login biométrico');
-
-    // Activar loading ANTES de la autenticación
     setIsLoggingIn(true);
     setLoading(true);
 
     const success = await authenticateWithBiometric();
 
     if (success) {
-      console.log('✅ Autenticación biométrica exitosa');
+      // Autenticación exitosa
     } else {
-      console.log('❌ Autenticación biométrica fallida');
-
       Alert.alert(
         'Autenticación fallida',
         'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
@@ -142,17 +128,12 @@ const handleBiometricLogin = async () => {
       );
     }
   } catch (error: any) {
-    console.log('❌ Error en autenticación biométrica:', error);
-
-    // 🆕 NO mostrar Alert si el usuario canceló
     if (error?.message === 'USER_CANCELLED') {
-      console.log('⚠️ Usuario canceló la autenticación, no se muestra Alert');
       setIsLoggingIn(false);
       setLoading(false);
       return;
     }
 
-    // 🆕 Solo mostrar Alert para errores reales
     Alert.alert(
       'Error de Autenticación',
       'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
@@ -175,19 +156,13 @@ const handleBiometricLogin = async () => {
       const savedPassword = await AsyncStorage.getItem('savedPassword');
       const rememberFlag = await AsyncStorage.getItem('rememberMe');
 
-      console.log('📂 Credenciales guardadas encontradas:', {
-        hasSavedUser: !!savedUser,
-        hasSavedPassword: !!savedPassword,
-        rememberFlag,
-      });
-
       if (rememberFlag === 'true' && savedUser && savedPassword) {
         setUsuario(savedUser);
         setPassword(savedPassword);
         setRememberMe(true);
       }
     } catch (error) {
-      console.log('❌ Error cargando credenciales guardadas:', error);
+      // Error silencioso
     }
   };
 
@@ -197,12 +172,11 @@ const handleBiometricLogin = async () => {
         await AsyncStorage.setItem('savedUser', usuario);
         await AsyncStorage.setItem('savedPassword', password);
         await AsyncStorage.setItem('rememberMe', 'true');
-        console.log('💾 Credenciales guardadas en AsyncStorage');
       } else {
         await clearCredentials();
       }
     } catch (error) {
-      console.log('❌ Error guardando credenciales:', error);
+      // Error silencioso
     }
   };
 
@@ -211,9 +185,8 @@ const handleBiometricLogin = async () => {
       await AsyncStorage.removeItem('savedUser');
       await AsyncStorage.removeItem('savedPassword');
       await AsyncStorage.removeItem('rememberMe');
-      console.log('🧹 Credenciales limpiadas de AsyncStorage');
     } catch (error) {
-      console.log('❌ Error limpiando credenciales:', error);
+      // Error silencioso
     }
   };
 
@@ -223,11 +196,9 @@ const handleBiometricLogin = async () => {
 
     Linking.openURL(phoneUrl)
       .then(() => {
-        console.log('📞 Marcador abierto exitosamente');
+        // Marcador abierto
       })
       .catch(error => {
-        console.log('❌ Error abriendo marcador:', error);
-
         Alert.alert(
           'No se pudo abrir el marcador',
           `Marca manualmente este número:\n${phoneNumber}`,
@@ -248,26 +219,20 @@ const handleBiometricLogin = async () => {
     }
 
     try {
-      console.log('🚀 Iniciando login para usuario:', usuario);
-
-      // Activar estado de carga INMEDIATAMENTE
       setIsLoggingIn(true);
       setLoading(true);
 
-      // Animación del botón
       buttonScale.value = withSequence(
         withTiming(0.95, { duration: 100 }),
         withTiming(1, { duration: 100 }),
       );
 
-      // Animación de rotación para el icono de carga
       loadingRotation.value = withRepeat(
         withTiming(360, { duration: 1000, easing: Easing.linear }),
         -1,
         false,
       );
 
-      // PASO 1: Obtener el servidor
       const serverResponse = await axios.get(
         `https://velsat.pe:2087/api/Server/MobileServer/${usuario}`,
         {
@@ -279,12 +244,6 @@ const handleBiometricLogin = async () => {
       );
 
       const serverData = serverResponse.data;
-      console.log(
-        '🌐 Servidor obtenido:',
-        serverData.servidor,
-        'tipo:',
-        serverData.tipo,
-      );
 
       if (!serverData.servidor) {
         Alert.alert(
@@ -312,7 +271,6 @@ const handleBiometricLogin = async () => {
       );
 
       const loginData = loginResponse.data;
-      console.log('✅ Login exitoso:', loginData.username);
 
       if (loginData.token && loginData.username && loginData.account) {
         await saveCredentials();
@@ -321,7 +279,6 @@ const handleBiometricLogin = async () => {
         setToken(loginData.token);
         setTipo(serverData.tipo);
 
-        // Busca esta sección en tu handleLogin (alrededor de la línea 268)
         const userObj: UserType = {
           id: loginData.username,
           username: loginData.username,
@@ -334,7 +291,6 @@ const handleBiometricLogin = async () => {
         };
 
         setUser(userObj);
-        console.log('👤 Usuario establecido, navegando a Home...');
       } else {
         Alert.alert('Error', 'Respuesta de login inválida');
         setIsLoggingIn(false);
@@ -360,7 +316,6 @@ const handleBiometricLogin = async () => {
         }
       }
 
-      console.log('❌ Error en login:', errorMessage);
       Alert.alert('Error de Login', errorMessage);
       setIsLoggingIn(false);
       setLoading(false);
@@ -386,23 +341,14 @@ const handleBiometricLogin = async () => {
         const canUse = canUseBiometricLogin();
 
         if (canUse) {
-          console.log('✅ Login biométrico disponible');
           setShowBiometricOption(true);
 
-          // 🆕 Auto-ejecutar login biométrico
           setTimeout(() => {
             handleBiometricLogin();
           }, 500);
-        } else {
-          console.log('⚠️ Login biométrico no disponible:', {
-            enabled: biometric.isEnabled,
-            available: biometric.isAvailable,
-            hasCredentials:
-              !!useAuthStore.getState().biometricCredentials.username,
-          });
         }
       } catch (error) {
-        console.log('❌ Error en verificación biométrica:', error);
+        // Error silencioso
       }
     };
 

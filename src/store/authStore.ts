@@ -105,8 +105,6 @@ export const useAuthStore = create<AuthState>()(
         setTimeout(() => {
           const newState = get();
           if (newState.biometric.isEnabled && newState.token && newState.server && newState.tipo) {
-            console.log('🔐 Guardando credenciales biométricas para:', user.username);
-            
             set((currentState) => ({
               ...currentState,
               biometricCredentials: {
@@ -118,55 +116,27 @@ export const useAuthStore = create<AuthState>()(
                 codigo: user.codigo || null,
               },
             }));
-            
-            setTimeout(() => {
-              const finalState = get();
-              if (finalState.biometricCredentials.username) {
-                console.log('✅ Credenciales biométricas guardadas:', {
-                  username: finalState.biometricCredentials.username,
-                  tipo: finalState.biometricCredentials.tipo,
-                  description: finalState.biometricCredentials.description,
-                  codigo: finalState.biometricCredentials.codigo,
-                });
-              } else {
-                console.log('❌ Error: Las credenciales no se guardaron correctamente');
-              }
-            }, 50);
-            
-          } else {
-            console.log('⚠️ No se pudieron guardar credenciales biométricas:', {
-              biometricEnabled: newState.biometric.isEnabled,
-              hasToken: !!newState.token,
-              hasServer: !!newState.server,
-              hasTipo: !!newState.tipo
-            });
           }
         }, 100);
       },
 
       setServer: (server: string) => {
         set({ server });
-        console.log('🌐 Server establecido:', server);
       },
 
       setToken: (token: string) => {
         set({ token });
-        console.log('🔑 Token establecido');
       },
 
       setTipo: (tipo: string) => {
         set({ tipo });
-        console.log('👤 Tipo establecido:', tipo);
       },
 
       setSelectedVehiclePin: (pin: 's' | 'p' | 'c') => {
         set({ selectedVehiclePin: pin });
-        console.log('📍 Pin de vehículo actualizado:', pin);
       },
 
       logout: async () => {
-        console.log('🚪 Iniciando logout...');
-        
         set({
           user: null,
           isAuthenticated: false,
@@ -180,12 +150,7 @@ export const useAuthStore = create<AuthState>()(
         const currentState = get();
         if (!currentState.biometric.isEnabled) {
           get().clearBiometricCredentials();
-          console.log('🧹 Credenciales biométricas limpiadas (biometría deshabilitada)');
-        } else {
-          console.log('💾 Credenciales biométricas preservadas (biometría habilitada)');
         }
-        
-        console.log('✅ Logout completado');
       },
 
       setLoading: (loading: boolean) => {
@@ -206,10 +171,7 @@ export const useAuthStore = create<AuthState>()(
               type: biometryType || null,
             },
           }));
-          
-          console.log('✅ Disponibilidad biométrica verificada:', { available, biometryType });
         } catch (error) {
-          console.error('❌ Error verificando disponibilidad biométrica:', error);
           set((state) => ({
             biometric: {
               ...state.biometric,
@@ -239,7 +201,6 @@ export const useAuthStore = create<AuthState>()(
             
             const currentState = get();
             if (currentState.user && currentState.token && currentState.server && currentState.tipo) {
-              console.log('💾 Guardando credenciales biométricas inmediatamente para:', currentState.user.username);
               set((state) => ({
                 biometricCredentials: {
                   username: currentState.user!.username,
@@ -252,13 +213,11 @@ export const useAuthStore = create<AuthState>()(
               }));
             }
             
-            console.log('✅ Biometría habilitada exitosamente');
             return true;
           }
           
           return false;
         } catch (error) {
-          console.error('❌ Error habilitando biometría:', error);
           return false;
         }
       },
@@ -273,17 +232,12 @@ export const useAuthStore = create<AuthState>()(
         }));
         
         get().clearBiometricCredentials();
-        console.log('✅ Biometría deshabilitada');
       },
 
-      // 🆕 MODIFICADO: Lanza error específico al cancelar
       authenticateWithBiometric: async (): Promise<boolean> => {
         const state = get();
         
-        console.log('🔐 Intentando autenticación biométrica...');
-        
         if (!state.biometric.isEnabled || !state.biometric.isAvailable) {
-          console.log('❌ Biometría no disponible o no habilitada');
           throw new Error('Biometría no disponible o no habilitada');
         }
 
@@ -291,7 +245,6 @@ export const useAuthStore = create<AuthState>()(
             !state.biometricCredentials.token || 
             !state.biometricCredentials.server ||
             !state.biometricCredentials.tipo) {
-          console.log('❌ No hay credenciales guardadas para login biométrico');
           throw new Error('No hay credenciales guardadas para login biométrico');
         }
 
@@ -304,14 +257,6 @@ export const useAuthStore = create<AuthState>()(
 
           if (success) {
             const { username, token, server, tipo, description, codigo } = state.biometricCredentials;
-            
-            console.log('✅ Autenticación biométrica exitosa, restaurando sesión:', {
-              username,
-              tipo,
-              server,
-              description,
-              codigo,
-            });
             
             set({
               server,
@@ -333,19 +278,13 @@ export const useAuthStore = create<AuthState>()(
             return true;
           }
           
-          // 🆕 Si no tuvo éxito, verificar si fue cancelado
           if (error && (error === 'User cancellation' || error === 'cancelled' || error === 'user_cancel')) {
-            console.log('⚠️ Usuario canceló la autenticación biométrica');
             throw new Error('USER_CANCELLED');
           }
           
-          // Si no fue cancelado, entonces falló
-          console.log('❌ Autenticación biométrica fallida:', error);
           throw new Error('BIOMETRIC_FAILED');
           
         } catch (error: any) {
-          // Re-lanzar el error para que Login.tsx lo maneje
-          console.error('❌ Error en autenticación biométrica:', error);
           throw error;
         }
       },
@@ -364,12 +303,6 @@ export const useAuthStore = create<AuthState>()(
               codigo: state.user?.codigo || null,
             },
           }));
-          console.log('✅ Credenciales biométricas guardadas para usuario:', username, 'codigo:', state.user?.codigo);
-        } else {
-          console.log('⚠️ No se guardaron credenciales biométricas:', {
-            biometricEnabled: state.biometric.isEnabled,
-            hasTipo: !!state.tipo
-          });
         }
       },
 
@@ -384,7 +317,6 @@ export const useAuthStore = create<AuthState>()(
             codigo: null,
           },
         }));
-        console.log('✅ Credenciales biométricas limpiadas');
       },
 
       getBiometricDisplayName: (): string => {
@@ -408,15 +340,6 @@ export const useAuthStore = create<AuthState>()(
           !!state.biometricCredentials.tipo
         );
         
-        console.log('🔍 ¿Puede usar login biométrico?:', canUse, {
-          isEnabled: state.biometric.isEnabled,
-          isAvailable: state.biometric.isAvailable,
-          hasCredentials: !!state.biometricCredentials.username,
-          hasTipo: !!state.biometricCredentials.tipo,
-          hasDescription: !!state.biometricCredentials.description,
-          hasCodigo: !!state.biometricCredentials.codigo,
-        });
-        
         return canUse;
       },
     }),
@@ -438,33 +361,8 @@ export const useAuthStore = create<AuthState>()(
           state.token = null;
           state.tipo = null;
           state.hasActiveSession = false;
-          
-          console.log('🔄 Store hidratado correctamente:', {
-            selectedVehiclePin: state.selectedVehiclePin,
-            hasBiometric: !!state.biometric,
-            biometricEnabled: state.biometric?.isEnabled,
-            biometricType: state.biometric?.type,
-            hasCredentials: !!state.biometricCredentials?.username,
-            credentialsUsername: state.biometricCredentials?.username,
-            credentialsTipo: state.biometricCredentials?.tipo,
-            credentialsDescription: state.biometricCredentials?.description,
-            credentialsCodigo: state.biometricCredentials?.codigo,
-            hasActiveSession: state.hasActiveSession,
-            isAuthenticated: state.isAuthenticated,
-            hasToken: !!state.token,
-            hasServer: !!state.server,
-            hasTipo: !!state.tipo,
-            hasUser: !!state.user
-          });
-        } else {
-          console.log('❌ Error en hidratación del store');
         }
       },
     }
   )
 );
-
-
-
-
-
