@@ -669,8 +669,9 @@ const Home: React.FC = () => {
 
 
             <TouchableOpacity
-              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
+              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground, homeStyles.optionCardWithBorder]}
               onPress={handleNavigateToProfile}
+              activeOpacity={0.85}
             >
               <ImageBackground
                 source={require('../../assets/perfil.jpg')}
@@ -701,8 +702,9 @@ const Home: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
+              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground, homeStyles.optionCardWithBorder]}
               onPress={handleNavigateToDevice}
+              activeOpacity={0.85}
             >
               <ImageBackground
                 source={require('../../assets/auto.jpg')} // 🔄 Cambia por tu imagen
@@ -732,110 +734,114 @@ const Home: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-        <TouchableOpacity
-  style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
-  onPress={handleNavigateToReports}
->
-  <ImageBackground
-    source={require('../../assets/reportes.jpg')} // 🔄 Cambia por tu imagen
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    }}
-    imageStyle={{ borderRadius: 12 }}
-    resizeMode="cover"
-  >
-    {/* Overlay naranja transparente */}
-    <View style={homeStyles.optionCardOverlay} />
-  </ImageBackground>
+            <TouchableOpacity
+              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground,
+                 homeStyles.optionCardWithBorder]}
+              onPress={handleNavigateToReports}
+              activeOpacity={0.85}
+            >
+              <ImageBackground
+                source={require('../../assets/reportes.jpg')} // 🔄 Cambia por tu imagen
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                {/* Overlay naranja transparente */}
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
 
-  {/* Contenido por encima */}
-  <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
-    <BarChart3 size={24} color="#e36414" />
-  </View>
-  <Text style={homeStyles.optionTitle}>Reportes</Text>
+              {/* Contenido por encima */}
+              <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
+                <BarChart3 size={24} color="#e36414" />
+              </View>
+              <Text style={homeStyles.optionTitle}>Reportes</Text>
 
-  <Text style={homeStyles.optionSubtitle}>
-    Genera reportes de tus unidades, general, velocidad,
-    kilometraje, paradas y detalle de recorrido.
-  </Text>
-</TouchableOpacity>
+              <Text style={homeStyles.optionSubtitle}>
+                Genera reportes de tus unidades, general, velocidad,
+                kilometraje, paradas y detalle de recorrido.
+              </Text>
+            </TouchableOpacity>
 
 
-<TouchableOpacity
-  style={[homeStyles.optionCard, homeStyles.optionCardWithBackground]}
-  onPress={handleNavigateToSecurity}
->
-  <ImageBackground
-    source={require('../../assets/biometria.jpg')} // 🔄 Cambia por tu imagen
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    }}
-    imageStyle={{ borderRadius: 12 }}
-    resizeMode="cover"
-  >
-    {/* Overlay naranja transparente */}
-    <View style={homeStyles.optionCardOverlay} />
-  </ImageBackground>
+            <TouchableOpacity
+              style={[homeStyles.optionCard, homeStyles.optionCardWithBackground, homeStyles.optionCardWithBorder]}
+              onPress={handleNavigateToSecurity}
+              activeOpacity={0.85}
+            >
+              <ImageBackground
+                source={require('../../assets/biometria.jpg')} // 🔄 Cambia por tu imagen
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                {/* Overlay naranja transparente */}
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
 
-  {/* Contenido por encima */}
-  <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
-    <Shield size={24} color="#e36414" />
-  </View>
-  <Text style={homeStyles.optionTitle}>Seguridad</Text>
+              {/* Contenido por encima */}
+              <View style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}>
+                <Shield size={24} color="#e36414" />
+              </View>
+              <Text style={homeStyles.optionTitle}>Seguridad</Text>
 
-  <Text style={homeStyles.optionSubtitle}>
-    Activa la autenticación con datos biométricos y habilita o
-    deshabilita las notificaciones.
-  </Text>
-</TouchableOpacity>
+              <Text style={homeStyles.optionSubtitle}>
+                Activa la autenticación con datos biométricos y habilita o
+                deshabilita las notificaciones.
+              </Text>
+            </TouchableOpacity>
 
 
 
           </View>
 
-       <View style={homeStyles.customerCareContainer}>
-  <TouchableOpacity 
-    style={[homeStyles.customerCareCard, homeStyles.optionCardWithBackground]} 
-    onPress={handleNavigateToHelp}
-  >
-    <ImageBackground
-      source={require('../../assets/ayuda.jpg')} // 🔄 Cambia por tu imagen
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-      }}
-      imageStyle={{ borderRadius: 12 }}
-      resizeMode="cover"
-    >
-      {/* Overlay naranja transparente */}
-      <View style={homeStyles.optionCardOverlay} />
-    </ImageBackground>
+          <View style={homeStyles.customerCareContainer}>
+            <TouchableOpacity
+              style={[homeStyles.customerCareCard, homeStyles.optionCardWithBackground, homeStyles.optionCardWithBorder]}
+              onPress={handleNavigateToHelp}
+              activeOpacity={0.85}
+            >
+              <ImageBackground
+                source={require('../../assets/ayuda.jpg')} // 🔄 Cambia por tu imagen
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                {/* Overlay naranja transparente */}
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
 
-    {/* Contenido por encima */}
-    <View style={[homeStyles.customerCareIcon, homeStyles.optionContentAbove]}>
-      <Headphones size={24} color="#e36414" />
-    </View>
-    <Text style={[homeStyles.customerCareTitle, homeStyles.optionContentAbove]}>
-      Ayuda
-    </Text>
-    <Text style={[homeStyles.customerCareSubtitle, homeStyles.optionContentAbove]}>
-      Conoce nuestros números telefónicos, llámanos a la central de
-      monitoreo, escríbenos al Whatsapp, revisa las preguntas
-      frecuentes y visualiza tutoriales útiles.
-    </Text>
-  </TouchableOpacity>
-</View>
+              {/* Contenido por encima */}
+              <View style={[homeStyles.customerCareIcon, homeStyles.optionContentAbove]}>
+                <Headphones size={24} color="#e36414" />
+              </View>
+              <Text style={[homeStyles.customerCareTitle, homeStyles.optionContentAbove]}>
+                Ayuda
+              </Text>
+              <Text style={[homeStyles.customerCareSubtitle, homeStyles.optionContentAbove]}>
+                Conoce nuestros números telefónicos, llámanos a la central de
+                monitoreo, escríbenos al Whatsapp, revisa las preguntas
+                frecuentes y visualiza tutoriales útiles.
+              </Text>
+            </TouchableOpacity>
+          </View>
 
 
         </ScrollView>

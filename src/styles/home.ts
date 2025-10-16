@@ -219,6 +219,11 @@ optionContentAbove: {
   zIndex: 1,
 },
 
+optionCardWithBorder: {
+  borderWidth: 1,
+  borderColor: '#e36414',
+},
+
 optionTextWhite: {
   color: '#fff',
 },
