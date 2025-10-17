@@ -153,14 +153,12 @@ const handleBiometricLogin = async () => {
   const loadSavedCredentials = async () => {
     try {
       const savedUser = await AsyncStorage.getItem('savedUser');
-      const savedPassword = await AsyncStorage.getItem('savedPassword');
       const rememberFlag = await AsyncStorage.getItem('rememberMe');
 
-      if (rememberFlag === 'true' && savedUser && savedPassword) {
-        setUsuario(savedUser);
-        setPassword(savedPassword);
-        setRememberMe(true);
-      }
+     if (rememberFlag === 'true' && savedUser) {
+      setUsuario(savedUser);
+      setRememberMe(true);
+    }
     } catch (error) {
       // Error silencioso
     }
@@ -170,7 +168,6 @@ const handleBiometricLogin = async () => {
     try {
       if (rememberMe) {
         await AsyncStorage.setItem('savedUser', usuario);
-        await AsyncStorage.setItem('savedPassword', password);
         await AsyncStorage.setItem('rememberMe', 'true');
       } else {
         await clearCredentials();
@@ -183,7 +180,6 @@ const handleBiometricLogin = async () => {
   const clearCredentials = async () => {
     try {
       await AsyncStorage.removeItem('savedUser');
-      await AsyncStorage.removeItem('savedPassword');
       await AsyncStorage.removeItem('rememberMe');
     } catch (error) {
       // Error silencioso
@@ -515,7 +511,7 @@ const handleBiometricLogin = async () => {
               >
                 {rememberMe && <Text style={styles.checkmark}>✓</Text>}
               </View>
-              <Text style={styles.rememberText}>Recordar mi contraseña</Text>
+              <Text style={styles.rememberText}>Recordar mi usuario</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
