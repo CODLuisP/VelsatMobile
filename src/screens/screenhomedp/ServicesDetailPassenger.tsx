@@ -34,6 +34,9 @@ import MapView, { Marker, PROVIDER_DEFAULT, Circle } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 import * as signalR from '@microsoft/signalr';
 import { useAuthStore } from '../../store/authStore';
+import { ImageModal } from './modals/ImageModal';
+import { CancelModal } from './modals/CancelModal';
+import { RatingModal } from './modals/RatingModal';
 
 type ServicesDetailPassengerRouteProp = RouteProp<
   RootStackParamList,
@@ -293,6 +296,7 @@ const ServicesDetailPassenger = () => {
             style={{ flex: 1 }}
             javaScriptEnabled={true}
             domStorageEnabled={true}
+            nestedScrollEnabled={true} 
           />
         </View>
       );
@@ -436,7 +440,7 @@ const ServicesDetailPassenger = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -618,7 +622,7 @@ const ServicesDetailPassenger = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <View style={[styles.container, { paddingBottom: bottomSpace-2 }]}>
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -1037,299 +1041,30 @@ const ServicesDetailPassenger = () => {
         </View>
       </ScrollView>
 
-      {/* Modal para ver la imagen ampliada */}
-      <Modal
-        visible={imageModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCloseModal}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <TouchableOpacity
-            style={{
-              position: 'absolute',
-              top: 40,
-              right: 20,
-              zIndex: 1,
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              borderRadius: 20,
-              padding: 8,
-            }}
-            onPress={handleCloseModal}
-          >
-            <X size={24} color="#fff" />
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={{
-              width: '100%',
-              height: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            activeOpacity={1}
-            onPress={handleCloseModal}
-          >
-            {driverData?.imagen && (
-              <Image
-                source={{ uri: driverData.imagen }}
-                style={{
-                  width: '90%',
-                  height: '70%',
-                  borderRadius: 10,
-                }}
-                resizeMode="contain"
-              />
-            )}
-          </TouchableOpacity>
-        </View>
-      </Modal>
+      <ImageModal
+  visible={imageModalVisible}
+  imageUri={driverData?.imagen || null}
+  onClose={handleCloseModal}
+/>
 
-      {/* Modal de confirmación de cancelación */}
-      <Modal
-        visible={cancelModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleCloseCancelModal}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 20,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 15,
-              padding: 20,
-              width: '90%',
-              maxWidth: 400,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: '#333',
-                marginBottom: 15,
-                textAlign: 'center',
-              }}
-            >
-              Cancelar Servicio
-            </Text>
+<CancelModal
+  visible={cancelModalVisible}
+  loading={cancellingService}
+  onConfirm={handleConfirmCancel}
+  onCancel={handleCloseCancelModal}
+/>
 
-            <Text
-              style={{
-                fontSize: 16,
-                color: '#666',
-                marginBottom: 25,
-                textAlign: 'center',
-                lineHeight: 24,
-              }}
-            >
-              ¿Estás seguro que deseas cancelar este servicio?
-            </Text>
+<RatingModal
+  visible={ratingModalVisible}
+  loading={sendingRating}
+  selectedRating={selectedRating}
+  onRatingSelect={setSelectedRating}
+  onConfirm={handleSendRating}
+  onCancel={handleCloseRatingModal}
+/>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                gap: 10,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: '#e0e0e0',
-                  padding: 15,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                }}
-                onPress={handleCloseCancelModal}
-                disabled={cancellingService}
-              >
-                <Text
-                  style={{
-                    color: '#333',
-                    fontSize: 16,
-                    fontWeight: '600',
-                  }}
-                >
-                  No
-                </Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: '#CF1B1B',
-                  padding: 15,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                }}
-                onPress={handleConfirmCancel}
-                disabled={cancellingService}
-              >
-                {cancellingService ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text
-                    style={{
-                      color: '#fff',
-                      fontSize: 16,
-                      fontWeight: '600',
-                    }}
-                  >
-                    Sí, cancelar
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal de calificación */}
-      <Modal
-        visible={ratingModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={handleCloseRatingModal}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 20,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: 15,
-              padding: 20,
-              width: '90%',
-              maxWidth: 400,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: '#333',
-                marginBottom: 10,
-                textAlign: 'center',
-              }}
-            >
-              Calificar Conductor
-            </Text>
-
-            <Text
-              style={{
-                fontSize: 14,
-                color: '#666',
-                marginBottom: 20,
-                textAlign: 'center',
-              }}
-            >
-              ¿Cómo calificarías tu experiencia?
-            </Text>
-
-            {/* Estrellas seleccionables */}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                marginBottom: 25,
-              }}
-            >
-              {[1, 2, 3, 4, 5].map(star => (
-                <TouchableOpacity
-                  key={star}
-                  onPress={() => setSelectedRating(star)}
-                  style={{ marginHorizontal: 5 }}
-                >
-                  <Star
-                    size={40}
-                    color={star <= selectedRating ? '#FFA726' : '#ccc'}
-                    fill={star <= selectedRating ? '#FFA726' : 'transparent'}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                gap: 10,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: '#e0e0e0',
-                  padding: 15,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                }}
-                onPress={handleCloseRatingModal}
-                disabled={sendingRating}
-              >
-                <Text
-                  style={{
-                    color: '#333',
-                    fontSize: 16,
-                    fontWeight: '600',
-                  }}
-                >
-                  Cancelar
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: '#FFA726',
-                  padding: 15,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  opacity: selectedRating === 0 ? 0.5 : 1,
-                }}
-                onPress={handleSendRating}
-                disabled={sendingRating || selectedRating === 0}
-              >
-                {sendingRating ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text
-                    style={{
-                      color: '#fff',
-                      fontSize: 16,
-                      fontWeight: '600',
-                    }}
-                  >
-                    Enviar
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };

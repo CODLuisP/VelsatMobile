@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#00296b',
   },
   header: {
     paddingHorizontal: 20,
@@ -31,8 +31,8 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
   },
   formContainer: {
-    marginTop: 20,
-    paddingHorizontal: 20,
+    marginTop: 15,
+    paddingHorizontal: 15,
   },
   serviceCard: {
     backgroundColor: '#FFFFFF',
@@ -42,13 +42,7 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#1e3a8a',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+ 
   },
   serviceHeader: {
     backgroundColor: '#1e3a8a',
@@ -178,4 +172,52 @@ export const styles = StyleSheet.create({
   actionButtonTextDisabled: {
     color: '#999',
   },
+
+  emptyStateContainer: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 40,
+  marginBottom: 20,
+  paddingHorizontal: 20,
+},
+iconCircle: {
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: 'rgba(227, 100, 20, 0.1)',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 15,
+},
+iconCircleLarge: {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  marginBottom: 20,
+},
+emptyStateTitle: {
+  color: '#00296b',
+  fontSize: 16,
+  fontWeight: '600',
+  marginBottom: 8,
+  textAlign: 'center',
+},
+emptyStateTitleDark: {
+  color: '#1a237e',
+  fontSize: 18,
+  fontWeight: '700',
+  marginBottom: 8,
+  textAlign: 'center',
+},
+emptyStateSubtitle: {
+  color: '#212529',
+  fontSize: 14,
+  textAlign: 'center',
+},
+emptyStateDescription: {
+  color: '#666',
+  fontSize: 14,
+  textAlign: 'center',
+  lineHeight: 20,
+},
 });

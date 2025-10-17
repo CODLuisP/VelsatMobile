@@ -9,6 +9,8 @@ import {
   PermissionsAndroid,
   Platform,
   Dimensions,
+  ImageBackground,
+  Alert,
 } from 'react-native';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
@@ -16,6 +18,7 @@ import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
 import { RootStackParamList } from '../../App';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 
 import { EdgeInsets, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -53,7 +56,6 @@ interface CoordinatesType {
   displayName: string;
 }
 
-
 const getBottomSpace = (insets: EdgeInsets) => {
   if (Platform.OS === 'android') {
     const screen = Dimensions.get('screen');
@@ -67,7 +69,8 @@ const getBottomSpace = (insets: EdgeInsets) => {
 };
 
 const HomeDriverPassenger: React.FC = () => {
-  const { user, logout, server, tipo } = useAuthStore();
+  const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
+
   const codigo = user?.codigo;
 
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
@@ -85,13 +88,12 @@ const HomeDriverPassenger: React.FC = () => {
     error: null,
   });
 
-
   const insets = useSafeAreaInsets();
   const bottomSpace = getBottomSpace(insets);
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, [])
   );
 
@@ -115,11 +117,11 @@ const HomeDriverPassenger: React.FC = () => {
     navigation.navigate('Help');
   };
 
-   const handleNavigateToServicesDriver = () => {
+  const handleNavigateToServicesDriver = () => {
     navigation.navigate('ServicesDriver');
   };
 
-    const handleNavigateToServicesPassenger = () => {
+  const handleNavigateToServicesPassenger = () => {
     navigation.navigate('ServicesPassenger');
   };
 
@@ -228,12 +230,9 @@ const HomeDriverPassenger: React.FC = () => {
   };
 
   const obtenerDireccion = async (lat: string, lng: string) => {
-    console.log('INICIO obtenerDireccion:', { lat, lng });
-
     setDireccionCoordenadas('Validando coordenadas...');
 
     if (!lat || !lng || lat === 'null' || lng === 'null') {
-      console.log('Coordenadas inválidas:', { lat, lng });
       setDireccionCoordenadas('Coordenadas no válidas');
       return;
     }
@@ -242,23 +241,17 @@ const HomeDriverPassenger: React.FC = () => {
     const lngNum = parseFloat(lng);
 
     if (isNaN(latNum) || isNaN(lngNum)) {
-      console.log('Coordenadas no son números válidos:', { lat, lng });
       setDireccionCoordenadas('Coordenadas no válidas (NaN)');
       return;
     }
 
     if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
-      console.log('Coordenadas fuera de rango:', {
-        lat: latNum,
-        lng: lngNum,
-      });
       setDireccionCoordenadas('Coordenadas fuera de rango');
       return;
     }
 
     try {
       const url = `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
-      console.log('📡 URL de consulta:', url);
 
       setDebugUrl(url);
       setDireccionCoordenadas('Consultando servidor...');
@@ -284,7 +277,6 @@ const HomeDriverPassenger: React.FC = () => {
         );
       }
 
-      console.log('Parseando JSON...');
       const data = await response.json();
 
       if (data && data.display_name) {
@@ -295,12 +287,7 @@ const HomeDriverPassenger: React.FC = () => {
         setDireccionCoordenadas('Sin dirección disponible');
       }
     } catch (error) {
-      console.log('ERROR COMPLETO en obtenerDireccion:', error);
-
       if (error instanceof Error) {
-        console.log('Error name:', error.name);
-        console.log('Error message:', error.message);
-
         if (error.name === 'AbortError') {
           setDireccionCoordenadas('Timeout - Servidor muy lento');
         } else if (error.message.includes('Network')) {
@@ -339,31 +326,165 @@ const HomeDriverPassenger: React.FC = () => {
     return true;
   };
 
-  const obtenerUbicacion = async (): Promise<void> => {
-    const tienePermiso = await solicitarPermisosUbicacion();
-
-    if (!tienePermiso) {
-      console.log('❌ UBICACIÓN: Sin permisos GPS');
-      setLocation({
-        latitude: null,
-        longitude: null,
-        loading: false,
-        error: 'Permiso de ubicación denegado',
-      });
-      setWeather({
-        temperature: null,
-        weatherCode: null,
-        isDay: 1,
-        loading: false,
-        error: null,
-      });
-      return;
+  // NUEVA FUNCIÓN: Verificar y activar GPS automáticamente
+  const verificarYActivarGPS = async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return true;
     }
 
-    let locationObtained = false;
+    try {
+      const result =
+        await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+          interval: 10000,
+        });
 
-    const tryPreciseLocationAsBackup = () => {
-      console.log('🔄 Intentando método de respaldo con GPS...');
+      return true;
+    } catch (error: any) {
+      if (error.code === 'ERR00') {
+        Alert.alert(
+          'GPS Desactivado',
+          'Para usar esta función, necesitas activar el GPS. ¿Deseas activarlo ahora?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Activar GPS',
+              onPress: () => {
+                RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+                  interval: 10000,
+                }).catch(err => {});
+              },
+            },
+          ],
+        );
+        return false;
+      } else if (error.code === 'ERR01') {
+        Alert.alert(
+          'GPS No Disponible',
+          'Los servicios de ubicación están deshabilitados en tu dispositivo.',
+        );
+        return false;
+      } else if (error.code === 'ERR02') {
+        return false;
+      }
+
+      return false;
+    }
+  };
+
+  // FUNCIÓN MODIFICADA: obtenerUbicacion con GPS auto-activación
+  const obtenerUbicacion = async (): Promise<void> => {
+    try {
+      const tienePermiso = await solicitarPermisosUbicacion();
+
+      if (!tienePermiso) {
+        setLocation({
+          latitude: null,
+          longitude: null,
+          loading: false,
+          error: 'Permiso de ubicación denegado',
+        });
+        setWeather({
+          temperature: null,
+          weatherCode: null,
+          isDay: 1,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      const gpsActivado = await verificarYActivarGPS();
+
+      if (!gpsActivado) {
+        setLocation({
+          latitude: null,
+          longitude: null,
+          loading: false,
+          error: 'GPS desactivado. Por favor activa el GPS.',
+        });
+        setWeather({
+          temperature: null,
+          weatherCode: null,
+          isDay: 1,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      let locationObtained = false;
+
+      const tryPreciseLocationAsBackup = () => {
+        Geolocation.getCurrentPosition(
+          async position => {
+            if (locationObtained) return;
+            locationObtained = true;
+
+            try {
+              const { latitude, longitude } = position.coords;
+              const lat = latitude.toFixed(6);
+              const lng = longitude.toFixed(6);
+
+              setLocation({
+                latitude: lat,
+                longitude: lng,
+                loading: true,
+                error: null,
+              });
+
+              obtenerClima(lat, lng);
+
+              try {
+                await obtenerDireccion(lat, lng);
+              } catch (dirError) {
+                setDireccionCoordenadas('No hay dirección disponible');
+              }
+
+              setLocation(prev => ({
+                ...prev,
+                loading: false,
+              }));
+            } catch (backupError) {
+              setLocation({
+                latitude: null,
+                longitude: null,
+                loading: false,
+                error: 'Error al obtener ubicación GPS',
+              });
+              setWeather({
+                temperature: null,
+                weatherCode: null,
+                isDay: 1,
+                loading: false,
+                error: null,
+              });
+            }
+          },
+          backupError => {
+            if (!locationObtained) {
+              locationObtained = true;
+              setLocation({
+                latitude: null,
+                longitude: null,
+                loading: false,
+                error: 'Error al obtener ubicación GPS',
+              });
+              setWeather({
+                temperature: null,
+                weatherCode: null,
+                isDay: 1,
+                loading: false,
+                error: null,
+              });
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0,
+          },
+        );
+      };
 
       Geolocation.getCurrentPosition(
         async position => {
@@ -385,14 +506,8 @@ const HomeDriverPassenger: React.FC = () => {
             obtenerClima(lat, lng);
 
             try {
-              console.log('Obteniendo dirección en respaldo con coordenadas:', {
-                lat,
-                lng,
-              });
               await obtenerDireccion(lat, lng);
-              console.log('Dirección obtenida exitosamente en respaldo');
             } catch (dirError) {
-              console.log('Error obteniendo dirección en respaldo:', dirError);
               setDireccionCoordenadas('No hay dirección disponible');
             }
 
@@ -400,144 +515,73 @@ const HomeDriverPassenger: React.FC = () => {
               ...prev,
               loading: false,
             }));
-          } catch (backupError) {
-            console.log('Error en método de respaldo:', backupError);
-            setLocation({
-              latitude: null,
-              longitude: null,
-              loading: false,
-              error: 'Error al obtener ubicación GPS',
-            });
-            setWeather({
-              temperature: null,
-              weatherCode: null,
-              isDay: 1,
-              loading: false,
-              error: null,
-            });
+
+            setTimeout(() => {
+              Geolocation.getCurrentPosition(
+                async precisePosition => {
+                  try {
+                    const { latitude: precLat, longitude: precLng } =
+                      precisePosition.coords;
+                    const preciseLat = precLat.toFixed(6);
+                    const preciseLng = precLng.toFixed(6);
+
+                    const latDiff = Math.abs(parseFloat(lat) - precLat);
+                    const lngDiff = Math.abs(parseFloat(lng) - precLng);
+
+                    if (latDiff > 0.0001 || lngDiff > 0.0001) {
+                      setLocation(prev => ({
+                        ...prev,
+                        latitude: preciseLat,
+                        longitude: preciseLng,
+                      }));
+
+                      obtenerClima(preciseLat, preciseLng);
+
+                      try {
+                        await obtenerDireccion(preciseLat, preciseLng);
+                      } catch (error) {}
+                    }
+                  } catch (error) {}
+                },
+                error => {},
+                {
+                  enableHighAccuracy: true,
+                  timeout: 10000,
+                  maximumAge: 0,
+                },
+              );
+            }, 3000);
+          } catch (error) {
+            locationObtained = false;
+            tryPreciseLocationAsBackup();
           }
         },
-        backupError => {
-          console.log('Error final GPS:', backupError.message);
+        error => {
           if (!locationObtained) {
-            locationObtained = true;
-            setLocation({
-              latitude: null,
-              longitude: null,
-              loading: false,
-              error: 'Error al obtener ubicación GPS',
-            });
-            setWeather({
-              temperature: null,
-              weatherCode: null,
-              isDay: 1,
-              loading: false,
-              error: null,
-            });
+            tryPreciseLocationAsBackup();
           }
         },
         {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 60000,
         },
       );
-    };
-
-    Geolocation.getCurrentPosition(
-      async position => {
-        if (locationObtained) return;
-        locationObtained = true;
-
-        try {
-          const { latitude, longitude } = position.coords;
-          const lat = latitude.toFixed(6);
-          const lng = longitude.toFixed(6);
-
-          setLocation({
-            latitude: lat,
-            longitude: lng,
-            loading: true,
-            error: null,
-          });
-
-          obtenerClima(lat, lng);
-
-          try {
-            await obtenerDireccion(lat, lng);
-          } catch (dirError) {
-            setDireccionCoordenadas('No hay dirección disponible');
-          }
-
-          setLocation(prev => ({
-            ...prev,
-            loading: false,
-          }));
-
-          setTimeout(() => {
-            Geolocation.getCurrentPosition(
-              async precisePosition => {
-                try {
-                  const { latitude: precLat, longitude: precLng } =
-                    precisePosition.coords;
-                  const preciseLat = precLat.toFixed(6);
-                  const preciseLng = precLng.toFixed(6);
-
-                  const latDiff = Math.abs(parseFloat(lat) - precLat);
-                  const lngDiff = Math.abs(parseFloat(lng) - precLng);
-
-                  if (latDiff > 0.0001 || lngDiff > 0.0001) {
-                    setLocation(prev => ({
-                      ...prev,
-                      latitude: preciseLat,
-                      longitude: preciseLng,
-                    }));
-
-                    obtenerClima(preciseLat, preciseLng);
-
-                    try {
-                      await obtenerDireccion(preciseLat, preciseLng);
-                    } catch (error) {
-                      console.log(
-                        'Error actualizando dirección precisa:',
-                        error,
-                      );
-                    }
-                  } else {
-                    console.log(
-                      'Coordenadas precisas similares a las iniciales, no es necesario actualizar',
-                    );
-                  }
-                } catch (error) {
-                  console.log('Error procesando ubicación precisa:', error);
-                }
-              },
-              error => {
-                console.log('No se pudo mejorar la precisión:', error.message);
-              },
-              {
-                enableHighAccuracy: true,
-                timeout: 8000,
-                maximumAge: 0,
-              },
-            );
-          }, 3000);
-        } catch (error) {
-          locationObtained = false;
-          tryPreciseLocationAsBackup();
-        }
-      },
-      error => {
-        if (!locationObtained) {
-          tryPreciseLocationAsBackup();
-        }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 60000,
-      },
-    );
+    } catch (error) {
+      setLocation({
+        latitude: null,
+        longitude: null,
+        loading: false,
+        error: 'Error al obtener ubicación',
+      });
+      setWeather({
+        temperature: null,
+        weatherCode: null,
+        isDay: 1,
+        loading: false,
+        error: null,
+      });
+    }
   };
 
   useEffect(() => {
@@ -558,7 +602,7 @@ const HomeDriverPassenger: React.FC = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#1a237e' }}>
+    <View style={{ flex: 1 }}>
       <StatusBar
         barStyle="light-content"
         backgroundColor="#1a237e"
@@ -581,6 +625,13 @@ const HomeDriverPassenger: React.FC = () => {
                     <>
                       <Sun size={20} color="#FFD700" />
                       <Text style={homeStyles.temperature}>--°</Text>
+                    </>
+                  ) : location.error && location.error.includes('GPS') ? (
+                    <>
+                      <Sun size={20} color="#FFD700" />
+                      <Text style={[homeStyles.temperature, { fontSize: 10 }]}>
+                        Active GPS
+                      </Text>
                     </>
                   ) : (
                     <>
@@ -621,13 +672,9 @@ const HomeDriverPassenger: React.FC = () => {
               </View>
             </View>
 
-       <Text style={homeStyles.companyName}>
-         {user?.username && `Usuario: ${user.username}`}
-         {user?.description && `Description${user.description}`}
-         {server && `\nServidor: ${server}`}
-         {tipo && `\nTipo: ${tipo}`}
-          {codigo && ` - Código: ${codigo}`}
-       </Text>
+            <Text style={homeStyles.companyName}>
+              {user?.description || (user?.username && `${user.username}`)}
+            </Text>
 
             <View style={homeStyles.locationContainer}>
               <MapPin size={25} color="#FFF" />
@@ -637,7 +684,9 @@ const HomeDriverPassenger: React.FC = () => {
                 </Text>
 
                 <Text style={homeStyles.locationLabel}>
-                  {direccionCoordenadas}
+                  {location.error && location.error.includes('GPS')
+                    ? 'Active su GPS para obtener su dirección exacta'
+                    : direccionCoordenadas}
                 </Text>
               </View>
             </View>
@@ -653,44 +702,118 @@ const HomeDriverPassenger: React.FC = () => {
         >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
-          {/* Grid de opciones principales - SOLO 4 OPCIONES */}
+          {/* Grid de opciones principales - SOLO 4 OPCIONES CON IMÁGENES */}
           <View style={homeStyles.optionsGrid}>
             <TouchableOpacity
-              style={homeStyles.optionCard}
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
               onPress={handleNavigateToProfile}
+              activeOpacity={0.95}
             >
-              <View style={homeStyles.optionIcon}>
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760626069/perfil_zspvsr.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
                 <User size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Perfil</Text>
+
               <Text style={homeStyles.optionSubtitle}>
                 Revisa tu información personal, actualiza tus datos y
                 credenciales y personaliza tus marcadores.
               </Text>
             </TouchableOpacity>
 
-   <TouchableOpacity
-  style={homeStyles.optionCard}
-  onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
->
-  <View style={homeStyles.optionIcon}>
-    <CheckCircle size={24} color="#e36414" />
-  </View>
-  <Text style={homeStyles.optionTitle}>Servicios</Text>
-  <Text style={homeStyles.optionSubtitle}>
-    Conoce tus servicios programados más recientes.
-  </Text>
-</TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
+              onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
+              activeOpacity={0.95}
+            >
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/auto_zzrijf.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
 
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
+                <CheckCircle size={24} color="#e36414" />
+              </View>
+              <Text style={homeStyles.optionTitle}>Servicios</Text>
+
+              <Text style={homeStyles.optionSubtitle}>
+                Conoce tus servicios programados más recientes.
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
-              style={homeStyles.optionCard}
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
               onPress={handleNavigateToSecurity}
+              activeOpacity={0.95}
             >
-              <View style={homeStyles.optionIcon}>
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/biometria_o2lzop.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
                 <Shield size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Seguridad</Text>
+
               <Text style={homeStyles.optionSubtitle}>
                 Activa la autenticación con datos biométricos y habilita o
                 deshabilita las notificaciones.
@@ -698,13 +821,38 @@ const HomeDriverPassenger: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={homeStyles.optionCard}
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
               onPress={handleNavigateToHelp}
+              activeOpacity={0.95}
             >
-              <View style={homeStyles.optionIcon}>
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/ayuda_a9nubh.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
                 <Headphones size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Ayuda</Text>
+
               <Text style={homeStyles.optionSubtitle}>
                 Conoce nuestros números telefónicos, llámanos a la central de
                 monitoreo, escríbenos al Whatsapp, revisa las preguntas

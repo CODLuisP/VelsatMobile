@@ -22,7 +22,6 @@ import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
 import { RootStackParamList } from '../../App';
 import NavigationBarColor from 'react-native-navigation-bar-color';
-// ✅ IMPORT CORREGIDO
 import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 
 import {
@@ -673,11 +672,11 @@ const Home: React.FC = () => {
                 )}
               </View>
             </View>
-            <Text style={homeStyles.companyName}>
-              {user?.description && `${user.description}`}
-              {selectedVehiclePin}
-              {codigo && ` - ${codigo}`}
-            </Text>
+           
+              <Text style={homeStyles.companyName}>
+             {user?.description || (user?.username && `${user.username}`)}
+            
+           </Text>
 
             <View style={homeStyles.locationContainer}>
               <MapPin size={25} color="#FFF" />

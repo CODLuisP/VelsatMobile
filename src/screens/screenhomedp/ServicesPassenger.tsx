@@ -1,6 +1,19 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Users, Calendar, User } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Users,
+  Calendar,
+  User,
+  CalendarX2,
+  Clock,
+} from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,8 +25,8 @@ import {
 } from '../../hooks/useNavigationMode';
 import { styles } from '../../styles/servicesdriver';
 import { useAuthStore } from '../../store/authStore';
+import axios from 'axios';
 
-// Interface para los datos de la API
 interface ApiService {
   codservicio: string;
   codpedido: string;
@@ -40,9 +53,9 @@ const ServicesPassenger = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const { user, logout, server, tipo } = useAuthStore();
+
   const codigo = user?.codigo;
 
-  // Estado para almacenar los servicios de la API
   const [apiServices, setApiServices] = useState<ApiService[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,42 +66,40 @@ const ServicesPassenger = () => {
     navigationDetection.hasNavigationBar,
   );
 
-// Función para obtener los servicios desde la API
-const fetchServiciosPasajero = async () => {
-  try {
-    setLoading(true);    
-    const url = `https://velsat.pe:2087/api/Aplicativo/serviciosPasajero/${codigo}`;
-    
-    const response = await fetch(url);
-
-    // Primero obtener el texto de la respuesta
-    const text = await response.text();
-    
-    // Verificar si es un mensaje de "no hay servicios"
-    if (text.includes('No se encontraron servicios')) {
-      setApiServices([]);
-      return;
-    }
-    
-    // Intentar parsear el JSON
+  const fetchServiciosPasajero = async () => {
     try {
-      const data = JSON.parse(text);      
-      // Guardar los datos en el estado
-      setApiServices(data);
-      
-    } catch (parseError) {
-      setApiServices([]);
-    }
-    
-  } catch (error) {
-    console.error('❌ Error al obtener servicios:', error);
-    setApiServices([]);
-  } finally {
-    setLoading(false);
-  }
-};
+      setLoading(true);
 
-  // Ejecutar la petición cuando se monte el componente
+      const url = `https://velsat.pe:2087/api/Aplicativo/serviciosPasajero/${codigo}`;
+
+      const response = await axios.get(url, {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        setApiServices(response.data);
+      } else {
+        setApiServices([]);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          if (error.response.data && 
+              typeof error.response.data === 'string' && 
+              error.response.data.includes('No se encontraron servicios')) {
+            setApiServices([]);
+          }
+        }
+      }
+      setApiServices([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (codigo) {
       fetchServiciosPasajero();
@@ -99,7 +110,7 @@ const fetchServiciosPasajero = async () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -107,19 +118,15 @@ const fetchServiciosPasajero = async () => {
     navigation.goBack();
   };
 
-  // Función para obtener el tipo de servicio
   const getTipoServicio = (tipo: string) => {
     return tipo === 'I' ? 'Entrada' : 'Salida';
   };
 
-  // Función para obtener la fecha de fin
   const getFechaFin = (tipo: string, fechaservicio: string) => {
     return tipo === 'S' ? '-' : fechaservicio;
   };
 
-  // Función para calcular el estado del servicio basado en la fecha
   const getServiceStatus = (fechaservicio: string) => {
-    // Parsear la fecha del servicio (formato: "14/10/2025 23:00")
     const [fecha, hora] = fechaservicio.split(' ');
     const [dia, mes, año] = fecha.split('/');
     const [horas, minutos] = hora.split(':');
@@ -132,20 +139,17 @@ const fetchServiciosPasajero = async () => {
       parseInt(minutos),
     );
 
-    // Obtener la hora actual de Perú (UTC-5)
     const ahora = new Date();
     const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
-    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5); // UTC-5 para Perú
+    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5); 
 
     const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
     const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
     const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
 
-    // Si ya pasó la hora del servicio
     if (diferenciaMs < 0) {
       const minutosTranscurridos = Math.abs(diferenciaMinutos);
 
-      // Si pasaron más de 30 minutos desde el inicio
       if (minutosTranscurridos > 30) {
         return {
           text: 'Finalizado',
@@ -153,14 +157,12 @@ const fetchServiciosPasajero = async () => {
         };
       }
 
-      // Si pasaron menos de 30 minutos desde el inicio
       return {
         text: 'En progreso',
         color: '#4CAF50',
       };
     }
 
-    // Si falta menos de 1 hora, mostrar en minutos
     if (diferenciaMinutos < 60) {
       return {
         text: `Faltan ${diferenciaMinutos} min`,
@@ -168,7 +170,6 @@ const fetchServiciosPasajero = async () => {
       };
     }
 
-    // Si falta más de 1 hora, mostrar en horas
     return {
       text: `Faltan ${diferenciaHoras} hrs`,
       color: '#FFA726',
@@ -176,10 +177,10 @@ const fetchServiciosPasajero = async () => {
   };
 
   const handleNavigateToServicesDetailDriver = (service: ApiService) => {
-  navigation.navigate('ServicesDetailPassenger', {
-    serviceData: service
-  });
-};
+    navigation.navigate('ServicesDetailPassenger', {
+      serviceData: service,
+    });
+  };
 
   const topSpace = insets.top + 5;
 
@@ -201,22 +202,33 @@ const fetchServiciosPasajero = async () => {
       >
         <View style={styles.formContainer}>
           {loading ? (
-            <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>
-              Cargando servicios...
-            </Text>
+            <View style={styles.emptyStateContainer}>
+              <ActivityIndicator size="large" color="#e36414" />
+              <Text style={styles.emptyStateTitle}>Cargando servicios</Text>
+              <Text style={styles.emptyStateSubtitle}>
+                Por favor espera un momento
+              </Text>
+            </View>
           ) : apiServices.length === 0 ? (
-            <Text style={{ color: '#000', textAlign: 'center', marginTop: 20 }}>
-              Aún no hay servicios programados para el día de hoy
-            </Text>
+            <View style={styles.emptyStateContainer}>
+              <View style={[styles.iconCircle, styles.iconCircleLarge]}>
+                <CalendarX2 size={40} color="#e36414" />
+              </View>
+              <Text style={styles.emptyStateTitleDark}>
+                Sin servicios programados
+              </Text>
+              <Text style={styles.emptyStateDescription}>
+                Aún no hay servicios programados para el día de hoy
+              </Text>
+            </View>
           ) : (
             apiServices.map(service => (
               <TouchableOpacity
                 key={service.codservicio}
-                onPress={() => handleNavigateToServicesDetailDriver(service)} // Pasar el servicio
+                onPress={() => handleNavigateToServicesDetailDriver(service)}
                 activeOpacity={0.7}
               >
                 <View style={styles.serviceCard}>
-                  {/* Header del servicio */}
                   <View style={styles.serviceHeader}>
                     <View style={styles.serviceHeaderLeft}>
                       <Text style={styles.serviceNumber}>
@@ -235,7 +247,6 @@ const fetchServiciosPasajero = async () => {
                     </View>
                   </View>
 
-                  {/* Body del servicio */}
                   <View style={styles.serviceBody}>
                     <View style={styles.infoRow}>
                       <View style={styles.leftColumn}>
