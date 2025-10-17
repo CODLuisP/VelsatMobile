@@ -44,6 +44,28 @@ interface Device {
   isOnline: boolean;
 }
 
+interface ApiService {
+  codservicio: string;
+  codpedido: string;
+  codusuario: string;
+  codcliente: string | null;
+  unidad: string;
+  direccion: string;
+  distrito: string;
+  wy: string;
+  wx: string;
+  referencia: string | null;
+  fechapasajero: string;
+  orden: string;
+  empresa: string;
+  numero: string;
+  codconductor: string;
+  destino: string | null;
+  fechaservicio: string;
+  tipo: string;
+  totalpax: string;
+}
+
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
@@ -125,7 +147,9 @@ export type RootStackParamList = {
   ServicesDriver: undefined;
   ServicesPassenger: undefined;
   ServicesDetailDriver: undefined;
-  ServicesDetailPassenger: undefined;
+  ServicesDetailPassenger: {
+    serviceData: ApiService
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
