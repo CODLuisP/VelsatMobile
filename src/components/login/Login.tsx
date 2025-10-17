@@ -70,15 +70,6 @@ const Login = () => {
     React.useCallback(() => {
       SystemNavigationBar.setNavigationColor('#00296b');
 
-      // 🔍 LOG: Verificar estado cuando el Login toma foco
-      const state = useAuthStore.getState();
-      console.log('👁️ Login tomó foco. Estado actual:', {
-        isAuthenticated: state.isAuthenticated,
-        hasUser: !!state.user,
-        hasToken: !!state.token,
-        hasServer: !!state.server,
-      });
-
       return () => {
         SystemNavigationBar.setNavigationColor('#00296b');
       };
@@ -107,78 +98,69 @@ const Login = () => {
     authenticateWithBiometric,
     getBiometricDisplayName,
     canUseBiometricLogin,
-    logout, // 🆕 Importar logout
+    logout, 
   } = useAuthStore();
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
 
-  const handleBiometricLogin = async () => {
-    try {
-      console.log('🔐 Usuario presionó botón de login biométrico');
-      
-      // Activar loading ANTES de la autenticación
-      setIsLoggingIn(true);
-      setLoading(true);
+const handleBiometricLogin = async () => {
+  try {
+    setIsLoggingIn(true);
+    setLoading(true);
 
-      const success = await authenticateWithBiometric();
+    const success = await authenticateWithBiometric();
 
-      if (success) {
-        console.log('✅ Autenticación biométrica exitosa');
-      } else {
-        console.log('❌ Autenticación biométrica fallida');
-        
-        Alert.alert(
-          'Autenticación fallida',
-          'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
-          [
-            { 
-              text: 'Entendido',
-              onPress: () => {
-                setIsLoggingIn(false);
-                setLoading(false);
-              }
-            }
-          ],
-        );
-      }
-    } catch (error) {
-      console.log('❌ Error en autenticación biométrica:', error);
-      
+    if (success) {
+      // Autenticación exitosa
+    } else {
       Alert.alert(
-        'Error de Autenticación',
-        'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+        'Autenticación fallida',
+        'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
         [
-          { 
+          {
             text: 'Entendido',
             onPress: () => {
               setIsLoggingIn(false);
               setLoading(false);
-            }
-          }
+            },
+          },
         ],
       );
     }
-  };
+  } catch (error: any) {
+    if (error?.message === 'USER_CANCELLED') {
+      setIsLoggingIn(false);
+      setLoading(false);
+      return;
+    }
+
+    Alert.alert(
+      'Error de Autenticación',
+      'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+      [
+        {
+          text: 'Entendido',
+          onPress: () => {
+            setIsLoggingIn(false);
+            setLoading(false);
+          },
+        },
+      ],
+    );
+  }
+};
 
   const loadSavedCredentials = async () => {
     try {
       const savedUser = await AsyncStorage.getItem('savedUser');
-      const savedPassword = await AsyncStorage.getItem('savedPassword');
       const rememberFlag = await AsyncStorage.getItem('rememberMe');
 
-      console.log('📂 Credenciales guardadas encontradas:', {
-        hasSavedUser: !!savedUser,
-        hasSavedPassword: !!savedPassword,
-        rememberFlag,
-      });
-
-      if (rememberFlag === 'true' && savedUser && savedPassword) {
-        setUsuario(savedUser);
-        setPassword(savedPassword);
-        setRememberMe(true);
-      }
+     if (rememberFlag === 'true' && savedUser) {
+      setUsuario(savedUser);
+      setRememberMe(true);
+    }
     } catch (error) {
-      console.log('❌ Error cargando credenciales guardadas:', error);
+      // Error silencioso
     }
   };
 
@@ -186,25 +168,21 @@ const Login = () => {
     try {
       if (rememberMe) {
         await AsyncStorage.setItem('savedUser', usuario);
-        await AsyncStorage.setItem('savedPassword', password);
         await AsyncStorage.setItem('rememberMe', 'true');
-        console.log('💾 Credenciales guardadas en AsyncStorage');
       } else {
         await clearCredentials();
       }
     } catch (error) {
-      console.log('❌ Error guardando credenciales:', error);
+      // Error silencioso
     }
   };
 
   const clearCredentials = async () => {
     try {
       await AsyncStorage.removeItem('savedUser');
-      await AsyncStorage.removeItem('savedPassword');
       await AsyncStorage.removeItem('rememberMe');
-      console.log('🧹 Credenciales limpiadas de AsyncStorage');
     } catch (error) {
-      console.log('❌ Error limpiando credenciales:', error);
+      // Error silencioso
     }
   };
 
@@ -214,11 +192,9 @@ const Login = () => {
 
     Linking.openURL(phoneUrl)
       .then(() => {
-        console.log('📞 Marcador abierto exitosamente');
+        // Marcador abierto
       })
       .catch(error => {
-        console.log('❌ Error abriendo marcador:', error);
-
         Alert.alert(
           'No se pudo abrir el marcador',
           `Marca manualmente este número:\n${phoneNumber}`,
@@ -239,26 +215,20 @@ const Login = () => {
     }
 
     try {
-      console.log('🚀 Iniciando login para usuario:', usuario);
-      
-      // Activar estado de carga INMEDIATAMENTE
       setIsLoggingIn(true);
       setLoading(true);
 
-      // Animación del botón
       buttonScale.value = withSequence(
         withTiming(0.95, { duration: 100 }),
         withTiming(1, { duration: 100 }),
       );
 
-      // Animación de rotación para el icono de carga
       loadingRotation.value = withRepeat(
         withTiming(360, { duration: 1000, easing: Easing.linear }),
         -1,
         false,
       );
 
-      // PASO 1: Obtener el servidor
       const serverResponse = await axios.get(
         `https://velsat.pe:2087/api/Server/MobileServer/${usuario}`,
         {
@@ -270,7 +240,6 @@ const Login = () => {
       );
 
       const serverData = serverResponse.data;
-      console.log('🌐 Servidor obtenido:', serverData.servidor, 'tipo:', serverData.tipo);
 
       if (!serverData.servidor) {
         Alert.alert(
@@ -298,7 +267,6 @@ const Login = () => {
       );
 
       const loginData = loginResponse.data;
-      console.log('✅ Login exitoso:', loginData.username);
 
       if (loginData.token && loginData.username && loginData.account) {
         await saveCredentials();
@@ -307,20 +275,18 @@ const Login = () => {
         setToken(loginData.token);
         setTipo(serverData.tipo);
 
-  // Busca esta sección en tu handleLogin (alrededor de la línea 268)
-const userObj: UserType = {
-  id: loginData.username,
-  username: loginData.username,
-  email: `${loginData.username}@velsat.com`,
-  name:
-    loginData.username.charAt(0).toUpperCase() +
-    loginData.username.slice(1),
-  description: loginData.account.description,
-  codigo: loginData.account.codigo, // 🆕 Agregar esta línea
-};
+        const userObj: UserType = {
+          id: loginData.username,
+          username: loginData.username,
+          email: `${loginData.username}@velsat.com`,
+          name:
+            loginData.username.charAt(0).toUpperCase() +
+            loginData.username.slice(1),
+          description: loginData.account.description,
+          codigo: loginData.account.codigo,
+        };
 
         setUser(userObj);
-        console.log('👤 Usuario establecido, navegando a Home...');
       } else {
         Alert.alert('Error', 'Respuesta de login inválida');
         setIsLoggingIn(false);
@@ -346,7 +312,6 @@ const userObj: UserType = {
         }
       }
 
-      console.log('❌ Error en login:', errorMessage);
       Alert.alert('Error de Login', errorMessage);
       setIsLoggingIn(false);
       setLoading(false);
@@ -362,76 +327,62 @@ const userObj: UserType = {
     transform: [{ rotate: `${loadingRotation.value}deg` }],
   }));
 
+  useEffect(() => {
+    loadSavedCredentials();
 
+    const checkBiometricWithDelay = async (): Promise<void> => {
+      try {
+        await checkBiometricAvailability();
 
-useEffect(() => {
-  loadSavedCredentials();
+        const canUse = canUseBiometricLogin();
 
-  const checkBiometricWithDelay = async (): Promise<void> => {
-    try {
-      await checkBiometricAvailability();
+        if (canUse) {
+          setShowBiometricOption(true);
 
-      const canUse = canUseBiometricLogin();
-
-      if (canUse) {
-        console.log('✅ Login biométrico disponible');
-        setShowBiometricOption(true);
-        
-        // 🆕 Auto-ejecutar login biométrico
-        setTimeout(() => {
-          handleBiometricLogin();
-        }, 500);
-        
-      } else {
-        console.log('⚠️ Login biométrico no disponible:', {
-          enabled: biometric.isEnabled,
-          available: biometric.isAvailable,
-          hasCredentials:
-            !!useAuthStore.getState().biometricCredentials.username,
-        });
-      }
-    } catch (error) {
-      console.log('❌ Error en verificación biométrica:', error);
-    }
-  };
-
-  checkBiometricWithDelay();
-
-  backgroundShift.value = withRepeat(
-    withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
-    -1,
-    true,
-  );
-
-  const startCarAnimation = (): void => {
-    carPosition.value = -200;
-    carPosition.value = withTiming(
-      width + 100,
-      {
-        duration: 8000,
-        easing: Easing.linear,
-      },
-      (finished?: boolean) => {
-        if (finished) {
-          runOnJS(startCarAnimation)();
+          setTimeout(() => {
+            handleBiometricLogin();
+          }, 500);
         }
-      },
+      } catch (error) {
+        // Error silencioso
+      }
+    };
+
+    checkBiometricWithDelay();
+
+    backgroundShift.value = withRepeat(
+      withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
     );
-  };
-  
-  startCarAnimation();
 
-  roadOffset.value = withRepeat(
-    withTiming(80, {
-      duration: 800,
-      easing: Easing.linear,
-    }),
-    -1,
-    false,
-  );
-}, []);
+    const startCarAnimation = (): void => {
+      carPosition.value = -200;
+      carPosition.value = withTiming(
+        width + 100,
+        {
+          duration: 8000,
+          easing: Easing.linear,
+        },
+        (finished?: boolean) => {
+          if (finished) {
+            runOnJS(startCarAnimation)();
+          }
+        },
+      );
+    };
 
+    startCarAnimation();
 
+    roadOffset.value = withRepeat(
+      withTiming(80, {
+        duration: 800,
+        easing: Easing.linear,
+      }),
+      -1,
+      false,
+    );
+  }, []);
 
   const logoStyle = useAnimatedStyle(() => ({
     transform: [{ scale: logoScale.value }],
@@ -560,7 +511,7 @@ useEffect(() => {
               >
                 {rememberMe && <Text style={styles.checkmark}>✓</Text>}
               </View>
-              <Text style={styles.rememberText}>Recordar mi contraseña</Text>
+              <Text style={styles.rememberText}>Recordar mi usuario</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, StatusBar } from 'react-native';
@@ -133,24 +133,20 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const App = () => {
   const { isAuthenticated, isLoading, setLoading, tipo } = useAuthStore();
 
-  // Limpiar loading si el usuario está autenticado
   useEffect(() => {
     if (isAuthenticated && isLoading) {
-      console.log('✅ Usuario autenticado, limpiando estado de loading');
       setLoading(false);
     }
   }, [isAuthenticated, isLoading, setLoading]);
 
-  // Configurar barra de navegación del sistema
   useEffect(() => {
     StatusBar.setBarStyle('light-content', true);
 
     const setNavigationBarColor = () => {
       try {
         SystemNavigationBar.setNavigationColor('#00296b');
-        console.log('✅ Color de barra de navegación establecido');
       } catch (error) {
-        console.log('❌ Error estableciendo color de barra de navegación:', error);
+        // Error handling silently
       }
     };
 
@@ -176,7 +172,6 @@ const App = () => {
             }}
           >
             {isAuthenticated ? (
-              // ✅ Pantallas cuando está AUTENTICADO
               <>
                 <Stack.Screen
                   name="Home"
@@ -225,7 +220,6 @@ const App = () => {
                 />
               </>
             ) : (
-              // ✅ Pantalla cuando NO está autenticado
               <Stack.Screen name="Login" component={Login} />
             )}
           </Stack.Navigator>

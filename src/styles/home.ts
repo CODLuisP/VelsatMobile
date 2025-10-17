@@ -163,19 +163,20 @@ backgroundColor: 'rgba(4, 49, 122, 0.9)'
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  optionCard: {
-    backgroundColor: 'white',
-    width: '48%',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    position: 'relative',
-  },
+optionCard: {
+  backgroundColor: 'white',
+  width: '48%',
+  padding: 20,
+  borderRadius: 12,
+  marginBottom: 15,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 3,
+  position: 'relative',
+  overflow: 'hidden', 
+},
   driverLabel: {
     position: 'absolute',
     top: 10,
@@ -184,6 +185,50 @@ backgroundColor: 'rgba(4, 49, 122, 0.9)'
     fontSize: 10,
     fontStyle: 'italic',
   },
+
+
+// En tu archivo de estilos (donde está homeStyles)
+
+optionCardWithBackground: {
+  position: 'relative',
+  overflow: 'hidden',
+},
+
+optionCardBackgroundImage: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,    
+  bottom: 0,   
+  width: '100%',
+  height: '100%',
+},
+
+optionCardOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,    
+  bottom: 0,  
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(255, 255, 255, 0.94)',
+},
+
+optionContentAbove: {
+  zIndex: 1,
+},
+
+optionCardWithBorder: {
+  borderWidth: 1,
+  borderColor: '#e36414',
+},
+
+optionTextWhite: {
+  color: '#fff',
+},
+
+
   optionIcon: {
     alignItems: 'center',
     marginBottom: 2,

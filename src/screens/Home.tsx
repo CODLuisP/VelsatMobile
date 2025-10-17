@@ -9,15 +9,27 @@ import {
   PermissionsAndroid,
   Platform,
   Dimensions,
+  ImageBackground,
+  Alert,
 } from 'react-native';
-import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
 import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
 import { RootStackParamList } from '../../App';
 import NavigationBarColor from 'react-native-navigation-bar-color';
+// ✅ IMPORT CORREGIDO
+import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 
-import { EdgeInsets, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  EdgeInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import {
   Headphones,
   Sun,
@@ -30,8 +42,8 @@ import {
   Car,
   BarChart3,
   Shield,
-  LogOut,
 } from 'lucide-react-native';
+import { getBottomSpace, useNavigationMode } from '../hooks/useNavigationMode';
 
 // Tipos TypeScript
 interface WeatherState {
@@ -55,46 +67,37 @@ interface CoordinatesType {
   displayName: string;
 }
 
-
-const getBottomSpace = (insets: EdgeInsets) => {
-  if (Platform.OS === 'android') {
-    const screen = Dimensions.get('screen');
-    const window = Dimensions.get('window');
-
-    const navBarHeight = screen.height - window.height;
-    return navBarHeight > 0 ? navBarHeight + 30 : 70;
-  }
-
-  return Math.max(insets.bottom, 20);
-};
-
 const Home: React.FC = () => {
-const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
-const codigo = user?.codigo;
+  const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
+  const codigo = user?.codigo;
 
-const [showDropdown, setShowDropdown] = useState<boolean>(false);
-const [weather, setWeather] = useState<WeatherState>({
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
     weatherCode: null,
     isDay: null,
     loading: true,
     error: null,
   });
-const [location, setLocation] = useState<LocationState>({
+  const [location, setLocation] = useState<LocationState>({
     latitude: null,
     longitude: null,
     loading: true,
     error: null,
   });
 
+  const navigationDetection = useNavigationMode();
 
   const insets = useSafeAreaInsets();
-  const bottomSpace = getBottomSpace(insets);
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
 
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#00296b', false);
-    }, [])
+    }, []),
   );
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -124,7 +127,7 @@ const [location, setLocation] = useState<LocationState>({
   const handleNavigateToHelp = () => {
     navigation.navigate('Help');
   };
-  // Función para obtener el saludo según la hora
+
   const obtenerSaludo = (): string => {
     const hora = new Date().getHours();
 
@@ -146,13 +149,10 @@ const [location, setLocation] = useState<LocationState>({
     const size = 20;
     const color = '#FFD700';
 
-    // Si no hay datos, usar sol por defecto
     if (!weatherCode && !temperature) {
       return <Sun size={size} color={color} />;
     }
 
-    // WMO Weather interpretation codes
-    // 0: Clear sky
     if (weatherCode === 0) {
       return isDay === 1 ? (
         <Sun size={size} color={color} />
@@ -161,17 +161,14 @@ const [location, setLocation] = useState<LocationState>({
       );
     }
 
-    // 1-3: Mainly clear, partly cloudy, and overcast
     if (weatherCode && weatherCode >= 1 && weatherCode <= 3) {
       return <Cloud size={size} color="#87CEEB" />;
     }
 
-    // 45, 48: Fog
     if (weatherCode === 45 || weatherCode === 48) {
       return <Cloud size={size} color="#B0C4DE" />;
     }
 
-    // 51-67: Rain (various intensities)
     if (
       weatherCode &&
       ((weatherCode >= 51 && weatherCode <= 67) ||
@@ -180,7 +177,6 @@ const [location, setLocation] = useState<LocationState>({
       return <CloudRain size={size} color="#4682B4" />;
     }
 
-    // 71-77, 85-86: Snow
     if (
       weatherCode &&
       ((weatherCode >= 71 && weatherCode <= 77) ||
@@ -190,12 +186,10 @@ const [location, setLocation] = useState<LocationState>({
       return <CloudSnow size={size} color="#F0F8FF" />;
     }
 
-    // 95-99: Thunderstorm
     if (weatherCode && weatherCode >= 95 && weatherCode <= 99) {
       return <CloudRain size={size} color="#bde0fe" />;
     }
 
-    // Por defecto basado en la hora
     return isDay === 1 ? (
       <Sun size={size} color={color} />
     ) : (
@@ -203,7 +197,6 @@ const [location, setLocation] = useState<LocationState>({
     );
   };
 
-  // Función para obtener el clima
   const obtenerClima = async (lat: string, lon: string): Promise<void> => {
     try {
       setWeather(prev => ({ ...prev, loading: true }));
@@ -226,7 +219,6 @@ const [location, setLocation] = useState<LocationState>({
         error: null,
       });
     } catch (error) {
-      console.error('Error al obtener clima:', error);
       setWeather({
         temperature: 25,
         weatherCode: 0,
@@ -238,12 +230,9 @@ const [location, setLocation] = useState<LocationState>({
   };
 
   const obtenerDireccion = async (lat: string, lng: string) => {
-    console.log('INICIO obtenerDireccion:', { lat, lng });
-
     setDireccionCoordenadas('Validando coordenadas...');
 
     if (!lat || !lng || lat === 'null' || lng === 'null') {
-      console.log('Coordenadas inválidas:', { lat, lng });
       setDireccionCoordenadas('Coordenadas no válidas');
       return;
     }
@@ -252,23 +241,17 @@ const [location, setLocation] = useState<LocationState>({
     const lngNum = parseFloat(lng);
 
     if (isNaN(latNum) || isNaN(lngNum)) {
-      console.log('Coordenadas no son números válidos:', { lat, lng });
       setDireccionCoordenadas('Coordenadas no válidas (NaN)');
       return;
     }
 
     if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
-      console.log('Coordenadas fuera de rango:', {
-        lat: latNum,
-        lng: lngNum,
-      });
       setDireccionCoordenadas('Coordenadas fuera de rango');
       return;
     }
 
     try {
       const url = `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
-      console.log('📡 URL de consulta:', url);
 
       setDebugUrl(url);
       setDireccionCoordenadas('Consultando servidor...');
@@ -294,7 +277,6 @@ const [location, setLocation] = useState<LocationState>({
         );
       }
 
-      console.log('Parseando JSON...');
       const data = await response.json();
 
       if (data && data.display_name) {
@@ -305,12 +287,7 @@ const [location, setLocation] = useState<LocationState>({
         setDireccionCoordenadas('Sin dirección disponible');
       }
     } catch (error) {
-      console.log('ERROR COMPLETO en obtenerDireccion:', error);
-
       if (error instanceof Error) {
-        console.log('Error name:', error.name);
-        console.log('Error message:', error.message);
-
         if (error.name === 'AbortError') {
           setDireccionCoordenadas('Timeout - Servidor muy lento');
         } else if (error.message.includes('Network')) {
@@ -342,38 +319,171 @@ const [location, setLocation] = useState<LocationState>({
 
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (err) {
-        console.warn(err);
         return false;
       }
     }
     return true;
   };
 
-  const obtenerUbicacion = async (): Promise<void> => {
-    const tienePermiso = await solicitarPermisosUbicacion();
-
-    if (!tienePermiso) {
-      console.log('❌ UBICACIÓN: Sin permisos GPS');
-      setLocation({
-        latitude: null,
-        longitude: null,
-        loading: false,
-        error: 'Permiso de ubicación denegado',
-      });
-      setWeather({
-        temperature: null,
-        weatherCode: null,
-        isDay: 1,
-        loading: false,
-        error: null,
-      });
-      return;
+  // NUEVA FUNCIÓN: Verificar y activar GPS automáticamente
+  const verificarYActivarGPS = async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return true;
     }
 
-    let locationObtained = false;
+    try {
+      const result =
+        await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+          interval: 10000,
+        });
 
-    const tryPreciseLocationAsBackup = () => {
-      console.log('🔄 Intentando método de respaldo con GPS...');
+      return true;
+    } catch (error: any) {
+      if (error.code === 'ERR00') {
+        Alert.alert(
+          'GPS Desactivado',
+          'Para usar esta función, necesitas activar el GPS. ¿Deseas activarlo ahora?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Activar GPS',
+              onPress: () => {
+                RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+                  interval: 10000,
+                }).catch(err => {});
+              },
+            },
+          ],
+        );
+        return false;
+      } else if (error.code === 'ERR01') {
+        Alert.alert(
+          'GPS No Disponible',
+          'Los servicios de ubicación están deshabilitados en tu dispositivo.',
+        );
+        return false;
+      } else if (error.code === 'ERR02') {
+        return false;
+      }
+
+      return false;
+    }
+  };
+
+  // FUNCIÓN MODIFICADA: obtenerUbicacion con GPS auto-activación
+  const obtenerUbicacion = async (): Promise<void> => {
+    try {
+      const tienePermiso = await solicitarPermisosUbicacion();
+
+      if (!tienePermiso) {
+        setLocation({
+          latitude: null,
+          longitude: null,
+          loading: false,
+          error: 'Permiso de ubicación denegado',
+        });
+        setWeather({
+          temperature: null,
+          weatherCode: null,
+          isDay: 1,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      const gpsActivado = await verificarYActivarGPS();
+
+      if (!gpsActivado) {
+        setLocation({
+          latitude: null,
+          longitude: null,
+          loading: false,
+          error: 'GPS desactivado. Por favor activa el GPS.',
+        });
+        setWeather({
+          temperature: null,
+          weatherCode: null,
+          isDay: 1,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      let locationObtained = false;
+
+      const tryPreciseLocationAsBackup = () => {
+        Geolocation.getCurrentPosition(
+          async position => {
+            if (locationObtained) return;
+            locationObtained = true;
+
+            try {
+              const { latitude, longitude } = position.coords;
+              const lat = latitude.toFixed(6);
+              const lng = longitude.toFixed(6);
+
+              setLocation({
+                latitude: lat,
+                longitude: lng,
+                loading: true,
+                error: null,
+              });
+
+              obtenerClima(lat, lng);
+
+              try {
+                await obtenerDireccion(lat, lng);
+              } catch (dirError) {
+                setDireccionCoordenadas('No hay dirección disponible');
+              }
+
+              setLocation(prev => ({
+                ...prev,
+                loading: false,
+              }));
+            } catch (backupError) {
+              setLocation({
+                latitude: null,
+                longitude: null,
+                loading: false,
+                error: 'Error al obtener ubicación GPS',
+              });
+              setWeather({
+                temperature: null,
+                weatherCode: null,
+                isDay: 1,
+                loading: false,
+                error: null,
+              });
+            }
+          },
+          backupError => {
+            if (!locationObtained) {
+              locationObtained = true;
+              setLocation({
+                latitude: null,
+                longitude: null,
+                loading: false,
+                error: 'Error al obtener ubicación GPS',
+              });
+              setWeather({
+                temperature: null,
+                weatherCode: null,
+                isDay: 1,
+                loading: false,
+                error: null,
+              });
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0,
+          },
+        );
+      };
 
       Geolocation.getCurrentPosition(
         async position => {
@@ -395,14 +505,8 @@ const [location, setLocation] = useState<LocationState>({
             obtenerClima(lat, lng);
 
             try {
-              console.log('Obteniendo dirección en respaldo con coordenadas:', {
-                lat,
-                lng,
-              });
               await obtenerDireccion(lat, lng);
-              console.log('Dirección obtenida exitosamente en respaldo');
             } catch (dirError) {
-              console.log('Error obteniendo dirección en respaldo:', dirError);
               setDireccionCoordenadas('No hay dirección disponible');
             }
 
@@ -410,147 +514,75 @@ const [location, setLocation] = useState<LocationState>({
               ...prev,
               loading: false,
             }));
-          } catch (backupError) {
-            console.log('Error en método de respaldo:', backupError);
-            setLocation({
-              latitude: null,
-              longitude: null,
-              loading: false,
-              error: 'Error al obtener ubicación GPS',
-            });
-            setWeather({
-              temperature: null,
-              weatherCode: null,
-              isDay: 1,
-              loading: false,
-              error: null,
-            });
+
+            setTimeout(() => {
+              Geolocation.getCurrentPosition(
+                async precisePosition => {
+                  try {
+                    const { latitude: precLat, longitude: precLng } =
+                      precisePosition.coords;
+                    const preciseLat = precLat.toFixed(6);
+                    const preciseLng = precLng.toFixed(6);
+
+                    const latDiff = Math.abs(parseFloat(lat) - precLat);
+                    const lngDiff = Math.abs(parseFloat(lng) - precLng);
+
+                    if (latDiff > 0.0001 || lngDiff > 0.0001) {
+                      setLocation(prev => ({
+                        ...prev,
+                        latitude: preciseLat,
+                        longitude: preciseLng,
+                      }));
+
+                      obtenerClima(preciseLat, preciseLng);
+
+                      try {
+                        await obtenerDireccion(preciseLat, preciseLng);
+                      } catch (error) {}
+                    }
+                  } catch (error) {}
+                },
+                error => {},
+                {
+                  enableHighAccuracy: true,
+                  timeout: 10000,
+                  maximumAge: 0,
+                },
+              );
+            }, 3000);
+          } catch (error) {
+            locationObtained = false;
+            tryPreciseLocationAsBackup();
           }
         },
-        backupError => {
-          console.log('Error final GPS:', backupError.message);
+        error => {
           if (!locationObtained) {
-            locationObtained = true;
-            setLocation({
-              latitude: null,
-              longitude: null,
-              loading: false,
-              error: 'Error al obtener ubicación GPS',
-            });
-            setWeather({
-              temperature: null,
-              weatherCode: null,
-              isDay: 1,
-              loading: false,
-              error: null,
-            });
+            tryPreciseLocationAsBackup();
           }
         },
         {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 60000,
         },
       );
-    };
-
-    Geolocation.getCurrentPosition(
-      async position => {
-        if (locationObtained) return;
-        locationObtained = true;
-
-        try {
-          const { latitude, longitude } = position.coords;
-          const lat = latitude.toFixed(6);
-          const lng = longitude.toFixed(6);
-
-          setLocation({
-            latitude: lat,
-            longitude: lng,
-            loading: true,
-            error: null,
-          });
-
-          obtenerClima(lat, lng);
-
-          try {
-            await obtenerDireccion(lat, lng);
-          } catch (dirError) {
-            setDireccionCoordenadas('No hay dirección disponible');
-          }
-
-          setLocation(prev => ({
-            ...prev,
-            loading: false,
-          }));
-
-          setTimeout(() => {
-            Geolocation.getCurrentPosition(
-              async precisePosition => {
-                try {
-                  const { latitude: precLat, longitude: precLng } =
-                    precisePosition.coords;
-                  const preciseLat = precLat.toFixed(6);
-                  const preciseLng = precLng.toFixed(6);
-
-                  const latDiff = Math.abs(parseFloat(lat) - precLat);
-                  const lngDiff = Math.abs(parseFloat(lng) - precLng);
-
-                  if (latDiff > 0.0001 || lngDiff > 0.0001) {
-                    setLocation(prev => ({
-                      ...prev,
-                      latitude: preciseLat,
-                      longitude: preciseLng,
-                    }));
-
-                    obtenerClima(preciseLat, preciseLng);
-
-                    try {
-                      await obtenerDireccion(preciseLat, preciseLng);
-                    } catch (error) {
-                      console.log(
-                        'Error actualizando dirección precisa:',
-                        error,
-                      );
-                    }
-                  } else {
-                    console.log(
-                      'Coordenadas precisas similares a las iniciales, no es necesario actualizar',
-                    );
-                  }
-                } catch (error) {
-                  console.log('Error procesando ubicación precisa:', error);
-                }
-              },
-              error => {
-                console.log('No se pudo mejorar la precisión:', error.message);
-              },
-              {
-                enableHighAccuracy: true,
-                timeout: 8000,
-                maximumAge: 0,
-              },
-            );
-          }, 3000);
-        } catch (error) {
-          locationObtained = false;
-          tryPreciseLocationAsBackup();
-        }
-      },
-      error => {
-        if (!locationObtained) {
-          tryPreciseLocationAsBackup();
-        }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 60000,
-      },
-    );
+    } catch (error) {
+      setLocation({
+        latitude: null,
+        longitude: null,
+        loading: false,
+        error: 'Error al obtener ubicación',
+      });
+      setWeather({
+        temperature: null,
+        weatherCode: null,
+        isDay: 1,
+        loading: false,
+        error: null,
+      });
+    }
   };
 
-  // Obtener ubicación  clima al cargar el componente
   useEffect(() => {
     obtenerUbicacion();
   }, []);
@@ -570,7 +602,6 @@ const [location, setLocation] = useState<LocationState>({
 
   return (
     <View style={{ flex: 1 }}>
-      
       <StatusBar
         barStyle="light-content"
         backgroundColor="#1a237e"
@@ -590,23 +621,32 @@ const [location, setLocation] = useState<LocationState>({
               <View>
                 <Text style={homeStyles.greeting}>{obtenerSaludo()}</Text>
                 <View style={homeStyles.weatherContainer}>
-                  {weather.loading ? (
-                    <>
-                      <Sun size={20} color="#FFD700" />
-                      <Text style={homeStyles.temperature}>--°</Text>
-                    </>
-                  ) : (
-                    <>
-                      {obtenerIconoClima(
-                        weather.weatherCode,
-                        weather.isDay,
-                        weather.temperature,
-                      )}
-                      <Text style={homeStyles.temperature}>
-                        {weather.temperature || '--'}°
-                      </Text>
-                    </>
-                  )}
+
+         {weather.loading ? (
+  <>
+    <Sun size={20} color="#FFD700" />
+    <Text style={homeStyles.temperature}>--°</Text>
+  </>
+) : location.error && location.error.includes('GPS') ? (
+  <>
+    <Sun size={20} color="#FFD700" />
+    <Text style={[homeStyles.temperature, { fontSize: 10 }]}>
+      Active GPS
+    </Text>
+  </>
+) : (
+  <>
+    {obtenerIconoClima(
+      weather.weatherCode,
+      weather.isDay,
+      weather.temperature,
+    )}
+    <Text style={homeStyles.temperature}>
+      {weather.temperature || '--'}°
+    </Text>
+  </>
+)}
+
                 </View>
               </View>
               <View style={homeStyles.profileContainer}>
@@ -647,34 +687,58 @@ const [location, setLocation] = useState<LocationState>({
                 </Text>
 
                 <Text style={homeStyles.locationLabel}>
-                  {direccionCoordenadas}
-                </Text>
+  {location.error && location.error.includes('GPS') 
+    ? 'Active su GPS para obtener su dirección exacta'
+    : direccionCoordenadas}
+</Text>
+
+
               </View>
             </View>
           </View>
         </View>
 
         <ScrollView
-          style={[
-            homeStyles.content,
-            { paddingBottom: bottomSpace }
-          ]}
+          style={[homeStyles.content, { paddingBottom: bottomSpace }]}
           showsVerticalScrollIndicator={false}
         >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
           {/* Grid de opciones principales */}
           <View style={homeStyles.optionsGrid}>
-
-            
             <TouchableOpacity
-              style={homeStyles.optionCard}
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
               onPress={handleNavigateToProfile}
+              activeOpacity={0.95}
             >
-              <View style={homeStyles.optionIcon}>
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760626069/perfil_zspvsr.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
                 <User size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Perfil</Text>
+
               <Text style={homeStyles.optionSubtitle}>
                 Revisa tu información personal, actualiza tus datos y
                 credenciales y personaliza tus marcadores.
@@ -682,13 +746,38 @@ const [location, setLocation] = useState<LocationState>({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={homeStyles.optionCard}
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
               onPress={handleNavigateToDevice}
+              activeOpacity={0.95}
             >
-              <View style={homeStyles.optionIcon}>
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/auto_zzrijf.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
                 <Car size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Unidades</Text>
+
               <Text style={homeStyles.optionSubtitle}>
                 Rastrea tus unidades, conoce su última ubicación, velocidad,
                 dirección y estado.
@@ -696,13 +785,38 @@ const [location, setLocation] = useState<LocationState>({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={homeStyles.optionCard}
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
               onPress={handleNavigateToReports}
+              activeOpacity={0.95}
             >
-              <View style={homeStyles.optionIcon}>
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/reportes_loh65w.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
                 <BarChart3 size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Reportes</Text>
+
               <Text style={homeStyles.optionSubtitle}>
                 Genera reportes de tus unidades, general, velocidad,
                 kilometraje, paradas y detalle de recorrido.
@@ -710,13 +824,38 @@ const [location, setLocation] = useState<LocationState>({
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={homeStyles.optionCard}
+              style={[
+                homeStyles.optionCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
               onPress={handleNavigateToSecurity}
+              activeOpacity={0.95}
             >
-              <View style={homeStyles.optionIcon}>
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/biometria_o2lzop.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
                 <Shield size={24} color="#e36414" />
               </View>
               <Text style={homeStyles.optionTitle}>Seguridad</Text>
+
               <Text style={homeStyles.optionSubtitle}>
                 Activa la autenticación con datos biométricos y habilita o
                 deshabilita las notificaciones.
@@ -725,14 +864,54 @@ const [location, setLocation] = useState<LocationState>({
           </View>
 
           <View style={homeStyles.customerCareContainer}>
-            <TouchableOpacity style={homeStyles.customerCareCard} onPress={handleNavigateToHelp}>
-              <View style={homeStyles.customerCareIcon}>
+            <TouchableOpacity
+              style={[
+                homeStyles.customerCareCard,
+                homeStyles.optionCardWithBackground,
+                homeStyles.optionCardWithBorder,
+              ]}
+              onPress={handleNavigateToHelp}
+              activeOpacity={0.95}
+            >
+              <ImageBackground
+                source={{
+                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/ayuda_a9nubh.jpg',
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                imageStyle={{ borderRadius: 12 }}
+                resizeMode="cover"
+              >
+                <View style={homeStyles.optionCardOverlay} />
+              </ImageBackground>
+
+              <View
+                style={[
+                  homeStyles.customerCareIcon,
+                  homeStyles.optionContentAbove,
+                ]}
+              >
                 <Headphones size={24} color="#e36414" />
               </View>
-              <Text style={homeStyles.customerCareTitle}>
+              <Text
+                style={[
+                  homeStyles.customerCareTitle,
+                  homeStyles.optionContentAbove,
+                ]}
+              >
                 Ayuda
               </Text>
-              <Text style={homeStyles.customerCareSubtitle}>
+              <Text
+                style={[
+                  homeStyles.customerCareSubtitle,
+                  homeStyles.optionContentAbove,
+                ]}
+              >
                 Conoce nuestros números telefónicos, llámanos a la central de
                 monitoreo, escríbenos al Whatsapp, revisa las preguntas
                 frecuentes y visualiza tutoriales útiles.
@@ -740,11 +919,7 @@ const [location, setLocation] = useState<LocationState>({
             </TouchableOpacity>
           </View>
         </ScrollView>
-
-
       </SafeAreaView>
-
-      
     </View>
   );
 };
