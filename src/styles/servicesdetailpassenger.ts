@@ -201,6 +201,8 @@ buttonRed: {
     borderRadius: 20,
     alignItems: 'center',
     marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   buttonOrangeText: {
     color: '#fff',

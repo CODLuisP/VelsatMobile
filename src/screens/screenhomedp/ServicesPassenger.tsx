@@ -1,16 +1,6 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import React from 'react';
-import {
-  ChevronLeft,
-  Users,
-  Calendar,
-  User,
-} from 'lucide-react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ChevronLeft, Users, Calendar, User } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,23 +11,40 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import { styles } from '../../styles/servicesdriver';
+import { useAuthStore } from '../../store/authStore';
 
-interface Service {
-  id: number;
-  serviceNumber: string;
-  passengers: number;
-  location: string;
-  status: 'en-2-horas' | 'en-progreso' | 'finalizado';
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-  groupType: string;
-  serviceType: string;
+// Interface para los datos de la API
+interface ApiService {
+  codservicio: string;
+  codpedido: string;
+  codusuario: string;
+  codcliente: string | null;
+  unidad: string;
+  direccion: string;
+  distrito: string;
+  wy: string;
+  wx: string;
+  referencia: string | null;
+  fechapasajero: string;
+  orden: string;
+  empresa: string;
+  numero: string;
+  codconductor: string;
+  destino: string | null;
+  fechaservicio: string;
+  tipo: string;
+  totalpax: string;
 }
 
 const ServicesPassenger = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const { user, logout, server, tipo } = useAuthStore();
+  const codigo = user?.codigo;
+
+  // Estado para almacenar los servicios de la API
+  const [apiServices, setApiServices] = useState<ApiService[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -45,6 +52,50 @@ const ServicesPassenger = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+
+// Función para obtener los servicios desde la API
+const fetchServiciosPasajero = async () => {
+  try {
+    setLoading(true);    
+    const url = `https://velsat.pe:2087/api/Aplicativo/serviciosPasajero/${codigo}`;
+    
+    const response = await fetch(url);
+
+    // Primero obtener el texto de la respuesta
+    const text = await response.text();
+    
+    // Verificar si es un mensaje de "no hay servicios"
+    if (text.includes('No se encontraron servicios')) {
+      setApiServices([]);
+      return;
+    }
+    
+    // Intentar parsear el JSON
+    try {
+      const data = JSON.parse(text);      
+      // Guardar los datos en el estado
+      setApiServices(data);
+      
+    } catch (parseError) {
+      setApiServices([]);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error al obtener servicios:', error);
+    setApiServices([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Ejecutar la petición cuando se monte el componente
+  useEffect(() => {
+    if (codigo) {
+      fetchServiciosPasajero();
+    } else {
+      setLoading(false);
+    }
+  }, [codigo]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -56,91 +107,79 @@ const ServicesPassenger = () => {
     navigation.goBack();
   };
 
-  const services: Service[] = [
-    {
-      id: 1,
-      serviceNumber: '#1',
-      passengers: 1,
-      location: 'LATAM',
-      status: 'en-2-horas',
-      startDate: '22/09/2025',
-      startTime: '00:00',
-      endDate: '',
-      endTime: '',
-      groupType: 'Tierra',
-      serviceType: 'Salida',
-    },
-    {
-      id: 62,
-      serviceNumber: '#62',
-      passengers: 1,
-      location: 'LATAM',
-      status: 'en-progreso',
-      startDate: '22/09/2025',
-      startTime: '02:00',
-      endDate: '',
-      endTime: '',
-      groupType: 'Tierra',
-      serviceType: 'Salida',
-    },
-    {
-      id: 17,
-      serviceNumber: '#17',
-      passengers: 3,
-      location: 'LATAM',
-      status: 'en-progreso',
-      startDate: '22/09/2025',
-      startTime: '00:00',
-      endDate: '22/09/2025',
-      endTime: '03:40',
-      groupType: 'Aire',
-      serviceType: 'Entrada',
-    },
-    {
-      id: 80,
-      serviceNumber: '#80',
-      passengers: 2,
-      location: 'LATAM',
-      status: 'finalizado',
-      startDate: '22/09/2025',
-      startTime: '02:00',
-      endDate: '22/09/2025',
-      endTime: '03:40',
-      groupType: 'Aire',
-      serviceType: 'Entrada',
-    },
-  ];
+  // Función para obtener el tipo de servicio
+  const getTipoServicio = (tipo: string) => {
+    return tipo === 'I' ? 'Entrada' : 'Salida';
+  };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'en-2-horas':
-        return '#FFA726';
-      case 'en-progreso':
-        return '#4CAF50';
-      case 'finalizado':
-        return '#4CAF50';
-      default:
-        return '#718096';
+  // Función para obtener la fecha de fin
+  const getFechaFin = (tipo: string, fechaservicio: string) => {
+    return tipo === 'S' ? '-' : fechaservicio;
+  };
+
+  // Función para calcular el estado del servicio basado en la fecha
+  const getServiceStatus = (fechaservicio: string) => {
+    // Parsear la fecha del servicio (formato: "14/10/2025 23:00")
+    const [fecha, hora] = fechaservicio.split(' ');
+    const [dia, mes, año] = fecha.split('/');
+    const [horas, minutos] = hora.split(':');
+
+    const fechaServicio = new Date(
+      parseInt(año),
+      parseInt(mes) - 1,
+      parseInt(dia),
+      parseInt(horas),
+      parseInt(minutos),
+    );
+
+    // Obtener la hora actual de Perú (UTC-5)
+    const ahora = new Date();
+    const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
+    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5); // UTC-5 para Perú
+
+    const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
+    const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
+    const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
+
+    // Si ya pasó la hora del servicio
+    if (diferenciaMs < 0) {
+      const minutosTranscurridos = Math.abs(diferenciaMinutos);
+
+      // Si pasaron más de 30 minutos desde el inicio
+      if (minutosTranscurridos > 30) {
+        return {
+          text: 'Finalizado',
+          color: '#CF1B1B',
+        };
+      }
+
+      // Si pasaron menos de 30 minutos desde el inicio
+      return {
+        text: 'En progreso',
+        color: '#4CAF50',
+      };
     }
-  };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'en-2-horas':
-        return 'En 2 horas';
-      case 'en-progreso':
-        return 'En progreso';
-      case 'finalizado':
-        return 'Finalizado';
-      default:
-        return '';
+    // Si falta menos de 1 hora, mostrar en minutos
+    if (diferenciaMinutos < 60) {
+      return {
+        text: `Faltan ${diferenciaMinutos} min`,
+        color: '#FFA726',
+      };
     }
+
+    // Si falta más de 1 hora, mostrar en horas
+    return {
+      text: `Faltan ${diferenciaHoras} hrs`,
+      color: '#FFA726',
+    };
   };
 
-    const handleNavigateToServicesDetailDriver = () => {
-    navigation.navigate('ServicesDetailPassenger');
-  };
-
+  const handleNavigateToServicesDetailDriver = (service: ApiService) => {
+  navigation.navigate('ServicesDetailPassenger', {
+    serviceData: service
+  });
+};
 
   const topSpace = insets.top + 5;
 
@@ -161,83 +200,105 @@ const ServicesPassenger = () => {
         contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View style={styles.formContainer}>
-          {services.map((service) => (
-            <TouchableOpacity
-              key={service.id}
-              onPress={ handleNavigateToServicesDetailDriver}
-              activeOpacity={0.7}
-            >
-              <View style={styles.serviceCard}>
-                {/* Header del servicio */}
-                <View style={styles.serviceHeader}>
-                  <View style={styles.serviceHeaderLeft}>
-                    <Text style={styles.serviceNumber}>Servicio {service.serviceNumber}</Text>
-                    <View style={styles.passengersContainer}>
-                      <User size={14} color="#FFFFFF" />
-                      <Text style={styles.passengersText}>
-                        {service.passengers} pasajero{service.passengers > 1 ? 's' : ''}
+          {loading ? (
+            <Text style={{ color: '#fff', textAlign: 'center', marginTop: 20 }}>
+              Cargando servicios...
+            </Text>
+          ) : apiServices.length === 0 ? (
+            <Text style={{ color: '#000', textAlign: 'center', marginTop: 20 }}>
+              Aún no hay servicios programados para el día de hoy
+            </Text>
+          ) : (
+            apiServices.map(service => (
+              <TouchableOpacity
+                key={service.codservicio}
+                onPress={() => handleNavigateToServicesDetailDriver(service)} // Pasar el servicio
+                activeOpacity={0.7}
+              >
+                <View style={styles.serviceCard}>
+                  {/* Header del servicio */}
+                  <View style={styles.serviceHeader}>
+                    <View style={styles.serviceHeaderLeft}>
+                      <Text style={styles.serviceNumber}>
+                        Servicio #{service.numero}
                       </Text>
-                    </View>
-                  </View>
-                  <View style={styles.serviceHeaderRight}>
-                    <Text style={styles.locationText}>{service.location}</Text>
-                  </View>
-                </View>
-
-                {/* Body del servicio */}
-                <View style={styles.serviceBody}>
-                  <View style={styles.infoRow}>
-                    <View style={styles.leftColumn}>
-                      <View style={styles.dateSection}>
-                        <View style={styles.dateIconRow}>
-                          <User size={16} color="#666" />
-                          <Text style={styles.dateLabel}>Inicio servicio</Text>
-                        </View>
-                        <Text style={styles.dateValue}>
-                          {service.startDate} {service.startTime}
-                        </Text>
-                      </View>
-
-                      <View style={styles.groupSection}>
-                        <View style={styles.groupRow}>
-                          <Users size={16} color="#666" />
-                          <Text style={styles.groupLabel}>Tipo y orden</Text>
-                        </View>
-                        <Text style={styles.groupValue}>
-                          {service.serviceType} - {service.groupType}
+                      <View style={styles.passengersContainer}>
+                        <User size={14} color="#FFFFFF" />
+                        <Text style={styles.passengersText}>
+                          {service.totalpax} pasajero
+                          {parseInt(service.totalpax) > 1 ? 's' : ''}
                         </Text>
                       </View>
                     </View>
+                    <View style={styles.serviceHeaderRight}>
+                      <Text style={styles.locationText}>{service.empresa}</Text>
+                    </View>
+                  </View>
 
-                    <View style={[styles.rightColumn, { alignItems: 'flex-end' }]}>
-                      <View style={styles.dateSection}>
-                        <View style={styles.dateIconRow}>
-                          <Calendar size={16} color="#666" />
-                          <Text style={styles.dateLabel}>Fin servicio</Text>
+                  {/* Body del servicio */}
+                  <View style={styles.serviceBody}>
+                    <View style={styles.infoRow}>
+                      <View style={styles.leftColumn}>
+                        <View style={styles.dateSection}>
+                          <View style={styles.dateIconRow}>
+                            <User size={16} color="#666" />
+                            <Text style={styles.dateLabel}>
+                              Inicio servicio
+                            </Text>
+                          </View>
+                          <Text style={styles.dateValue}>
+                            {service.fechapasajero}
+                          </Text>
                         </View>
-                        <Text style={styles.dateValue}>
-                          {service.endDate ? `${service.endDate} ${service.endTime}` : '-'}
-                        </Text>
-                      </View>
 
-                      <View style={{ marginTop: 8 }}>
-                        <View
-                          style={[
-                            styles.statusBadge,
-                            { backgroundColor: getStatusColor(service.status) },
-                          ]}
-                        >
-                          <Text style={styles.statusText}>
-                            {getStatusText(service.status)}
+                        <View style={styles.groupSection}>
+                          <View style={styles.groupRow}>
+                            <Users size={16} color="#666" />
+                            <Text style={styles.groupLabel}>Tipo y orden</Text>
+                          </View>
+                          <Text style={styles.groupValue}>
+                            {getTipoServicio(service.tipo)} - {service.orden} /{' '}
+                            {service.totalpax}
                           </Text>
                         </View>
                       </View>
+
+                      <View
+                        style={[styles.rightColumn, { alignItems: 'flex-end' }]}
+                      >
+                        <View style={styles.dateSection}>
+                          <View style={styles.dateIconRow}>
+                            <Calendar size={16} color="#666" />
+                            <Text style={styles.dateLabel}>Fin servicio</Text>
+                          </View>
+                          <Text style={styles.dateValue}>
+                            {getFechaFin(service.tipo, service.fechaservicio)}
+                          </Text>
+                        </View>
+
+                        <View style={{ marginTop: 8 }}>
+                          <View
+                            style={[
+                              styles.statusBadge,
+                              {
+                                backgroundColor: getServiceStatus(
+                                  service.fechaservicio,
+                                ).color,
+                              },
+                            ]}
+                          >
+                            <Text style={styles.statusText}>
+                              {getServiceStatus(service.fechaservicio).text}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>
