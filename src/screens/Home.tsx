@@ -22,7 +22,6 @@ import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
 import { RootStackParamList } from '../../App';
 import NavigationBarColor from 'react-native-navigation-bar-color';
-import * as RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 
 import {
   EdgeInsets,
@@ -325,19 +324,28 @@ const Home: React.FC = () => {
   };
 
   // NUEVA FUNCIÓN: Verificar y activar GPS automáticamente
-  const verificarYActivarGPS = async (): Promise<boolean> => {
+const verificarYActivarGPS = async (): Promise<boolean> => {
+    // SOLO ejecutar en Android
     if (Platform.OS !== 'android') {
       return true;
     }
 
     try {
-      const result =
-        await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-          interval: 10000,
-        });
+      // Importación dinámica solo para Android
+      const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
+      
+      const result = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+        interval: 10000,
+      });
 
       return true;
     } catch (error: any) {
+      // Si falla la importación del módulo, retornar true (iOS u otro error)
+      if (error.message && error.message.includes('AndroidLocationEnabler')) {
+        console.log('Módulo no disponible en esta plataforma');
+        return true;
+      }
+
       if (error.code === 'ERR00') {
         Alert.alert(
           'GPS Desactivado',
@@ -346,10 +354,13 @@ const Home: React.FC = () => {
             { text: 'Cancelar', style: 'cancel' },
             {
               text: 'Activar GPS',
-              onPress: () => {
-                RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-                  interval: 10000,
-                }).catch(err => {});
+              onPress: async () => {
+                try {
+                  const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
+                  await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+                    interval: 10000,
+                  });
+                } catch (err) {}
               },
             },
           ],
