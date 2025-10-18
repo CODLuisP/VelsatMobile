@@ -33,66 +33,6 @@ interface SignalRData {
   vehiculo: VehicleData;
 }
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-const RadarPulse = ({
-  latitude,
-  longitude,
-  color,
-  delay = 0,
-}: {
-  latitude: number;
-  longitude: number;
-  color: string;
-  delay?: number;
-}) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const opacityAnim = useRef(new Animated.Value(0.7)).current;
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      Animated.loop(
-        Animated.parallel([
-          Animated.timing(scaleAnim, {
-            toValue: 50,
-            duration: 3000,
-            useNativeDriver: false,
-          }),
-          Animated.sequence([
-            Animated.timing(opacityAnim, {
-              toValue: 0.4,
-              duration: 1500,
-              useNativeDriver: false,
-            }),
-            Animated.timing(opacityAnim, {
-              toValue: 0,
-              duration: 1500,
-              useNativeDriver: false,
-            }),
-          ]),
-        ]),
-      ).start();
-    }, delay);
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  const fillColor = opacityAnim.interpolate({
-    inputRange: [0, 0.7],
-    outputRange: [`${color}00`, `${color}B3`],
-  });
-
-  return (
-    <AnimatedCircle
-      center={{ latitude, longitude }}
-      radius={scaleAnim}
-      fillColor={fillColor}
-      strokeColor={color}
-      strokeWidth={2}
-    />
-  );
-};
-
 const VehicleMap: React.FC<VehicleMapProps> = ({
   username,
   placa,
@@ -103,6 +43,14 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
   const webViewRef = useRef<WebView>(null);
+
+  // Estado para el radar en iOS
+  const [radarPulse, setRadarPulse] = useState({
+    wave1: 0,
+    wave2: 0.25,
+    wave3: 0.5,
+    wave4: 0.75,
+  });
 
   // Conexión SignalR
   useEffect(() => {
@@ -186,6 +134,22 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     };
   }, [username, placa]);
 
+  // Animación del radar para iOS
+  useEffect(() => {
+    if (Platform.OS === 'ios' && vehicleData) {
+      const interval = setInterval(() => {
+        setRadarPulse(prev => ({
+          wave1: (prev.wave1 + 0.01) % 1,
+          wave2: (prev.wave2 + 0.01) % 1,
+          wave3: (prev.wave3 + 0.01) % 1,
+          wave4: (prev.wave4 + 0.01) % 1,
+        }));
+      }, 40);
+
+      return () => clearInterval(interval);
+    }
+  }, [vehicleData]);
+
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
   const heading = vehicleData?.lastValidHeading || 0;
@@ -247,10 +211,16 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
                 .addTo(map)
                 .bindPopup('<b>${vehicleName}</b><br>Velocidad: ${speed} km/h');
 
-            window.updateMarkerPosition = function(lat, lng, spd) {
+            window.updateMarkerPosition = function(lat, lng, spd, radarCol) {
                 marker.setLatLng([lat, lng]);
                 marker.getPopup().setContent('<b>${vehicleName}</b><br>Velocidad: ' + spd + ' km/h');
                 map.setView([lat, lng], map.getZoom());
+                
+                // Actualizar color del radar
+                var pulses = document.querySelectorAll('.radar-pulse');
+                pulses.forEach(function(pulse) {
+                    pulse.style.backgroundColor = radarCol;
+                });
             };
 
             window.ReactNativeWebView.postMessage('webview-ready');
@@ -263,8 +233,9 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
   // Actualizar WebView cuando cambien los datos
   useEffect(() => {
     if (Platform.OS === 'android' && webViewRef.current && vehicleData && isWebViewReady) {
+      const radarColor = getRadarColor();
       setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${speed}); true;`;
+        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${speed}, '${radarColor}'); true;`;
         webViewRef.current?.injectJavaScript(script);
       }, 100);
     }
@@ -272,6 +243,23 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
 
   if (Platform.OS === 'ios') {
     const radarColor = getRadarColor();
+
+    // Cálculo de opacidad para las ondas del radar
+    const getOpacity = (progress: number) => {
+      if (progress < 0.03 || progress > 0.8) return 0;
+      if (progress < 0.08) return ((progress - 0.03) / 0.05) * 0.2;
+      return (1 - progress) * 0.25;
+    };
+
+    const wave1Radius = 10 + radarPulse.wave1 * 90;
+    const wave2Radius = 10 + radarPulse.wave2 * 90;
+    const wave3Radius = 10 + radarPulse.wave3 * 90;
+    const wave4Radius = 10 + radarPulse.wave4 * 90;
+
+    const wave1Opacity = getOpacity(radarPulse.wave1);
+    const wave2Opacity = getOpacity(radarPulse.wave2);
+    const wave3Opacity = getOpacity(radarPulse.wave3);
+    const wave4Opacity = getOpacity(radarPulse.wave4);
 
     return (
       <View
@@ -309,30 +297,49 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
           region={{
             latitude,
             longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
+            latitudeDelta: 0.003,
+            longitudeDelta: 0.003,
           }}
         >
           {vehicleData && (
             <>
-              <RadarPulse
-                latitude={latitude}
-                longitude={longitude}
-                color={radarColor}
-                delay={0}
-              />
-              <RadarPulse
-                latitude={latitude}
-                longitude={longitude}
-                color={radarColor}
-                delay={1000}
-              />
-              <RadarPulse
-                latitude={latitude}
-                longitude={longitude}
-                color={radarColor}
-                delay={2000}
-              />
+              {/* Ondas del radar con opacidad dinámica */}
+              {wave1Opacity > 0 && (
+                <Circle
+                  center={{ latitude, longitude }}
+                  radius={wave1Radius}
+                  fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
+                  strokeWidth={2}
+                />
+              )}
+              {wave2Opacity > 0 && (
+                <Circle
+                  center={{ latitude, longitude }}
+                  radius={wave2Radius}
+                  fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
+                  strokeWidth={2}
+                />
+              )}
+              {wave3Opacity > 0 && (
+                <Circle
+                  center={{ latitude, longitude }}
+                  radius={wave3Radius}
+                  fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
+                  strokeWidth={2}
+                />
+              )}
+              {wave4Opacity > 0 && (
+                <Circle
+                  center={{ latitude, longitude }}
+                  radius={wave4Radius}
+                  fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
+                  strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
+                  strokeWidth={2}
+                />
+              )}
 
               <Marker
                 coordinate={{
