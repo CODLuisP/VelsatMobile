@@ -1163,6 +1163,8 @@ const radarColor =
                 </Text>
               </TouchableOpacity>
             </ScrollView>
+
+        
           </View>
         )}
       </View>

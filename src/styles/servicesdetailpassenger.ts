@@ -31,11 +31,11 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
   },
   formContainer: {
-    marginTop: 20,
+    marginTop: 14,
     paddingHorizontal: 20,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   sectionTitle: {
     fontSize: 16,
@@ -67,7 +67,7 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   driverValue: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#000',
     fontWeight: '500',
   },
@@ -89,7 +89,7 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
   locationValue: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#000',
     fontWeight: '500',
     marginTop: 2,
@@ -115,7 +115,7 @@ export const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#e36414',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 15,
@@ -154,11 +154,9 @@ export const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-      justifyContent: 'center', // Opcional: centra el contenido
-
+    justifyContent: 'center',
     flexWrap: 'wrap',
     gap: 2,
-    backgroundColor:'red'
 
   },
   buttonBlue: {

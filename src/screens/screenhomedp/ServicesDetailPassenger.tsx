@@ -5,12 +5,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Modal,
   Linking,
   Alert,
-  Animated,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, MapPin, Phone, Star, X } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -28,36 +26,16 @@ import {
 import { styles } from '../../styles/servicesdetailpassenger';
 import { RouteProp } from '@react-navigation/native';
 import { openGoogleMaps } from '../../utils/textUtils';
-
-import { Platform } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT, Circle } from 'react-native-maps';
-import { WebView } from 'react-native-webview';
-import * as signalR from '@microsoft/signalr';
-import { useAuthStore } from '../../store/authStore';
 import { ImageModal } from './modals/ImageModal';
 import { CancelModal } from './modals/CancelModal';
 import { RatingModal } from './modals/RatingModal';
+import VehicleMap from './VehicleMap'; // 👈 Importar el nuevo componente
 import axios from 'axios';
 
 type ServicesDetailPassengerRouteProp = RouteProp<
   RootStackParamList,
   'ServicesDetailPassenger'
 >;
-
-interface VehicleData {
-  deviceId: string;
-  lastGPSTimestamp: number;
-  lastValidLatitude: number;
-  lastValidLongitude: number;
-  lastValidHeading: number;
-  lastValidSpeed: number;
-  lastOdometerKM: number;
-}
-
-interface SignalRData {
-  fechaActual: string;
-  vehiculo: VehicleData;
-}
 
 interface DriverData {
   apellidos: string;
@@ -107,267 +85,63 @@ const ServicesDetailPassenger = () => {
     navigationDetection.hasNavigationBar,
   );
 
-  const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-  const RadarPulse = ({
-    latitude,
-    longitude,
-    color,
-    delay = 0,
-  }: {
-    latitude: number;
-    longitude: number;
-    color: string;
-    delay?: number;
-  }) => {
-    const scaleAnim = useRef(new Animated.Value(1)).current;
-    const opacityAnim = useRef(new Animated.Value(0.7)).current;
-
-    useEffect(() => {
-      const timeout = setTimeout(() => {
-        Animated.loop(
-          Animated.parallel([
-            Animated.timing(scaleAnim, {
-              toValue: 50,
-              duration: 3000,
-              useNativeDriver: false,
-            }),
-            Animated.sequence([
-              Animated.timing(opacityAnim, {
-                toValue: 0.4,
-                duration: 1500,
-                useNativeDriver: false,
-              }),
-              Animated.timing(opacityAnim, {
-                toValue: 0,
-                duration: 1500,
-                useNativeDriver: false,
-              }),
-            ]),
-          ]),
-        ).start();
-      }, delay);
-
-      return () => clearTimeout(timeout);
-    }, []);
-
-    // Interpolar para el color con opacidad
-    const fillColor = opacityAnim.interpolate({
-      inputRange: [0, 0.7],
-      outputRange: [`${color}00`, `${color}B3`], // Transparente a 70% opacidad
-    });
-
-    return (
-      <AnimatedCircle
-        center={{ latitude, longitude }}
-        radius={scaleAnim}
-        fillColor={fillColor}
-        strokeColor={color}
-        strokeWidth={2}
-      />
-    );
-  };
-
-  const getLeafletHTML = () => {
-    return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <style>
-            body { margin: 0; padding: 0; }
-            #map { height: 100vh; width: 100vw; }
-            .radar-pulse {
-                position: absolute;
-                width: 20px;
-                height: 20px;
-                border-radius: 50%;
-                background-color: #4CAF50;
-                animation: pulse 3s infinite;
-            }
-            @keyframes pulse {
-                0% { transform: scale(0.2); opacity: 0.7; }
-                100% { transform: scale(6); opacity: 0; }
-            }
-        </style>
-    </head>
-    <body>
-        <div id="map"></div>
-        <script>
-            var map = L.map('map').setView([${vehicleLocation.latitude}, ${
-      vehicleLocation.longitude
-    }], 15);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            var carIcon = L.divIcon({
-    html: '<div style="position: relative; width: 60px; height: 40px;"><div class="radar-pulse" style="position: absolute; top: 10px; left: 20px;"></div><img src="https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png" style="width:60px;height:40px;position:relative;z-index:10;"/></div>',
-    iconSize: [60, 60],
-    iconAnchor: [30, 20],
-    className: ''
-});
-
-            L.marker([${vehicleLocation.latitude}, ${
-      vehicleLocation.longitude
-    }], {icon: carIcon})
-                .addTo(map)
-                .bindPopup('<b>${
-                  serviceData?.unidad?.toUpperCase() || 'No asignada'
-                }</b><br>Velocidad: ${vehicleLocation.speed} km/h');
-        </script>
-    </body>
-    </html>
-  `;
-  };
-
-  const renderVehicleMap = () => {
-    if (Platform.OS === 'ios') {
-      return (
-        <View
-          style={{
-            height: 250,
-            borderRadius: 10,
-            overflow: 'hidden',
-            marginTop: 10,
-          }}
-        >
-          <MapView
-            provider={PROVIDER_DEFAULT}
-            style={{ flex: 1 }}
-            region={{
-              latitude: vehicleLocation.latitude,
-              longitude: vehicleLocation.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            {/* Múltiples pulsos con delay */}
-            <RadarPulse
-              latitude={vehicleLocation.latitude}
-              longitude={vehicleLocation.longitude}
-              color="#4CAF50"
-              delay={0}
-            />
-            <RadarPulse
-              latitude={vehicleLocation.latitude}
-              longitude={vehicleLocation.longitude}
-              color="#4CAF50"
-              delay={1000}
-            />
-            <RadarPulse
-              latitude={vehicleLocation.latitude}
-              longitude={vehicleLocation.longitude}
-              color="#4CAF50"
-              delay={2000}
-            />
-
-            <Marker
-              coordinate={{
-                latitude: vehicleLocation.latitude,
-                longitude: vehicleLocation.longitude,
-              }}
-              title={serviceData?.unidad?.toUpperCase() || 'No asignada'}
-              description={`Velocidad: ${vehicleLocation.speed} km/h`}
-              tracksViewChanges={false}
-              anchor={{ x: 0.5, y: 0.5 }}
-            >
-              <Image
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
-                }}
-                style={{ width: 60, height: 30 }}
-                resizeMode="contain"
-              />
-            </Marker>
-          </MapView>
-        </View>
-      );
-    } else {
-      return (
-        <View
-          style={{
-            height: 250,
-            borderRadius: 10,
-            overflow: 'hidden',
-            marginTop: 10,
-          }}
-        >
-          <WebView
-            source={{ html: getLeafletHTML() }}
-            style={{ flex: 1 }}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            nestedScrollEnabled={true}
-          />
-        </View>
-      );
-    }
-  };
-
   console.log('📥 Datos recibidos del servicio:', serviceData);
 
   // Función para obtener los datos del conductor
   const fetchDriverData = async () => {
-  try {
-    setLoadingDriver(true);
-    console.log('🔍 Obteniendo datos del conductor:', serviceData.codconductor);
+    try {
+      setLoadingDriver(true);
+      console.log('🔍 Obteniendo datos del conductor:', serviceData.codconductor);
 
-    const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
-    console.log('🌐 URL Conductor:', url);
+      const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
+      console.log('🌐 URL Conductor:', url);
 
-    const response = await axios.get(url);
-    console.log('📡 Status de respuesta conductor:', response.status);
-    console.log('📦 Datos del conductor recibidos:', response.data);
+      const response = await axios.get(url);
+      console.log('📡 Status de respuesta conductor:', response.status);
+      console.log('📦 Datos del conductor recibidos:', response.data);
 
-    setDriverData(response.data);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error('❌ Error al obtener datos del conductor:', error.response?.data || error.message);
-    } else {
-      console.error('❌ Error desconocido:', error);
+      setDriverData(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('❌ Error al obtener datos del conductor:', error.response?.data || error.message);
+      } else {
+        console.error('❌ Error desconocido:', error);
+      }
+      setDriverData(null);
+    } finally {
+      setLoadingDriver(false);
     }
-    setDriverData(null);
-  } finally {
-    setLoadingDriver(false);
-  }
-};
+  };
 
   // Función para obtener los datos del destino
   const fetchDestinoData = async (codcliente: string) => {
-  try {
-    setLoadingDestino(true);
-    console.log('🔍 Obteniendo datos del destino:', codcliente);
+    try {
+      setLoadingDestino(true);
+      console.log('🔍 Obteniendo datos del destino:', codcliente);
 
-    const url = `https://velsat.pe:2087/api/Aplicativo/detalleDestino/${codcliente}`;
-    console.log('🌐 URL Destino:', url);
+      const url = `https://velsat.pe:2087/api/Aplicativo/detalleDestino/${codcliente}`;
+      console.log('🌐 URL Destino:', url);
 
-    const response = await axios.get(url);
-    console.log('📡 Status de respuesta destino:', response.status);
-    console.log('📦 Datos del destino recibidos:', response.data);
+      const response = await axios.get(url);
+      console.log('📡 Status de respuesta destino:', response.status);
+      console.log('📦 Datos del destino recibidos:', response.data);
 
-    // La API devuelve un array, tomamos el primer elemento
-    if (response.data && response.data.length > 0) {
-      setDestinoData(response.data[0]);
-    } else {
+      if (response.data && response.data.length > 0) {
+        setDestinoData(response.data[0]);
+      } else {
+        setDestinoData(null);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('❌ Error al obtener datos del destino:', error.response?.data || error.message);
+      } else {
+        console.error('❌ Error desconocido:', error);
+      }
       setDestinoData(null);
+    } finally {
+      setLoadingDestino(false);
     }
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error('❌ Error al obtener datos del destino:', error.response?.data || error.message);
-    } else {
-      console.error('❌ Error desconocido:', error);
-    }
-    setDestinoData(null);
-  } finally {
-    setLoadingDestino(false);
-  }
-};
+  };
 
   // Ejecutar al montar el componente
   useEffect(() => {
@@ -378,8 +152,6 @@ const ServicesDetailPassenger = () => {
       setLoadingDriver(false);
     }
 
-    // Verificar si necesitamos obtener datos del destino
-    // Para tipo "I": obtener destino si no es 4175 o null
     if (
       serviceData.tipo === 'I' &&
       serviceData.destino &&
@@ -388,7 +160,6 @@ const ServicesDetailPassenger = () => {
       fetchDestinoData(serviceData.destino);
     }
 
-    // Para tipo "S": obtener lugar de recojo si no es 4175 o null
     if (
       serviceData.tipo === 'S' &&
       serviceData.destino &&
@@ -402,7 +173,6 @@ const ServicesDetailPassenger = () => {
     return tipo === 'I' ? 'Entrada' : 'Salida';
   };
 
-  // Función para obtener el proveedor
   const getProveedor = (codusuario: string) => {
     switch (codusuario) {
       case 'cgacela':
@@ -436,7 +206,6 @@ const ServicesDetailPassenger = () => {
     setImageModalVisible(false);
   };
 
-  // Función para renderizar las estrellas de calificación
   const renderStars = (calificacion: string | null) => {
     const rating = calificacion ? parseInt(calificacion) : 0;
     const stars = [];
@@ -460,108 +229,102 @@ const ServicesDetailPassenger = () => {
     );
   };
 
-  // Función para abrir el modal de cancelación
   const handleCancelPress = () => {
     setCancelModalVisible(true);
   };
 
-  // Función para cerrar el modal de cancelación
   const handleCloseCancelModal = () => {
     setCancelModalVisible(false);
   };
 
-  // Función para cancelar el servicio
   const handleConfirmCancel = async () => {
-  try {
-    setCancellingService(true);
-    console.log('🚫 Cancelando servicio...');
+    try {
+      setCancellingService(true);
+      console.log('🚫 Cancelando servicio...');
 
-    const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
-    console.log('🌐 URL:', url);
+      const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
+      console.log('🌐 URL:', url);
 
-    const requestBody = {
-      codservicio: serviceData.codservicio,
-      codpedido: serviceData.codpedido,
-      codusuario: serviceData.codusuario,
-      codcliente: serviceData.codcliente,
-      empresa: serviceData.empresa,
-      numero: serviceData.numero,
-      fechaservicio: serviceData.fechaservicio,
-      tipo: getTipoServicio(serviceData.tipo),
-    };
+      const requestBody = {
+        codservicio: serviceData.codservicio,
+        codpedido: serviceData.codpedido,
+        codusuario: serviceData.codusuario,
+        codcliente: serviceData.codcliente,
+        empresa: serviceData.empresa,
+        numero: serviceData.numero,
+        fechaservicio: serviceData.fechaservicio,
+        tipo: getTipoServicio(serviceData.tipo),
+      };
 
-    console.log('📦 Body de la petición:', requestBody);
+      console.log('📦 Body de la petición:', requestBody);
 
-    const response = await axios.post(url, requestBody);
-    console.log('📡 Status de respuesta:', response.status);
-    console.log('📄 Respuesta:', response.data);
+      const response = await axios.post(url, requestBody);
+      console.log('📡 Status de respuesta:', response.status);
+      console.log('📄 Respuesta:', response.data);
 
-    console.log('✅ Servicio cancelado exitosamente');
-    setCancelModalVisible(false);
-    navigation.goBack();
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error('❌ Error al cancelar el servicio:', error.response?.data || error.message);
-      Alert.alert('Error', 'No se pudo cancelar el servicio. Intenta nuevamente.');
-    } else {
-      console.error('❌ Error desconocido:', error);
+      console.log('✅ Servicio cancelado exitosamente');
+      setCancelModalVisible(false);
+      navigation.goBack();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('❌ Error al cancelar el servicio:', error.response?.data || error.message);
+        Alert.alert('Error', 'No se pudo cancelar el servicio. Intenta nuevamente.');
+      } else {
+        console.error('❌ Error desconocido:', error);
+      }
+    } finally {
+      setCancellingService(false);
     }
-  } finally {
-    setCancellingService(false);
-  }
-};
+  };
 
-  // Abrir modal de calificación
   const handleRatingPress = () => {
     setRatingModalVisible(true);
     setSelectedRating(0);
   };
 
-  // Cerrar modal de calificación
   const handleCloseRatingModal = () => {
     setRatingModalVisible(false);
     setSelectedRating(0);
   };
 
-  // Enviar calificación
   const handleSendRating = async () => {
-  if (selectedRating === 0) {
-    console.log('⚠️ Debe seleccionar una calificación');
-    Alert.alert('Atención', 'Debe seleccionar una calificación');
-    return;
-  }
-
-  try {
-    setSendingRating(true);
-    console.log('⭐ Enviando calificación...');
-
-    const url = `https://velsat.pe:2087/api/Aplicativo/enviarCalificacion`;
-    console.log('🌐 URL:', url);
-
-    const response = await axios.post(url, null, {
-      params: {
-        valor: selectedRating,
-        codtaxi: serviceData.codconductor,
-      },
-    });
-
-    console.log('📡 Status:', response.status);
-    console.log('📄 Respuesta:', response.data);
-
-    console.log('✅ Calificación enviada exitosamente');
-    setRatingModalVisible(false);
-    Alert.alert('¡Éxito!', 'Calificación enviada correctamente');
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error('❌ Error al enviar calificación:', error.response?.data || error.message);
-      Alert.alert('Error', 'No se pudo enviar la calificación');
-    } else {
-      console.error('❌ Error desconocido:', error);
+    if (selectedRating === 0) {
+      console.log('⚠️ Debe seleccionar una calificación');
+      Alert.alert('Atención', 'Debe seleccionar una calificación');
+      return;
     }
-  } finally {
-    setSendingRating(false);
-  }
-};
+
+    try {
+      setSendingRating(true);
+      console.log('⭐ Enviando calificación...');
+
+      const url = `https://velsat.pe:2087/api/Aplicativo/enviarCalificacion`;
+      console.log('🌐 URL:', url);
+
+      const response = await axios.post(url, null, {
+        params: {
+          valor: selectedRating,
+          codtaxi: serviceData.codconductor,
+        },
+      });
+
+      console.log('📡 Status:', response.status);
+      console.log('📄 Respuesta:', response.data);
+
+      console.log('✅ Calificación enviada exitosamente');
+      setRatingModalVisible(false);
+      Alert.alert('¡Éxito!', 'Calificación enviada correctamente');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('❌ Error al enviar calificación:', error.response?.data || error.message);
+        Alert.alert('Error', 'No se pudo enviar la calificación');
+      } else {
+        console.error('❌ Error desconocido:', error);
+      }
+    } finally {
+      setSendingRating(false);
+    }
+  };
 
   const makePhoneCall = (): void => {
     if (!driverData?.telefono) {
@@ -583,7 +346,6 @@ const ServicesDetailPassenger = () => {
       })
       .catch(error => {
         console.log('❌ Error abriendo marcador:', error);
-
         Alert.alert(
           'No se pudo abrir el marcador',
           `Marca manualmente este número:\n${phoneNumber}`,
@@ -644,8 +406,7 @@ const ServicesDetailPassenger = () => {
                   <Text style={styles.driverLabel}>Conductor</Text>
                   <Text style={styles.driverValue}>
                     {driverData
-                      ? `${driverData.apellidos.trim()} ${driverData.nombres.trim()}`.trim() ||
-                        'No disponible'
+                      ? `${driverData.apellidos?.trim() || ''} ${driverData.nombres?.trim() || ''}`.trim() || 'No disponible'
                       : 'No asignado'}
                   </Text>
 
@@ -708,7 +469,7 @@ const ServicesDetailPassenger = () => {
                         )
                       }
                     >
-                      <MapPin size={20} color="#000" />
+                      <MapPin size={20} color="#ffffffff" />
                     </TouchableOpacity>
                     <Text style={styles.mapText}>¿Cómo llegar?</Text>
                   </View>
@@ -784,7 +545,7 @@ const ServicesDetailPassenger = () => {
                           openGoogleMaps(lat, lng);
                         }}
                       >
-                        <MapPin size={20} color="#000" />
+                        <MapPin size={20} color="#ffffffff" />
                       </TouchableOpacity>
                       <Text style={styles.mapText}>¿Cómo llegar?</Text>
                     </View>
@@ -794,7 +555,7 @@ const ServicesDetailPassenger = () => {
             </View>
           )}
 
-          {/* Destino de viaje */}
+          {/* Destino de viaje - Tipo Entrada */}
           {serviceData.tipo === 'I' && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Destino de viaje</Text>
@@ -861,7 +622,7 @@ const ServicesDetailPassenger = () => {
                           openGoogleMaps(lat, lng);
                         }}
                       >
-                        <MapPin size={20} color="#000" />
+                        <MapPin size={20} color="#ffffffff" />
                       </TouchableOpacity>
                       <Text style={styles.mapText}>¿Cómo llegar?</Text>
                     </View>
@@ -913,7 +674,7 @@ const ServicesDetailPassenger = () => {
                         )
                       }
                     >
-                      <MapPin size={20} color="#000" />
+                      <MapPin size={20} color="#ffffffff" />
                     </TouchableOpacity>
                     <Text style={styles.mapText}>¿Cómo llegar?</Text>
                   </View>
@@ -975,7 +736,13 @@ const ServicesDetailPassenger = () => {
             <Text style={styles.detailLabel}>
               Ubicación actual de la unidad asignada
             </Text>
-            {renderVehicleMap()}
+            
+            {/* 👇 USO DEL COMPONENTE SEPARADO */}
+            <VehicleMap
+             username={serviceData.codusuario}
+             placa={serviceData.unidad || ''}
+             vehicleName={serviceData.unidad || ''}
+             />
           </View>
 
           {/* Opciones del servicio */}
@@ -985,7 +752,7 @@ const ServicesDetailPassenger = () => {
               <TouchableOpacity
                 style={[
                   styles.buttonBlue,
-                  { opacity: driverData?.telefono ? 1 : 0.5 },
+                  { opacity: driverData?.telefono ? 1 : 0.3 },
                 ]}
                 onPress={makePhoneCall}
                 disabled={!driverData?.telefono}
@@ -1005,10 +772,10 @@ const ServicesDetailPassenger = () => {
               <TouchableOpacity
                 style={[
                   styles.buttonOrange,
-                  !driverData && styles.buttonDisabled, // Agrega estilo cuando esté deshabilitado
+                  !driverData && styles.buttonDisabled,
                 ]}
                 onPress={handleRatingPress}
-                disabled={!driverData} // Deshabilita si driverData es null
+                disabled={!driverData}
               >
                 <Star size={16} color="#fff" style={styles.buttonIcon} />
                 <Text style={styles.buttonOrangeText}>Calificar</Text>
