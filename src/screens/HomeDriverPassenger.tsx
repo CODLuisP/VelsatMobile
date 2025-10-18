@@ -325,7 +325,6 @@ const HomeDriverPassenger: React.FC = () => {
     return true;
   };
 
-  // NUEVA FUNCIÓN: Verificar y activar GPS automáticamente
 const verificarYActivarGPS = async (): Promise<boolean> => {
     // SOLO ejecutar en Android
     if (Platform.OS !== 'android') {
