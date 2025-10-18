@@ -258,7 +258,7 @@ const ServicesPassenger = () => {
                             </Text>
                           </View>
                           <Text style={styles.dateValue}>
-                            {service.fechapasajero}
+                            {service.fechapasajero || service.fechaservicio}
                           </Text>
                         </View>
 

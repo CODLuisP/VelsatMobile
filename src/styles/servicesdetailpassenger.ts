@@ -204,6 +204,10 @@ buttonRed: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
+  buttonDisabled: {
+    backgroundColor: '#ccc', // Color gris cuando está deshabilitado
+    opacity: 0.5,
+  },
   buttonOrangeText: {
     color: '#fff',
     fontSize: 12,

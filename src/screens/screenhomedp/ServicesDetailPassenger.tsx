@@ -37,6 +37,7 @@ import { useAuthStore } from '../../store/authStore';
 import { ImageModal } from './modals/ImageModal';
 import { CancelModal } from './modals/CancelModal';
 import { RatingModal } from './modals/RatingModal';
+import axios from 'axios';
 
 type ServicesDetailPassengerRouteProp = RouteProp<
   RootStackParamList,
@@ -196,7 +197,9 @@ const ServicesDetailPassenger = () => {
     <body>
         <div id="map"></div>
         <script>
-            var map = L.map('map').setView([${vehicleLocation.latitude}, ${vehicleLocation.longitude}], 15);
+            var map = L.map('map').setView([${vehicleLocation.latitude}, ${
+      vehicleLocation.longitude
+    }], 15);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -210,9 +213,13 @@ const ServicesDetailPassenger = () => {
     className: ''
 });
 
-            L.marker([${vehicleLocation.latitude}, ${vehicleLocation.longitude}], {icon: carIcon})
+            L.marker([${vehicleLocation.latitude}, ${
+      vehicleLocation.longitude
+    }], {icon: carIcon})
                 .addTo(map)
-                .bindPopup('<b>${serviceData.unidad}</b><br>Velocidad: ${vehicleLocation.speed} km/h');
+                .bindPopup('<b>${
+                  serviceData?.unidad?.toUpperCase() || 'No asignada'
+                }</b><br>Velocidad: ${vehicleLocation.speed} km/h');
         </script>
     </body>
     </html>
@@ -265,7 +272,7 @@ const ServicesDetailPassenger = () => {
                 latitude: vehicleLocation.latitude,
                 longitude: vehicleLocation.longitude,
               }}
-              title={serviceData.unidad.toUpperCase()}
+              title={serviceData?.unidad?.toUpperCase() || 'No asignada'}
               description={`Velocidad: ${vehicleLocation.speed} km/h`}
               tracksViewChanges={false}
               anchor={{ x: 0.5, y: 0.5 }}
@@ -296,7 +303,7 @@ const ServicesDetailPassenger = () => {
             style={{ flex: 1 }}
             javaScriptEnabled={true}
             domStorageEnabled={true}
-            nestedScrollEnabled={true} 
+            nestedScrollEnabled={true}
           />
         </View>
       );
@@ -307,89 +314,60 @@ const ServicesDetailPassenger = () => {
 
   // Función para obtener los datos del conductor
   const fetchDriverData = async () => {
-    try {
-      setLoadingDriver(true);
-      console.log(
-        '🔍 Obteniendo datos del conductor:',
-        serviceData.codconductor,
-      );
+  try {
+    setLoadingDriver(true);
+    console.log('🔍 Obteniendo datos del conductor:', serviceData.codconductor);
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
-      console.log('🌐 URL Conductor:', url);
+    const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
+    console.log('🌐 URL Conductor:', url);
 
-      const response = await fetch(url);
-      console.log('📡 Status de respuesta conductor:', response.status);
+    const response = await axios.get(url);
+    console.log('📡 Status de respuesta conductor:', response.status);
+    console.log('📦 Datos del conductor recibidos:', response.data);
 
-      const text = await response.text();
-      console.log('📄 Respuesta conductor como texto:', text);
-
-      // Verificar si hay mensaje de error
-      if (text.includes('No se encontró') || text.includes('no encontrado')) {
-        console.log('ℹ️ No se encontró información del conductor');
-        setDriverData(null);
-        return;
-      }
-
-      // Intentar parsear el JSON
-      try {
-        const data = JSON.parse(text);
-        console.log('📦 Datos del conductor recibidos:', data);
-        setDriverData(data);
-      } catch (parseError) {
-        console.error('❌ Error al parsear JSON del conductor:', parseError);
-        setDriverData(null);
-      }
-    } catch (error) {
-      console.error('❌ Error al obtener datos del conductor:', error);
-      setDriverData(null);
-    } finally {
-      setLoadingDriver(false);
+    setDriverData(response.data);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('❌ Error al obtener datos del conductor:', error.response?.data || error.message);
+    } else {
+      console.error('❌ Error desconocido:', error);
     }
-  };
+    setDriverData(null);
+  } finally {
+    setLoadingDriver(false);
+  }
+};
 
   // Función para obtener los datos del destino
   const fetchDestinoData = async (codcliente: string) => {
-    try {
-      setLoadingDestino(true);
-      console.log('🔍 Obteniendo datos del destino:', codcliente);
+  try {
+    setLoadingDestino(true);
+    console.log('🔍 Obteniendo datos del destino:', codcliente);
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/detalleDestino/${codcliente}`;
-      console.log('🌐 URL Destino:', url);
+    const url = `https://velsat.pe:2087/api/Aplicativo/detalleDestino/${codcliente}`;
+    console.log('🌐 URL Destino:', url);
 
-      const response = await fetch(url);
-      console.log('📡 Status de respuesta destino:', response.status);
+    const response = await axios.get(url);
+    console.log('📡 Status de respuesta destino:', response.status);
+    console.log('📦 Datos del destino recibidos:', response.data);
 
-      const text = await response.text();
-      console.log('📄 Respuesta destino como texto:', text);
-
-      // Verificar si hay mensaje de error
-      if (text.includes('No se encontró') || text.includes('no encontrado')) {
-        console.log('ℹ️ No se encontró información del destino');
-        setDestinoData(null);
-        return;
-      }
-
-      // Intentar parsear el JSON
-      try {
-        const data = JSON.parse(text);
-        console.log('📦 Datos del destino recibidos:', data);
-        // La API devuelve un array, tomamos el primer elemento
-        if (data && data.length > 0) {
-          setDestinoData(data[0]);
-        } else {
-          setDestinoData(null);
-        }
-      } catch (parseError) {
-        console.error('❌ Error al parsear JSON del destino:', parseError);
-        setDestinoData(null);
-      }
-    } catch (error) {
-      console.error('❌ Error al obtener datos del destino:', error);
+    // La API devuelve un array, tomamos el primer elemento
+    if (response.data && response.data.length > 0) {
+      setDestinoData(response.data[0]);
+    } else {
       setDestinoData(null);
-    } finally {
-      setLoadingDestino(false);
     }
-  };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('❌ Error al obtener datos del destino:', error.response?.data || error.message);
+    } else {
+      console.error('❌ Error desconocido:', error);
+    }
+    setDestinoData(null);
+  } finally {
+    setLoadingDestino(false);
+  }
+};
 
   // Ejecutar al montar el componente
   useEffect(() => {
@@ -494,55 +472,44 @@ const ServicesDetailPassenger = () => {
 
   // Función para cancelar el servicio
   const handleConfirmCancel = async () => {
-    try {
-      setCancellingService(true);
-      console.log('🚫 Cancelando servicio...');
+  try {
+    setCancellingService(true);
+    console.log('🚫 Cancelando servicio...');
 
-      const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
-      console.log('🌐 URL:', url);
+    const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
+    console.log('🌐 URL:', url);
 
-      const requestBody = {
-        codservicio: serviceData.codservicio,
-        codpedido: serviceData.codpedido,
-        codusuario: serviceData.codusuario,
-        codcliente: serviceData.codcliente,
-        empresa: serviceData.empresa,
-        numero: serviceData.numero,
-        fechaservicio: serviceData.fechaservicio,
-        tipo: getTipoServicio(serviceData.tipo),
-      };
+    const requestBody = {
+      codservicio: serviceData.codservicio,
+      codpedido: serviceData.codpedido,
+      codusuario: serviceData.codusuario,
+      codcliente: serviceData.codcliente,
+      empresa: serviceData.empresa,
+      numero: serviceData.numero,
+      fechaservicio: serviceData.fechaservicio,
+      tipo: getTipoServicio(serviceData.tipo),
+    };
 
-      console.log('📦 Body de la petición:', requestBody);
+    console.log('📦 Body de la petición:', requestBody);
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+    const response = await axios.post(url, requestBody);
+    console.log('📡 Status de respuesta:', response.status);
+    console.log('📄 Respuesta:', response.data);
 
-      console.log('📡 Status de respuesta:', response.status);
-
-      const text = await response.text();
-      console.log('📄 Respuesta:', text);
-
-      if (response.ok) {
-        console.log('✅ Servicio cancelado exitosamente');
-        // Cerrar el modal
-        setCancelModalVisible(false);
-        // Opcional: Mostrar mensaje de éxito o regresar a la pantalla anterior
-        navigation.goBack();
-      } else {
-        console.error('❌ Error al cancelar el servicio:', text);
-        // Mostrar mensaje de error al usuario
-      }
-    } catch (error) {
-      console.error('❌ Error en la petición de cancelación:', error);
-    } finally {
-      setCancellingService(false);
+    console.log('✅ Servicio cancelado exitosamente');
+    setCancelModalVisible(false);
+    navigation.goBack();
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('❌ Error al cancelar el servicio:', error.response?.data || error.message);
+      Alert.alert('Error', 'No se pudo cancelar el servicio. Intenta nuevamente.');
+    } else {
+      console.error('❌ Error desconocido:', error);
     }
-  };
+  } finally {
+    setCancellingService(false);
+  }
+};
 
   // Abrir modal de calificación
   const handleRatingPress = () => {
@@ -558,37 +525,43 @@ const ServicesDetailPassenger = () => {
 
   // Enviar calificación
   const handleSendRating = async () => {
-    if (selectedRating === 0) {
-      console.log('⚠️ Debe seleccionar una calificación');
-      return;
+  if (selectedRating === 0) {
+    console.log('⚠️ Debe seleccionar una calificación');
+    Alert.alert('Atención', 'Debe seleccionar una calificación');
+    return;
+  }
+
+  try {
+    setSendingRating(true);
+    console.log('⭐ Enviando calificación...');
+
+    const url = `https://velsat.pe:2087/api/Aplicativo/enviarCalificacion`;
+    console.log('🌐 URL:', url);
+
+    const response = await axios.post(url, null, {
+      params: {
+        valor: selectedRating,
+        codtaxi: serviceData.codconductor,
+      },
+    });
+
+    console.log('📡 Status:', response.status);
+    console.log('📄 Respuesta:', response.data);
+
+    console.log('✅ Calificación enviada exitosamente');
+    setRatingModalVisible(false);
+    Alert.alert('¡Éxito!', 'Calificación enviada correctamente');
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('❌ Error al enviar calificación:', error.response?.data || error.message);
+      Alert.alert('Error', 'No se pudo enviar la calificación');
+    } else {
+      console.error('❌ Error desconocido:', error);
     }
-
-    try {
-      setSendingRating(true);
-      console.log('⭐ Enviando calificación...');
-
-      const url = `https://velsat.pe:2087/api/Aplicativo/enviarCalificacion?valor=${selectedRating}&codtaxi=${serviceData.codconductor}`;
-      console.log('🌐 URL:', url);
-
-      const response = await fetch(url, {
-        method: 'POST',
-      });
-
-      console.log('📡 Status:', response.status);
-      const text = await response.text();
-      console.log('📄 Respuesta:', text);
-
-      if (response.ok) {
-        console.log('✅ Calificación enviada exitosamente');
-        setRatingModalVisible(false);
-        // Opcional: Mostrar mensaje de éxito
-      }
-    } catch (error) {
-      console.error('❌ Error al enviar calificación:', error);
-    } finally {
-      setSendingRating(false);
-    }
-  };
+  } finally {
+    setSendingRating(false);
+  }
+};
 
   const makePhoneCall = (): void => {
     if (!driverData?.telefono) {
@@ -622,7 +595,7 @@ const ServicesDetailPassenger = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace-2 }]}>
+    <View style={[styles.container, { paddingBottom: bottomSpace - 2 }]}>
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -980,7 +953,7 @@ const ServicesDetailPassenger = () => {
               <View style={styles.detailItem}>
                 <Text style={styles.detailLabel}>Unidad asignada</Text>
                 <Text style={styles.detailValue}>
-                  {serviceData?.unidad.toUpperCase() || 'No asignada'}
+                  {serviceData?.unidad?.toUpperCase() || 'No asignada'}
                 </Text>
               </View>
 
@@ -1030,8 +1003,12 @@ const ServicesDetailPassenger = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.buttonOrange}
+                style={[
+                  styles.buttonOrange,
+                  !driverData && styles.buttonDisabled, // Agrega estilo cuando esté deshabilitado
+                ]}
                 onPress={handleRatingPress}
+                disabled={!driverData} // Deshabilita si driverData es null
               >
                 <Star size={16} color="#fff" style={styles.buttonIcon} />
                 <Text style={styles.buttonOrangeText}>Calificar</Text>
@@ -1041,30 +1018,27 @@ const ServicesDetailPassenger = () => {
         </View>
       </ScrollView>
 
-
       <ImageModal
-  visible={imageModalVisible}
-  imageUri={driverData?.imagen || null}
-  onClose={handleCloseModal}
-/>
+        visible={imageModalVisible}
+        imageUri={driverData?.imagen || null}
+        onClose={handleCloseModal}
+      />
 
-<CancelModal
-  visible={cancelModalVisible}
-  loading={cancellingService}
-  onConfirm={handleConfirmCancel}
-  onCancel={handleCloseCancelModal}
-/>
+      <CancelModal
+        visible={cancelModalVisible}
+        loading={cancellingService}
+        onConfirm={handleConfirmCancel}
+        onCancel={handleCloseCancelModal}
+      />
 
-<RatingModal
-  visible={ratingModalVisible}
-  loading={sendingRating}
-  selectedRating={selectedRating}
-  onRatingSelect={setSelectedRating}
-  onConfirm={handleSendRating}
-  onCancel={handleCloseRatingModal}
-/>
-
-
+      <RatingModal
+        visible={ratingModalVisible}
+        loading={sendingRating}
+        selectedRating={selectedRating}
+        onRatingSelect={setSelectedRating}
+        onConfirm={handleSendRating}
+        onCancel={handleCloseRatingModal}
+      />
     </View>
   );
 };
