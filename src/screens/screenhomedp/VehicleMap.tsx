@@ -543,7 +543,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
                 resizeMode="contain"
               />
               <Callout>
-                <View style={{ padding: 0, minWidth: 180, maxWidth: 250}}>
+                <View style={{ padding: 0, minWidth: 180, width: 280}}>
                   <Text style={{ fontWeight: 'bold', fontSize: 12, marginBottom: 5 }}>
                     {vehicleName}
                   </Text>
