@@ -251,7 +251,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
             var marker = null;
             var radarLayer = null;
 
-window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
+            window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol, direccion) {
                 // Determinar qué imagen y tamaño usar según el ángulo
                 var imageUrl = '';
                 var iconSize = [55, 35];
@@ -288,16 +288,16 @@ window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
                 }
 
                 var popupContent = \`
-                    <div style="text-align: center; font-family: Arial, sans-serif; min-width: 150px;">
+                    <div style="text-align: center; font-family: Arial, sans-serif; min-width: 150px; max-width: 250px;">
                         <h3 style="margin: 8px 0; color: #f97316; font-size: 12px; text-transform: uppercase; font-weight: 800;">${vehicleName}</h3>
                         <div style="display: flex; flex-direction: column; gap: 3px; text-align: left; font-size: 11px;">
-                            <div style="display: flex; justify-content: space-between;">
+                            <div style="display: flex; justify-content: left;">
                                 <span style="font-weight: 600; color: #374151;">Velocidad:</span>
                                 <span style="color: #6b7280;">\${spd} Km/h</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between;">
+                            <div style="display: flex; justify-content: left;">
                                 <span style="font-weight: 600; color: #374151;">Dirección:</span>
-                                <span style="color: #6b7280;">\${heading}°</span>
+                                <span style="color: #6b7280; font-size: 10px; word-wrap: break-word;">\${direccion || 'Sin dirección'}</span>
                             </div>
                         </div>
                     </div>
@@ -423,8 +423,9 @@ window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
   useEffect(() => {
     if (Platform.OS === 'android' && webViewRef.current && vehicleData && isWebViewReady) {
       const radarColor = getRadarColor();
+      const direccion = vehicleData.direccion || 'Sin dirección';
       setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}'); true;`;
+        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}', '${direccion.replace(/'/g, "\\'")}'); true;`;
         webViewRef.current?.injectJavaScript(script);
       }, 100);
     }
@@ -434,8 +435,9 @@ window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
   useEffect(() => {
     if (Platform.OS === 'android' && fullscreenWebViewRef.current && vehicleData && isFullscreen) {
       const radarColor = getRadarColor();
+      const direccion = vehicleData.direccion || 'Sin dirección';
       setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}'); true;`;
+        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}', '${direccion.replace(/'/g, "\\'")}'); true;`;
         fullscreenWebViewRef.current?.injectJavaScript(script);
       }, 100);
     }
@@ -541,15 +543,15 @@ window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
                 resizeMode="contain"
               />
               <Callout>
-                <View style={{ padding: 0, minWidth: 180 }}>
+                <View style={{ padding: 0, minWidth: 180, maxWidth: 250}}>
                   <Text style={{ fontWeight: 'bold', fontSize: 12, marginBottom: 5 }}>
                     {vehicleName}
                   </Text>
                   <Text style={{ color: '#666', fontSize: 11 }}>
                     Velocidad: {speed} km/h
                   </Text>
-                  <Text style={{ color: '#666', fontSize: 11 }}>
-                    Dirección: {heading}°
+                  <Text style={{ color: '#666', fontSize: 11, lineHeight: 14, flexWrap: 'wrap'}}>
+                    Dirección: {vehicleData?.direccion || 'Cargando...'}
                   </Text>
                 </View>
               </Callout>
