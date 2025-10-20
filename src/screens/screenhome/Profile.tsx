@@ -371,19 +371,19 @@ const Profile = () => {
             <Text style={styles.versionSubtext}>Lima - Perú</Text>
           </View>
 
-          <View style={styles.versionRow}>
+          {/* <View style={styles.versionRow}>
             <Text style={styles.versionLabel}>Versión:</Text>
             <Text style={styles.versionLabel}> 3.0</Text>
-          </View>
+          </View> */}
 
           <View style={styles.versionRow}>
             <Text style={styles.versionLabel}>RUC:</Text>
             <Text style={styles.versionLabel}> 20202020202202</Text>
           </View>
-
+{/* 
           <Text style={styles.copyrightText}>
             © 2025 Velsat Mobile. Todos los derechos reservados.
-          </Text>
+          </Text> */}
         </View>
       </ScrollView>
     </LinearGradient>

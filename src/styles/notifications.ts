@@ -223,7 +223,7 @@ endText: {
 
 counterContainer: {
   borderRadius: 8,
-  paddingVertical: 10,
+  paddingVertical: 0,
   marginTop: 12,
   flexDirection: 'row',
   alignItems: 'center',
