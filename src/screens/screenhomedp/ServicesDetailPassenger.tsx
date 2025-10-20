@@ -736,6 +736,7 @@ const ServicesDetailPassenger = () => {
             <Text style={styles.detailLabel}>
               Ubicación actual de la unidad asignada
             </Text>
+
             
             {/* 👇 USO DEL COMPONENTE SEPARADO */}
             <VehicleMap
@@ -765,7 +766,6 @@ const ServicesDetailPassenger = () => {
                 style={styles.buttonRed}
                 onPress={handleCancelPress}
               >
-                <X size={16} color="#fff" style={styles.buttonIcon} />
                 <Text style={styles.buttonRedText}>Cancelar Servicio</Text>
               </TouchableOpacity>
 

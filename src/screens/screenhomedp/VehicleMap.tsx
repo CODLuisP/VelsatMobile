@@ -1,8 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Image, Platform, Animated, ActivityIndicator, Text } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT, Circle } from 'react-native-maps';
+import { View, Image, Platform, Animated, ActivityIndicator, Text, Modal, TouchableOpacity } from 'react-native';
+import MapView, { Marker, PROVIDER_DEFAULT, Circle, Callout } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 import * as signalR from '@microsoft/signalr';
+import {
+  DIRECTION_IMAGES,
+  getDirectionImage,
+  getDirectionImageData,
+} from '../../styles/directionImages';
+import { MapPin, TriangleAlert, Maximize2, X } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface VehicleMapProps {
   username: string;
@@ -42,7 +49,11 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
   const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const webViewRef = useRef<WebView>(null);
+  const fullscreenWebViewRef = useRef<WebView>(null);
+  const markerRef = useRef<any>(null);
+  const insets = useSafeAreaInsets();
 
   // Estado para el radar en iOS
   const [radarPulse, setRadarPulse] = useState({
@@ -52,10 +63,13 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     wave4: 0.75,
   });
 
+  // Validación de usuario y placa
+  const hasValidCredentials = username && placa;
+
   // Conexión SignalR
   useEffect(() => {
-    if (!username || !placa) {
-      console.error('Faltan datos para conectar SignalR');
+    if (!hasValidCredentials) {
+      console.log('No hay usuario o placa asignados');
       setConnectionStatus('error');
       return;
     }
@@ -132,7 +146,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
         });
       }
     };
-  }, [username, placa]);
+  }, [username, placa, hasValidCredentials]);
 
   // Animación del radar para iOS
   useEffect(() => {
@@ -162,8 +176,20 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     return '#00509d';
   };
 
-  const getLeafletHTML = () => {
+  // Tipo de vehículo siempre 's' como especificaste
+  const pinType = 's';
+
+  // Tamaños de iconos según el tipo
+  const iconSizes = {
+    vertical: [30, 40] as [number, number],
+    horizontal: [55, 35] as [number, number],
+  };
+
+  const popupOffset = -30;
+
+  const getLeafletHTML = (isFullscreenView = false) => {
     const radarColor = getRadarColor();
+    const viewId = isFullscreenView ? 'fullscreen-map' : 'map';
     
     return `
     <!DOCTYPE html>
@@ -175,52 +201,207 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <style>
             body { margin: 0; padding: 0; }
-            #map { height: 100vh; width: 100vw; }
+            #${viewId} { height: 100vh; width: 100vw; }
             .radar-pulse {
                 position: absolute;
                 width: 20px;
                 height: 20px;
                 border-radius: 50%;
-                background-color: ${radarColor};
-                animation: pulse 3s infinite;
+                animation: pulse 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+                animation-fill-mode: both;
+                pointer-events: none;
             }
             @keyframes pulse {
-                0% { transform: scale(0.2); opacity: 0.7; }
-                100% { transform: scale(6); opacity: 0; }
+                0% {
+                    transform: scale(0.2);
+                    opacity: 0.4;
+                }
+                50% {
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(6);
+                    opacity: 0;
+                }
             }
         </style>
     </head>
     <body>
-        <div id="map"></div>
+        <div id="${viewId}"></div>
         <script>
-            var map = L.map('map').setView([${latitude}, ${longitude}], 15);
+            var map = L.map('${viewId}').setView([${latitude}, ${longitude}], ${isFullscreenView ? 16 : 15});
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap'
             }).addTo(map);
-          
-            var carIcon = L.divIcon({
-                html: '<div style="position: relative; width: 60px; height: 40px;"><div class="radar-pulse" style="position: absolute; top: 10px; left: 20px;"></div><img src="https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png" style="width:60px;height:40px;position:relative;z-index:10;"/></div>',
-                iconSize: [60, 60],
-                iconAnchor: [30, 20],
-                className: ''
-            });
 
-            var marker = L.marker([${latitude}, ${longitude}], {icon: carIcon})
-                .addTo(map)
-                .bindPopup('<b>${vehicleName}</b><br>Velocidad: ${speed} km/h');
+            // Guardar todas las URLs de imágenes
+            window.imageUrls = {
+                up: '${DIRECTION_IMAGES[pinType]['up.png']}',
+                topright: '${DIRECTION_IMAGES[pinType]['topright.png']}',
+                right: '${DIRECTION_IMAGES[pinType]['right.png']}',
+                downright: '${DIRECTION_IMAGES[pinType]['downright.png']}',
+                down: '${DIRECTION_IMAGES[pinType]['down.png']}',
+                downleft: '${DIRECTION_IMAGES[pinType]['downleft.png']}',
+                left: '${DIRECTION_IMAGES[pinType]['left.png']}',
+                topleft: '${DIRECTION_IMAGES[pinType]['topleft.png']}'
+            };
 
-            window.updateMarkerPosition = function(lat, lng, spd, radarCol) {
-                marker.setLatLng([lat, lng]);
-                marker.getPopup().setContent('<b>${vehicleName}</b><br>Velocidad: ' + spd + ' km/h');
-                map.setView([lat, lng], map.getZoom());
+            var marker = null;
+            var radarLayer = null;
+
+            window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
+                // Determinar qué imagen y tamaño usar según el ángulo
+                var imageUrl = '';
+                var iconSize = [55, 35];
+                var verticalSize = ${JSON.stringify(iconSizes.vertical)};
+                var horizontalSize = ${JSON.stringify(iconSizes.horizontal)};
                 
-                // Actualizar color del radar
-                var pulses = document.querySelectorAll('.radar-pulse');
-                pulses.forEach(function(pulse) {
-                    pulse.style.backgroundColor = radarCol;
-                });
+                if (heading >= 0 && heading <= 22.5) {
+                    imageUrl = window.imageUrls.up;
+                    iconSize = verticalSize;
+                } else if (heading > 22.5 && heading <= 67.5) {
+                    imageUrl = window.imageUrls.topright;
+                    iconSize = horizontalSize;
+                } else if (heading > 67.5 && heading <= 112.5) {
+                    imageUrl = window.imageUrls.right;
+                    iconSize = horizontalSize;
+                } else if (heading > 112.5 && heading <= 157.5) {
+                    imageUrl = window.imageUrls.downright;
+                    iconSize = horizontalSize;
+                } else if (heading > 157.5 && heading <= 202.5) {
+                    imageUrl = window.imageUrls.down;
+                    iconSize = verticalSize;
+                } else if (heading > 202.5 && heading <= 247.5) {
+                    imageUrl = window.imageUrls.downleft;
+                    iconSize = horizontalSize;
+                } else if (heading > 247.5 && heading <= 292.5) {
+                    imageUrl = window.imageUrls.left;
+                    iconSize = horizontalSize;
+                } else if (heading > 292.5 && heading <= 337.5) {
+                    imageUrl = window.imageUrls.topleft;
+                    iconSize = horizontalSize;
+                } else {
+                    imageUrl = window.imageUrls.up;
+                    iconSize = verticalSize;
+                }
+
+                var popupContent = \`
+                    <div style="text-align: center; font-family: Arial, sans-serif; min-width: 150px;">
+                        <h3 style="margin: 8px 0; color: #f97316; font-size: 12px; text-transform: uppercase; font-weight: 800;">${vehicleName}</h3>
+                        <div style="display: flex; flex-direction: column; gap: 3px; text-align: left; font-size: 11px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-weight: 600; color: #374151;">Velocidad:</span>
+                                <span style="color: #6b7280;">\${spd} Km/h</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-weight: 600; color: #374151;">Dirección:</span>
+                                <span style="color: #6b7280;">\${heading}°</span>
+                            </div>
+                        </div>
+                    </div>
+                \`;
+
+                if (marker === null) {
+                    // Crear overlay del radar
+                    var RadarOverlay = L.Layer.extend({
+                        onAdd: function(map) {
+                            this._map = map;
+                            this._container = L.DomUtil.create('div', 'radar-overlay');
+                            this._container.style.position = 'absolute';
+                            this._container.style.pointerEvents = 'none';
+                            this._container.style.width = '100%';
+                            this._container.style.height = '100%';
+                            this._container.style.top = '0';
+                            this._container.style.left = '0';
+                            this._container.style.zIndex = '400';
+                            
+                            this._container.innerHTML = '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute;"></div>' +
+                                '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute; animation-delay: 1s;"></div>' +
+                                '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute; animation-delay: 2s;"></div>';
+                            
+                            map.getPanes().overlayPane.appendChild(this._container);
+                            this._update();
+                            map.on('viewreset zoom move', this._update, this);
+                        },
+                        
+                        onRemove: function(map) {
+                            L.DomUtil.remove(this._container);
+                            map.off('viewreset zoom move', this._update, this);
+                        },
+                        
+                        _update: function() {
+                            if (!this._map || !marker) return;
+                            var point = this._map.latLngToLayerPoint(marker.getLatLng());
+                            var pulses = this._container.getElementsByClassName('radar-pulse');
+                            for (var i = 0; i < pulses.length; i++) {
+                                pulses[i].style.left = (point.x - 10) + 'px';
+                                pulses[i].style.top = (point.y - 10) + 'px';
+                            }
+                        },
+                        
+                        updateColor: function(color) {
+                            var pulses = this._container.getElementsByClassName('radar-pulse');
+                            for (var i = 0; i < pulses.length; i++) {
+                                pulses[i].style.backgroundColor = color;
+                            }
+                        }
+                    });
+                    
+                    radarLayer = new RadarOverlay().addTo(map);
+
+                    // Crear marcador
+                    var vehicleIcon = L.divIcon({
+                        html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
+                        iconSize: iconSize,
+                        iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+                        popupAnchor: [0, ${popupOffset}],
+                        className: 'custom-vehicle-icon'
+                    });
+                    
+                    marker = L.marker([lat, lng], {
+                        icon: vehicleIcon,
+                        autoPan: false
+                    }).addTo(map);
+                    
+                    marker.bindPopup(popupContent, {
+                        autoPan: false,
+                        closeButton: true,
+                        autoClose: false,
+                        closeOnClick: false
+                    }).openPopup();
+                    
+                    map.setView([lat, lng], ${isFullscreenView ? 16 : 15});
+                } else {
+                    // Actualizar imagen si cambió la dirección
+                    if (!marker.lastHeading || Math.abs(marker.lastHeading - heading) > 22.5) {
+                        var vehicleIcon = L.divIcon({
+                            html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
+                            iconSize: iconSize,
+                            iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
+                            popupAnchor: [0, ${popupOffset}],
+                            className: 'custom-vehicle-icon'
+                        });
+                        marker.setIcon(vehicleIcon);
+                        marker.lastHeading = heading;
+                    }
+                    
+                    marker.setLatLng([lat, lng]);
+                    
+                    // Actualizar color del radar
+                    if (radarLayer) {
+                        radarLayer.updateColor(radarCol);
+                        radarLayer._update();
+                    }
+                    
+                    marker.getPopup().setContent(popupContent);
+                    map.setView([lat, lng], map.getZoom());
+                    
+                    if (!marker.isPopupOpen()) {
+                        marker.openPopup();
+                    }
+                }
             };
 
             window.ReactNativeWebView.postMessage('webview-ready');
@@ -235,14 +416,33 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     if (Platform.OS === 'android' && webViewRef.current && vehicleData && isWebViewReady) {
       const radarColor = getRadarColor();
       setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${speed}, '${radarColor}'); true;`;
+        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}'); true;`;
         webViewRef.current?.injectJavaScript(script);
       }, 100);
     }
-  }, [latitude, longitude, speed, vehicleData, isWebViewReady]);
+  }, [latitude, longitude, heading, speed, vehicleData, isWebViewReady]);
 
-  if (Platform.OS === 'ios') {
+  // Actualizar WebView de pantalla completa cuando cambien los datos
+  useEffect(() => {
+    if (Platform.OS === 'android' && fullscreenWebViewRef.current && vehicleData && isFullscreen) {
+      const radarColor = getRadarColor();
+      setTimeout(() => {
+        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}'); true;`;
+        fullscreenWebViewRef.current?.injectJavaScript(script);
+      }, 100);
+    }
+  }, [latitude, longitude, heading, speed, vehicleData, isFullscreen]);
+
+  // Renderizar el contenido del mapa para iOS
+  const renderIOSMap = (isFullscreenView = false) => {
     const radarColor = getRadarColor();
+    const imageData = getDirectionImageData(heading);
+
+    // Tamaños para iOS
+    const iosImageSize: [number, number] = 
+      imageData.name === 'up.png' || imageData.name === 'down.png'
+        ? iconSizes.vertical
+        : iconSizes.horizontal;
 
     // Cálculo de opacidad para las ondas del radar
     const getOpacity = (progress: number) => {
@@ -262,6 +462,273 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     const wave4Opacity = getOpacity(radarPulse.wave4);
 
     return (
+      <MapView
+        provider={PROVIDER_DEFAULT}
+        style={{ flex: 1 }}
+        region={{
+          latitude,
+          longitude,
+          latitudeDelta: isFullscreenView ? 0.002 : 0.003,
+          longitudeDelta: isFullscreenView ? 0.002 : 0.003,
+        }}
+      >
+        {vehicleData && (
+          <>
+            {/* Ondas del radar con opacidad dinámica */}
+            {wave1Opacity > 0 && (
+              <Circle
+                center={{ latitude, longitude }}
+                radius={wave1Radius}
+                fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
+                strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
+                strokeWidth={2}
+              />
+            )}
+            {wave2Opacity > 0 && (
+              <Circle
+                center={{ latitude, longitude }}
+                radius={wave2Radius}
+                fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
+                strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
+                strokeWidth={2}
+              />
+            )}
+            {wave3Opacity > 0 && (
+              <Circle
+                center={{ latitude, longitude }}
+                radius={wave3Radius}
+                fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
+                strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
+                strokeWidth={2}
+              />
+            )}
+            {wave4Opacity > 0 && (
+              <Circle
+                center={{ latitude, longitude }}
+                radius={wave4Radius}
+                fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
+                strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
+                strokeWidth={2}
+              />
+            )}
+
+            <Marker
+              ref={markerRef}
+              coordinate={{
+                latitude,
+                longitude,
+              }}
+              anchor={{
+                x: imageData.anchor[0] / imageData.size[0],
+                y: imageData.anchor[1] / imageData.size[1],
+              }}
+              tracksViewChanges={false}
+            >
+              <Image
+                source={getDirectionImage(heading, pinType)}
+                style={{
+                  width: iosImageSize[0],
+                  height: iosImageSize[1],
+                }}
+                resizeMode="contain"
+              />
+              <Callout>
+                <View style={{ padding: 0, minWidth: 180 }}>
+                  <Text style={{ fontWeight: 'bold', fontSize: 12, marginBottom: 5 }}>
+                    {vehicleName}
+                  </Text>
+                  <Text style={{ color: '#666', fontSize: 11 }}>
+                    Velocidad: {speed} km/h
+                  </Text>
+                  <Text style={{ color: '#666', fontSize: 11 }}>
+                    Dirección: {heading}°
+                  </Text>
+                </View>
+              </Callout>
+            </Marker>
+          </>
+        )}
+      </MapView>
+    );
+  };
+
+  // Si no hay credenciales válidas, mostrar mensaje de error
+  if (!hasValidCredentials) {
+    return (
+      <View
+        style={{
+          height: 250,
+          borderRadius: 10,
+          overflow: 'hidden',
+          marginTop: 10,
+          backgroundColor: '#ffffffff',
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: '#e5e7eb',
+        }}
+      >
+        <View style={{ alignItems: 'center', padding: 20 }}>
+          <View
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              backgroundColor: '#fee2e2',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 15,
+            }}
+          >
+            <TriangleAlert size={25} color="#bf0000ff" />
+          </View>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: '700',
+              color: '#1f2937',
+              marginBottom: 8,
+              textAlign: 'center',
+            }}
+          >
+            Sin datos de vehículo
+          </Text>
+          <Text
+            style={{
+              fontSize: 14,
+              color: '#6b7280',
+              textAlign: 'center',
+              lineHeight: 20,
+            }}
+          >
+            {!username && !placa
+              ? 'No hay usuario ni placa asignados'
+              : !username
+              ? 'No hay usuario asignado'
+              : 'No hay placa asignada'}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (Platform.OS === 'ios') {
+    return (
+      <>
+        {/* Vista normal */}
+        <View
+          style={{
+            height: 250,
+            borderRadius: 10,
+            overflow: 'hidden',
+            marginTop: 10,
+          }}
+        >
+          {!vehicleData && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 10,
+              }}
+            >
+              <ActivityIndicator size="large" color="#3b82f6" />
+              <Text style={{ color: '#fff', marginTop: 10 }}>
+                {connectionStatus === 'connecting' ? 'Conectando...' : 'Cargando datos...'}
+              </Text>
+            </View>
+          )}
+
+          {/* Botón de pantalla completa */}
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 8,
+              padding: 8,
+              zIndex: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+            onPress={() => setIsFullscreen(true)}
+          >
+            <Maximize2 size={20} color="#1f2937" />
+          </TouchableOpacity>
+
+          {renderIOSMap(false)}
+        </View>
+
+        {/* Modal de pantalla completa */}
+        <Modal
+          visible={isFullscreen}
+          animationType="slide"
+          onRequestClose={() => setIsFullscreen(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: '#000' }}>
+            {/* Botón de cerrar */}
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: insets.top + 10,
+                right: 10,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: 8,
+                padding: 10,
+                zIndex: 30,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+              }}
+              onPress={() => setIsFullscreen(false)}
+            >
+              <X size={24} color="#1f2937" />
+            </TouchableOpacity>
+
+            {!vehicleData && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10,
+                }}
+              >
+                <ActivityIndicator size="large" color="#3b82f6" />
+                <Text style={{ color: '#fff', marginTop: 10 }}>
+                  {connectionStatus === 'connecting' ? 'Conectando...' : 'Cargando datos...'}
+                </Text>
+              </View>
+            )}
+
+            {renderIOSMap(true)}
+          </View>
+        </Modal>
+      </>
+    );
+  }
+
+  // Android - Usando WebView con Leaflet
+  return (
+    <>
+      {/* Vista normal */}
       <View
         style={{
           height: 250,
@@ -291,126 +758,112 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
           </View>
         )}
 
-        <MapView
-          provider={PROVIDER_DEFAULT}
-          style={{ flex: 1 }}
-          region={{
-            latitude,
-            longitude,
-            latitudeDelta: 0.003,
-            longitudeDelta: 0.003,
-          }}
-        >
-          {vehicleData && (
-            <>
-              {/* Ondas del radar con opacidad dinámica */}
-              {wave1Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave1Radius}
-                  fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
-              {wave2Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave2Radius}
-                  fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
-              {wave3Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave3Radius}
-                  fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
-              {wave4Opacity > 0 && (
-                <Circle
-                  center={{ latitude, longitude }}
-                  radius={wave4Radius}
-                  fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
-                  strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
-                  strokeWidth={2}
-                />
-              )}
-
-              <Marker
-                coordinate={{
-                  latitude,
-                  longitude,
-                }}
-                title={vehicleName}
-                description={`Velocidad: ${speed} km/h`}
-                tracksViewChanges={false}
-                anchor={{ x: 0.5, y: 0.5 }}
-              >
-                <Image
-                  source={{
-                    uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
-                  }}
-                  style={{ width: 60, height: 30 }}
-                  resizeMode="contain"
-                />
-              </Marker>
-            </>
-          )}
-        </MapView>
-      </View>
-    );
-  }
-
-  // Android - Usando WebView con Leaflet
-  return (
-    <View
-      style={{
-        height: 250,
-        borderRadius: 10,
-        overflow: 'hidden',
-        marginTop: 10,
-      }}
-    >
-      {!vehicleData && (
-        <View
+        {/* Botón de pantalla completa */}
+        <TouchableOpacity
           style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 10,
+            top: 10,
+            right: 10,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: 8,
+            padding: 8,
+            zIndex: 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
           }}
+          onPress={() => setIsFullscreen(true)}
         >
-          <ActivityIndicator size="large" color="#3b82f6" />
-          <Text style={{ color: '#fff', marginTop: 10 }}>
-            {connectionStatus === 'connecting' ? 'Conectando...' : 'Cargando datos...'}
-          </Text>
-        </View>
-      )}
+          <Maximize2 size={20} color="#1f2937" />
+        </TouchableOpacity>
 
-      <WebView
-        ref={webViewRef}
-        source={{ html: getLeafletHTML() }}
-        style={{ flex: 1 }}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        nestedScrollEnabled={true}
-        onMessage={event => {
-          if (event.nativeEvent.data === 'webview-ready') {
-            setIsWebViewReady(true);
-          }
-        }}
-      />
-    </View>
+        <WebView
+          ref={webViewRef}
+          source={{ html: getLeafletHTML(false) }}
+          style={{ flex: 1 }}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          nestedScrollEnabled={true}
+          onMessage={event => {
+            if (event.nativeEvent.data === 'webview-ready') {
+              setIsWebViewReady(true);
+            }
+          }}
+        />
+      </View>
+
+      {/* Modal de pantalla completa */}
+      <Modal
+        visible={isFullscreen}
+        animationType="slide"
+        onRequestClose={() => setIsFullscreen(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: '#000' }}>
+          {/* Botón de cerrar */}
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              top: insets.top + 10,
+              right: 10,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 8,
+              padding: 10,
+              zIndex: 30,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+            onPress={() => setIsFullscreen(false)}
+          >
+            <X size={24} color="#1f2937" />
+          </TouchableOpacity>
+
+          {!vehicleData && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 10,
+              }}
+            >
+              <ActivityIndicator size="large" color="#3b82f6" />
+              <Text style={{ color: '#fff', marginTop: 10 }}>
+                {connectionStatus === 'connecting' ? 'Conectando...' : 'Cargando datos...'}
+              </Text>
+            </View>
+          )}
+
+          <WebView
+            ref={fullscreenWebViewRef}
+            source={{ html: getLeafletHTML(true) }}
+            style={{ flex: 1 }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            nestedScrollEnabled={true}
+            onMessage={event => {
+              if (event.nativeEvent.data === 'webview-ready') {
+                // WebView de pantalla completa está listo
+                const radarColor = getRadarColor();
+                setTimeout(() => {
+                  const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}'); true;`;
+                  fullscreenWebViewRef.current?.injectJavaScript(script);
+                }, 100);
+              }
+            }}
+          />
+        </View>
+      </Modal>
+    </>
   );
 };
 

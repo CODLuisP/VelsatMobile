@@ -61,13 +61,7 @@ export const CancelModal: React.FC<CancelModalProps> = ({
       
       <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
         {/* Botón cerrar flotante */}
-        <TouchableOpacity 
-          style={styles.closeButton} 
-          onPress={onCancel}
-          activeOpacity={0.8}
-        >
-          <X size={20} color="#fff" strokeWidth={2} />
-        </TouchableOpacity>
+       
 
         {/* Contenedor principal */}
         <TouchableOpacity
@@ -127,20 +121,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.85)',
   },
-  closeButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 40,
-    right: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(71, 85, 105, 0.6)',
-    zIndex: 10,
-  },
+
   contentArea: {
     flex: 1,
     justifyContent: 'center',
