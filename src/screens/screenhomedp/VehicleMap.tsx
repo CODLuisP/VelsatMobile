@@ -185,7 +185,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     horizontal: [55, 35] as [number, number],
   };
 
-  const popupOffset = -30;
+  const popupOffset = -20;
 
   const getLeafletHTML = (isFullscreenView = false) => {
     const radarColor = getRadarColor();
@@ -229,7 +229,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     <body>
         <div id="${viewId}"></div>
         <script>
-            var map = L.map('${viewId}').setView([${latitude}, ${longitude}], ${isFullscreenView ? 16 : 15});
+            var map = L.map('${viewId}').setView([${latitude}, ${longitude}], ${isFullscreenView ? 27 : 25});
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -251,7 +251,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
             var marker = null;
             var radarLayer = null;
 
-            window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
+window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol) {
                 // Determinar qué imagen y tamaño usar según el ángulo
                 var imageUrl = '';
                 var iconSize = [55, 35];
@@ -304,54 +304,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
                 \`;
 
                 if (marker === null) {
-                    // Crear overlay del radar
-                    var RadarOverlay = L.Layer.extend({
-                        onAdd: function(map) {
-                            this._map = map;
-                            this._container = L.DomUtil.create('div', 'radar-overlay');
-                            this._container.style.position = 'absolute';
-                            this._container.style.pointerEvents = 'none';
-                            this._container.style.width = '100%';
-                            this._container.style.height = '100%';
-                            this._container.style.top = '0';
-                            this._container.style.left = '0';
-                            this._container.style.zIndex = '400';
-                            
-                            this._container.innerHTML = '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute;"></div>' +
-                                '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute; animation-delay: 1s;"></div>' +
-                                '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute; animation-delay: 2s;"></div>';
-                            
-                            map.getPanes().overlayPane.appendChild(this._container);
-                            this._update();
-                            map.on('viewreset zoom move', this._update, this);
-                        },
-                        
-                        onRemove: function(map) {
-                            L.DomUtil.remove(this._container);
-                            map.off('viewreset zoom move', this._update, this);
-                        },
-                        
-                        _update: function() {
-                            if (!this._map || !marker) return;
-                            var point = this._map.latLngToLayerPoint(marker.getLatLng());
-                            var pulses = this._container.getElementsByClassName('radar-pulse');
-                            for (var i = 0; i < pulses.length; i++) {
-                                pulses[i].style.left = (point.x - 10) + 'px';
-                                pulses[i].style.top = (point.y - 10) + 'px';
-                            }
-                        },
-                        
-                        updateColor: function(color) {
-                            var pulses = this._container.getElementsByClassName('radar-pulse');
-                            for (var i = 0; i < pulses.length; i++) {
-                                pulses[i].style.backgroundColor = color;
-                            }
-                        }
-                    });
-                    
-                    radarLayer = new RadarOverlay().addTo(map);
-
-                    // Crear marcador
+                    // PRIMERO: Crear el marcador
                     var vehicleIcon = L.divIcon({
                         html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
                         iconSize: iconSize,
@@ -373,6 +326,61 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
                     }).openPopup();
                     
                     map.setView([lat, lng], ${isFullscreenView ? 16 : 15});
+                    
+                    // DESPUÉS: Crear el radar overlay con delay
+                    setTimeout(function() {
+                        var RadarOverlay = L.Layer.extend({
+                            onAdd: function(map) {
+                                this._map = map;
+                                this._container = L.DomUtil.create('div', 'radar-overlay');
+                                this._container.style.position = 'absolute';
+                                this._container.style.pointerEvents = 'none';
+                                this._container.style.width = '100%';
+                                this._container.style.height = '100%';
+                                this._container.style.top = '0';
+                                this._container.style.left = '0';
+                                this._container.style.zIndex = '400';
+                                
+                                this._container.innerHTML = '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute;"></div>' +
+                                    '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute; animation-delay: 1s;"></div>' +
+                                    '<div class="radar-pulse" style="background-color: ' + radarCol + '; position: absolute; animation-delay: 2s;"></div>';
+                                
+                                map.getPanes().overlayPane.appendChild(this._container);
+                                
+                                // Esperar un frame más antes de actualizar posición
+                                requestAnimationFrame(function() {
+                                    this._update();
+                                }.bind(this));
+                                
+                                map.on('viewreset zoom move', this._update, this);
+                            },
+                            
+                            onRemove: function(map) {
+                                L.DomUtil.remove(this._container);
+                                map.off('viewreset zoom move', this._update, this);
+                            },
+                            
+                            _update: function() {
+                                if (!this._map || !marker) return;
+                                var point = this._map.latLngToLayerPoint(marker.getLatLng());
+                                var pulses = this._container.getElementsByClassName('radar-pulse');
+                                for (var i = 0; i < pulses.length; i++) {
+                                    pulses[i].style.left = (point.x - 10) + 'px';
+                                    pulses[i].style.top = (point.y - 10) + 'px';
+                                }
+                            },
+                            
+                            updateColor: function(color) {
+                                var pulses = this._container.getElementsByClassName('radar-pulse');
+                                for (var i = 0; i < pulses.length; i++) {
+                                    pulses[i].style.backgroundColor = color;
+                                }
+                            }
+                        });
+                        
+                        radarLayer = new RadarOverlay().addTo(map);
+                    }, 150);
+                    
                 } else {
                     // Actualizar imagen si cambió la dirección
                     if (!marker.lastHeading || Math.abs(marker.lastHeading - heading) > 22.5) {
