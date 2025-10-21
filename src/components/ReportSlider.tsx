@@ -9,6 +9,7 @@ import {
   StyleSheet,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
 } from 'react-native';
 import { LucideIcon } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -152,7 +153,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     paddingVertical: 0,
     paddingHorizontal: 20,
-  },
+  marginHorizontal: Platform.select({
+    android: 20,
+    ios: 0,
+  }),  },
+
   cardContent: {
     flex: 1,
   },
