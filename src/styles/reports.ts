@@ -1,31 +1,64 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
   header: {
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+    paddingBottom: 8,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
   backButton: {
     borderRadius: 8,
     padding: 8,
     marginRight: 10,
-    marginLeft:-10,
+    marginLeft: -10,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#fff',
-    marginBottom: 2,
+    flex: 1,
   },
+
+  selectedBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  selectedBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 6,
+  },
+  paginationDot: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+  },
+  // ===== FIN DE ESTILOS DEL SLIDER MODERNO =====
+
+  // Estilos del slider anterior (mantener por compatibilidad)
   scrollContainer: {
     paddingHorizontal: 0,
   },
@@ -56,6 +89,25 @@ export const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#ff6b35',
   },
+  reportIconSelectedLarge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    borderWidth: 3,
+    borderColor: '#ff6b35',
+  },
   reportText: {
     color: 'white',
     fontSize: 12,
@@ -63,6 +115,7 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
     lineHeight: 16,
   },
+
   content: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -70,137 +123,6 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 20,
-    
-  },
-
-  dropdown: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 25,
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dropdownText: {
-    color: '#999',
-    fontSize: 14,
-  },
-  dateInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 10,
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dateInputText: {
-    color: '#999',
-    fontSize: 14,
-  },
-
-  toggleButton: {
-    backgroundColor: '#f0f0f0',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-  },
-  toggleButtonText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    gap: 15,
-    paddingVertical: 10,
-    marginBottom:20,
-  },
-  excelButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    borderRadius: 8,
-    flex: 1,
-  },
-  showButton: {
-    backgroundColor: '#ff6b35',
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    borderRadius: 8,
-    flex: 1,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  datePickerContainer: {
-    backgroundColor: 'white',
-    borderRadius: 15,
-    margin: 20,
-    padding: 20,
-    maxHeight: '80%',
-    width: '90%',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  datePickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  closeButton: {
-    backgroundColor: '#ff6b35',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  closeButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  iosDatePicker: {
-    height: 200,
-  },
-
-  specificOptionsContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginVertical: 8,
-    shadowColor: '#000',
-    marginTop:10
   },
 
   sectionTitle: {
@@ -220,6 +142,84 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  // Unidad Input
+  unitInputContainer: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    backgroundColor: 'white',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+
+  unitInputContent: {
+    flex: 1,
+  },
+
+  unitInputPlaceholder: {
+    color: '#9CA3AF',
+    fontSize: 14,
+  },
+
+  selectedUnitContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
+  },
+
+  selectedUnitInfo: {
+    flex: 1,
+  },
+
+  selectedUnitName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+
+  selectedUnitDetails: {
+    fontSize: 14,
+    color: '#666',
+  },
+
+  clearUnitButton: {
+    padding: 2,
+    marginLeft: 8,
+  },
+
+  // Date Input
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    marginBottom: 10,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dateInputText: {
+    color: '#999',
+    fontSize: 14,
+  },
+
+  // Opciones Específicas
+  specificOptionsContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginVertical: 8,
+    shadowColor: '#000',
+    marginTop: 10,
+  },
+
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,7 +235,8 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#fff', justifyContent: 'center',
+    backgroundColor: '#fff',
+    justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
@@ -276,8 +277,9 @@ export const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
+  // Toggle
   toggleRow: {
-      flexDirection: 'row',
+    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: 12,
@@ -329,77 +331,87 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  reportIconSelectedLarge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#f8f9fa',
+  // Botones
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 15,
+    paddingVertical: 10,
+    marginBottom: 20,
+  },
+  excelButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    flex: 1,
+  },
+  showButton: {
+    backgroundColor: '#ff6b35',
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    flex: 1,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+
+  // Date Picker Modal
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+  },
+  datePickerContainer: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    margin: 20,
+    padding: 20,
+    maxHeight: '80%',
+    width: '90%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-    borderWidth: 3,
-    borderColor: '#ff6b35',
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-
-  unitInputContainer: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    backgroundColor: 'white',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+  datePickerHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 5,
-    
-  },
-
-  unitInputContent: {
-    flex: 1,
-  },
-
-  unitInputPlaceholder: {
-    color: '#9CA3AF',
-    fontSize: 14,
-  },
-
-  selectedUnitContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-
-  selectedUnitInfo: {
-    flex: 1,
-  },
-
-  selectedUnitName: {
-    fontSize: 14,
+  datePickerTitle: {
+    fontSize: 18,
     fontWeight: '600',
     color: '#333',
   },
-
-  selectedUnitDetails: {
+  closeButton: {
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    color: 'white',
     fontSize: 14,
-    color: '#666',
+    fontWeight: '600',
+  },
+  iosDatePicker: {
+    height: 200,
   },
 
-  clearUnitButton: {
-    padding: 2,
-    marginLeft: 8,
-  },
-
-  // Estilos para el modal de unidades
+  // Modal de Unidades
   unitModalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -423,7 +435,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
-    paddingTop:30
+    paddingTop: 30,
   },
 
   unitModalTitle: {
@@ -436,7 +448,7 @@ export const styles = StyleSheet.create({
     padding: 8,
   },
 
-  // Estilos para el campo de búsqueda
+  // Búsqueda de Unidades
   unitSearchContainer: {
     paddingHorizontal: 20,
     paddingVertical: 15,
@@ -462,11 +474,15 @@ export const styles = StyleSheet.create({
     paddingVertical: 0,
   },
 
-  // Estilos para la lista de unidades
+  // Lista de Unidades
   unitsList: {
     flex: 1,
     paddingHorizontal: 20,
-    
+  },
+
+  unitsListContainer: {
+    flex: 1,
+    paddingBottom: 20,
   },
 
   unitItem: {
@@ -480,11 +496,6 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     borderWidth: 1,
     borderColor: '#F3F4F6',
-  },
-
-  unitsListContainer: {
-    flex: 1,
-    paddingBottom: 20,
   },
 
   unitItemLeft: {
@@ -529,5 +540,33 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9CA3AF',
     textAlign: 'center',
+  },
+
+  dropdown: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    marginBottom: 25,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dropdownText: {
+    color: '#999',
+    fontSize: 14,
+  },
+
+  toggleButton: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+  },
+  toggleButtonText: {
+    fontSize: 12,
+    color: '#666',
   },
 });

@@ -266,14 +266,14 @@ const Profile = () => {
                 </View>
 
                 <View style={styles.infoItem}>
-                  <Smartphone size={16} color="#999" />
+                  <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {userDetails.codlan || '-'}
                   </Text>
                 </View>
 
                 <View style={styles.infoItem}>
-                  <Clipboard size={16} color="#999" />
+                  <Clipboard size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {userDetails.empresa || '-'}
                   </Text>

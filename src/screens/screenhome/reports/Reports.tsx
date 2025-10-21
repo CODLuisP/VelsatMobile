@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   TextInput,
   Platform,
@@ -44,11 +43,7 @@ import RNFetchBlob from 'react-native-blob-util';
 import Share from 'react-native-share';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
-interface ReportType {
-  id: number;
-  name: string;
-  icon: React.ComponentType<any>;
-}
+import ReportSlider, { ReportType } from '../../../components/ReportSlider';
 
 interface Unit {
   id: number;
@@ -85,15 +80,10 @@ const Reports: React.FC = () => {
   const [tempStartDate, setTempStartDate] = useState<Date>(new Date());
   const [tempEndDate, setTempEndDate] = useState<Date>(new Date());
 
-  const [showStartDatePicker, setShowStartDatePicker] =
-    useState<boolean>(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
-  const [currentPickerMode, setCurrentPickerMode] = useState<'date' | 'time'>(
-    'date',
-  );
-  const [currentPickerType, setCurrentPickerType] = useState<'start' | 'end'>(
-    'start',
-  );
+  const [currentPickerMode, setCurrentPickerMode] = useState<'date' | 'time'>('date');
+  const [currentPickerType, setCurrentPickerType] = useState<'start' | 'end'>('start');
 
   const [startDateSelected, setStartDateSelected] = useState<boolean>(false);
   const [endDateSelected, setEndDateSelected] = useState<boolean>(false);
@@ -102,6 +92,47 @@ const Reports: React.FC = () => {
   const [loadingUnits, setLoadingUnits] = useState<boolean>(false);
 
   const [downloadingExcel, setDownloadingExcel] = useState<boolean>(false);
+
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  // Definición de tipos de reportes
+  const reportTypes: ReportType[] = [
+    {
+      id: 0,
+      name: 'Reporte General',
+      icon: BarChart3,
+      description: 'Análisis completo de la actividad',
+      gradient: ['#94550dff', '#dc5400ff'],
+    },
+    {
+      id: 1,
+      name: 'Reporte de Paradas',
+      icon: Hand,
+      description: 'Detalle de paradas realizadas',
+      gradient: ['#94550dff', '#dc5400ff'],
+    },
+    {
+      id: 2,
+      name: 'Reporte de Velocidad',
+      icon: Gauge,
+      description: 'Control de excesos de velocidad',
+      gradient: ['#94550dff', '#dc5400ff'],
+    },
+    {
+      id: 3,
+      name: 'Reporte de Kilometraje',
+      icon: Route,
+      description: 'Distancias recorridas',
+      gradient: ['#ae6512ff', '#dc5400ff'],
+    },
+    {
+      id: 4,
+      name: 'Reporte de Recorrido',
+      icon: FileText,
+      description: 'Rutas y trayectos completos',
+      gradient: ['#94550dff', '#dc5400ff'],
+    },
+  ];
 
   const fetchUnits = async () => {
     const username = user?.username;
@@ -151,19 +182,13 @@ const Reports: React.FC = () => {
     }
   }, [selectedReport]);
 
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  const reportTypes: ReportType[] = [
-    { id: 0, name: 'General', icon: BarChart3 },
-    { id: 1, name: 'Paradas', icon: Hand },
-    { id: 2, name: 'Velocidad', icon: Gauge },
-    { id: 3, name: 'Kilometraje', icon: Route },
-    { id: 4, name: 'Recorrido', icon: FileText },
-  ];
+  const handleSelectReport = (reportId: number) => {
+    setSelectedReport(reportId);
+  };
 
   const handleDownloadExcel = async () => {
     const validation = validateForm();
@@ -202,23 +227,23 @@ const Reports: React.FC = () => {
       let reportName = '';
 
       switch (selectedReport) {
-        case 0: // General
+        case 0:
           apiEndpoint = 'downloadExcelG';
           reportName = 'general';
           break;
-        case 1: // Paradas
+        case 1:
           apiEndpoint = 'downloadExcelS';
           reportName = 'paradas';
           break;
-        case 2: // Velocidad
+        case 2:
           apiEndpoint = 'downloadExcelV';
           reportName = 'velocidad';
           break;
-        case 3: // Kilometraje
+        case 3:
           apiEndpoint = 'downloadExcelK';
           reportName = 'kilometraje';
           break;
-        case 4: // Recorrido
+        case 4:
           apiEndpoint = 'downloadExcelT';
           reportName = 'recorrido';
           break;
@@ -227,7 +252,6 @@ const Reports: React.FC = () => {
           reportName = 'general';
       }
 
-    
       let url = '';
 
       if (selectedReport === 2) {
@@ -280,7 +304,6 @@ const Reports: React.FC = () => {
           [{ text: 'OK' }]
         );
       }
-
     } catch (error) {
       console.error('Error al descargar:', error);
       setDownloadingExcel(false);
@@ -491,8 +514,6 @@ const Reports: React.FC = () => {
     setSpeedValue(numericValue);
   };
 
-
-
   const requestStoragePermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -545,29 +566,6 @@ const Reports: React.FC = () => {
     }
 
     return { isValid: true, message: '' };
-  };
-
-  const renderReportType = (report: ReportType, index: number) => {
-    const IconComponent = report.icon;
-    const isSelected = selectedReport === report.id;
-
-    return (
-      <TouchableOpacity
-        key={report.id}
-        style={styles.reportTypeContainer}
-        onPress={() => setSelectedReport(report.id)}
-      >
-        <View
-          style={[
-            styles.reportIcon,
-            isSelected && styles.reportIconSelectedLarge,
-          ]}
-        >
-          <IconComponent size={28} color="#666" />
-        </View>
-        <Text style={styles.reportText}>{report.name}</Text>
-      </TouchableOpacity>
-    );
   };
 
   const renderDateTimePicker = () => {
@@ -641,12 +639,12 @@ const Reports: React.FC = () => {
   const topSpace = insets.top + 5;
 
   return (
-        <LinearGradient
-          colors={['#00296b', '#1e3a8a', '#00296b']}
-          style={[styles.container, { paddingBottom: bottomSpace }]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-        >
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
@@ -655,27 +653,24 @@ const Reports: React.FC = () => {
           <Text style={styles.headerTitle}>Seleccione tipo de reporte</Text>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
-        >
-          {reportTypes.map((report, index) => renderReportType(report, index))}
-        </ScrollView>
+        <ReportSlider
+          reports={reportTypes}
+          selectedReportId={selectedReport}
+          onSelectReport={handleSelectReport}
+        />
       </View>
 
       <KeyboardAwareScrollView
         style={styles.content}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
         enableOnAndroid={true}
         enableAutomaticScroll={true}
         extraScrollHeight={30}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         bounces={false}
-      >        
-      
-      <Text style={styles.sectionTitle}>Unidad</Text>
+      >
+        <Text style={styles.sectionTitle}>Unidad</Text>
         <TouchableOpacity
           style={[
             styles.unitInputContainer,
@@ -699,7 +694,7 @@ const Reports: React.FC = () => {
                   <X size={18} color="#999" />
                 </TouchableOpacity>
               </View>
-            ) : (
+              ) : (
               <Text style={styles.unitInputPlaceholder}>
                 {loadingUnits ? 'Cargando unidades...' : 'Seleccione unidad'}
               </Text>
@@ -708,7 +703,6 @@ const Reports: React.FC = () => {
           <ChevronDown size={20} color="#999" />
         </TouchableOpacity>
 
-        {/* Fecha Inicial */}
         <Text style={styles.sectionTitle}>Fecha Inicial</Text>
         <TouchableOpacity
           style={styles.dateInput}
@@ -725,7 +719,6 @@ const Reports: React.FC = () => {
           <Calendar size={20} color="#999" />
         </TouchableOpacity>
 
-        {/* Fecha Final */}
         <Text style={styles.sectionTitle}>Fecha Final</Text>
         <TouchableOpacity style={styles.dateInput} onPress={handleEndDatePress}>
           <Text
@@ -767,7 +760,6 @@ const Reports: React.FC = () => {
             </View>
           </View>
 
-          {/* Segunda fila - Toggle */}
           <View style={styles.toggleRow}>
             <View style={styles.toggleLabelContainer}>
               <Text style={styles.toggleLabel}>Todas las unidades</Text>
@@ -803,10 +795,10 @@ const Reports: React.FC = () => {
             style={[
               styles.excelButton,
               downloadingExcel && { opacity: 0.7 },
-              selectedReport === 4 && { opacity: 0.5, backgroundColor: '#ccc' }  // Agregar esta línea
+              selectedReport === 4 && { opacity: 0.5, backgroundColor: '#ccc' },
             ]}
             onPress={handleDownloadExcel}
-            disabled={downloadingExcel || selectedReport === 4}  // Modificar esta línea
+            disabled={downloadingExcel || selectedReport === 4}
           >
             {downloadingExcel ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
