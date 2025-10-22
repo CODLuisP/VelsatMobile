@@ -200,9 +200,9 @@ statGradient: {
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#f8fafc',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#dee2e6',
   },
 
   badgeContainer: {
