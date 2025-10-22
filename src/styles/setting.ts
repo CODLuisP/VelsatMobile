@@ -46,10 +46,10 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   iconCircle: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     borderRadius: 40,
-    backgroundColor: '#fff5f0',
+    backgroundColor: '#f7e4daff',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#e36414',
@@ -92,8 +92,8 @@ export const styles = StyleSheet.create({
 
   navOptionActive: {
     backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#1e3a8a',
+    borderWidth: 1,
+    borderColor: '#e36414',
   },
 
   navOptionText: {

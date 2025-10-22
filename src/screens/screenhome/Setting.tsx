@@ -385,7 +385,7 @@ const Setting = () => {
 const renderPasswordForm = () => (
   <KeyboardAwareScrollView
     style={styles.scrollContent}
-    contentContainerStyle={{ paddingBottom: 120 }}
+    contentContainerStyle={{ paddingBottom: 20 }}
     enableOnAndroid={true}
     enableAutomaticScroll={true}
     extraScrollHeight={30}
@@ -397,7 +397,7 @@ const renderPasswordForm = () => (
       <View style={styles.headerSection}>
         <View style={styles.iconWrapper}>
           <View style={styles.iconCircle}>
-            <Lock size={32} color="#e36414" strokeWidth={2} />
+            <Lock size={30} color="#e36414" strokeWidth={2} />
           </View>
         </View>
         <Text style={styles.headerTitleForm}>¿Olvidaste tu contraseña?</Text>
@@ -531,7 +531,7 @@ const renderUpdateForm = () => (
       <View style={styles.headerSection}>
         <View style={styles.iconWrapper}>
           <View style={styles.iconCircle}>
-            <RefreshCw size={32} color="#e36414" strokeWidth={2} />
+            <RefreshCw size={30} color="#e36414" strokeWidth={2} />
           </View>
         </View>
         <Text style={styles.headerTitleForm}>
