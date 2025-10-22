@@ -315,16 +315,18 @@ const StopReport = () => {
 
               {/* Columna derecha - Consejo */}
               <View style={inlineStyles.rightColumn}>
-                <View style={inlineStyles.tipIconWrapper}>
-                  <Info size={18} color="#0891b2" />
-                </View>
-                <View style={inlineStyles.tipTextContainer}>
-                  <Text style={inlineStyles.tipTitle}>💡 Consejo</Text>
-                  <Text style={inlineStyles.tipText}>
-                    Toca cualquier parada para ver la ubicación en vista 3D
-                  </Text>
-                </View>
-              </View>
+                          <View style={inlineStyles.tipIconWrapper}>
+                            <Info size={18} color="#0891b2" />
+                          </View>
+                          <View style={inlineStyles.tipTextContainer}>
+                            <Text style={inlineStyles.tipTitle}>Consejo</Text>
+                            <Text style={inlineStyles.tipText}>
+                              Toca cualquier registro para vista 3D
+                            </Text>
+                          </View>
+                        </View>
+
+
             </View>
 
             {/* Lista de reportes */}
@@ -369,7 +371,8 @@ const inlineStyles = {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: '#f0f9ff',
-    padding: 14,
+   paddingHorizontal: 10,
+    paddingVertical: 10
   },
   statsIconContainer: {
     width: 42,
@@ -403,7 +406,8 @@ const inlineStyles = {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: '#ecfeff',
-    padding: 14,
+     paddingHorizontal: 10,
+    paddingVertical: 10
   },
   tipIconWrapper: {
     width: 32,

@@ -119,10 +119,12 @@ export const styles = StyleSheet.create({
     elevation: 4,
   },
 
-  statGradient: {
-    padding: 10,
-    minHeight: 130,
-  },
+statGradient: {
+  padding: 10,
+  minHeight: 110,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
 
   statIconContainer: {
     width: 30,
@@ -144,7 +146,7 @@ export const styles = StyleSheet.create({
   },
 
   statValue: {
-    fontSize: 22,
+    fontSize: 15,
     fontWeight: '800',
     color: '#fff',
     marginBottom: 4,
@@ -170,7 +172,7 @@ export const styles = StyleSheet.create({
   },
 
   dividerText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: '#64748b',
     marginHorizontal: 12,

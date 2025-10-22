@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   Linking,
+  Platform,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -332,93 +333,153 @@ const SpeedReport = () => {
           </View>
         ) : (
           <>
-            {/* Total de Registros - LinearGradient */}
-            <LinearGradient
-              colors={['#f59e0b', '#d97706']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={inlineStyles.totalCard}
-            >
-              <View style={inlineStyles.totalIconWrapper}>
-                <BarChart3 size={22} color="#fff" />
+            {/* Total de Registros - Condicional Android/iOS */}
+            {Platform.OS === 'android' ? (
+              <LinearGradient
+                colors={['#f59e0b', '#d97706']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={inlineStyles.totalCard}
+              >
+                <View style={inlineStyles.totalIconWrapper}>
+                  <BarChart3 size={22} color="#fff" />
+                </View>
+                <View style={inlineStyles.totalContent}>
+                  <Text style={inlineStyles.totalLabel}>Total de Registros</Text>
+                  <Text style={inlineStyles.totalValue}>{reportData.length} eventos</Text>
+                </View>
+              </LinearGradient>
+            ) : (
+              <View style={[inlineStyles.totalCard, inlineStyles.totalCardIOS]}>
+                <View style={inlineStyles.totalIconWrapper}>
+                  <BarChart3 size={22} color="#fff" />
+                </View>
+                <View style={inlineStyles.totalContent}>
+                  <Text style={inlineStyles.totalLabel}>Total de Registros</Text>
+                  <Text style={inlineStyles.totalValue}>{reportData.length} eventos</Text>
+                </View>
               </View>
-              <View style={inlineStyles.totalContent}>
-                <Text style={inlineStyles.totalLabel}>Total de Registros</Text>
-                <Text style={inlineStyles.totalValue}>{reportData.length} eventos</Text>
-              </View>
-            </LinearGradient>
+            )}
 
-            {/* Estadísticas de Velocidad - 3 en una fila con LinearGradient */}
+            {/* Estadísticas de Velocidad - 3 en una fila Condicional Android/iOS */}
             <View style={inlineStyles.speedStatsRow}>
               {/* Velocidad Máxima */}
-              <LinearGradient
-                colors={['#ef4444', '#dc2626']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={inlineStyles.speedCard}
-              >
-                <View style={inlineStyles.speedIconContainer}>
-                  <View style={inlineStyles.speedIcon}>
-                    <TrendingUp size={18} color="#fff" />
+              {Platform.OS === 'android' ? (
+                <LinearGradient
+                  colors={['#ef4444', '#dc2626']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={inlineStyles.speedCard}
+                >
+                  <View style={inlineStyles.speedIconContainer}>
+                    <View style={inlineStyles.speedIcon}>
+                      <TrendingUp size={18} color="#fff" />
+                    </View>
+                  </View>
+                  <View style={inlineStyles.speedContent}>
+                    <Text style={inlineStyles.speedLabel}>Vel. Máxima</Text>
+                    <Text style={inlineStyles.speedValue}>
+                      {speedStats.max} km/h
+                    </Text>
+                    <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
+                  </View>
+                </LinearGradient>
+              ) : (
+                <View style={[inlineStyles.speedCard, inlineStyles.speedCardMaxIOS]}>
+                  <View style={inlineStyles.speedIconContainer}>
+                    <View style={inlineStyles.speedIcon}>
+                      <TrendingUp size={18} color="#fff" />
+                    </View>
+                  </View>
+                  <View style={inlineStyles.speedContent}>
+                    <Text style={inlineStyles.speedLabel}>Vel. Máxima</Text>
+                    <Text style={inlineStyles.speedValue}>
+                      {speedStats.max} km/h
+                    </Text>
+                    <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
                   </View>
                 </View>
-                <View style={inlineStyles.speedContent}>
-                  <Text style={inlineStyles.speedLabel}>Vel. Máxima</Text>
-                  <Text style={inlineStyles.speedValue}>
-                    {speedStats.max} km/h
-                  </Text>
-                  <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
-                </View>
-              </LinearGradient>
+              )}
 
               {/* Velocidad Mínima */}
-              <LinearGradient
-                colors={['#3b82f6', '#2563eb']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={inlineStyles.speedCard}
-              >
-                <View style={inlineStyles.speedIconContainer}>
-                  <View style={inlineStyles.speedIcon}>
-                    <TrendingDown size={18} color="#fff" />
+              {Platform.OS === 'android' ? (
+                <LinearGradient
+                  colors={['#3b82f6', '#2563eb']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={inlineStyles.speedCard}
+                >
+                  <View style={inlineStyles.speedIconContainer}>
+                    <View style={inlineStyles.speedIcon}>
+                      <TrendingDown size={18} color="#fff" />
+                    </View>
+                  </View>
+                  <View style={inlineStyles.speedContent}>
+                    <Text style={inlineStyles.speedLabel}>Vel. Mínima</Text>
+                    <Text style={inlineStyles.speedValue}>
+                      {speedStats.min} km/h
+                    </Text>
+                    <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
+                  </View>
+                </LinearGradient>
+              ) : (
+                <View style={[inlineStyles.speedCard, inlineStyles.speedCardMinIOS]}>
+                  <View style={inlineStyles.speedIconContainer}>
+                    <View style={inlineStyles.speedIcon}>
+                      <TrendingDown size={18} color="#fff" />
+                    </View>
+                  </View>
+                  <View style={inlineStyles.speedContent}>
+                    <Text style={inlineStyles.speedLabel}>Vel. Mínima</Text>
+                    <Text style={inlineStyles.speedValue}>
+                      {speedStats.min} km/h
+                    </Text>
+                    <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
                   </View>
                 </View>
-                <View style={inlineStyles.speedContent}>
-                  <Text style={inlineStyles.speedLabel}>Vel. Mínima</Text>
-                  <Text style={inlineStyles.speedValue}>
-                    {speedStats.min} km/h
-                  </Text>
-                  <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
-                </View>
-              </LinearGradient>
+              )}
 
               {/* Velocidad Promedio */}
-              <LinearGradient
-                colors={['#10b981', '#059669']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={inlineStyles.speedCard}
-              >
-                <View style={inlineStyles.speedIconContainer}>
-                  <View style={inlineStyles.speedIcon}>
-                    <Activity size={18} color="#fff" />
+              {Platform.OS === 'android' ? (
+                <LinearGradient
+                  colors={['#10b981', '#059669']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={inlineStyles.speedCard}
+                >
+                  <View style={inlineStyles.speedIconContainer}>
+                    <View style={inlineStyles.speedIcon}>
+                      <Activity size={18} color="#fff" />
+                    </View>
+                  </View>
+                  <View style={inlineStyles.speedContent}>
+                    <Text style={inlineStyles.speedLabel}>Vel. Promedio</Text>
+                    <Text style={inlineStyles.speedValue}>
+                      {speedStats.average} km/h
+                    </Text>
+                    <Text style={inlineStyles.speedUnit}>General</Text>
+                  </View>
+                </LinearGradient>
+              ) : (
+                <View style={[inlineStyles.speedCard, inlineStyles.speedCardAvgIOS]}>
+                  <View style={inlineStyles.speedIconContainer}>
+                    <View style={inlineStyles.speedIcon}>
+                      <Activity size={18} color="#fff" />
+                    </View>
+                  </View>
+                  <View style={inlineStyles.speedContent}>
+                    <Text style={inlineStyles.speedLabel}>Vel. Promedio</Text>
+                    <Text style={inlineStyles.speedValue}>
+                      {speedStats.average} km/h
+                    </Text>
+                    <Text style={inlineStyles.speedUnit}>General</Text>
                   </View>
                 </View>
-                <View style={inlineStyles.speedContent}>
-                  <Text style={inlineStyles.speedLabel}>Vel. Promedio</Text>
-                  <Text style={inlineStyles.speedValue}>
-                    {speedStats.average} km/h
-                  </Text>
-                  <Text style={inlineStyles.speedUnit}>General</Text>
-                </View>
-              </LinearGradient>
+              )}
             </View>
 
-            {/* Card de Consejo - LinearGradient */}
-            <View
-         
-              style={inlineStyles.tipCard}
-            >
+            {/* Card de Consejo */}
+            <View style={inlineStyles.tipCard}>
               <View style={inlineStyles.tipIconWrapper}>
                 <Info size={18} color="#0891b2" />
               </View>
@@ -448,7 +509,7 @@ const SpeedReport = () => {
 
 // Estilos inline para los nuevos componentes
 const inlineStyles = {
-  // Total de Registros - LinearGradient
+  // Total de Registros
   totalCard: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -465,6 +526,9 @@ const inlineStyles = {
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
+  },
+  totalCardIOS: {
+    backgroundColor: '#f59e0b',
   },
   totalIconWrapper: {
     width: 46,
@@ -491,7 +555,7 @@ const inlineStyles = {
     color: '#fff',
   },
 
-  // Estadísticas de Velocidad - 3 en una fila con LinearGradient
+  // Estadísticas de Velocidad
   speedStatsRow: {
     flexDirection: 'row' as const,
     justifyContent: 'space-between' as const,
@@ -511,6 +575,15 @@ const inlineStyles = {
     shadowOpacity: 0.15,
     shadowRadius: 3,
     elevation: 4,
+  },
+  speedCardMaxIOS: {
+    backgroundColor: '#ef4444',
+  },
+  speedCardMinIOS: {
+    backgroundColor: '#3b82f6',
+  },
+  speedCardAvgIOS: {
+    backgroundColor: '#10b981',
   },
   speedIconContainer: {
     alignItems: 'center' as const,
@@ -550,7 +623,7 @@ const inlineStyles = {
     opacity: 0.9,
   },
 
-  // Card de Consejo - LinearGradient
+  // Card de Consejo
   tipCard: {
     flexDirection: 'row' as const,
     marginHorizontal: 15,
@@ -558,7 +631,6 @@ const inlineStyles = {
     padding: 12,
     borderRadius: 14,
     backgroundColor: '#ecfeff',
-
   },
   tipIconWrapper: {
     width: 30,

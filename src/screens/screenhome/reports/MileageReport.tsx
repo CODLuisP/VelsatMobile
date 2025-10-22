@@ -6,6 +6,7 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -55,6 +56,29 @@ interface Statistics {
   averageMileage: number;
   totalVehicles: number;
 }
+
+// Componente wrapper condicional para gradientes
+const GradientWrapper: React.FC<{
+  colors: string[];
+  style: any;
+  children: React.ReactNode;
+}> = ({ colors, style, children }) => {
+  if (Platform.OS === 'ios') {
+    // Para iOS, usar View con color sólido (el primer color del gradiente)
+    return <View style={[style, { backgroundColor: colors[0] }]}>{children}</View>;
+  }
+  // Para Android, usar LinearGradient
+  return (
+    <LinearGradient
+      colors={colors}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={style}
+    >
+      {children}
+    </LinearGradient>
+  );
+};
 
 const MileageReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -198,17 +222,12 @@ const MileageReport = () => {
 
     return (
       <View style={styles.statisticsContainer}>
-        <View style={styles.statisticsHeader}>
-          <BarChart3 size={20} color="#4285f4" />
-          <Text style={styles.statisticsTitle}>Estadísticas Generales</Text>
-        </View>
+   
 
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <LinearGradient
+            <GradientWrapper
               colors={['#10b981', '#059669']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
               style={styles.statGradient}
             >
               <View style={styles.statIconContainer}>
@@ -221,14 +240,12 @@ const MileageReport = () => {
               <Text style={styles.statSubtext}>
                 {statistics.maxMileage?.unitName}
               </Text>
-            </LinearGradient>
+            </GradientWrapper>
           </View>
 
           <View style={styles.statCard}>
-            <LinearGradient
+            <GradientWrapper
               colors={['#ff9f1c', '#d97706']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
               style={styles.statGradient}
             >
               <View style={styles.statIconContainer}>
@@ -241,16 +258,14 @@ const MileageReport = () => {
               <Text style={styles.statSubtext}>
                 {statistics.minMileage?.unitName}
               </Text>
-            </LinearGradient>
+            </GradientWrapper>
           </View>
         </View>
 
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <LinearGradient
+            <GradientWrapper
               colors={['#4285f4', '#1967d2']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
               style={styles.statGradient}
             >
               <View style={styles.statIconContainer}>
@@ -261,14 +276,12 @@ const MileageReport = () => {
               <Text style={styles.statSubtext}>
                 {statistics.totalVehicles} unidades
               </Text>
-            </LinearGradient>
+            </GradientWrapper>
           </View>
 
           <View style={styles.statCard}>
-            <LinearGradient
+            <GradientWrapper
               colors={['#8b5cf6', '#7c3aed']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
               style={styles.statGradient}
             >
               <View style={styles.statIconContainer}>
@@ -279,7 +292,7 @@ const MileageReport = () => {
                 {statistics.averageMileage} km
               </Text>
               <Text style={styles.statSubtext}>por unidad</Text>
-            </LinearGradient>
+            </GradientWrapper>
           </View>
         </View>
 
@@ -300,14 +313,12 @@ const MileageReport = () => {
     >
       <View style={styles.cardHeader}>
         <View style={styles.badgeContainer}>
-          <LinearGradient
+          <GradientWrapper
             colors={['#ff8c00', '#ff6b00']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
             style={styles.itemBadge}
           >
-          <Text style={styles.itemBadgeText}>N° {item.itemNumber}</Text>
-          </LinearGradient>
+            <Text style={styles.itemBadgeText}>N° {item.itemNumber}</Text>
+          </GradientWrapper>
         </View>
 
         <View style={styles.unitInfoContainer}>
@@ -356,11 +367,9 @@ const MileageReport = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <LinearGradient
+    <GradientWrapper
       colors={['#00296b', '#1e3a8a', '#00296b']}
       style={[styles.container, { paddingBottom: bottomSpace }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerContent}>
@@ -422,7 +431,7 @@ const MileageReport = () => {
           />
         )}
       </View>
-    </LinearGradient>
+    </GradientWrapper>
   );
 };
 

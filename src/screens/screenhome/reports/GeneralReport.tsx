@@ -257,7 +257,7 @@ const GeneralReport = () => {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-     
+
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
@@ -333,14 +333,14 @@ const GeneralReport = () => {
                   <Info size={18} color="#0891b2" />
                 </View>
                 <View style={inlineStyles.tipTextContainer}>
-                  <Text style={inlineStyles.tipTitle}>💡 Consejo</Text>
+                  <Text style={inlineStyles.tipTitle}>Consejo</Text>
                   <Text style={inlineStyles.tipText}>
-                    Toca cualquier registro para ver la ubicación en vista 3D
+                    Toca cualquier registro para vista 3D
                   </Text>
                 </View>
               </View>
 
-              
+
             </View>
 
             {/* Lista de reportes */}
@@ -363,7 +363,6 @@ const GeneralReport = () => {
 const inlineStyles = {
   statsCard: {
     flexDirection: 'row' as const,
-    backgroundColor: 'transparent',
     marginHorizontal: 15,
     marginTop: 15,
     marginBottom: 10,
@@ -379,13 +378,17 @@ const inlineStyles = {
     shadowRadius: 4,
     elevation: 4,
     overflow: 'hidden' as const,
+
   },
   leftColumn: {
     flex: 1,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: '#f0f9ff',
-    padding: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 10
+
+
   },
   statsIconContainer: {
     width: 42,
@@ -419,7 +422,11 @@ const inlineStyles = {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: '#ecfeff',
-    padding: 14,
+
+    paddingHorizontal: 10,
+
+    paddingVertical: 10
+
   },
   tipIconWrapper: {
     width: 32,
