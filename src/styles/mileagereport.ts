@@ -296,8 +296,7 @@ statGradient: {
     backgroundColor: '#f8fafc',
     borderRadius: 12,
     padding: 12,
-    borderWidth: 1,
-    borderColor: '#e8f0fe',
+ 
     marginBottom: 8,
     marginTop:8
   },
@@ -330,7 +329,7 @@ statGradient: {
   },
 
   mileageValue: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '800',
     color: '#4285f4',
     lineHeight: 28,

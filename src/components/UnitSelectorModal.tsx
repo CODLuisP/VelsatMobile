@@ -7,8 +7,10 @@ import {
   TextInput,
   FlatList,
 } from 'react-native';
-import { Search, X, Truck } from 'lucide-react-native';
+import { Search, X, Truck, Car } from 'lucide-react-native';
 import { styles } from '../styles/reports';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getBottomSpace, useNavigationMode } from '../hooks/useNavigationMode';
 
 interface Unit {
   id: number;
@@ -31,6 +33,16 @@ const UnitSelectorModal: React.FC<UnitSelectorModalProps> = ({
   const [searchText, setSearchText] = useState<string>('');
   const [filteredUnits, setFilteredUnits] = useState<Unit[]>(units);
 
+    const insets = useSafeAreaInsets();
+    const navigationDetection = useNavigationMode();
+    const bottomSpace = getBottomSpace(
+      insets,
+      navigationDetection.hasNavigationBar,
+    );
+
+      const topSpace = insets.top + 5;
+
+
   useEffect(() => {
     if (searchText.trim() === '') {
       setFilteredUnits(units);
@@ -51,7 +63,7 @@ const UnitSelectorModal: React.FC<UnitSelectorModalProps> = ({
     >
       <View style={styles.unitItemLeft}>
         <View style={styles.unitIconContainer}>
-          <Truck size={20} color="#007AFF" />
+          <Car size={20} color="#007AFF" />
         </View>
         <View style={styles.unitInfo}>
           <Text style={styles.unitName}>{item.plate}</Text>
@@ -67,8 +79,8 @@ const UnitSelectorModal: React.FC<UnitSelectorModalProps> = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.unitModalContainer}>
-        <View style={styles.unitModalContent}>
+      <View style={[styles.unitModalContainer,  { paddingTop: 0 }]}>
+        <View style={[styles.unitModalContent,{ paddingTop: topSpace -35}]} >
           <View style={styles.unitModalHeader}>
             <Text style={styles.unitModalTitle}>Seleccionar Unidad</Text>
             <TouchableOpacity

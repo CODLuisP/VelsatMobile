@@ -347,9 +347,7 @@ const MileageReport = () => {
 
         <View style={styles.mileageSection}>
           <View style={styles.mileageCard}>
-            <View style={styles.mileageIconContainer}>
-              <Navigation size={18} color="#4285f4" />
-            </View>
+           
             <View style={styles.mileageInfo}>
               <Text style={styles.mileageLabel}>Distancia recorrida</Text>
               <View style={styles.mileageValueContainer}>

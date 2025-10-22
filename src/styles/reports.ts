@@ -414,9 +414,8 @@ export const styles = StyleSheet.create({
 
   unitModalContent: {
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: '80%',
+ 
+    height: '100%',
     paddingTop: 20,
     flex: 1,
   },
