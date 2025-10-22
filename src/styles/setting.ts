@@ -3,10 +3,8 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
 
-  // Header styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -16,8 +14,7 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     flex: 1,
-    marginTop: 0,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -25,12 +22,51 @@ export const styles = StyleSheet.create({
     marginRight: 15,
   },
 
+   headerSection: {
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingHorizontal: 20,
+  },
+
+    iconWrapper: {
+    marginBottom: 20,
+  },
   headerTitle: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
 
+
+    headerTitleForm: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#fff5f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#e36414',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+
+
+   headerSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 15,
+    paddingHorizontal: 10,
+  },
   navigationContainer: {
     paddingHorizontal: 20,
     marginBottom: 20,
@@ -79,17 +115,15 @@ export const styles = StyleSheet.create({
 
   contentContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
 
   formContainer: {
     flex: 1,
-    paddingHorizontal: 25,
-    paddingTop: 30,
-    justifyContent: 'flex-start',
+    paddingTop: 15,
   },
+
 
   infoSection: {
     marginBottom: 10,
@@ -107,37 +141,30 @@ export const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 20,
   },
-
-  inputSection: {
-    marginBottom: 30,
-    minHeight: 200,
+ inputSection: {
+    paddingHorizontal: 20,
   },
 
+    inputGroup: {
+    marginBottom: 20,
+  },
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
-    marginTop: 15,
   },
 
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: 15,
-    paddingVertical: 15,
+    paddingVertical: 12,
     fontSize: 14,
     color: '#333',
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+ 
   },
 
   passwordContainer: {
@@ -147,27 +174,20 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+
   },
 
   passwordInput: {
     flex: 1,
     paddingHorizontal: 15,
-    paddingVertical: 15,
-    fontSize: 16,
+    paddingVertical: 12,
+    fontSize: 14,
     color: '#333',
   },
 
   eyeButton: {
-    paddingHorizontal: 15,
-    paddingVertical: 15,
+    padding: 8,
+    marginLeft: 4,
   },
 
   primaryButton: {
@@ -176,14 +196,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 0,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 6,
+  
   },
 
   primaryButtonText: {
@@ -191,28 +204,60 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-
   buttonWrapper: {
-    marginTop: 0,
+    paddingHorizontal: 20,
+    marginTop: 8,
   },
 
   gradientButton: {
-    width: '100%',
-    height: 48,
+    flexDirection: 'row',
+    height: 54,
     borderRadius: 12,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: '#e36414',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
 
   requiredAsterisk: {
     color: '#e36414',
   },
+
+   inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#e8e8e8',
+    paddingHorizontal: 14,
+    height: 52,
+  },
+
+inputIcon: {
+    marginRight: 10,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1a1a1a',
+    height: '100%',
+  },
+
+  
+
+
 });
 
 // Estilos para AlertPro (fuera de StyleSheet.create)
