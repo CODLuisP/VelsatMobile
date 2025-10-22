@@ -496,7 +496,7 @@ const renderPasswordForm = () => (
           disabled={loadingPassword}
         >
           <LinearGradient
-            colors={loadingPassword ? ['#ccc', '#999'] : ['#e36414', '#ff8c42']}
+            colors={loading ? ['#ccc', '#999'] : ['#fb5607', '#f26419']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.gradientButton}
@@ -519,7 +519,7 @@ const renderPasswordForm = () => (
 const renderUpdateForm = () => (
   <KeyboardAwareScrollView
     style={styles.scrollContent}
-    contentContainerStyle={{ paddingBottom: 120 }}
+    contentContainerStyle={{ paddingBottom: 20 }}
     enableOnAndroid={true}
     enableAutomaticScroll={true}
     extraScrollHeight={30}
@@ -538,8 +538,7 @@ const renderUpdateForm = () => (
           {tipo === 'n' ? '¿Nuevo correo o celular?' : '¿Nuevo usuario o celular?'}
         </Text>
         <Text style={styles.headerSubtitle}>
-          No te preocupes, en este apartado podrás actualizar estos datos rápidamente; si
-          deseas cambiar otra información, por favor contáctanos.
+         Actualiza tus datos fácilmente aquí. Para otros cambios, contáctanos.
         </Text>
       </View>
 
@@ -619,7 +618,7 @@ const renderUpdateForm = () => (
           disabled={loading}
         >
           <LinearGradient
-            colors={loading ? ['#ccc', '#999'] : ['#e36414', '#ff8c42']}
+            colors={loading ? ['#ccc', '#999'] : ['#fb5607', '#f26419']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.gradientButton}
