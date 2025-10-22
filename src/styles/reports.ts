@@ -137,9 +137,8 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 20,
+    marginBottom: 10,
     letterSpacing: -0.3,
-    textAlign: 'center',
   },
 
   // Unidad Input
@@ -212,9 +211,7 @@ export const styles = StyleSheet.create({
 
   // Opciones Específicas
   specificOptionsContainer: {
-    backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 20,
     marginVertical: 8,
     shadowColor: '#000',
     marginTop: 10,
@@ -223,7 +220,7 @@ export const styles = StyleSheet.create({
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'white',
     borderRadius: 12,
     padding: 8,
     marginBottom: 8,
@@ -281,7 +278,7 @@ export const styles = StyleSheet.create({
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'white',
     borderRadius: 12,
     padding: 10,
     marginBottom: 8,
@@ -309,9 +306,10 @@ export const styles = StyleSheet.create({
   toggleSwitch: {
     width: 52,
     height: 28,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: '#D1D5DB',
-    padding: 2,
+    padding: 3,
+    
     justifyContent: 'center',
   },
 
@@ -324,11 +322,7 @@ export const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+   
   },
 
   // Botones
@@ -339,14 +333,14 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   excelButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#008000',
     paddingVertical: 15,
     paddingHorizontal: 25,
     borderRadius: 8,
     flex: 1,
   },
   showButton: {
-    backgroundColor: '#ff6b35',
+    backgroundColor: '#ff5400',
     paddingVertical: 15,
     paddingHorizontal: 25,
     borderRadius: 8,

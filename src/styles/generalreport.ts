@@ -3,11 +3,9 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
 
   header: {
-    backgroundColor: '#1e3a8a',
     paddingBottom: 20,
     paddingHorizontal: 20,
 
@@ -71,7 +69,8 @@ reportItemLast: {
   },
   reportsListContent: {
     paddingVertical: 10,
-    paddingHorizontal:10
+    paddingHorizontal:10,
+    marginTop:-20
   },
 
   // Report item styles

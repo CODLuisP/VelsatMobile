@@ -16,6 +16,11 @@ import {
   Calendar,
   AlertCircle,
   FileX,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Info,
+  BarChart3,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -48,6 +53,12 @@ interface ReportItem {
   longitude: number;
 }
 
+interface SpeedStats {
+  max: number;
+  min: number;
+  average: number;
+}
+
 const SpeedReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'SpeedReport'>>();
@@ -62,6 +73,11 @@ const SpeedReport = () => {
   const { user, server } = useAuthStore();
 
   const [reportData, setReportData] = useState<ReportItem[]>([]);
+  const [speedStats, setSpeedStats] = useState<SpeedStats>({
+    max: 0,
+    min: 0,
+    average: 0,
+  });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +91,24 @@ const SpeedReport = () => {
     fetchReportData();
   }, []);
 
+  const calculateSpeedStats = (data: ReportItem[]): SpeedStats => {
+    if (data.length === 0) {
+      return { max: 0, min: 0, average: 0 };
+    }
+
+    const speeds = data.map(item => item.speed);
+    const max = Math.max(...speeds);
+    const min = Math.min(...speeds);
+    const sum = speeds.reduce((acc, curr) => acc + curr, 0);
+    const average = sum / speeds.length;
+
+    return {
+      max,
+      min,
+      average: parseFloat(average.toFixed(2)),
+    };
+  };
+
   const fetchReportData = async () => {
     try {
       setLoading(true);
@@ -83,7 +117,6 @@ const SpeedReport = () => {
       const username = user?.username;
       const plate = unit.plate;
 
-      // Función para formatear fecha a ISO string
       const formatDateForAPI = (date: Date): string => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -94,7 +127,6 @@ const SpeedReport = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
-      // Formatear las fechas para la API
       const formattedStartDate = encodeURIComponent(
         formatDateForAPI(startDate),
       );
@@ -121,6 +153,7 @@ const SpeedReport = () => {
         );
 
         setReportData(transformedData);
+        setSpeedStats(calculateSpeedStats(transformedData));
       } else {
         setError('No se encontraron datos');
       }
@@ -139,8 +172,8 @@ const SpeedReport = () => {
   const handleReportItemPress = (item: ReportItem) => {
     const { latitude, longitude } = item;
 
-    // URL para Google Maps en Street View
-    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m7!1e1!3m5!1s!2e0!7i16384!8i8192?entry=ttu`;
+    // URL para abrir directamente en Street View 3D
+    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
 
     Linking.openURL(googleMapsUrl).catch(err =>
       console.error('Error al abrir Google Maps:', err),
@@ -298,18 +331,261 @@ const SpeedReport = () => {
             </Text>
           </View>
         ) : (
-          <FlatList
-            data={reportData}
-            keyExtractor={item => item.id}
-            renderItem={({ item, index }) => renderReportItem({ item, index })}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.reportsListContent}
-            style={{ paddingHorizontal: 10, paddingVertical: 10 }}
-          />
+          <>
+            {/* Total de Registros - LinearGradient */}
+            <LinearGradient
+              colors={['#f59e0b', '#d97706']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={inlineStyles.totalCard}
+            >
+              <View style={inlineStyles.totalIconWrapper}>
+                <BarChart3 size={22} color="#fff" />
+              </View>
+              <View style={inlineStyles.totalContent}>
+                <Text style={inlineStyles.totalLabel}>Total de Registros</Text>
+                <Text style={inlineStyles.totalValue}>{reportData.length} eventos</Text>
+              </View>
+            </LinearGradient>
+
+            {/* Estadísticas de Velocidad - 3 en una fila con LinearGradient */}
+            <View style={inlineStyles.speedStatsRow}>
+              {/* Velocidad Máxima */}
+              <LinearGradient
+                colors={['#ef4444', '#dc2626']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={inlineStyles.speedCard}
+              >
+                <View style={inlineStyles.speedIconContainer}>
+                  <View style={inlineStyles.speedIcon}>
+                    <TrendingUp size={18} color="#fff" />
+                  </View>
+                </View>
+                <View style={inlineStyles.speedContent}>
+                  <Text style={inlineStyles.speedLabel}>Vel. Máxima</Text>
+                  <Text style={inlineStyles.speedValue}>
+                    {speedStats.max} km/h
+                  </Text>
+                  <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
+                </View>
+              </LinearGradient>
+
+              {/* Velocidad Mínima */}
+              <LinearGradient
+                colors={['#3b82f6', '#2563eb']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={inlineStyles.speedCard}
+              >
+                <View style={inlineStyles.speedIconContainer}>
+                  <View style={inlineStyles.speedIcon}>
+                    <TrendingDown size={18} color="#fff" />
+                  </View>
+                </View>
+                <View style={inlineStyles.speedContent}>
+                  <Text style={inlineStyles.speedLabel}>Vel. Mínima</Text>
+                  <Text style={inlineStyles.speedValue}>
+                    {speedStats.min} km/h
+                  </Text>
+                  <Text style={inlineStyles.speedUnit}>{unit.plate}</Text>
+                </View>
+              </LinearGradient>
+
+              {/* Velocidad Promedio */}
+              <LinearGradient
+                colors={['#10b981', '#059669']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={inlineStyles.speedCard}
+              >
+                <View style={inlineStyles.speedIconContainer}>
+                  <View style={inlineStyles.speedIcon}>
+                    <Activity size={18} color="#fff" />
+                  </View>
+                </View>
+                <View style={inlineStyles.speedContent}>
+                  <Text style={inlineStyles.speedLabel}>Vel. Promedio</Text>
+                  <Text style={inlineStyles.speedValue}>
+                    {speedStats.average} km/h
+                  </Text>
+                  <Text style={inlineStyles.speedUnit}>General</Text>
+                </View>
+              </LinearGradient>
+            </View>
+
+            {/* Card de Consejo - LinearGradient */}
+            <View
+         
+              style={inlineStyles.tipCard}
+            >
+              <View style={inlineStyles.tipIconWrapper}>
+                <Info size={18} color="#0891b2" />
+              </View>
+              <View style={inlineStyles.tipTextContainer}>
+                <Text style={inlineStyles.tipTitle}>💡 Consejo</Text>
+                <Text style={inlineStyles.tipText}>
+                  Toca cualquier registro para ver la ubicación en vista Street View 3D
+                </Text>
+              </View>
+            </View>
+
+            {/* Lista de reportes */}
+            <FlatList
+              data={reportData}
+              keyExtractor={item => item.id}
+              renderItem={({ item, index }) => renderReportItem({ item, index })}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.reportsListContent}
+              style={{ paddingHorizontal: 10, paddingVertical: 10 }}
+            />
+          </>
         )}
       </View>
     </LinearGradient>
   );
+};
+
+// Estilos inline para los nuevos componentes
+const inlineStyles = {
+  // Total de Registros - LinearGradient
+  totalCard: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginHorizontal: 15,
+    marginTop: 15,
+    marginBottom: 10,
+    padding: 14,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  totalIconWrapper: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginRight: 14,
+  },
+  totalContent: {
+    flex: 1,
+  },
+  totalLabel: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '600' as const,
+    marginBottom: 3,
+    opacity: 0.95,
+  },
+  totalValue: {
+    fontSize: 22,
+    fontWeight: '700' as const,
+    color: '#fff',
+  },
+
+  // Estadísticas de Velocidad - 3 en una fila con LinearGradient
+  speedStatsRow: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    marginHorizontal: 15,
+    marginBottom: 10,
+    gap: 8,
+  },
+  speedCard: {
+    flex: 1,
+    borderRadius: 14,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  speedIconContainer: {
+    alignItems: 'center' as const,
+    marginBottom: 6,
+  },
+  speedIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  speedContent: {
+    alignItems: 'center' as const,
+  },
+  speedLabel: {
+    fontSize: 9,
+    color: '#fff',
+    fontWeight: '600' as const,
+    textAlign: 'center' as const,
+    marginBottom: 2,
+    opacity: 0.95,
+  },
+  speedValue: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
+    color: '#fff',
+    marginBottom: 2,
+  },
+  speedUnit: {
+    fontSize: 8.5,
+    color: '#fff',
+    fontWeight: '500' as const,
+    textAlign: 'center' as const,
+    opacity: 0.9,
+  },
+
+  // Card de Consejo - LinearGradient
+  tipCard: {
+    flexDirection: 'row' as const,
+    marginHorizontal: 15,
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: '#ecfeff',
+
+  },
+  tipIconWrapper: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#cffafe',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginRight: 10,
+  },
+  tipTextContainer: {
+    flex: 1,
+    justifyContent: 'center' as const,
+  },
+  tipTitle: {
+    fontSize: 10.5,
+    fontWeight: '700' as const,
+    color: '#0e7490',
+    marginBottom: 2,
+  },
+  tipText: {
+    fontSize: 10.5,
+    color: '#0e7490',
+    lineHeight: 14,
+    fontWeight: '500' as const,
+    opacity: 0.95,
+  },
 };
 
 export default SpeedReport;

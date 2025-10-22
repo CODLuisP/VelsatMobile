@@ -14,6 +14,11 @@ import {
   MapPin,
   AlertCircle,
   FileX,
+  Navigation,
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  Target,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -43,6 +48,14 @@ interface VehicleReport {
   carImage: any;
 }
 
+interface Statistics {
+  maxMileage: VehicleReport | null;
+  minMileage: VehicleReport | null;
+  totalMileage: number;
+  averageMileage: number;
+  totalVehicles: number;
+}
+
 const MileageReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'MileageReport'>>();
@@ -59,6 +72,7 @@ const MileageReport = () => {
   const { user, server } = useAuthStore();
 
   const [vehicleData, setVehicleData] = useState<VehicleReport[]>([]);
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +86,37 @@ const MileageReport = () => {
     fetchReportData();
   }, []);
 
+  const calculateStatistics = (data: VehicleReport[]): Statistics => {
+    if (data.length === 0) {
+      return {
+        maxMileage: null,
+        minMileage: null,
+        totalMileage: 0,
+        averageMileage: 0,
+        totalVehicles: 0,
+      };
+    }
+
+    const maxVehicle = data.reduce((max, vehicle) =>
+      vehicle.mileage > max.mileage ? vehicle : max
+    );
+
+    const minVehicle = data.reduce((min, vehicle) =>
+      vehicle.mileage < min.mileage ? vehicle : min
+    );
+
+    const total = data.reduce((sum, vehicle) => sum + vehicle.mileage, 0);
+    const average = total / data.length;
+
+    return {
+      maxMileage: maxVehicle,
+      minMileage: minVehicle,
+      totalMileage: parseFloat(total.toFixed(2)),
+      averageMileage: parseFloat(average.toFixed(2)),
+      totalVehicles: data.length,
+    };
+  };
+
   const fetchReportData = async () => {
     try {
       setLoading(true);
@@ -79,7 +124,6 @@ const MileageReport = () => {
 
       const username = user?.username;
 
-      // Función para formatear fecha a ISO string
       const formatDateForAPI = (date: Date): string => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -123,6 +167,11 @@ const MileageReport = () => {
           }));
 
         setVehicleData(transformedData);
+
+        if (isAllUnits) {
+          const stats = calculateStatistics(transformedData);
+          setStatistics(stats);
+        }
       } else {
         setError('No se encontraron datos');
       }
@@ -142,42 +191,163 @@ const MileageReport = () => {
     console.log('Clicked on vehicle:', vehicle);
   };
 
+  const renderStatistics = () => {
+    if (!isAllUnits || !statistics || statistics.totalVehicles === 0) {
+      return null;
+    }
+
+    return (
+      <View style={styles.statisticsContainer}>
+        <View style={styles.statisticsHeader}>
+          <BarChart3 size={20} color="#4285f4" />
+          <Text style={styles.statisticsTitle}>Estadísticas Generales</Text>
+        </View>
+
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <LinearGradient
+              colors={['#10b981', '#059669']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.statGradient}
+            >
+              <View style={styles.statIconContainer}>
+                <TrendingUp size={18} color="#fff" />
+              </View>
+              <Text style={styles.statLabel}>Mayor Recorrido</Text>
+              <Text style={styles.statValue}>
+                {statistics.maxMileage?.mileage} km
+              </Text>
+              <Text style={styles.statSubtext}>
+                {statistics.maxMileage?.unitName}
+              </Text>
+            </LinearGradient>
+          </View>
+
+          <View style={styles.statCard}>
+            <LinearGradient
+              colors={['#ff9f1c', '#d97706']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.statGradient}
+            >
+              <View style={styles.statIconContainer}>
+                <TrendingDown size={18} color="#fff" />
+              </View>
+              <Text style={styles.statLabel}>Menor Recorrido</Text>
+              <Text style={styles.statValue}>
+                {statistics.minMileage?.mileage} km
+              </Text>
+              <Text style={styles.statSubtext}>
+                {statistics.minMileage?.unitName}
+              </Text>
+            </LinearGradient>
+          </View>
+        </View>
+
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <LinearGradient
+              colors={['#4285f4', '#1967d2']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.statGradient}
+            >
+              <View style={styles.statIconContainer}>
+                <Navigation size={18} color="#fff" />
+              </View>
+              <Text style={styles.statLabel}>Total Recorrido</Text>
+              <Text style={styles.statValue}>{statistics.totalMileage} km</Text>
+              <Text style={styles.statSubtext}>
+                {statistics.totalVehicles} unidades
+              </Text>
+            </LinearGradient>
+          </View>
+
+          <View style={styles.statCard}>
+            <LinearGradient
+              colors={['#8b5cf6', '#7c3aed']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.statGradient}
+            >
+              <View style={styles.statIconContainer}>
+                <Target size={18} color="#fff" />
+              </View>
+              <Text style={styles.statLabel}>Promedio</Text>
+              <Text style={styles.statValue}>
+                {statistics.averageMileage} km
+              </Text>
+              <Text style={styles.statSubtext}>por unidad</Text>
+            </LinearGradient>
+          </View>
+        </View>
+
+        <View style={styles.statisticsDivider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>Detalle por Unidad</Text>
+          <View style={styles.dividerLine} />
+        </View>
+      </View>
+    );
+  };
+
   const renderVehicleItem = ({ item }: { item: VehicleReport }) => (
     <TouchableOpacity
       style={styles.vehicleCard}
       onPress={() => handleVehiclePress(item)}
-      activeOpacity={0.8}
+      activeOpacity={0.7}
     >
-      {/* Header combinado: Todo en una línea */}
-      <View style={styles.itemHeader}>
-        <View style={styles.itemBadge}>
-          <Text style={styles.itemBadgeText}>ITEM #{item.itemNumber} </Text>
+      <View style={styles.cardHeader}>
+        <View style={styles.badgeContainer}>
+          <LinearGradient
+            colors={['#ff8c00', '#ff6b00']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.itemBadge}
+          >
+          <Text style={styles.itemBadgeText}>N° {item.itemNumber}</Text>
+          </LinearGradient>
         </View>
-        <View style={styles.unitHeaderInfo}>
-          <Text style={styles.unitCompleteText}>Unidad: {item.unitName}</Text>
+
+        <View style={styles.unitInfoContainer}>
+          <View style={styles.carIconBadge}>
+            <Car size={14} color="#4285f4" />
+          </View>
+          <View style={styles.unitTextContainer}>
+            <Text style={styles.unitLabel}>Unidad</Text>
+            <Text style={styles.unitName}>{item.unitName}</Text>
+          </View>
         </View>
       </View>
 
-      {/* Contenido principal simplificado */}
-      <View style={styles.cardContent}>
-        {/* Sección izquierda - Solo imagen del carro */}
-        <View style={styles.leftSection}>
-          <View style={styles.carImageWrapper}>
+      <View style={styles.cardDivider} />
+
+      <View style={styles.cardBody}>
+        <View style={styles.vehicleImageSection}>
+          <View style={styles.imageContainer}>
             <Image
               source={item.carImage}
-              style={styles.carImage}
+              style={styles.vehicleImage}
               defaultSource={require('../../../../assets/Car.jpg')}
             />
           </View>
         </View>
 
-        {/* Sección derecha - Kilometraje */}
-        <View style={styles.rightSection}>
-          <Text style={styles.mileageValue}>{item.mileage}</Text>
-          <View style={styles.mileageLabel}>
-            <MapPin size={12} color="#ff8c00" />
-            <Text style={styles.mileageLabelText}>Km recorridos</Text>
+        <View style={styles.mileageSection}>
+          <View style={styles.mileageCard}>
+            <View style={styles.mileageIconContainer}>
+              <Navigation size={18} color="#4285f4" />
+            </View>
+            <View style={styles.mileageInfo}>
+              <Text style={styles.mileageLabel}>Distancia recorrida</Text>
+              <View style={styles.mileageValueContainer}>
+                <Text style={styles.mileageValue}>{item.mileage}</Text>
+                <Text style={styles.mileageUnit}>km</Text>
+              </View>
+            </View>
           </View>
+
         </View>
       </View>
     </TouchableOpacity>
@@ -192,7 +362,6 @@ const MileageReport = () => {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-      
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
@@ -216,7 +385,7 @@ const MileageReport = () => {
           </View>
         </View>
       </View>
-      {/* Contenedor wrapper con borde redondeado */}
+
       <View style={styles.listWrapper}>
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -249,6 +418,7 @@ const MileageReport = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListHeaderComponent={renderStatistics}
           />
         )}
       </View>

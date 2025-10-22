@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   slideCard: {
     width: SCREEN_WIDTH,
-    height: 135,
+    height: 127,
   },
   cardGradient: {
     flex: 1,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     height: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
     marginTop: 10,
     shadowColor: '#000',
   },
@@ -175,14 +175,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     letterSpacing: 0.5,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    marginBottom: 2,
+    marginBottom: 0,
   },
   cardDescription: {
     fontSize: 14,
@@ -193,7 +190,7 @@ const styles = StyleSheet.create({
   selectedBadge: {
     position: 'absolute',
     top: 20,
-    right: 60,
+    right: Platform.select({ android: 20, ios: 60 }) ,
     paddingVertical: 8,
     borderRadius: 13,
   },

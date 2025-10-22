@@ -6,7 +6,6 @@ const SIDEBAR_WIDTH = 250;
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
 
   header: {
@@ -20,7 +19,7 @@ export const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
-    marginRight: 15,
+    marginRight: 5,
     marginLeft:-10
   },
   headerContent: {

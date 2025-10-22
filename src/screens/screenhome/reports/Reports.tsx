@@ -10,6 +10,7 @@ import {
   Alert,
   PermissionsAndroid,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -102,35 +103,35 @@ const Reports: React.FC = () => {
       name: 'Reporte General',
       icon: BarChart3,
       description: 'Análisis completo de la actividad',
-      gradient: ['#94550dff', '#dc5400ff'],
+      gradient: ['#c32f27', '#dc5400ff'],
     },
     {
       id: 1,
       name: 'Reporte de Paradas',
       icon: Hand,
       description: 'Detalle de paradas realizadas',
-      gradient: ['#94550dff', '#dc5400ff'],
+      gradient: ['#c32f27', '#dc5400ff'],
     },
     {
       id: 2,
       name: 'Reporte de Velocidad',
       icon: Gauge,
       description: 'Control de excesos de velocidad',
-      gradient: ['#94550dff', '#dc5400ff'],
+      gradient: ['#c32f27', '#dc5400ff'],
     },
     {
       id: 3,
       name: 'Reporte de Kilometraje',
       icon: Route,
-      description: 'Distancias recorridas',
-      gradient: ['#ae6512ff', '#dc5400ff'],
+      description: 'Distancias recorridas por unidad o todas la unidades',
+      gradient: ['#c32f27', '#dc5400ff'],
     },
     {
       id: 4,
       name: 'Reporte de Recorrido',
       icon: FileText,
       description: 'Rutas y trayectos completos',
-      gradient: ['#94550dff', '#dc5400ff'],
+      gradient: ['#c32f27', '#dc5400ff'],
     },
   ];
 
@@ -674,7 +675,7 @@ const Reports: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.unitInputContainer,
-            allUnitsEnabled && { opacity: 0.5, backgroundColor: '#f5f5f5' },
+            allUnitsEnabled && { opacity: 0.8, backgroundColor: '#e7ecef' },
           ]}
           onPress={handleOpenUnitModal}
           disabled={allUnitsEnabled}
@@ -791,28 +792,38 @@ const Reports: React.FC = () => {
         </View>
 
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            style={[
-              styles.excelButton,
-              downloadingExcel && { opacity: 0.7 },
-              selectedReport === 4 && { opacity: 0.5, backgroundColor: '#ccc' },
-            ]}
-            onPress={handleDownloadExcel}
-            disabled={downloadingExcel || selectedReport === 4}
-          >
-            {downloadingExcel ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <ActivityIndicator size="small" color="#fff" />
-                <Text style={styles.buttonText}>Descargando...</Text>
-              </View>
-            ) : (
-              <Text style={styles.buttonText}>Descargar Excel</Text>
-            )}
-          </TouchableOpacity>
+     <TouchableOpacity
+  style={[
+    styles.excelButton,
+    downloadingExcel && { opacity: 0.7 },
+    selectedReport === 4 && { opacity: 0.7, backgroundColor: '#023047' },
+  ]}
+  onPress={handleDownloadExcel}
+  disabled={downloadingExcel || selectedReport === 4}
+  activeOpacity={0.8}
+>
+  {downloadingExcel ? (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <ActivityIndicator size="small" color="#fff" />
+      <Text style={styles.buttonText}>Descargando...</Text>
+    </View>
+  ) : (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <Image 
+        source={require('../../../../assets/excel.png')} 
+        style={{ width: 20, height: 20 }}
+        resizeMode="contain"
+      />
+      <Text style={styles.buttonText}>Descargar Excel</Text>
+    </View>
+  )}
+</TouchableOpacity>
 
           <TouchableOpacity
             style={styles.showButton}
             onPress={handleShowReport}
+              activeOpacity={0.8}
+
           >
             <Text style={styles.buttonText}>Mostrar</Text>
           </TouchableOpacity>

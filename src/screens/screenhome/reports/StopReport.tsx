@@ -16,6 +16,8 @@ import {
   Calendar,
   AlertCircle,
   FileX,
+  BarChart3,
+  Info,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -142,7 +144,8 @@ const StopReport = () => {
     const { latitude, longitude } = item;
 
     // URL para Google Maps en Street View
-    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m7!1e1!3m5!1s!2e0!7i16384!8i8192?entry=ttu`;
+   const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
+
 
     Linking.openURL(googleMapsUrl).catch(err =>
       console.error('Error al abrir Google Maps:', err)
@@ -235,12 +238,12 @@ const StopReport = () => {
   const topSpace = insets.top + 5;
 
   return (
-       <LinearGradient
-          colors={['#00296b', '#1e3a8a', '#00296b']}
-          style={[styles.container, { paddingBottom: bottomSpace }]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-        >
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
@@ -261,7 +264,14 @@ const StopReport = () => {
       </View>
 
       {/* Contenedor para la lista o estados */}
-      <View style={{ flex: 1, backgroundColor: 'white', borderTopLeftRadius: 25, borderTopRightRadius: 25 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: 'white',
+          borderTopLeftRadius: 25,
+          borderTopRightRadius: 25,
+        }}
+      >
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#1e3a8a" />
@@ -286,18 +296,139 @@ const StopReport = () => {
             </Text>
           </View>
         ) : (
-          <FlatList
-            data={reportData}
-            keyExtractor={item => item.id}
-            renderItem={({ item, index }) => renderReportItem({ item, index })}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.reportsListContent}
-            style={{ paddingHorizontal: 10, paddingVertical: 10 }}
-          />
+          <>
+            {/* Card con dos columnas: Total de Registros y Consejo */}
+            <View style={inlineStyles.statsCard}>
+              {/* Columna izquierda - Total de Registros */}
+              <View style={inlineStyles.leftColumn}>
+                <View style={inlineStyles.statsIconContainer}>
+                  <BarChart3 size={22} color="#1e3a8a" />
+                </View>
+                <View style={inlineStyles.statsTextContainer}>
+                  <Text style={inlineStyles.statsLabel}>Total de Paradas</Text>
+                  <Text style={inlineStyles.statsNumber}>{reportData.length}</Text>
+                </View>
+              </View>
+
+              {/* Separador vertical */}
+              <View style={inlineStyles.verticalDivider} />
+
+              {/* Columna derecha - Consejo */}
+              <View style={inlineStyles.rightColumn}>
+                <View style={inlineStyles.tipIconWrapper}>
+                  <Info size={18} color="#0891b2" />
+                </View>
+                <View style={inlineStyles.tipTextContainer}>
+                  <Text style={inlineStyles.tipTitle}>💡 Consejo</Text>
+                  <Text style={inlineStyles.tipText}>
+                    Toca cualquier parada para ver la ubicación en vista 3D
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Lista de reportes */}
+            <FlatList
+              data={reportData}
+              keyExtractor={item => item.id}
+              renderItem={({ item, index }) => renderReportItem({ item, index })}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.reportsListContent}
+              style={{ paddingHorizontal: 10, paddingVertical: 10 }}
+            />
+          </>
         )}
       </View>
     </LinearGradient>
   );
+};
+
+// Estilos inline para los nuevos componentes
+const inlineStyles = {
+  statsCard: {
+    flexDirection: 'row' as const,
+    backgroundColor: '#ffffff',
+    marginHorizontal: 15,
+    marginTop: 15,
+    marginBottom: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e0e7ff',
+    shadowColor: '#1e3a8a',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+    overflow: 'hidden' as const,
+  },
+  leftColumn: {
+    flex: 1,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: '#f0f9ff',
+    padding: 14,
+  },
+  statsIconContainer: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    backgroundColor: '#dbeafe',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginRight: 10,
+  },
+  statsTextContainer: {
+    flex: 1,
+  },
+  statsLabel: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500' as const,
+    marginBottom: 3,
+  },
+  statsNumber: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: '#1e3a8a',
+  },
+  verticalDivider: {
+    width: 1,
+    backgroundColor: '#e0e7ff',
+  },
+  rightColumn: {
+    flex: 1,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: '#ecfeff',
+    padding: 14,
+  },
+  tipIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#cffafe',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginRight: 10,
+  },
+  tipTextContainer: {
+    flex: 1,
+  },
+  tipTitle: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: '#0e7490',
+    marginBottom: 2,
+  },
+  tipText: {
+    fontSize: 11,
+    color: '#0891b2',
+    lineHeight: 15,
+    fontWeight: '500' as const,
+  },
 };
 
 export default StopReport;
