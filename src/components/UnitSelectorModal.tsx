@@ -63,7 +63,7 @@ const UnitSelectorModal: React.FC<UnitSelectorModalProps> = ({
     >
       <View style={styles.unitItemLeft}>
         <View style={styles.unitIconContainer}>
-          <Car size={20} color="#007AFF" />
+          <Car size={20} color="#f97316" />
         </View>
         <View style={styles.unitInfo}>
           <Text style={styles.unitName}>{item.plate}</Text>

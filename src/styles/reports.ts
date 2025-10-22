@@ -501,7 +501,7 @@ export const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F0F9FF',
+    backgroundColor: '#fff6f0ff',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
