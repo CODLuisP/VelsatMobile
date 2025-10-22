@@ -185,16 +185,8 @@ statGradient: {
     backgroundColor: '#fff',
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
     borderWidth: 1,
-    borderColor: '#e8f0fe',
+    borderColor: '#dee2e6',
   },
 
   cardHeader: {
