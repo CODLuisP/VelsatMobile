@@ -403,6 +403,7 @@ const Profile = () => {
         style={styles.scrollContent}
         contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
+          scrollEnabled={false}
       />
     </LinearGradient>
   );

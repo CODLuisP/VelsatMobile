@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Text,
   View,
@@ -6,7 +6,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { ChevronLeft, Clock, Check } from 'lucide-react-native';
+import { ChevronLeft, Clock, Check, Sparkles } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
 import { styles } from '../../styles/pin';
@@ -18,18 +18,10 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
-import { useAuthStore } from '../../store/authStore'; // ⭐ NUEVO
 
 const Pin = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  
-  // ⭐ NUEVO: Reemplazar useState por Zustand
-  const selectedVehiclePin = useAuthStore(state => state.selectedVehiclePin);
-  const setSelectedVehiclePin = useAuthStore(state => state.setSelectedVehiclePin);
-
-  // ⭐ NUEVO: Convertir el código de pin a id para la UI
-  const selectedOption = selectedVehiclePin === 's' ? 'sedan' : 
-                         selectedVehiclePin === 'p' ? 'pickup' : 'truck';
+  const [selectedOption, setSelectedOption] = useState<string>('sedan');
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -48,11 +40,8 @@ const Pin = () => {
     navigation.goBack();
   };
 
-  // ⭐ MODIFICADO: Actualizar handleSelect
   const handleSelect = (option: string) => {
-    const pinCode = option === 'sedan' ? 's' : 
-                    option === 'pickup' ? 'p' : 'c';
-    setSelectedVehiclePin(pinCode);
+    setSelectedOption(option);
   };
 
   const vehicleOptions = [
@@ -83,8 +72,7 @@ const Pin = () => {
       style={[styles.container, { paddingBottom: bottomSpace }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-    >     
-
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -109,46 +97,71 @@ const Pin = () => {
           {vehicleOptions.map(option => (
             <TouchableOpacity
               key={option.id}
-              style={[
-                styles.optionCard,
-                selectedOption === option.id && styles.optionCardSelected,
-              ]}
+              style={styles.optionCard}
               onPress={() => handleSelect(option.id)}
-              activeOpacity={0.7}
+              activeOpacity={0.95}
             >
-              <View style={styles.cardContent}>
-                <View style={styles.imageWrapper}>
-                  <Image
-                    source={option.image}
-                    style={styles.vehicleImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.imageGradient} />
-                  {selectedOption === option.id && (
-                    <View style={styles.selectedBadge}>
-                      <Check size={18} color="#fff" strokeWidth={3} />
+              <LinearGradient
+                colors={
+                  selectedOption === option.id
+                    ? ['#ababaf4a', '#ffffff']
+                    : ['#ffffff', '#fafafa']
+                }
+                style={styles.cardGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+              >
+                <View style={styles.cardContent}>
+                  <View
+                    style={[
+                      styles.imageContainer,
+                      selectedOption === option.id && styles.imageContainerSelected,
+                    ]}
+                  >
+                    <Image
+                      source={option.image}
+                      style={styles.vehicleImage}
+                      resizeMode="cover"
+                    />
+                    {selectedOption === option.id && (
+                      <>
+                        <LinearGradient
+                          colors={['rgba(227, 100, 20, 0.15)', 'rgba(187, 77, 8, 0.4)']}
+                          style={styles.imageOverlay}
+                        />
+                        <View style={styles.selectedBadge}>
+                          <View style={styles.badgeInner}>
+                            <Check size={18} color="#fff" strokeWidth={3.5} />
+                          </View>
+                        </View>
+                      </>
+                    )}
+                  </View>
+
+                  <View style={styles.cardInfo}>
+                    <View style={styles.textSection}>
+                      <Text style={styles.optionTitle}>{option.title}</Text>
+                      <Text style={styles.optionDescription}>
+                        {option.description}
+                      </Text>
                     </View>
-                  )}
+
+                    {selectedOption === option.id && (
+                      <View style={styles.selectedTag}>
+                        <Sparkles size={14} color="#e36414" fill="#e36414" />
+                        <Text style={styles.selectedTagText}>Activo</Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
-                <View style={styles.textContent}>
-                  <Text style={styles.optionTitle}>{option.title}</Text>
-                  <Text style={styles.optionDescription}>
-                    {option.description}
-                  </Text>
-                </View>
-              </View>
+
+              
+              </LinearGradient>
             </TouchableOpacity>
           ))}
         </View>
 
-        <View style={styles.footerContent}>
-          <View style={styles.footerIconWrapper}>
-            <Clock size={18} color="#e36414" />
-          </View>
-          <Text style={styles.footerText}>
-            Más modelos disponibles pronto
-          </Text>
-        </View>
+   
       </ScrollView>
     </LinearGradient>
   );
