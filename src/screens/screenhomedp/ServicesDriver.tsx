@@ -3,14 +3,10 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-import React from 'react';
-import {
-  ChevronLeft,
-  Users,
-  Calendar,
-  User,
-} from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, Users, Calendar, User } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,24 +17,37 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import { styles } from '../../styles/servicesdriver';
+import axios from 'axios';
+import { useAuthStore } from '../../store/authStore';
 
 interface Service {
-  id: number;
-  serviceNumber: string;
-  passengers: number;
-  location: string;
-  status: 'en-2-horas' | 'en-progreso' | 'finalizado';
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-  groupType: string;
-  serviceType: string;
+  codservicio: string;
+  fechapasajero: string | null;
+  empresa: string;
+  numero: string;
+  codconductor: string;
+  destino: string;
+  fechaservicio: string;
+  status: string;
+  tipo: string;
+  grupo: string;
+  totalpax: number | null;
+  unidad: string;
+  codusuario: string;
 }
 
 const ServicesDriver = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingStart, setLoadingStart] = useState<string | null>(null);
+  const [loadingEnd, setLoadingEnd] = useState<string | null>(null);
 
+  const { user, logout, server, tipo } = useAuthStore();
+  const codigo = user?.codigo;
+  const [serviceStates, setServiceStates] = useState<{
+    [key: string]: 'idle' | 'started' | 'finished';
+  }>({});
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
@@ -52,105 +61,224 @@ const ServicesDriver = () => {
     }, []),
   );
 
+  const getServiceStatus = (service: Service) => {
+    const fechaInicio = service.fechapasajero || service.fechaservicio;
+    const [fecha, hora] = fechaInicio.split(' ');
+    const [dia, mes, año] = fecha.split('/');
+    const [horas, minutos] = hora.split(':');
+
+    const fechaServicio = new Date(
+      parseInt(año),
+      parseInt(mes) - 1,
+      parseInt(dia),
+      parseInt(horas),
+      parseInt(minutos),
+    );
+
+    const ahora = new Date();
+    const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
+    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
+
+    const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
+    const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
+    const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
+
+    // Si ya pasó la hora de inicio
+    if (diferenciaMs <= 0) {
+      // Calcular fecha de fin (fechaservicio + 30 minutos)
+      const [fechaFin, horaFin] = service.fechaservicio.split(' ');
+      const [diaFin, mesFin, añoFin] = fechaFin.split('/');
+      const [horasFin, minutosFin] = horaFin.split(':');
+
+      const fechaFinServicio = new Date(
+        parseInt(añoFin),
+        parseInt(mesFin) - 1,
+        parseInt(diaFin),
+        parseInt(horasFin),
+        parseInt(minutosFin),
+      );
+
+      // Agregar 30 minutos a fechaservicio
+      fechaFinServicio.setMinutes(fechaFinServicio.getMinutes() + 30);
+
+      // Si ya pasó fechaservicio + 30 min, está finalizado
+      if (ahoraPeru.getTime() > fechaFinServicio.getTime()) {
+        return {
+          text: 'Finalizado',
+          color: '#CF1B1B',
+        };
+      }
+
+      // Si está entre fechapasajero y fechaservicio + 30 min, está en progreso
+      return {
+        text: 'En progreso',
+        color: '#4CAF50',
+      };
+    }
+
+    // Si falta menos de 60 minutos
+    if (diferenciaMinutos < 60) {
+      return {
+        text: `Faltan ${diferenciaMinutos} min`,
+        color: '#FFA726',
+      };
+    }
+
+    // Si faltan más de 60 minutos
+    return {
+      text: `Faltan ${diferenciaHoras} hrs`,
+      color: '#FFA726',
+    };
+  };
+
+  // Función para obtener inicio de servicio
+  const getInicioServicio = (service: Service): string => {
+    // Si fechapasajero es null o vacío, usar fechaservicio
+    return service.fechapasajero || service.fechaservicio;
+  };
+
+  // Función para obtener fin de servicio
+  const getFinServicio = (service: Service): string => {
+    // Si tipo es "I" (Entrada), mostrar fechaservicio, sino mostrar "-"
+    return service.tipo === 'I' ? service.fechaservicio : '-';
+  };
+
+  // Función para mapear tipo de servicio
+  const getTipoServicio = (tipo: string) => {
+    return tipo === 'I' ? 'Entrada' : 'Salida';
+  };
+
+  // Función para mapear grupo
+  const getGrupo = (grupo: string) => {
+    switch (grupo) {
+      case 'N':
+        return '-';
+      case 'T':
+        return 'Tierra';
+      case 'A':
+        return 'Aire';
+      default:
+        return grupo;
+    }
+  };
+
+  // Función para obtener los servicios de la API
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+
+      const url = `https://velsat.pe:2087/api/Aplicativo/serviciosConductor/${codigo}`;
+
+      const response = await axios.get(url, {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        setServices(response.data);
+
+        // Inicializar estado de botones según el status
+        const initialStates: {
+          [key: string]: 'idle' | 'started' | 'finished';
+        } = {};
+        response.data.forEach((srv: Service) => {
+          if (srv.status === '3') initialStates[srv.codservicio] = 'finished';
+          else if (srv.status === '2')
+            initialStates[srv.codservicio] = 'started';
+          else initialStates[srv.codservicio] = 'idle';
+        });
+        setServiceStates(initialStates);
+      } else {
+        setServices([]);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          if (
+            error.response.data &&
+            typeof error.response.data === 'string' &&
+            error.response.data.includes('No se encontraron servicios')
+          ) {
+            setServices([]);
+          }
+        }
+      }
+      setServices([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar servicios al montar el componente
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-
-   const handleNavigateToServicesDetailDriver = () => {
-    navigation.navigate('ServicesDetailDriver');
+  const handleNavigateToServicesDetailDriver = (service: Service) => {
+    // Pasar todos los datos del servicio a la siguiente vista
+    navigation.navigate('ServicesDetailDriver', { serviceData: service });
   };
 
+  const delay = (ms: number) =>
+    new Promise(resolve => setTimeout(() => resolve(undefined), ms));
 
-  const services: Service[] = [
-    {
-      id: 1,
-      serviceNumber: '#1',
-      passengers: 1,
-      location: 'LATAM',
-      status: 'en-2-horas',
-      startDate: '22/09/2025',
-      startTime: '00:00',
-      endDate: '',
-      endTime: '',
-      groupType: 'Tierra',
-      serviceType: 'Salida',
-    },
-    {
-      id: 62,
-      serviceNumber: '#62',
-      passengers: 1,
-      location: 'LATAM',
-      status: 'en-progreso',
-      startDate: '22/09/2025',
-      startTime: '02:00',
-      endDate: '',
-      endTime: '',
-      groupType: 'Tierra',
-      serviceType: 'Salida',
-    },
-    {
-      id: 17,
-      serviceNumber: '#17',
-      passengers: 3,
-      location: 'LATAM',
-      status: 'en-progreso',
-      startDate: '22/09/2025',
-      startTime: '00:00',
-      endDate: '22/09/2025',
-      endTime: '03:40',
-      groupType: 'Aire',
-      serviceType: 'Entrada',
-    },
-    {
-      id: 80,
-      serviceNumber: '#80',
-      passengers: 2,
-      location: 'LATAM',
-      status: 'finalizado',
-      startDate: '22/09/2025',
-      startTime: '02:00',
-      endDate: '22/09/2025',
-      endTime: '03:40',
-      groupType: 'Aire',
-      serviceType: 'Entrada',
-    },
-  ];
+  const handleStartService = async (
+    codservicio: string,
+    unidad: string,
+    codconductor: string,
+  ) => {
+    try {
+      setLoadingStart(codservicio);
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarFechaInicioServicio?codservicio=${codservicio}`,
+      );
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarDeviceServicio?codservicio=${codservicio}&deviceID=${unidad}`,
+      );
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
+      );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'en-2-horas':
-        return '#FFA726';
-      case 'en-progreso':
-        return '#FF9800';
-      case 'finalizado':
-        return '#4CAF50';
-      default:
-        return '#718096';
+      // Cambiar estado local
+      setServiceStates(prev => ({ ...prev, [codservicio]: 'started' }));
+    } catch (error) {
+      console.error('❌ Error al iniciar servicio:', error);
+    } finally {
+      setLoadingStart(null);
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'en-2-horas':
-        return 'En 2 horas';
-      case 'en-progreso':
-        return 'En progreso';
-      case 'finalizado':
-        return 'Finalizado';
-      default:
-        return '';
+  const handleEndService = async (
+    codservicio: string,
+    unidad: string,
+    codconductor: string,
+  ) => {
+    try {
+      setLoadingEnd(codservicio);
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarFechaFinServicio?codservicio=${codservicio}`,
+      );
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarDeviceFinServicio?deviceID=${unidad}`,
+      );
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
+      );
+
+      // Cambiar estado local
+      setServiceStates(prev => ({ ...prev, [codservicio]: 'finished' }));
+    } catch (error) {
+      console.error('❌ Error al finalizar servicio:', error);
+    } finally {
+      setLoadingEnd(null);
     }
   };
-
-  const handleStartService = (serviceId: number) => {
-    console.log('Iniciar servicio:', serviceId);
-  };
-
-  const handleEndService = (serviceId: number) => {
-    console.log('Finalizar servicio:', serviceId);
-  };
-
 
   const topSpace = insets.top + 5;
 
@@ -165,133 +293,203 @@ const ServicesDriver = () => {
         </View>
       </View>
 
-      <ScrollView
-        style={styles.contentList}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <View style={styles.formContainer}>
-          {services.map((service) => (
-            <TouchableOpacity
-              key={service.id}
-              onPress={ handleNavigateToServicesDetailDriver}
-              activeOpacity={0.7}
-            >
-              <View style={styles.serviceCard}>
-                {/* Header del servicio */}
-                <View style={styles.serviceHeader}>
-                  <View style={styles.serviceHeaderLeft}>
-                    <Text style={styles.serviceNumber}>Servicio {service.serviceNumber}</Text>
-                    <View style={styles.passengersContainer}>
-                      <User size={14} color="#FFFFFF" />
-                      <Text style={styles.passengersText}>
-                        {service.passengers} pasajero{service.passengers > 1 ? 's' : ''}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.serviceHeaderRight}>
-                    <Text style={styles.locationText}>{service.location}</Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusColor(service.status) },
-                    ]}
-                  >
-                    <Text style={styles.statusText}>
-                      {getStatusText(service.status)}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Body del servicio */}
-                <View style={styles.serviceBody}>
-                  <View style={styles.infoRow}>
-                    <View style={styles.leftColumn}>
-                      <View style={styles.dateSection}>
-                        <View style={styles.dateIconRow}>
-                          <User size={16} color="#666" />
-                          <Text style={styles.dateLabel}>Inicio servicio</Text>
-                        </View>
-                        <Text style={styles.dateValue}>
-                          {service.startDate} {service.startTime}
-                        </Text>
-                      </View>
-
-                      <View style={styles.groupSection}>
-                        <View style={styles.groupRow}>
-                          <Users size={16} color="#666" />
-                          <Text style={styles.groupLabel}>Grupo y tipo</Text>
-                        </View>
-                        <Text style={styles.groupValue}>
-                          {service.groupType} - {service.serviceType}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.rightColumn}>
-                      <View style={styles.dateSection}>
-                        <View style={styles.dateIconRow}>
-                          <Calendar size={16} color="#666" />
-                          <Text style={styles.dateLabel}>Fin servicio</Text>
-                        </View>
-                        <Text style={styles.dateValue}>
-                          {service.endDate ? `${service.endDate} ${service.endTime}` : '-'}
-                        </Text>
-                      </View>
-
-                      {/* Botones de acción */}
-                      {service.status !== 'finalizado' && (
-                        <View style={styles.actionButtons}>
-                          <TouchableOpacity
-                            style={[
-                              styles.actionButton,
-                              service.status === 'en-progreso'
-                                ? styles.actionButtonDisabled
-                                : styles.actionButtonActive,
-                            ]}
-                            onPress={() => handleStartService(service.id)}
-                            disabled={service.status === 'en-progreso'}
-                          >
-                            <Text
-                              style={[
-                                styles.actionButtonText,
-                                service.status === 'en-progreso' && styles.actionButtonTextDisabled,
-                              ]}
-                            >
-                              Iniciar
-                            </Text>
-                          </TouchableOpacity>
-
-                          <TouchableOpacity
-                            style={[
-                              styles.actionButton,
-                              service.status === 'en-progreso'
-                                ? styles.actionButtonEnd
-                                : styles.actionButtonDisabled,
-                            ]}
-                            onPress={() => handleEndService(service.id)}
-                            disabled={service.status !== 'en-progreso'}
-                          >
-                            <Text
-                              style={[
-                                styles.actionButtonText,
-                                service.status !== 'en-progreso' && styles.actionButtonTextDisabled,
-                              ]}
-                            >
-                              Finalizar
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+      {loading ? (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <ActivityIndicator size="large" color="#1e3a8a" />
+          <Text style={{ marginTop: 10, color: '#666' }}>
+            Cargando servicios...
+          </Text>
         </View>
-      </ScrollView>
+      ) : (
+        <ScrollView
+          style={styles.contentList}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          <View style={styles.formContainer}>
+            {services.length === 0 ? (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text style={{ color: '#666', fontSize: 16 }}>
+                  No hay servicios programados
+                </Text>
+              </View>
+            ) : (
+              services.map(service => {
+                const inicioServicio = getInicioServicio(service);
+                const finServicio = getFinServicio(service);
+                const status = getServiceStatus(service);
+
+                return (
+                  <TouchableOpacity
+                    key={service.codservicio}
+                    onPress={() =>
+                      handleNavigateToServicesDetailDriver(service)
+                    }
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.serviceCard}>
+                      {/* Header del servicio */}
+                      <View style={styles.serviceHeader}>
+                        <View style={styles.serviceHeaderLeft}>
+                          <Text style={styles.serviceNumber}>
+                            Servicio #{service.numero}
+                          </Text>
+                          <View style={styles.passengersContainer}>
+                            <User size={14} color="#FFFFFF" />
+                            <Text style={styles.passengersText}>
+                              {service.totalpax !== null
+                                ? `${service.totalpax} pasajero${
+                                    service.totalpax > 1 ? 's' : ''
+                                  }`
+                                : 'No especificado'}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={styles.serviceHeaderRight}>
+                          <Text style={styles.locationText}>
+                            {service.empresa}
+                          </Text>
+                        </View>
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            { backgroundColor: status.color },
+                          ]}
+                        >
+                          <Text style={styles.statusText}>{status.text}</Text>
+                        </View>
+                      </View>
+
+                      {/* Body del servicio */}
+                      <View style={styles.serviceBody}>
+                        <View style={styles.infoRow}>
+                          <View style={styles.leftColumn}>
+                            <View style={styles.dateSection}>
+                              <View style={styles.dateIconRow}>
+                                <User size={16} color="#666" />
+                                <Text style={styles.dateLabel}>
+                                  Inicio servicio
+                                </Text>
+                              </View>
+                              <Text style={styles.dateValue}>
+                                {inicioServicio}
+                              </Text>
+                            </View>
+
+                            <View style={styles.groupSection}>
+                              <View style={styles.groupRow}>
+                                <Users size={16} color="#666" />
+                                <Text style={styles.groupLabel}>
+                                  Grupo y tipo
+                                </Text>
+                              </View>
+                              <Text style={styles.groupValue}>
+                                {getGrupo(service.grupo)} -{' '}
+                                {getTipoServicio(service.tipo)}
+                              </Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.rightColumn}>
+                            <View style={styles.dateSection}>
+                              <View style={styles.dateIconRow}>
+                                <Calendar size={16} color="#666" />
+                                <Text style={styles.dateLabel}>
+                                  Fin servicio
+                                </Text>
+                              </View>
+                              <Text style={styles.dateValue}>
+                                {finServicio}
+                              </Text>
+                            </View>
+
+                            {serviceStates[service.codservicio] !==
+                              'finished' && (
+                              <View style={styles.actionButtons}>
+                                <TouchableOpacity
+                                  style={[
+                                    styles.actionButton,
+                                    serviceStates[service.codservicio] ===
+                                    'idle'
+                                      ? styles.actionButtonActive
+                                      : styles.actionButtonDisabled,
+                                  ]}
+                                  onPress={() =>
+                                    handleStartService(
+                                      service.codservicio,
+                                      service.unidad,
+                                      service.codconductor,
+                                    )
+                                  }
+                                  disabled={
+                                    serviceStates[service.codservicio] !==
+                                      'idle' ||
+                                    loadingStart === service.codservicio
+                                  }
+                                >
+                                  <Text
+                                    style={[
+                                      styles.actionButtonText,
+                                      serviceStates[service.codservicio] !==
+                                        'idle' &&
+                                        styles.actionButtonTextDisabled,
+                                    ]}
+                                  >
+                                    {loadingStart === service.codservicio
+                                      ? 'Iniciando...'
+                                      : 'Iniciar'}
+                                  </Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                  style={[
+                                    styles.actionButton,
+                                    serviceStates[service.codservicio] ===
+                                    'started'
+                                      ? styles.actionButtonEnd
+                                      : styles.actionButtonDisabled,
+                                  ]}
+                                  onPress={() =>
+                                    handleEndService(
+                                      service.codservicio,
+                                      service.unidad,
+                                      service.codconductor,
+                                    )
+                                  }
+                                  disabled={
+                                    serviceStates[service.codservicio] !==
+                                      'started' ||
+                                    loadingEnd === service.codservicio
+                                  }
+                                >
+                                  <Text
+                                    style={[
+                                      styles.actionButtonText,
+                                      serviceStates[service.codservicio] !==
+                                        'started' &&
+                                        styles.actionButtonTextDisabled,
+                                    ]}
+                                  >
+                                    {loadingEnd === service.codservicio
+                                      ? 'Finalizando...'
+                                      : 'Finalizar'}
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 };

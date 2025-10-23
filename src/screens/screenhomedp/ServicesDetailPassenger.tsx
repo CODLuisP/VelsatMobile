@@ -176,7 +176,7 @@ const ServicesDetailPassenger = () => {
   const getProveedor = (codusuario: string) => {
     switch (codusuario) {
       case 'cgacela':
-        return 'Empresa Gacela';
+        return 'Gacela Express';
       case 'movilbus':
         return 'Empresa Movil Bus';
       case 'aremys':
