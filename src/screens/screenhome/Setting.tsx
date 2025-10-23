@@ -13,6 +13,17 @@ import {
   MapPin,
   Eye,
   EyeOff,
+  Check,
+  Lock,
+  User,
+  KeyRound,
+  ShieldCheck,
+  Building2,
+  UserCircle,
+  Mail,
+  RefreshCw,
+  Phone,
+  Save,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../../../App';
@@ -23,7 +34,7 @@ import Animated, {
   interpolate,
   runOnJS,
 } from 'react-native-reanimated';
-import { styles, alertStyles } from '../../styles/setting';
+import { styles } from '../../styles/setting';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -37,6 +48,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import AlertPro from 'react-native-alert-pro';
 import axios from 'axios';
 
+import ModalAlert from '../../components/ModalAlert';
+
 const Setting = () => {
   const { user, logout, server, tipo } = useAuthStore();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -45,14 +58,20 @@ const Setting = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
-  const alertRef = useRef<any>(null);
-  const successAlertRef = useRef<any>(null);
-  const errorAlertRef = useRef<any>(null);
-  const userAlertRef = useRef<any>(null);
-  const passwordMismatchAlertRef = useRef<any>(null);
-  const passwordSuccessAlertRef = useRef<any>(null);
-  const passwordErrorAlertRef = useRef<any>(null);
-  const passwordFieldsAlertRef = useRef<any>(null);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalUsuarioVisible, setModalUsuarioVisible] = useState(false);
+  const [modalEmailErrorVisible, setModalEmailErrorVisible] = useState(false);
+  const [modalUpdateSuccessVisible, setModalUpdateSuccessVisible] =
+    useState(false);
+  const [modalPasswordMismatchVisible, setModalPasswordMismatchVisible] =
+    useState(false);
+  const [modalPasswordSuccessVisible, setModalPasswordSuccessVisible] =
+    useState(false);
+  const [modalPasswordErrorVisible, setModalPasswordErrorVisible] =
+    useState(false);
+  const [modalPasswordFieldsVisible, setModalPasswordFieldsVisible] =
+    useState(false);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -63,7 +82,7 @@ const Setting = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -111,20 +130,20 @@ const Setting = () => {
   const handleUpdateData = async () => {
     // Validación: el campo usuario (Razón social o Nombres) es obligatorio
     if (!updateData.usuario.trim()) {
-      alertRef.current?.open();
+      setModalVisible(true);
       return;
     }
 
     // Validación adicional para tipo 'c' y 'p': verificar que el usuario sea requerido
     if ((tipo === 'c' || tipo === 'p') && !updateData.correo.trim()) {
-      userAlertRef.current?.open();
+      setModalUsuarioVisible(true);
       return;
     }
 
     // Validación adicional para tipo 'n': verificar que el correo sea válido
     if (tipo === 'n' && updateData.correo.trim()) {
       if (!validateEmail(updateData.correo)) {
-        errorAlertRef.current?.open();
+        setModalEmailErrorVisible(true);
         return;
       }
     }
@@ -141,7 +160,7 @@ const Setting = () => {
 
   const updateUserTypeN = async () => {
     setLoading(true);
-    
+
     try {
       const payload = {
         accountID: user?.username || '',
@@ -157,29 +176,28 @@ const Setting = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       console.log('Respuesta del servidor:', response.data);
-      
+
       // Si la respuesta es exitosa, mostrar alerta de éxito
-      successAlertRef.current?.open();
-      
+      setModalUpdateSuccessVisible(true);
+
       // Limpiar los campos después de actualizar
       setUpdateData({
         usuario: '',
         correo: '',
         celular: '',
       });
-      
     } catch (error: any) {
       console.error('Error al actualizar datos:', error);
-      
+
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
         console.error('Error de respuesta:', error.response?.data);
       }
-      passwordErrorAlertRef.current?.open();
+      setModalPasswordErrorVisible(true);
     } finally {
       setLoading(false);
     }
@@ -187,7 +205,7 @@ const Setting = () => {
 
   const updateUserTypeC = async () => {
     setLoading(true);
-    
+
     try {
       const payload = {
         accountID: user?.username || '',
@@ -203,29 +221,28 @@ const Setting = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       console.log('Respuesta del servidor:', response.data);
-      
+
       // Si la respuesta es exitosa, mostrar alerta de éxito
-      successAlertRef.current?.open();
-      
+      setModalUpdateSuccessVisible(true);
+
       // Limpiar los campos después de actualizar
       setUpdateData({
         usuario: '',
         correo: '',
         celular: '',
       });
-      
     } catch (error: any) {
       console.error('Error al actualizar datos:', error);
-      
+
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
         console.error('Error de respuesta:', error.response?.data);
       }
-      passwordErrorAlertRef.current?.open();
+      setModalPasswordErrorVisible(true);
     } finally {
       setLoading(false);
     }
@@ -233,7 +250,7 @@ const Setting = () => {
 
   const updateUserTypeP = async () => {
     setLoading(true);
-    
+
     try {
       const payload = {
         accountID: user?.username || '',
@@ -249,29 +266,28 @@ const Setting = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       console.log('Respuesta del servidor:', response.data);
-      
+
       // Si la respuesta es exitosa, mostrar alerta de éxito
-      successAlertRef.current?.open();
-      
+      setModalUpdateSuccessVisible(true);
+
       // Limpiar los campos después de actualizar
       setUpdateData({
         usuario: '',
         correo: '',
         celular: '',
       });
-      
     } catch (error: any) {
       console.error('Error al actualizar datos:', error);
-      
+
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
         console.error('Error de respuesta:', error.response?.data);
       }
-      passwordErrorAlertRef.current?.open();
+      setModalPasswordErrorVisible(true);
     } finally {
       setLoading(false);
     }
@@ -279,20 +295,24 @@ const Setting = () => {
 
   const handleEstablishPassword = async () => {
     // Validar que todos los campos estén completos
-    if (!passwordData.usuario.trim() || !passwordData.password.trim() || !passwordData.confirmPassword.trim()) {
-      passwordFieldsAlertRef.current?.open();
+    if (
+      !passwordData.usuario.trim() ||
+      !passwordData.password.trim() ||
+      !passwordData.confirmPassword.trim()
+    ) {
+      setModalPasswordFieldsVisible(true);
       return;
     }
 
     // Validar que las contraseñas coincidan
     if (passwordData.password !== passwordData.confirmPassword) {
-      passwordMismatchAlertRef.current?.open();
+      setModalPasswordMismatchVisible(true);
       return;
     }
 
     // Validar que la contraseña tenga al menos 3 caracteres
     if (passwordData.password.length < 3) {
-      passwordFieldsAlertRef.current?.open();
+      setModalPasswordFieldsVisible(true);
       return;
     }
 
@@ -302,7 +322,7 @@ const Setting = () => {
 
   const updatePassword = async () => {
     setLoadingPassword(true);
-    
+
     try {
       const response = await axios.put(
         `${server}/api/User/MobileUpdatePassword?username=${passwordData.usuario}&password=${passwordData.password}&tipo=${tipo}`,
@@ -311,166 +331,69 @@ const Setting = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
 
       console.log('Respuesta del servidor (password):', response.data);
-      
+
       // Si la respuesta es exitosa, mostrar alerta de éxito
-      passwordSuccessAlertRef.current?.open();
-      
+      setModalPasswordSuccessVisible(true);
+
       // Limpiar los campos después de actualizar
       setPasswordData({
         usuario: '',
         password: '',
         confirmPassword: '',
       });
-      
     } catch (error: any) {
       console.error('Error al cambiar contraseña:', error);
-      
+
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
         console.error('Error de respuesta:', error.response?.data);
       }
-      passwordErrorAlertRef.current?.open();
+      setModalPasswordErrorVisible(true);
     } finally {
       setLoadingPassword(false);
     }
   };
 
   const handleAlertClose = () => {
-    alertRef.current?.close();
+    setModalVisible(false);
   };
 
   const handleSuccessAlertClose = () => {
-    successAlertRef.current?.close();
+    setModalUpdateSuccessVisible(false);
   };
 
   const handleErrorAlertClose = () => {
-    errorAlertRef.current?.close();
+    setModalEmailErrorVisible(false);
   };
 
   const handleUserAlertClose = () => {
-    userAlertRef.current?.close();
+    setModalUsuarioVisible(false);
   };
 
   const handlePasswordMismatchAlertClose = () => {
-    passwordMismatchAlertRef.current?.close();
+    setModalPasswordMismatchVisible(false);
   };
 
   const handlePasswordSuccessAlertClose = () => {
-    passwordSuccessAlertRef.current?.close();
+    setModalPasswordSuccessVisible(false);
   };
 
   const handlePasswordErrorAlertClose = () => {
-    passwordErrorAlertRef.current?.close();
+    setModalPasswordErrorVisible(false);
   };
 
   const handlePasswordFieldsAlertClose = () => {
-    passwordFieldsAlertRef.current?.close();
+    setModalPasswordFieldsVisible(false);
   };
-
-  const renderUpdateForm = () => (
-    <KeyboardAwareScrollView
-      style={styles.scrollContent}
-      contentContainerStyle={{ paddingBottom: 120 }}
-      enableOnAndroid={true}
-      enableAutomaticScroll={true}
-      extraScrollHeight={30}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      bounces={false}
-    >
-      <View style={styles.formContainer}>
-        <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>
-            {tipo === 'n' ? '¿Nuevo correo o celular?' : '¿Nuevo usuario o celular?'}
-          </Text>
-
-          <Text style={styles.infoSubtitle}>
-            No te preocupes, en este apartado podrás actualizar estos datos rápidamente; si
-            deseas cambiar otra información, por favor contáctanos.
-          </Text>
-        </View>
-
-        <View style={styles.inputSection}>
-          {/* Para tipo 'n' mostrar "Razón social", para 'c' o 'p' mostrar "Nombres" */}
-          <Text style={styles.inputLabel}>
-            {tipo === 'n' ? 'Razón social' : 'Nombres'} <Text style={styles.requiredAsterisk}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={updateData.usuario}
-            onChangeText={text =>
-              setUpdateData({ ...updateData, usuario: text })
-            }
-            placeholder={tipo === 'n' ? 'Razón social' : 'Nombres'}
-            placeholderTextColor="#999"
-            editable={!loading}
-          />
-
-          {/* Para tipo 'n' mostrar "Correo asociado", para 'c' o 'p' mostrar "Usuario" */}
-          <Text style={styles.inputLabel}>
-            {tipo === 'n' ? 'Correo asociado' : 'Usuario'} {(tipo === 'c' || tipo === 'p') && <Text style={styles.requiredAsterisk}>*</Text>}
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={updateData.correo}
-            onChangeText={text =>
-              setUpdateData({ ...updateData, correo: text })
-            }
-            placeholder={tipo === 'n' ? 'correo@ejemplo.com' : 'Usuario'}
-            placeholderTextColor="#999"
-            keyboardType={tipo === 'n' ? 'email-address' : 'default'}
-            editable={!loading}
-            autoCapitalize="none"
-          />
-
-          <Text style={styles.inputLabel}>Celular asociado</Text>
-          <TextInput
-            style={styles.input}
-            value={updateData.celular}
-            onChangeText={text =>
-              setUpdateData({ ...updateData, celular: text })
-            }
-            placeholder="000000000"
-            placeholderTextColor="#999"
-            keyboardType="phone-pad"
-            editable={!loading}
-          />
-        </View>
-
-        <View style={styles.buttonWrapper}>
-          <TouchableOpacity
-            onPress={handleUpdateData}
-            activeOpacity={0.8}
-            disabled={loading}
-          >
-            <LinearGradient
-              colors={loading ? ['#999', '#666'] : ['#e36414', '#ff7f3f']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientButton}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  Actualizar datos
-                </Text>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAwareScrollView>
-  );
 
   const renderPasswordForm = () => (
     <KeyboardAwareScrollView
       style={styles.scrollContent}
-      contentContainerStyle={{ paddingBottom: 120 }}
+      contentContainerStyle={{ paddingBottom: 20 }}
       enableOnAndroid={true}
       enableAutomaticScroll={true}
       extraScrollHeight={30}
@@ -479,77 +402,100 @@ const Setting = () => {
       bounces={false}
     >
       <View style={styles.formContainer}>
-        <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>¿Olvidaste tu contraseña?</Text>
-          <Text style={styles.infoSubtitle}>
-            No te preocupes! Suele pasar. Por favor crea una nueva contraseña
-            asociando tu usuario correcto.
+        <View style={styles.headerSection}>
+          <View style={styles.iconWrapper}>
+            <View style={styles.iconCircle}>
+              <Lock size={30} color="#e36414" strokeWidth={2} />
+            </View>
+          </View>
+          <Text style={styles.headerTitleForm}>¿Olvidaste tu contraseña?</Text>
+          <Text style={styles.headerSubtitle}>
+            No te preocupes, suele pasar. Crea una nueva contraseña para tu
+            cuenta.
           </Text>
         </View>
 
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Usuario <Text style={styles.requiredAsterisk}>*</Text></Text>
-          <TextInput
-            style={styles.input}
-            value={passwordData.usuario}
-            onChangeText={text =>
-              setPasswordData({ ...passwordData, usuario: text })
-            }
-            placeholder="Usuario existente"
-            placeholderTextColor="#999"
-            editable={!loadingPassword}
-          />
-
-          <Text style={styles.inputLabel}>Crea una contraseña <Text style={styles.requiredAsterisk}>*</Text></Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              value={passwordData.password}
-              onChangeText={text =>
-                setPasswordData({ ...passwordData, password: text })
-              }
-              placeholder="Debe tener mínimo 3 caracteres"
-              placeholderTextColor="#999"
-              secureTextEntry={!showPassword}
-              editable={!loadingPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowPassword(!showPassword)}
-              disabled={loadingPassword}
-            >
-              {showPassword ? (
-                <EyeOff size={20} color="#999" />
-              ) : (
-                <Eye size={20} color="#999" />
-              )}
-            </TouchableOpacity>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              Usuario <Text style={styles.requiredAsterisk}>*</Text>
+            </Text>
+            <View style={styles.inputContainer}>
+              <User size={20} color="#999" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                value={passwordData.usuario}
+                onChangeText={text =>
+                  setPasswordData({ ...passwordData, usuario: text })
+                }
+                placeholder="Ingresa tu usuario"
+                placeholderTextColor="#999"
+                editable={!loadingPassword}
+              />
+            </View>
           </View>
 
-          <Text style={styles.inputLabel}>Confirma tu contraseña <Text style={styles.requiredAsterisk}>*</Text></Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              value={passwordData.confirmPassword}
-              onChangeText={text =>
-                setPasswordData({ ...passwordData, confirmPassword: text })
-              }
-              placeholder="Repetir contraseña"
-              placeholderTextColor="#999"
-              secureTextEntry={!showConfirmPassword}
-              editable={!loadingPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              disabled={loadingPassword}
-            >
-              {showConfirmPassword ? (
-                <EyeOff size={20} color="#999" />
-              ) : (
-                <Eye size={20} color="#999" />
-              )}
-            </TouchableOpacity>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              Nueva contraseña <Text style={styles.requiredAsterisk}>*</Text>
+            </Text>
+            <View style={styles.inputContainer}>
+              <KeyRound size={20} color="#999" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                value={passwordData.password}
+                onChangeText={text =>
+                  setPasswordData({ ...passwordData, password: text })
+                }
+                placeholder="Mínimo 3 caracteres"
+                placeholderTextColor="#999"
+                secureTextEntry={!showPassword}
+                editable={!loadingPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+                disabled={loadingPassword}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              Confirmar contraseña{' '}
+              <Text style={styles.requiredAsterisk}>*</Text>
+            </Text>
+            <View style={styles.inputContainer}>
+              <ShieldCheck size={20} color="#999" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                value={passwordData.confirmPassword}
+                onChangeText={text =>
+                  setPasswordData({ ...passwordData, confirmPassword: text })
+                }
+                placeholder="Repetir contraseña"
+                placeholderTextColor="#999"
+                secureTextEntry={!showConfirmPassword}
+                editable={!loadingPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={loadingPassword}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -560,17 +506,144 @@ const Setting = () => {
             disabled={loadingPassword}
           >
             <LinearGradient
-              colors={loadingPassword ? ['#999', '#666'] : ['#e36414', '#ff7f3f']}
+              colors={loading ? ['#ccc', '#999'] : ['#fb5607', '#f26419']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
             >
               {loadingPassword ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text style={styles.buttonText}>
-                  Establecer contraseña
-                </Text>
+                <>
+                  <Text style={styles.buttonText}>Establecer contraseña</Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAwareScrollView>
+  );
+
+  const renderUpdateForm = () => (
+    <KeyboardAwareScrollView
+      style={styles.scrollContent}
+      contentContainerStyle={{ paddingBottom: 20 }}
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
+      extraScrollHeight={30}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bounces={false}
+    >
+      <View style={styles.formContainer}>
+        <View style={styles.headerSection}>
+          <View style={styles.iconWrapper}>
+            <View style={styles.iconCircle}>
+              <RefreshCw size={30} color="#e36414" strokeWidth={2} />
+            </View>
+          </View>
+          <Text style={styles.headerTitleForm}>
+            {tipo === 'n'
+              ? '¿Nuevo correo o celular?'
+              : '¿Nuevo usuario o celular?'}
+          </Text>
+          <Text style={styles.headerSubtitle}>
+            Actualiza tus datos fácilmente aquí. Para otros cambios,
+            contáctanos.
+          </Text>
+        </View>
+
+        <View style={styles.inputSection}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              {tipo === 'n' ? 'Razón social' : 'Nombres'}{' '}
+              <Text style={styles.requiredAsterisk}>*</Text>
+            </Text>
+            <View style={styles.inputContainer}>
+              {tipo === 'n' ? (
+                <Building2 size={20} color="#999" style={styles.inputIcon} />
+              ) : (
+                <UserCircle size={20} color="#999" style={styles.inputIcon} />
+              )}
+              <TextInput
+                style={styles.textInput}
+                value={updateData.usuario}
+                onChangeText={text =>
+                  setUpdateData({ ...updateData, usuario: text })
+                }
+                placeholder={tipo === 'n' ? 'Razón social' : 'Nombres'}
+                placeholderTextColor="#999"
+                editable={!loading}
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>
+              {tipo === 'n' ? 'Correo asociado' : 'Usuario'}
+              {(tipo === 'c' || tipo === 'p') && (
+                <Text style={styles.requiredAsterisk}> *</Text>
+              )}
+            </Text>
+            <View style={styles.inputContainer}>
+              {tipo === 'n' ? (
+                <Mail size={20} color="#999" style={styles.inputIcon} />
+              ) : (
+                <User size={20} color="#999" style={styles.inputIcon} />
+              )}
+              <TextInput
+                style={styles.textInput}
+                value={updateData.correo}
+                onChangeText={text =>
+                  setUpdateData({ ...updateData, correo: text })
+                }
+                placeholder={tipo === 'n' ? 'correo@ejemplo.com' : 'Usuario'}
+                placeholderTextColor="#999"
+                keyboardType={tipo === 'n' ? 'email-address' : 'default'}
+                editable={!loading}
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Celular asociado</Text>
+            <View style={styles.inputContainer}>
+              <Phone size={20} color="#999" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                value={updateData.celular}
+                onChangeText={text =>
+                  setUpdateData({ ...updateData, celular: text })
+                }
+                placeholder="000000000"
+                placeholderTextColor="#999"
+                keyboardType="phone-pad"
+                editable={!loading}
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.buttonWrapper}>
+          <TouchableOpacity
+            onPress={handleUpdateData}
+            activeOpacity={0.8}
+            disabled={loading}
+          >
+            <LinearGradient
+              colors={loading ? ['#ccc', '#999'] : ['#fb5607', '#f26419']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>Actualizar datos</Text>
+                </>
               )}
             </LinearGradient>
           </TouchableOpacity>
@@ -583,8 +656,8 @@ const Setting = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#03045e']} 
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
@@ -602,6 +675,7 @@ const Setting = () => {
             activeForm === 'update' && styles.navOptionActive,
           ]}
           onPress={() => handleFormChange('update')}
+          activeOpacity={0.8}
         >
           <Settings
             size={20}
@@ -630,6 +704,7 @@ const Setting = () => {
             activeForm === 'password' && styles.navOptionActive,
           ]}
           onPress={() => handleFormChange('password')}
+          activeOpacity={0.8}
         >
           <MapPin
             size={20}
@@ -658,100 +733,69 @@ const Setting = () => {
       </Animated.View>
 
       {/* Alert Pro Component - Campo requerido (Razón social o Nombres) */}
-      <AlertPro
-        ref={alertRef}
-        title="Campo requerido"
-        message={`Por favor completa el campo ${tipo === 'n' ? 'Razón social' : 'Nombres'}`}
-        textCancel="Entendido"
-        showConfirm={false}
-        onCancel={handleAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
 
-      {/* Alert Pro Component - Usuario requerido para tipo C y P */}
-      <AlertPro
-        ref={userAlertRef}
-        title="Campo requerido"
-        message="Por favor completa el campo Usuario"
-        textCancel="Entendido"
-        showConfirm={false}
-        onCancel={handleUserAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
+   <ModalAlert
+  isVisible={modalVisible}
+  onClose={handleAlertClose}
+  title="Campo requerido"
+  message={`Por favor completa el campo ${tipo === 'n' ? 'Razón social' : 'Nombres'}`}
+/>
 
-      {/* Alert Pro Component - Email inválido */}
-      <AlertPro
-        ref={errorAlertRef}
-        title="Correo inválido"
-        message="Por favor ingresa un correo electrónico válido"
-        textCancel="Entendido"
-        showConfirm={false}
-        onCancel={handleErrorAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
+   
 
-      {/* Alert Pro Component - Éxito */}
-      <AlertPro
-        ref={successAlertRef}
-        title="¡Actualización exitosa!"
-        message="Tus datos han sido actualizados correctamente"
-        textCancel="Aceptar"
-        showConfirm={false}
-        onCancel={handleSuccessAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
+<ModalAlert
+  isVisible={modalUsuarioVisible}
+  onClose={handleUserAlertClose}
+  title="Campo requerido"
+  message="Por favor completa el campo Usuario"
+/>
 
-      {/* Alert Pro Component - Contraseñas no coinciden */}
-      <AlertPro
-        ref={passwordMismatchAlertRef}
-        title="Contraseñas no coinciden"
-        message="Las contraseñas ingresadas no son iguales. Por favor verifica."
-        textCancel="Entendido"
-        showConfirm={false}
-        onCancel={handlePasswordMismatchAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
+<ModalAlert
+  isVisible={modalEmailErrorVisible}
+  onClose={handleErrorAlertClose}
+  title="Correo inválido"
+  message="Por favor ingresa un correo electrónico válido"
+/>
 
-      {/* Alert Pro Component - Éxito cambio de contraseña */}
-      <AlertPro
-        ref={passwordSuccessAlertRef}
-        title="¡Contraseña actualizada!"
-        message="Tu contraseña ha sido cambiada exitosamente"
-        textCancel="Aceptar"
-        showConfirm={false}
-        onCancel={handlePasswordSuccessAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
+<ModalAlert
+  isVisible={modalUpdateSuccessVisible}
+  onClose={handleSuccessAlertClose}
+  title="¡Actualización exitosa!"
+  message="Tus datos han sido actualizados correctamente"
+  buttonText="Aceptar"
+/>
 
-      {/* Alert Pro Component - Error general */}
-      <AlertPro
-        ref={passwordErrorAlertRef}
-        title="Error"
-        message="No se pudo completar la operación. Por favor intenta de nuevo."
-        textCancel="Entendido"
-        showConfirm={false}
-        onCancel={handlePasswordErrorAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
+<ModalAlert
+  isVisible={modalPasswordMismatchVisible}
+  onClose={handlePasswordMismatchAlertClose}
+  title="Contraseñas no coinciden"
+  message="Las contraseñas ingresadas no son iguales. Por favor verifica."
+/>
 
-      {/* Alert Pro Component - Campos incompletos contraseña */}
-      <AlertPro
-        ref={passwordFieldsAlertRef}
-        title="Campos incompletos"
-        message="Por favor completa todos los campos requeridos. La contraseña debe tener mínimo 3 caracteres."
-        textCancel="Entendido"
-        showConfirm={false}
-        onCancel={handlePasswordFieldsAlertClose}
-        closeOnPressMask={true}
-        customStyles={alertStyles}
-      />
+<ModalAlert
+  isVisible={modalPasswordSuccessVisible}
+  onClose={handlePasswordSuccessAlertClose}
+  title="¡Contraseña actualizada!"
+  message="Tu contraseña ha sido cambiada exitosamente"
+  buttonText="Aceptar"
+/>
+
+<ModalAlert
+  isVisible={modalPasswordErrorVisible}
+  onClose={handlePasswordErrorAlertClose}
+  title="Error"
+  message="No se pudo completar la operación. Por favor intenta de nuevo."
+/>
+
+<ModalAlert
+  isVisible={modalPasswordFieldsVisible}
+  onClose={handlePasswordFieldsAlertClose}
+  title="Campos incompletos"
+  message="Por favor completa todos los campos requeridos. La contraseña debe tener mínimo 3 caracteres."
+/>
+
+    
+
     </LinearGradient>
   );
 };

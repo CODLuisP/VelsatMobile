@@ -5,9 +5,11 @@ import {
   TouchableOpacity,
   Platform,
   ActivityIndicator,
-  Animated,
+  ScrollView,
+  TextInput,
+  Alert,
 } from 'react-native';
-import { ChevronLeft, Calendar, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft, Calendar, ChevronRight, MapPin } from 'lucide-react-native';
 import {
   NavigationProp,
   RouteProp,
@@ -38,89 +40,14 @@ interface RoutePoint {
   latitude: number;
 }
 
-const RadarPulse = ({ color, delay = 0 }: { color: string; delay?: number }) => {
-  const scaleAnim = useRef(new Animated.Value(0.5)).current;
-  const opacityAnim = useRef(new Animated.Value(0.8)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: 2.5,
-          duration: 3000,
-          delay: delay,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 0,
-          duration: 3000,
-          delay: delay,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    animation.start();
-
-    return () => animation.stop();
-  }, []);
-
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={{
-        position: 'absolute',
-        top: 10,
-        width: 34,
-        height: 34,
-        backgroundColor: color,
-        borderRadius: 17,
-        transform: [{ scale: scaleAnim }],
-        opacity: opacityAnim,
-      }}
-      
-    />
-  );
-};
-
-const AnimatedMarker = ({ 
+// Marcador simple y optimizado - sin animaciones pesadas
+const SimpleMarker = React.memo(({ 
   children, 
 }: { 
   children: React.ReactNode; 
 }) => {
-  const translateY = useRef(new Animated.Value(-100)).current;
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.spring(translateY, {
-        toValue: 0,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-
-  return (
-    <Animated.View
-      style={{
-        transform: [
-          { translateY },
-          { scale: scaleAnim },
-        ],
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
-};
+  return <View>{children}</View>;
+});
 
 const TourReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -134,7 +61,11 @@ const TourReport = () => {
   const [routeData, setRouteData] = useState<RoutePoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [showRadar, setShowRadar] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState<string>('');
+  const [focusedPoint, setFocusedPoint] = useState<number | null>(null);
+
+  const mapRef = useRef<MapView>(null);
+  const webViewRef = useRef<WebView>(null);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -199,13 +130,6 @@ const TourReport = () => {
     return '#3b82f6'; 
   };
 
-  const getSpeedColorLight = (speed: number): string => {
-    if (speed === 0) return 'rgba(239, 68, 68, 0.2)'; 
-    if (speed > 0 && speed < 11) return 'rgba(234, 179, 8, 0.2)'; 
-    if (speed >= 11 && speed < 60) return 'rgba(34, 197, 94, 0.2)'; 
-    return 'rgba(59, 130, 246, 0.2)'; 
-  };
-
   const handleGoBack = () => {
     navigation.goBack();
   };
@@ -217,6 +141,98 @@ const TourReport = () => {
 
   const toggleSidebarCompact = () => {
     setSidebarCompact(!sidebarCompact);
+  };
+
+  const focusOnPoint = (pointIndex: number) => {
+    if (pointIndex < 0 || pointIndex >= routeData.length) {
+      Alert.alert('Error', 'Punto no válido');
+      return;
+    }
+
+    setFocusedPoint(pointIndex);
+    const point = routeData[pointIndex];
+
+    console.log(`Focusing on point #${pointIndex + 1} (array index ${pointIndex}):`, point);
+
+    if (Platform.OS === 'ios') {
+      // Para iOS con MapView
+      setTimeout(() => {
+        mapRef.current?.animateToRegion(
+          {
+            latitude: point.latitude,
+            longitude: point.longitude,
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.005,
+          },
+          1000
+        );
+      }, 100);
+    } else {
+      // Para Android con WebView/Leaflet
+      const jsCode = `
+        (function() {
+          try {
+            if (typeof map !== 'undefined' && map) {
+              console.log('Moving to point ${pointIndex + 1} at [${point.latitude}, ${point.longitude}]');
+              
+              map.setView([${point.latitude}, ${point.longitude}], 17, {
+                animate: true,
+                duration: 1
+              });
+              
+              // Buscar el marcador y abrir su popup
+              map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                  var popup = layer.getPopup();
+                  if (popup && popup.getContent().includes('Punto ${pointIndex + 1}<')) {
+                    layer.openPopup();
+                    console.log('Opened popup for point ${pointIndex + 1}');
+                  }
+                }
+              });
+              
+            } else {
+              console.log('Map not ready');
+            }
+          } catch(e) {
+            console.log('Error:', e.message);
+          }
+        })();
+        true;
+      `;
+      webViewRef.current?.injectJavaScript(jsCode);
+    }
+  };
+
+  const handlePointInput = () => {
+    const pointNum = parseInt(selectedPoint.trim());
+    
+    if (selectedPoint.trim() === '') {
+      Alert.alert('Error', 'Por favor ingrese un número de punto');
+      return;
+    }
+    
+    if (isNaN(pointNum)) {
+      Alert.alert('Error', 'Por favor ingrese un número válido');
+      return;
+    }
+    
+    if (pointNum < 1 || pointNum > routeData.length) {
+      Alert.alert(
+        'Error', 
+        `Por favor ingrese un número entre 1 y ${routeData.length}`
+      );
+      return;
+    }
+    
+    // CORRECCIÓN: El usuario ingresa 1-based, pero el array es 0-based
+    // Si el usuario ingresa "1", queremos el índice 0
+    const arrayIndex = pointNum - 1;
+    
+    console.log(`Usuario ingresó: ${pointNum}, navegando al índice del array: ${arrayIndex}`);
+    
+    focusOnPoint(arrayIndex);
+    setSelectedPoint(''); // Limpiar el input después de ir al punto
   };
 
   const leafletHTML = `
@@ -232,7 +248,7 @@ const TourReport = () => {
         body { margin: 0; padding: 0; overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
         
-        /* Marcador GPS con radar animado */
+        /* Marcador GPS optimizado sin animaciones */
         .gps-marker-container {
           position: relative;
           width: 70px;
@@ -241,39 +257,6 @@ const TourReport = () => {
           align-items: center;
           justify-content: flex-start;
           flex-direction: column;
-        }
-
-        /* Ondas de radar - centradas con el marcador */
-        .radar-pulse {
-          position: absolute;
-          top: 10px;
-          left: 50%;
-          transform: translateX(-50%) scale(0.5);
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          animation: radar-animation 3s infinite;
-          pointer-events: none;
-          display: none; /* Oculto por defecto */
-        }
-
-        .radar-pulse:nth-child(2) {
-          animation-delay: 1s;
-        }
-
-        .radar-pulse:nth-child(3) {
-          animation-delay: 2s;
-        }
-
-        @keyframes radar-animation {
-          0% {
-            transform: translateX(-50%) scale(0.5);
-            opacity: 0.8;
-          }
-          100% {
-            transform: translateX(-50%) scale(2.5);
-            opacity: 0;
-          }
         }
 
         /* Círculo principal del marcador GPS */
@@ -315,12 +298,14 @@ const TourReport = () => {
       <div id="map"></div>
       <script>
         var routeData = ${JSON.stringify(routeData)};
+        var map;
+        var markers = [];
         
         if (routeData.length === 0) {
           document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;">No hay datos de ruta</div>';
         } else {
           var firstPoint = routeData[0];
-          var map = L.map('map').setView([firstPoint.latitude, firstPoint.longitude], 15);
+          map = L.map('map').setView([firstPoint.latitude, firstPoint.longitude], 15);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
           
           function getSpeedColor(speed) {
@@ -329,44 +314,16 @@ const TourReport = () => {
             if (speed >= 11 && speed < 60) return '#22c55e';
             return '#3b82f6';
           }
-
-          function getSpeedColorLight(speed) {
-            if (speed === 0) return 'rgba(239, 68, 68, 0.2)';
-            if (speed > 0 && speed < 11) return 'rgba(234, 179, 8, 0.2)';
-            if (speed >= 11 && speed < 60) return 'rgba(34, 197, 94, 0.2)';
-            return 'rgba(59, 130, 246, 0.2)';
-          }
-
-          // Función para mostrar/ocultar radar según zoom
-          function updateRadarVisibility() {
-            var currentZoom = map.getZoom();
-            var radars = document.querySelectorAll('.radar-pulse');
-            
-            radars.forEach(function(radar) {
-              if (currentZoom >= 15) {
-                radar.style.display = 'block';
-              } else {
-                radar.style.display = 'none';
-              }
-            });
-          }
-
-          // Escuchar cambios de zoom
-          map.on('zoomend', updateRadarVisibility);
           
           var latlngs = routeData.map(p => [p.latitude, p.longitude]);
           var polyline = L.polyline(latlngs, { color: '#1e3a8a', weight: 4, opacity: 0.7 }).addTo(map);
           
           routeData.forEach((p, i) => {
             var color = getSpeedColor(p.speed);
-            var colorLight = getSpeedColorLight(p.speed);
             
-            // Crear el HTML del marcador GPS con radar
+            // Crear el HTML del marcador GPS sin radar
             var markerHTML = 
               '<div class="gps-marker-container">' +
-                '<div class="radar-pulse" style="background-color: ' + colorLight + ';"></div>' +
-                '<div class="radar-pulse" style="background-color: ' + colorLight + ';"></div>' +
-                '<div class="radar-pulse" style="background-color: ' + colorLight + ';"></div>' +
                 '<div class="gps-marker-pin" style="background-color: ' + color + ';">' +
                   (i + 1) +
                 '</div>' +
@@ -381,15 +338,16 @@ const TourReport = () => {
               className: 'custom-gps-icon'
             });
             
-            L.marker([p.latitude, p.longitude], { icon: customIcon })
+            var marker = L.marker([p.latitude, p.longitude], { icon: customIcon })
               .bindPopup('<b>Punto ' + (i+1) + '</b><br>Fecha: ' + p.date + ' ' + p.time + '<br>Velocidad: ' + p.speed + ' km/h')
               .addTo(map);
+            
+            markers.push(marker);
           });
           
           map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
           
-          // Verificar visibilidad inicial de radares
-          updateRadarVisibility();
+          console.log('Map initialized with ' + routeData.length + ' points');
         }
       </script>
     </body>
@@ -416,7 +374,7 @@ const TourReport = () => {
       );
     }
 
-    // --- iOS: Marcadores personalizados con forma de GPS y efecto radar animado ---
+    // --- iOS: Marcadores optimizados sin animaciones pesadas ---
     if (Platform.OS === 'ios') {
       const coordinates = routeData.map(point => ({
         latitude: point.latitude,
@@ -434,7 +392,7 @@ const TourReport = () => {
       
       const centerLat = (minLat + maxLat) / 2;
       const centerLng = (minLng + maxLng) / 2;
-      const deltaLat = (maxLat - minLat) * 1.3; // Añadir 30% de padding
+      const deltaLat = (maxLat - minLat) * 1.3;
       const deltaLng = (maxLng - minLng) * 1.3;
 
       const initialRegion =
@@ -442,7 +400,7 @@ const TourReport = () => {
           ? {
               latitude: centerLat,
               longitude: centerLng,
-              latitudeDelta: Math.max(deltaLat, 0.01), // Mínimo zoom
+              latitudeDelta: Math.max(deltaLat, 0.01),
               longitudeDelta: Math.max(deltaLng, 0.01),
             }
           : {
@@ -454,13 +412,14 @@ const TourReport = () => {
 
       return (
         <MapView
+          ref={mapRef}
           provider={PROVIDER_DEFAULT}
           style={styles.map}
           initialRegion={initialRegion}
-          onRegionChangeComplete={(region) => {
-            // Mostrar radar solo cuando latitudeDelta es menor (más zoom)
-            setShowRadar(region.latitudeDelta < 0.01);
-          }}
+          maxZoomLevel={19}
+          loadingEnabled={true}
+          loadingIndicatorColor="#1e3a8a"
+          loadingBackgroundColor="#ffffff"
         >
           <Polyline
             coordinates={coordinates}
@@ -469,7 +428,7 @@ const TourReport = () => {
           />
           {routeData.map((point, index) => (
             <Marker
-              key={index}
+              key={`marker-${index}`}
               coordinate={{
                 latitude: point.latitude,
                 longitude: point.longitude,
@@ -477,11 +436,10 @@ const TourReport = () => {
               title={`Punto ${index + 1}`}
               description={`Fecha: ${point.date} ${point.time} - ${point.speed} km/h`}
               centerOffset={{ x: 0, y: -12 }}
+              tracksViewChanges={false}
             >
-              {/* Marcador profesional con efecto radar animado - todos aparecen al mismo tiempo */}
-              <AnimatedMarker>
+              <SimpleMarker>
                 <View
-                  pointerEvents="box-none"
                   style={{
                     width: 70,
                     height: 80,
@@ -489,12 +447,6 @@ const TourReport = () => {
                     justifyContent: 'flex-start',
                   }}
                 >
-                  {/* Ondas de radar animadas (3 ondas con diferentes delays) - NO son clickeables */}
-                  {showRadar && <RadarPulse color={getSpeedColorLight(point.speed)} delay={0} />}
-                  {showRadar && <RadarPulse color={getSpeedColorLight(point.speed)} delay={1000} />}
-                  {showRadar && <RadarPulse color={getSpeedColorLight(point.speed)} delay={2000} />}
-
-                  {/* Pin de GPS - círculo principal - SOLO ESTE es clickeable */}
                   <View
                     style={{
                       width: 34,
@@ -509,7 +461,8 @@ const TourReport = () => {
                       shadowOffset: { width: 0, height: 2 },
                       elevation: 8,
                       marginTop: 10,
-                      zIndex: 10,
+                      borderWidth: focusedPoint === index ? 3 : 0,
+                      borderColor: '#fff',
                     }}
                   >
                     <Text
@@ -523,26 +476,23 @@ const TourReport = () => {
                     </Text>
                   </View>
 
-                  {/* Punta del marcador GPS sin bordes */}
-                  <View style={{ position: 'relative', zIndex: 10 }}>
-                    <View
-                      style={{
-                        width: 0,
-                        height: 0,
-                        backgroundColor: 'transparent',
-                        borderStyle: 'solid',
-                        borderLeftWidth: 9,
-                        borderRightWidth: 9,
-                        borderTopWidth: 12,
-                        borderLeftColor: 'transparent',
-                        borderRightColor: 'transparent',
-                        borderTopColor: getSpeedColor(point.speed),
-                        marginTop: -3,
-                      }}
-                    />
-                  </View>
+                  <View
+                    style={{
+                      width: 0,
+                      height: 0,
+                      backgroundColor: 'transparent',
+                      borderStyle: 'solid',
+                      borderLeftWidth: 9,
+                      borderRightWidth: 9,
+                      borderTopWidth: 12,
+                      borderLeftColor: 'transparent',
+                      borderRightColor: 'transparent',
+                      borderTopColor: getSpeedColor(point.speed),
+                      marginTop: -3,
+                    }}
+                  />
                 </View>
-              </AnimatedMarker>
+              </SimpleMarker>
             </Marker>
           ))}
         </MapView>
@@ -550,6 +500,7 @@ const TourReport = () => {
     } else {
       return (
         <WebView
+          ref={webViewRef}
           source={{ html: leafletHTML }}
           style={styles.map}
           javaScriptEnabled={true}
@@ -557,6 +508,9 @@ const TourReport = () => {
           startInLoadingState={true}
           scalesPageToFit={true}
           mixedContentMode="compatibility"
+          onMessage={(event) => {
+            console.log('WebView message:', event.nativeEvent.data);
+          }}
         />
       );
     }
@@ -565,12 +519,12 @@ const TourReport = () => {
   const topSpace = insets.top + 5;
 
   return (
-     <LinearGradient
-             colors={['#00296b', '#1e3a8a', '#00296b']}
-             style={[styles.container, { paddingBottom: bottomSpace }]}
-             start={{ x: 0, y: 0 }}
-             end={{ x: 0, y: 1 }}
-           >
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -642,18 +596,66 @@ const TourReport = () => {
             </View>
 
             {!sidebarCompact && (
-              <View style={styles.sidebarContent}>
+              <ScrollView style={styles.sidebarContent}>
                 <View style={styles.sidebarSection}>
                   <Text style={styles.sidebarSectionTitle}>UNIDAD</Text>
                   <Text style={styles.sidebarText}>{unit.plate}</Text>
                 </View>
 
-                <View style={styles.sidebarSection}>
-                  <Text style={styles.sidebarSectionTitle}>RANGO FECHAS</Text>
-                  <Text style={styles.sidebarText}>
-                    {formatDate(startDate)} - {formatDate(endDate)}
-                  </Text>
-                </View>
+               
+
+                {/* SECCIÓN: IR A PUNTO */}
+                {routeData.length > 0 && (
+                  <View style={styles.sidebarSection}>
+                    <Text style={styles.sidebarSectionTitle}>IR A PUNTO</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                      <TextInput
+                        style={{
+                          flex: 1,
+                          backgroundColor: '#fff',
+                          borderRadius: 6,
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          color: '#1e3a8a',
+                          fontSize: 14,
+                          marginRight: 8,
+                          fontWeight: '600',
+                        }}
+                        placeholder={`1-${routeData.length}`}
+                        placeholderTextColor="#94a3b8"
+                        keyboardType="numeric"
+                        value={selectedPoint}
+                        onChangeText={setSelectedPoint}
+                        onSubmitEditing={handlePointInput}
+                        returnKeyType="go"
+                      />
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: '#e36414',
+                          borderRadius: 6,
+                          paddingHorizontal: 16,
+                          paddingVertical: 8,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                        }}
+                        onPress={handlePointInput}
+                      >
+                        <MapPin size={16} color="#fff" />
+                        <Text style={{ color: '#fff', fontWeight: 'bold', marginLeft: 4 }}>
+                          IR
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={{ 
+                      color: '#94a3b8', 
+                      fontSize: 11, 
+                      marginTop: 4,
+                      fontStyle: 'italic' 
+                    }}>
+                      Ingresa un número de punto y presiona IR
+                    </Text>
+                  </View>
+                )}
 
                 <View style={styles.sidebarSection}>
                   <Text style={styles.sidebarSectionTitle}>RANGO VELOCIDAD</Text>
@@ -693,13 +695,12 @@ const TourReport = () => {
                     </Text>
                   </View>
                 )}
-              </View>
+              </ScrollView>
             )}
           </View>
         )}
-        
       </View>
-   </LinearGradient>
+    </LinearGradient>
   );
 };
 

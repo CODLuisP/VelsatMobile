@@ -29,7 +29,6 @@ import Central from './src/screens/screenhome/help/Central';
 import Login from './src/components/login/Login';
 import Home from './src/screens/Home';
 import HomeDriverPassenger from './src/screens/HomeDriverPassenger';
-
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -184,6 +183,7 @@ const App = () => {
   }, []);
 
   return (
+
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: '#00296b' }}>
         <StatusBar barStyle="light-content" backgroundColor="#00296b" />
@@ -249,7 +249,9 @@ const App = () => {
           </Stack.Navigator>
         </NavigationContainer>
       </View>
+
     </SafeAreaProvider>
+
   );
 };
 
