@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -30,19 +30,20 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  companyName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 20,
+    resizeMode: 'cover',
+  },
+  companyNameTitle: {
+    fontSize: 14,
+    fontWeight: '700',
     color: '#fff',
-    textAlign: 'center',
+    marginBottom: 2,
   },
-  scrollContent: {
-    flex: 1,
-    marginTop: 0,
-    backgroundColor: '#f5f5f5',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
+
+  // Info Section
   infoSection: {
     backgroundColor: '#fff',
     marginHorizontal: 20,
@@ -94,47 +95,181 @@ export const styles = StyleSheet.create({
     color: '#303030ff',
     flex: 1,
   },
+
+  // Scroll Content (igual que devicesList en Devices)
+  scrollContent: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  scrollContentContainer: {
+    paddingVertical: 20,
+  },
+
+  // Menu Section
   menuSection: {
+    backgroundColor: '#e36414',
     marginHorizontal: 20,
-    marginTop: 20,
+    marginBottom: 16,
+    borderRadius: 15,
+    borderWidth: 1,       
+   borderColor: '#dee2e6',
+
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
+    letterSpacing: 0.5,
   },
   menuItem: {
-    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 18,
-    marginBottom: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    backgroundColor: '#f8f9fa',
+      borderWidth: 1,        
+      borderColor: '#e9ecef',   
+      
+  },
+
+   menuItemEnd: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+    paddingHorizontal: 20,
+    backgroundColor: '#f8f9fa',
+      borderWidth: 1,        
+      borderColor: '#e9ecef',   
+        borderBottomLeftRadius: 13,
+  borderBottomRightRadius: 13,
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#fff5f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  menuTextContainer: {
+    flex: 1,
   },
   menuText: {
-    fontSize: 14,
-    color: '#333',
-    marginLeft: 12,
+    fontSize: 13,
     fontWeight: '500',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  menuSubtext: {
+    fontSize: 11,
+    color: '#999',
   },
   chevronRight: {
     transform: [{ rotate: '180deg' }],
+    marginLeft: 8,
   },
-  avatarImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 20,
-    resizeMode: 'cover',
+
+  // Logout Specific
+  logoutItem: {
+    borderBottomWidth: 0,
   },
-  // Estilos para la sección de versión profesional
+  logoutIconContainer: {
+    backgroundColor: '#fee',
+  },
+  logoutText: {
+    color: '#dc2626',
+  },
+
+  // Footer / Company Info
+  footerContainer: {
+    padding: 20,
+    paddingTop: 5,
+    paddingBottom: 0,
+  },
+  companyCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderWidth: 1,        
+      borderColor: '#e9ecef',  
+
+    marginBottom: 16,
+  },
+  companyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  companyLogoPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#e36414',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  companyLogoText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  companyDetails: {
+    flex: 1,
+  },
+  companyName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  companyLocation: {
+    fontSize: 10,
+    color: '#666',
+  },
+  companyDivider: {
+    height: 1,
+    backgroundColor: '#f0f0f0',
+    marginBottom: 10,
+  },
+  companyFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  rucLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#999',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  rucNumber: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  versionText: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+  },
+
+  // Estilos antiguos (por compatibilidad)
   versionContainer: {
     paddingVertical: 0,
     paddingHorizontal: 20,
@@ -182,16 +317,51 @@ export const styles = StyleSheet.create({
     color: '#464545ff',
     fontWeight: '500',
   },
-versionValue: {
-  fontSize: 13,
-  color: '#1e3a8a',
-  fontWeight: '600',
-},
+  versionValue: {
+    fontSize: 13,
+    color: '#1e3a8a',
+    fontWeight: '600',
+  },
   copyrightText: {
     fontSize: 11,
     color: '#575757ff',
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 5,
+  },
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    marginBottom: 16,
+    borderBottomWidth: 1,
+  },
+  profileAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#e36414',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  profileInitial: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: '#666',
   },
 });

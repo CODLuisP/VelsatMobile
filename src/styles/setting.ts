@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -255,35 +255,7 @@ inputIcon: {
     height: '100%',
   },
 
-  
-
 
 });
 
-// Estilos para AlertPro (fuera de StyleSheet.create)
-export const alertStyles = {
-  mask: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  container: {
-    borderRadius: 15,
-    backgroundColor: '#fff',
-  },
-  title: {
-    color: '#e36414',
-    fontSize: 18,
-    fontWeight: 'bold' as 'bold',
-  },
-  message: {
-    color: '#333',
-    fontSize: 14,
-  },
-  buttonCancel: {
-    backgroundColor: '#e36414',
-    borderRadius: 10,
-  },
-  buttonCancelText: {
-    color: '#fff',
-    fontWeight: 'bold' as 'bold',
-  },
-};
+

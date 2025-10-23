@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ActivityIndicator, FlatList } from 'react-native';
 import {
   ChevronLeft,
   Info,
@@ -110,17 +110,14 @@ const Profile = () => {
 
   const topSpace = insets.top + 10;
 
-  // Determinar si debe mostrar las opciones de Marcadores y Notificaciones
   const shouldShowMarkerAndNotifications = tipo === 'n';
 
-  // Obtener el primer email si hay múltiples separados por punto y coma
   const getFirstEmail = (emailString: string | null | undefined): string => {
     if (!emailString || emailString.trim() === '') return '-';
     const emails = emailString.split(';');
     return emails[0].trim();
   };
 
-  // Obtener el nombre completo para tipo 'c' y 'p'
   const getFullName = (apellidos: string | null | undefined, nombres: string | null | undefined): string => {
     const parts = [];
     if (apellidos) parts.push(apellidos.trim());
@@ -128,7 +125,6 @@ const Profile = () => {
     return parts.length > 0 ? parts.join(' ') : 'Sin nombre';
   };
 
-  // Obtener los últimos 8 dígitos del codlan
   const getLast8Digits = (codlan: string | null | undefined): string => {
     if (!codlan) return '-';
     const digits = codlan.replace(/\D/g, ''); 
@@ -138,13 +134,12 @@ const Profile = () => {
   return (
     <LinearGradient
       colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace-2 }]}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-
+      {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
-
         <TouchableOpacity
           style={[styles.backButton, { top: insets.top + 10 }]}
           onPress={handleGoBack}
@@ -152,7 +147,6 @@ const Profile = () => {
           <ChevronLeft size={26} color="#fff" />
         </TouchableOpacity>
 
-        {/* Profile Avatar */}
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
             <Image
@@ -161,11 +155,10 @@ const Profile = () => {
             />
           </View>
         </View>
-        {/* User Name */}
-        <Text style={styles.companyName}>
+
+        <Text style={styles.companyNameTitle}>
           {toUpperCaseText(user?.description || user?.name || 'Usuario')}
         </Text>
-
       </View>
 
       {/* Information Section */}
@@ -181,7 +174,6 @@ const Profile = () => {
           </View>
         ) : (
           <View style={styles.infoContent}>
-            {/* Para tipo 'n' mostrar datos de la API */}
             {tipo === 'n' && userDetails ? (
               <>
                 <View style={styles.infoItem}>
@@ -190,21 +182,18 @@ const Profile = () => {
                     {userDetails.description || 'Sin nombre'}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Clipboard size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {userDetails.ruc || '-'}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Mail size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {getFirstEmail(userDetails.contactEmail)}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
@@ -220,21 +209,18 @@ const Profile = () => {
                     {getFullName(userDetails.apellidos, userDetails.nombres)}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Clipboard size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {userDetails.dni || '-'}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {userDetails.telefono || '-'}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
@@ -250,28 +236,24 @@ const Profile = () => {
                     {getFullName(userDetails.apellidos, userDetails.nombres)}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Clipboard size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {getLast8Digits(userDetails.codlan)}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {userDetails.telefono || '-'}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
                     {userDetails.codlan || '-'}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Clipboard size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>
@@ -287,24 +269,20 @@ const Profile = () => {
                     {user?.description || 'Sin nombre'}
                   </Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Clipboard size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>-</Text>
                 </View>
-
                 <View style={styles.infoItem}>
                   <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>-</Text>
                 </View>
-
                 {(tipo === 'c' || tipo === 'p') && (
                   <View style={styles.infoItem}>
                     <Smartphone size={16} color="#999" />
                     <Text style={styles.infoText}>-</Text>
                   </View>
                 )}
-
                 {tipo === 'p' && (
                   <View style={styles.infoItem}>
                     <Clipboard size={16} color="#999" />
@@ -317,75 +295,115 @@ const Profile = () => {
         )}
       </View>
 
-      <ScrollView style={styles.scrollContent}>
-        {/* Menu Options */}
-        <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
-            <View style={styles.menuItemLeft}>
-              <Settings size={20} color="#e36414" />
-              <Text style={styles.menuText}>Configuración</Text>
+      {/* FlatList con menú */}
+      <FlatList
+        data={[]}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={null}
+        ListHeaderComponent={() => (
+          <>
+            <View style={styles.menuSection}>
+              <Text style={styles.sectionTitle}>GENERAL</Text>
+              
+              <TouchableOpacity 
+                style={styles.menuItem} 
+                onPress={handleSettings}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuItemLeft}>
+                  <View style={styles.iconContainer}>
+                    <Settings size={22} color="#e36414" />
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text style={styles.menuText}>Configuración</Text>
+                    <Text style={styles.menuSubtext}>Ajustes de la aplicación</Text>
+                  </View>
+                </View>
+                <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
+              </TouchableOpacity>
+
+              {shouldShowMarkerAndNotifications && (
+                <>
+                  <TouchableOpacity 
+                    style={styles.menuItem} 
+                    onPress={handlePin}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.menuItemLeft}>
+                      <View style={styles.iconContainer}>
+                        <Pin size={22} color="#e36414" />
+                      </View>
+                      <View style={styles.menuTextContainer}>
+                        <Text style={styles.menuText}>Marcadores</Text>
+                        <Text style={styles.menuSubtext}>Contenido guardado</Text>
+                      </View>
+                    </View>
+                    <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.menuItemEnd}
+                    onPress={handleNotifications}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.menuItemLeft}>
+                      <View style={styles.iconContainer}>
+                        <Megaphone size={22} color="#e36414" />
+                      </View>
+                      <View style={styles.menuTextContainer}>
+                        <Text style={styles.menuText}>Notificaciones</Text>
+                        <Text style={styles.menuSubtext}>Alertas y avisos</Text>
+                      </View>
+                    </View>
+                    <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
-            <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
-          </TouchableOpacity>
 
-          {/* Solo mostrar Marcadores si tipo === 'n' */}
-          {shouldShowMarkerAndNotifications && (
-            <TouchableOpacity style={styles.menuItem} onPress={handlePin}>
-              <View style={styles.menuItemLeft}>
-                <Pin size={20} color="#e36414" />
-                <Text style={styles.menuText}>Marcadores</Text>
-              </View>
-              <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
-            </TouchableOpacity>
-          )}
-
-          {/* Solo mostrar Notificaciones si tipo === 'n' */}
-          {shouldShowMarkerAndNotifications && (
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={handleNotifications}
-            >
-              <View style={styles.menuItemLeft}>
-                <Megaphone size={20} color="#e36414" />
-                <Text style={styles.menuText}>Notificaciones</Text>
-              </View>
-              <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-            <View style={styles.menuItemLeft}>
-              <LogOut size={20} color="#e36414" />
-              <Text style={styles.menuText}>Cerrar sesión</Text>
+            <View style={styles.menuSection}>
+              <Text style={styles.sectionTitle}>CUENTA</Text>
+              
+              <TouchableOpacity 
+                style={[styles.menuItemEnd]} 
+                onPress={handleLogout}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuItemLeft}>
+                  <View style={[styles.iconContainer, styles.logoutIconContainer]}>
+                    <LogOut size={22} color="#dc2626" />
+                  </View>
+                  <Text style={[styles.menuText, styles.logoutText]}>Cerrar sesión</Text>
+                </View>
+                <ChevronLeft size={20} color="#dc2626" style={styles.chevronRight} />
+              </TouchableOpacity>
             </View>
-            <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
-          </TouchableOpacity>
-        </View>
 
-        {/* Version */}
-        <View style={styles.versionContainer}>
-          <View style={styles.versionDivider} />
+            <View style={styles.footerContainer}>
+              <View style={styles.companyCard}>
+                <View style={styles.companyHeader}>
+                  <View style={styles.companyLogoPlaceholder}>
+                    <Text style={styles.companyLogoText}>V</Text>
+                  </View>
+                  <View style={styles.companyDetails}>
+                    <Text style={styles.companyName}>VELSAT SAC</Text>
+                    <Text style={styles.companyLocation}>Lima - Perú</Text>
+                    <Text style={styles.companyLocation}>RUC - 20202020202202</Text>
 
-          <View style={styles.companyInfoContainer}>
-            <Text style={styles.companyNameBold}>VELSAT SAC</Text>
-            <Text style={styles.versionSubtext}>Lima - Perú</Text>
-          </View>
-
-          {/* <View style={styles.versionRow}>
-            <Text style={styles.versionLabel}>Versión:</Text>
-            <Text style={styles.versionLabel}> 3.0</Text>
-          </View> */}
-
-          <View style={styles.versionRow}>
-            <Text style={styles.versionLabel}>RUC:</Text>
-            <Text style={styles.versionLabel}> 20202020202202</Text>
-          </View>
-{/* 
-          <Text style={styles.copyrightText}>
-            © 2025 Velsat Mobile. Todos los derechos reservados.
-          </Text> */}
-        </View>
-      </ScrollView>
+                  </View>
+                  
+                </View>
+                
+              
+              </View>
+              
+            </View>
+          </>
+        )}
+        style={styles.scrollContent}
+        contentContainerStyle={styles.scrollContentContainer}
+        showsVerticalScrollIndicator={false}
+      />
     </LinearGradient>
   );
 };

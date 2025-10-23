@@ -46,6 +46,8 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
+import ModalAlert from '../ModalAlert';
+import { Portal } from '@gorhom/portal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -57,6 +59,9 @@ const Login = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const buttonScale = useSharedValue(1);
   const loadingRotation = useSharedValue(0);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({ title: '', message: '' });
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -98,67 +103,57 @@ const Login = () => {
     authenticateWithBiometric,
     getBiometricDisplayName,
     canUseBiometricLogin,
-    logout, 
+    logout,
   } = useAuthStore();
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
 
-const handleBiometricLogin = async () => {
-  try {
-    setIsLoggingIn(true);
-    setLoading(true);
+  const handleBiometricLogin = async () => {
+    try {
+      setIsLoggingIn(true);
+      setLoading(true);
 
-    const success = await authenticateWithBiometric();
+      const success = await authenticateWithBiometric();
 
-    if (success) {
-      // Autenticación exitosa
-    } else {
-      Alert.alert(
-        'Autenticación fallida',
-        'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
-        [
-          {
-            text: 'Entendido',
-            onPress: () => {
-              setIsLoggingIn(false);
-              setLoading(false);
-            },
-          },
-        ],
-      );
-    }
-  } catch (error: any) {
-    if (error?.message === 'USER_CANCELLED') {
+      if (success) {
+        // Autenticación exitosa
+      } else {
+        setModalConfig({
+          title: 'Autenticación fallida',
+          message:
+            'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
+        });
+        setModalVisible(true);
+        setIsLoggingIn(false);
+        setLoading(false);
+      }
+    } catch (error: any) {
+      if (error?.message === 'USER_CANCELLED') {
+        setIsLoggingIn(false);
+        setLoading(false);
+        return;
+      }
+
+      setModalConfig({
+        title: 'Error de Autenticación',
+        message:
+          'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+      });
+      setModalVisible(true);
       setIsLoggingIn(false);
       setLoading(false);
-      return;
     }
-
-    Alert.alert(
-      'Error de Autenticación',
-      'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
-      [
-        {
-          text: 'Entendido',
-          onPress: () => {
-            setIsLoggingIn(false);
-            setLoading(false);
-          },
-        },
-      ],
-    );
-  }
-};
+  };
 
   const loadSavedCredentials = async () => {
     try {
       const savedUser = await AsyncStorage.getItem('savedUser');
       const rememberFlag = await AsyncStorage.getItem('rememberMe');
 
-     if (rememberFlag === 'true' && savedUser) {
-      setUsuario(savedUser);
-      setRememberMe(true);
-    }
+      if (rememberFlag === 'true' && savedUser) {
+        setUsuario(savedUser);
+        setRememberMe(true);
+      }
     } catch (error) {
       // Error silencioso
     }
@@ -195,22 +190,31 @@ const handleBiometricLogin = async () => {
         // Marcador abierto
       })
       .catch(error => {
-        Alert.alert(
-          'No se pudo abrir el marcador',
-          `Marca manualmente este número:\n${phoneNumber}`,
-          [{ text: 'Entendido' }],
-        );
+        setModalConfig({
+          title: 'No se pudo abrir el marcador',
+          message: `Marca manualmente este número:\n${phoneNumber}`,
+        });
+        setModalVisible(true);
       });
   };
 
   const handleLogin = async () => {
     if (!usuario.trim()) {
-      Alert.alert('Error', 'Por favor ingresa tu usuario');
+      setModalConfig({
+        title: 'Error',
+        message: 'Por favor ingresa tu usuario',
+      });
+      setModalVisible(true);
+      return;
       return;
     }
 
     if (!password.trim()) {
-      Alert.alert('Error', 'Por favor ingresa tu contraseña');
+      setModalConfig({
+        title: 'Error',
+        message: 'Por favor ingresa tu contraseña',
+      });
+      setModalVisible(true);
       return;
     }
 
@@ -242,10 +246,12 @@ const handleBiometricLogin = async () => {
       const serverData = serverResponse.data;
 
       if (!serverData.servidor) {
-        Alert.alert(
-          'Error',
-          'No se pudo obtener la configuración del servidor',
-        );
+        setModalConfig({
+          title: 'Error',
+          message: 'No se pudo obtener la configuración del servidor',
+        });
+        setModalVisible(true);
+
         setIsLoggingIn(false);
         setLoading(false);
         return;
@@ -288,7 +294,11 @@ const handleBiometricLogin = async () => {
 
         setUser(userObj);
       } else {
-        Alert.alert('Error', 'Respuesta de login inválida');
+        setModalConfig({
+          title: 'Error',
+          message: 'Respuesta de login inválida',
+        });
+        setModalVisible(true);
         setIsLoggingIn(false);
         setLoading(false);
       }
@@ -312,7 +322,11 @@ const handleBiometricLogin = async () => {
         }
       }
 
-      Alert.alert('Error de Login', errorMessage);
+      setModalConfig({
+        title: 'Error de Login',
+        message: errorMessage,
+      });
+      setModalVisible(true);
       setIsLoggingIn(false);
       setLoading(false);
     }
@@ -394,181 +408,196 @@ const handleBiometricLogin = async () => {
   }));
 
   return (
-    <LinearGradient
-      colors={[
-        '#003f88',
-        '#00296b',
-        '#00296b',
-        '#001845',
-        '#00296b',
-        '#00296b',
-        '#00296b',
-      ]}
-      style={styles.container}
-    >
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="transparent"
-        translucent
-      />
-      <Image
-        source={require('../../../assets/mapa.png')}
-        style={styles.backgroundMap}
-        resizeMode="cover"
-      />
+    <>
+      <LinearGradient
+        colors={[
+          '#003f88',
+          '#00296b',
+          '#00296b',
+          '#001845',
+          '#00296b',
+          '#00296b',
+          '#00296b',
+        ]}
+        style={styles.container}
+      >
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="transparent"
+          translucent
+        />
+        <Image
+          source={require('../../../assets/mapa.png')}
+          style={styles.backgroundMap}
+          resizeMode="cover"
+        />
 
-      <View style={styles.mainContent}>
-        <Animated.View style={[styles.formContainer, formStyle]}>
-          <View style={styles.formCard}>
-            <Animated.View style={[styles.logoContainer, logoStyle]}>
-              <View style={styles.logoMain}>
-                <Image
-                  source={require('../../../assets/logob.png')}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-                <Text style={styles.logoText}>VELSAT</Text>
-              </View>
-            </Animated.View>
-            <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
+        <View style={styles.mainContent}>
+          <Animated.View style={[styles.formContainer, formStyle]}>
+            <View style={styles.formCard}>
+              <Animated.View style={[styles.logoContainer, logoStyle]}>
+                <View style={styles.logoMain}>
+                  <Image
+                    source={require('../../../assets/logob.png')}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.logoText}>VELSAT</Text>
+                </View>
+              </Animated.View>
+              <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
-            {showBiometricOption && (
-              <>
-                <View style={styles.biometricSection}>
+              {showBiometricOption && (
+                <>
+                  <View style={styles.biometricSection}>
+                    <TouchableOpacity
+                      style={styles.biometricButton}
+                      onPress={handleBiometricLogin}
+                    >
+                      <View style={styles.biometricButtonContent}>
+                        {biometric.type === 'FaceID' && (
+                          <Scan color="#fff" size={24} />
+                        )}
+                        {(biometric.type === 'TouchID' ||
+                          biometric.type === 'Biometrics') && (
+                          <Fingerprint color="#fff" size={24} />
+                        )}
+                        <Text style={styles.biometricButtonText}>
+                          Acceder con {getBiometricDisplayName()}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.loginSeparator}>
+                    <View style={styles.separatorLine} />
+                    <Text style={styles.separatorText}>o</Text>
+                    <View style={styles.separatorLine} />
+                  </View>
+                </>
+              )}
+
+              <View style={styles.inputGroup}>
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputIconContainer}>
+                    <User color="white" size={24} />
+                  </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Usuario"
+                    placeholderTextColor="rgba(255,255,255,0.7)"
+                    value={usuario}
+                    onChangeText={setUsuario}
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputIconContainer}>
+                    <Lock color="white" size={24} />
+                  </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Contraseña"
+                    placeholderTextColor="rgba(255,255,255,0.7)"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                  />
                   <TouchableOpacity
-                    style={styles.biometricButton}
-                    onPress={handleBiometricLogin}
+                    style={styles.eyeIconContainer}
+                    onPress={() => setShowPassword(!showPassword)}
                   >
-                    <View style={styles.biometricButtonContent}>
-                      {biometric.type === 'FaceID' && (
-                        <Scan color="#fff" size={24} />
-                      )}
-                      {(biometric.type === 'TouchID' ||
-                        biometric.type === 'Biometrics') && (
-                        <Fingerprint color="#fff" size={24} />
-                      )}
-                      <Text style={styles.biometricButtonText}>
-                        Acceder con {getBiometricDisplayName()}
-                      </Text>
-                    </View>
+                    {showPassword ? (
+                      <EyeOff color="rgba(255,255,255,0.7)" size={20} />
+                    ) : (
+                      <Eye color="rgba(255,255,255,0.7)" size={20} />
+                    )}
                   </TouchableOpacity>
                 </View>
-
-                <View style={styles.loginSeparator}>
-                  <View style={styles.separatorLine} />
-                  <Text style={styles.separatorText}>o</Text>
-                  <View style={styles.separatorLine} />
-                </View>
-              </>
-            )}
-
-            <View style={styles.inputGroup}>
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIconContainer}>
-                  <User color="white" size={24} />
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Usuario"
-                  placeholderTextColor="rgba(255,255,255,0.7)"
-                  value={usuario}
-                  onChangeText={setUsuario}
-                  autoCapitalize="none"
-                />
               </View>
 
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIconContainer}>
-                  <Lock color="white" size={24} />
-                </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Contraseña"
-                  placeholderTextColor="rgba(255,255,255,0.7)"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity
-                  style={styles.eyeIconContainer}
-                  onPress={() => setShowPassword(!showPassword)}
+              <TouchableOpacity
+                style={styles.rememberContainer}
+                onPress={() => setRememberMe(!rememberMe)}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    rememberMe && styles.checkboxChecked,
+                  ]}
                 >
-                  {showPassword ? (
-                    <EyeOff color="rgba(255,255,255,0.7)" size={20} />
+                  {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.rememberText}>Recordar mi usuario</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={handleLogin}
+                disabled={isLoggingIn}
+                activeOpacity={0.8}
+              >
+                <Animated.View
+                  style={[
+                    styles.loginButtonGradient,
+                    buttonAnimatedStyle,
+                    { borderRadius: 16 },
+                  ]}
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <Animated.View
+                        style={[
+                          styles.loadingSpinnerContainer,
+                          loadingIconStyle,
+                        ]}
+                      >
+                        <View style={styles.loadingSpinnerCircle} />
+                      </Animated.View>
+                      <Text style={styles.loginButtonText}>CARGANDO...</Text>
+                    </>
                   ) : (
-                    <Eye color="rgba(255,255,255,0.7)" size={20} />
+                    <>
+                      <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
+                      <View style={styles.loginArrow}>
+                        <LogIn color="white" size={16} />
+                      </View>
+                    </>
                   )}
-                </TouchableOpacity>
+                </Animated.View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={makePhoneCall}
+              >
+                <Phone
+                  color="rgba(255,255,255,0.8)"
+                  size={16}
+                  style={{ marginRight: 8 }}
+                />
+                <Text style={styles.forgotPasswordText}>
+                  Contáctanos por teléfono
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.statusContainer}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusText}>V. 2.2.1</Text>
               </View>
             </View>
+          </Animated.View>
+        </View>
+      </LinearGradient>
 
-            <TouchableOpacity
-              style={styles.rememberContainer}
-              onPress={() => setRememberMe(!rememberMe)}
-            >
-              <View
-                style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
-              >
-                {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-              <Text style={styles.rememberText}>Recordar mi usuario</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={handleLogin}
-              disabled={isLoggingIn}
-              activeOpacity={0.8}
-            >
-              <Animated.View
-                style={[
-                  styles.loginButtonGradient,
-                  buttonAnimatedStyle,
-                  { borderRadius: 16 },
-                ]}
-              >
-                {isLoggingIn ? (
-                  <>
-                    <Animated.View
-                      style={[styles.loadingSpinnerContainer, loadingIconStyle]}
-                    >
-                      <View style={styles.loadingSpinnerCircle} />
-                    </Animated.View>
-                    <Text style={styles.loginButtonText}>CARGANDO...</Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
-                    <View style={styles.loginArrow}>
-                      <LogIn color="white" size={16} />
-                    </View>
-                  </>
-                )}
-              </Animated.View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.forgotPassword}
-              onPress={makePhoneCall}
-            >
-              <Phone
-                color="rgba(255,255,255,0.8)"
-                size={16}
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.forgotPasswordText}>
-                Contáctanos por teléfono
-              </Text>
-            </TouchableOpacity>
-
-            <View style={styles.statusContainer}>
-              <View style={styles.statusDot} />
-              <Text style={styles.statusText}>V. 2.2.1</Text>
-            </View>
-          </View>
-        </Animated.View>
-      </View>
-    </LinearGradient>
+      <ModalAlert
+        isVisible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title={modalConfig.title}
+        message={modalConfig.message}
+      />
+    </>
   );
 };
 
