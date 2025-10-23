@@ -20,6 +20,9 @@ import {
 import { styles } from '../../styles/servicesdetaildriver';
 import { openGoogleMaps } from '../../utils/textUtils';
 import axios from 'axios';
+import ModalChangeOrder from './modals/ModalChangeOrder';
+import ModalRouteService from './modals/ModalRouteService';
+import ModalObservations from './modals/ModalObservations';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,
@@ -56,12 +59,16 @@ const ServicesDetailDriver = () => {
     navigationDetection.hasNavigationBar,
   );
 
-  console.log('🟦 Datos recibidos en ServicesDetailDriver:', serviceData);
+  console.log('Datos recibidos en ServicesDetailDriver:', serviceData);
 
   const [apiPassengers, setApiPassengers] = useState<PassengerAPI[]>([]);
   const [orderZeroPassenger, setOrderZeroPassenger] =
     useState<PassengerAPI | null>(null);
 
+  const [modalChangeOrderVisible, setModalChangeOrderVisible] = useState(false);
+
+  const [modalRouteServiceVisible, setModalRouteServiceVisible] = useState(false);
+  const [modalObservationsVisible, setModalObservationsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [allOrdersZero, setAllOrdersZero] = useState(false);
 
@@ -90,7 +97,7 @@ const ServicesDetailDriver = () => {
         const allZero = response.data.every(p => p.orden === '0');
         setAllOrdersZero(allZero);
       } catch (error) {
-        console.error('❌ Error al consumir la API:', error);
+        console.error('Error al consumir la API:', error);
       }
     };
 
@@ -101,7 +108,7 @@ const ServicesDetailDriver = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#00296b', false);
     }, []),
   );
 
@@ -478,8 +485,8 @@ const ServicesDetailDriver = () => {
                   {serviceData.tipo === 'I'
                     ? 'Entrada'
                     : serviceData.tipo === 'S'
-                    ? 'Salida'
-                    : '-'}
+                      ? 'Salida'
+                      : '-'}
                 </Text>
               </View>
               <View style={styles.gridItemRight}>
@@ -500,8 +507,8 @@ const ServicesDetailDriver = () => {
                   {serviceData.grupo === 'A'
                     ? 'Aire'
                     : serviceData.grupo === 'T'
-                    ? 'Tierra'
-                    : '-'}
+                      ? 'Tierra'
+                      : '-'}
                 </Text>
               </View>
             </View>
@@ -514,10 +521,10 @@ const ServicesDetailDriver = () => {
                   {serviceData.codusuario === 'movilbus'
                     ? 'Empresa Movil Bus'
                     : serviceData.codusuario === 'cgacela'
-                    ? 'Gacela Express'
-                    : serviceData.codusuario === 'aremys'
-                    ? 'Empresa Aremys'
-                    : serviceData.codusuario || '-'}
+                      ? 'Gacela Express'
+                      : serviceData.codusuario === 'aremys'
+                        ? 'Empresa Aremys'
+                        : serviceData.codusuario || '-'}
                 </Text>
               </View>
               <View style={styles.gridItemRight}>
@@ -532,19 +539,46 @@ const ServicesDetailDriver = () => {
             <Text style={styles.centerLabel}>Opciones de servicio</Text>
 
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.buttonBlue}>
+              <TouchableOpacity
+                style={styles.buttonBlue}
+                onPress={() => setModalChangeOrderVisible(true)}
+              >
                 <Text style={styles.buttonText}>Cambiar orden</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonGray}>
-                <Text style={styles.buttonText}>Ruta de servicio</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonOrange}>
-                <Text style={styles.buttonText}>Observaciones</Text>
-              </TouchableOpacity>
+
+          <TouchableOpacity 
+  style={styles.buttonGray}
+  onPress={() => setModalRouteServiceVisible(true)}
+>
+  <Text style={styles.buttonText}>Ruta de servicio</Text>
+</TouchableOpacity>
+
+          <TouchableOpacity 
+  style={styles.buttonOrange}
+  onPress={() => setModalObservationsVisible(true)}
+>
+  <Text style={styles.buttonText}>Observaciones</Text>
+</TouchableOpacity>
             </View>
           </View>
         </View>
+
       </ScrollView>
+
+      <ModalChangeOrder
+        visible={modalChangeOrderVisible}
+        onClose={() => setModalChangeOrderVisible(false)}
+      />
+
+      <ModalRouteService
+  visible={modalRouteServiceVisible}
+  onClose={() => setModalRouteServiceVisible(false)}
+/>
+
+<ModalObservations
+  visible={modalObservationsVisible}
+  onClose={() => setModalObservationsVisible(false)}
+/>
     </View>
   );
 };
