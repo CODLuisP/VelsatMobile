@@ -231,7 +231,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   companyName: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 2,
