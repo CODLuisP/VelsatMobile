@@ -43,6 +43,22 @@ interface Device {
   isOnline: boolean;
 }
 
+interface Service {
+  codservicio: string;
+  fechapasajero: string | null;
+  empresa: string;
+  numero: string;
+  codconductor: string;
+  destino: string;
+  fechaservicio: string;
+  status: string;
+  tipo: string;
+  grupo: string;
+  totalpax: number | null;
+  unidad: string;
+  codusuario: string;
+}
+
 interface ApiService {
   codservicio: string;
   codpedido: string;
@@ -145,7 +161,9 @@ export type RootStackParamList = {
   Central: undefined;
   ServicesDriver: undefined;
   ServicesPassenger: undefined;
-  ServicesDetailDriver: undefined;
+  ServicesDetailDriver: {
+    serviceData: Service;
+  };
   ServicesDetailPassenger: {
     serviceData: ApiService
   };
