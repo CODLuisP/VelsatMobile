@@ -32,6 +32,7 @@ import {
   CheckCircle,
   Shield,
 } from 'lucide-react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Tipos TypeScript
 interface WeatherState {
@@ -612,14 +613,22 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="#1a237e"
-        translucent={false}
-      />
-      <SafeAreaView style={homeStyles.container}>
-        <View style={homeStyles.header}>
+     <LinearGradient
+        colors={['#021e4bff', '#00296b', '#00296b']}
+        style={[homeStyles.container]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      >
+    
+     <SafeAreaView style={homeStyles.container}>
+           <StatusBar translucent backgroundColor="transparent" />
+           <View
+             style={[
+               homeStyles.header,
+               { marginTop: -insets.top },
+               { paddingTop: insets.top - 10 },
+             ]}
+           >
           <Image
             source={require('../../assets/fondo3.png')}
             style={homeStyles.backgroundImage}
@@ -872,7 +881,7 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LinearGradient>
   );
 };
 
