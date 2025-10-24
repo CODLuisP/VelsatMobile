@@ -42,6 +42,7 @@ import {
   Shield,
 } from 'lucide-react-native';
 import { getBottomSpace, useNavigationMode } from '../hooks/useNavigationMode';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Tipos TypeScript
 interface WeatherState {
@@ -619,11 +620,15 @@ const Home: React.FC = () => {
 
 
   return (
-    <View style={{ flex: 1 }}>
-
+    <LinearGradient
+      colors={['#021e4bff', '#001d4cff', '#032660ff']}
+      style={[homeStyles.container]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <SafeAreaView style={homeStyles.container}>
         <StatusBar translucent backgroundColor="transparent" />
-        <View style={[homeStyles.header, { marginTop: -insets.top }, {paddingTop:insets.top-10}]}>          <Image
+        <View style={[homeStyles.header, { marginTop: -insets.top }, { paddingTop: insets.top - 10 }]}>          <Image
           source={require('../../assets/fondo3.png')}
           style={homeStyles.backgroundImage}
         />
@@ -696,7 +701,7 @@ const Home: React.FC = () => {
               <MapPin size={25} color="#FFF" />
               <View>
                 <Text style={homeStyles.locationLabel}>
-                  Tu ubicación actual es:{' '}
+                  Tu ubicación actual es:
                 </Text>
 
                 <Text style={homeStyles.locationLabel}>
@@ -933,7 +938,7 @@ const Home: React.FC = () => {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </LinearGradient>
   );
 };
 
