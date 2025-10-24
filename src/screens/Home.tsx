@@ -70,10 +70,6 @@ const Home: React.FC = () => {
   const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
   const codigo = user?.codigo;
 
-
-
-
-
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
@@ -98,7 +94,6 @@ const Home: React.FC = () => {
   );
 
   const topSpace = insets.top + 10;
-
 
   useFocusEffect(
     React.useCallback(() => {
@@ -342,9 +337,10 @@ const Home: React.FC = () => {
       // Importación dinámica solo para Android
       const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
 
-      const result = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-        interval: 10000,
-      });
+      const result =
+        await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+          interval: 10000,
+        });
 
       return true;
     } catch (error: any) {
@@ -365,10 +361,12 @@ const Home: React.FC = () => {
               onPress: async () => {
                 try {
                   const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
-                  await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-                    interval: 10000,
-                  });
-                } catch (err) { }
+                  await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded(
+                    {
+                      interval: 10000,
+                    },
+                  );
+                } catch (err) {}
               },
             },
           ],
@@ -556,11 +554,11 @@ const Home: React.FC = () => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) { }
+                      } catch (error) {}
                     }
-                  } catch (error) { }
+                  } catch (error) {}
                 },
-                error => { },
+                error => {},
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -618,28 +616,33 @@ const Home: React.FC = () => {
     logout();
   };
 
-
   return (
     <LinearGradient
-      colors={['#021e4bff', '#001d4cff', '#032660ff']}
+      colors={['#021e4bff', '#00296b', '#00296b']}
       style={[homeStyles.container]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
       <SafeAreaView style={homeStyles.container}>
         <StatusBar translucent backgroundColor="transparent" />
-        <View style={[homeStyles.header, { marginTop: -insets.top }, { paddingTop: insets.top - 10 }]}>          <Image
-          source={require('../../assets/fondo3.png')}
-          style={homeStyles.backgroundImage}
-        />
+        <View
+          style={[
+            homeStyles.header,
+            { marginTop: -insets.top },
+            { paddingTop: insets.top - 10 },
+          ]}
+        >
+      
+          <Image
+            source={require('../../assets/fondo3.png')}
+            style={homeStyles.backgroundImage}
+          />
           <View style={homeStyles.backgroundOverlay} />
-
           <View style={homeStyles.headerContent}>
             <View style={homeStyles.topRow}>
               <View>
                 <Text style={homeStyles.greeting}>{obtenerSaludo()}</Text>
                 <View style={homeStyles.weatherContainer}>
-
                   {weather.loading ? (
                     <>
                       <Sun size={20} color="#FFD700" />
@@ -664,7 +667,6 @@ const Home: React.FC = () => {
                       </Text>
                     </>
                   )}
-
                 </View>
               </View>
               <View style={homeStyles.profileContainer}>
@@ -694,7 +696,6 @@ const Home: React.FC = () => {
 
             <Text style={homeStyles.companyName}>
               {user?.description || (user?.username && `${user.username}`)}
-
             </Text>
 
             <View style={homeStyles.locationContainer}>
@@ -709,8 +710,6 @@ const Home: React.FC = () => {
                     ? 'Active su GPS para obtener su dirección exacta'
                     : direccionCoordenadas}
                 </Text>
-
-
               </View>
             </View>
           </View>
@@ -722,7 +721,6 @@ const Home: React.FC = () => {
         >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
-          {/* Grid de opciones principales */}
           <View style={homeStyles.optionsGrid}>
             <TouchableOpacity
               style={[
