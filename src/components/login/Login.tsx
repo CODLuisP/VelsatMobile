@@ -47,7 +47,6 @@ import {
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../ModalAlert';
-import { Portal } from '@gorhom/portal';
 
 const { width, height } = Dimensions.get('window');
 

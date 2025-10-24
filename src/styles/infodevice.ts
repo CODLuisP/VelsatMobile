@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
   // Scrollable content
   scrollContent: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -110,19 +110,12 @@ statusMoving: {
 
   // Information Section Styles
   infoSection: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffffff',
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+   
   },
   sectionTitle: {
     fontSize: 16,
@@ -136,7 +129,7 @@ statusMoving: {
     alignItems: 'flex-start',
     marginBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#e1e1e1ff',
   },
   iconContainer: {
     width: 40,
@@ -176,7 +169,7 @@ statusMoving: {
   buttonContainer: {
     flexDirection: 'row',
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 0,
     marginBottom: 32,
     gap: 12,
   },

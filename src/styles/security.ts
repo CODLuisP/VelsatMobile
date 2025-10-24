@@ -3,17 +3,16 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
 
   header: {
-    paddingBottom: 30,
-    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 5,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   backButton: {
     width: 44,
@@ -27,20 +26,20 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
     flex: 1,
-    marginLeft: 15,
+    marginLeft: 10,
   },
 
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     borderRadius: 15,
   },
   statusText: {
     fontSize: 14,
     fontWeight: '500',
     color: '#fff',
-    marginLeft: 8,
+    marginLeft:8,
     opacity: 0.9,
   },
 

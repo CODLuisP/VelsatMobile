@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Text,
   View,
@@ -18,10 +18,18 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
+import { useAuthStore } from '../../store/authStore'; // ⭐ Zustand
 
 const Pin = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [selectedOption, setSelectedOption] = useState<string>('sedan');
+  
+  // ⭐ Zustand: Mantener la funcionalidad del primer documento
+  const selectedVehiclePin = useAuthStore(state => state.selectedVehiclePin);
+  const setSelectedVehiclePin = useAuthStore(state => state.setSelectedVehiclePin);
+
+  // ⭐ Convertir el código de pin a id para la UI
+  const selectedOption = selectedVehiclePin === 's' ? 'sedan' : 
+                         selectedVehiclePin === 'p' ? 'pickup' : 'truck';
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -40,8 +48,11 @@ const Pin = () => {
     navigation.goBack();
   };
 
+  // ⭐ Actualizar con los códigos de Zustand
   const handleSelect = (option: string) => {
-    setSelectedOption(option);
+    const pinCode = option === 'sedan' ? 's' : 
+                    option === 'pickup' ? 'p' : 'c';
+    setSelectedVehiclePin(pinCode);
   };
 
   const vehicleOptions = [
@@ -154,14 +165,10 @@ const Pin = () => {
                     )}
                   </View>
                 </View>
-
-              
               </LinearGradient>
             </TouchableOpacity>
           ))}
         </View>
-
-   
       </ScrollView>
     </LinearGradient>
   );

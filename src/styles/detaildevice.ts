@@ -148,7 +148,7 @@ deviceHeaderInfo: {
     fontWeight: '600',
   },
   startTimeText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#9ca3af',
     marginLeft: 26,
     marginBottom: 6,
@@ -194,14 +194,14 @@ deviceHeaderInfo: {
     position: 'relative',
   },
   locationTitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#1f2937',
     fontWeight: '600',
     marginBottom: 2,
     marginRight:30
   },
   locationSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#9ca3af',
   },
   locationButton: {

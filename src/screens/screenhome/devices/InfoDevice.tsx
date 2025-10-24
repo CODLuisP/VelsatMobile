@@ -137,7 +137,6 @@ const InfoDevice = () => {
     }
 
     const googleMapsLink = `https://www.google.com/maps?q=${vehiculoData.lastValidLatitude},${vehiculoData.lastValidLongitude}`;
-
     const mensaje = `
 *INFORMACIÓN DEL VEHÍCULO*
 
@@ -289,8 +288,8 @@ Compartido desde Velsat Mobile
               ) : (
                 <>
                   <Text style={styles.infoValue}>
-                    {vehiculoData?.lastValidLatitude || 0},{' '}
-                    {vehiculoData?.lastValidLongitude || 0}
+                    {vehiculoData?.lastValidLatitude.toFixed(5) || '0.00000'},{' '}
+                    {vehiculoData?.lastValidLongitude.toFixed(5) || '0.00000'}
                   </Text>
                   <Text style={styles.infoSubtitle}>Latitud y longitud</Text>
                 </>
@@ -352,19 +351,20 @@ Compartido desde Velsat Mobile
           </View>
 
           {/* Daily Distance Item */}
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Calendar size={20} color="#666" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>
-                30 km manejados el día de hoy
-              </Text>
-              <Text style={styles.infoSubtitle}>
-                Empezó el día a las 02:55:53 PM
-              </Text>
-            </View>
-          </View>
+<View style={styles.infoItem}>
+  <View style={styles.iconContainer}>
+    <SatelliteDish size={20} color="#666" />
+  </View>
+  <View style={styles.infoContent}>
+    <Text style={styles.infoValue}>
+      Conectado al sistema de rastreo
+    </Text>
+    <Text style={styles.infoSubtitle}>
+      Velsat Mobile - Sistema GPS
+    </Text>
+  </View>
+</View>
+          
         </View>
 
         {/* Action Buttons */}

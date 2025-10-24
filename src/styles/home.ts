@@ -1,34 +1,33 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StatusBar, StyleSheet } from 'react-native';
 
 export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#00296b',
   },
-header: {
-  height: 170, 
-  width: '100%',
-  position: 'relative', 
-  overflow: 'hidden',
-  backgroundColor: 'red', 
-},
-backgroundImage: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  width: '100%',
-  height: '100%',
-  resizeMode: 'cover', 
-},
+  header: {
+    height: 200,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: 'red',
+    },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
   backgroundOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-backgroundColor: 'rgba(4, 49, 122, 0.9)'
+    backgroundColor: 'rgba(4, 49, 122, 0.9)'
   },
   satelliteContainer: {
     position: 'absolute',
@@ -163,20 +162,20 @@ backgroundColor: 'rgba(4, 49, 122, 0.9)'
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-optionCard: {
-  backgroundColor: 'white',
-  width: '48%',
-  padding: 20,
-  borderRadius: 12,
-  marginBottom: 15,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 4,
-  elevation: 3,
-  position: 'relative',
-  overflow: 'hidden', 
-},
+  optionCard: {
+    backgroundColor: 'white',
+    width: '48%',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    position: 'relative',
+    overflow: 'hidden',
+  },
   driverLabel: {
     position: 'absolute',
     top: 10,
@@ -187,46 +186,46 @@ optionCard: {
   },
 
 
-// En tu archivo de estilos (donde está homeStyles)
+  // En tu archivo de estilos (donde está homeStyles)
 
-optionCardWithBackground: {
-  position: 'relative',
-  overflow: 'hidden',
-},
+  optionCardWithBackground: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
 
-optionCardBackgroundImage: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,    
-  bottom: 0,   
-  width: '100%',
-  height: '100%',
-},
+  optionCardBackgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
 
-optionCardOverlay: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,    
-  bottom: 0,  
-  width: '100%',
-  height: '100%',
-  backgroundColor: 'rgba(255, 255, 255, 0.97)',
-},
+  optionCardOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.97)',
+  },
 
-optionContentAbove: {
-  zIndex: 1,
-},
+  optionContentAbove: {
+    zIndex: 1,
+  },
 
-optionCardWithBorder: {
-  borderWidth: 1,
-  borderColor: '#e36414',
-},
+  optionCardWithBorder: {
+    borderWidth: 1,
+    borderColor: '#e36414',
+  },
 
-optionTextWhite: {
-  color: '#fff',
-},
+  optionTextWhite: {
+    color: '#fff',
+  },
 
 
   optionIcon: {
@@ -303,11 +302,11 @@ optionTextWhite: {
   },
 
   // En tu archivo homeStyles
-logoImage: {
-  width: '100%',
-  height: '100%',
-  borderRadius: 50, // Esto la hace redonda (ajusta el valor según el tamaño)
-},
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50, // Esto la hace redonda (ajusta el valor según el tamaño)
+  },
   customerCareSubtitle: {
     fontSize: 11,
     color: '#666',

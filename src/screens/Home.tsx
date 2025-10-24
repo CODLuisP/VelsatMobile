@@ -69,6 +69,10 @@ const Home: React.FC = () => {
   const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
   const codigo = user?.codigo;
 
+
+
+
+
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [weather, setWeather] = useState<WeatherState>({
     temperature: null,
@@ -91,6 +95,9 @@ const Home: React.FC = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+
+  const topSpace = insets.top + 10;
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -324,7 +331,7 @@ const Home: React.FC = () => {
   };
 
   // NUEVA FUNCIÓN: Verificar y activar GPS automáticamente
-const verificarYActivarGPS = async (): Promise<boolean> => {
+  const verificarYActivarGPS = async (): Promise<boolean> => {
     // SOLO ejecutar en Android
     if (Platform.OS !== 'android') {
       return true;
@@ -333,7 +340,7 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
     try {
       // Importación dinámica solo para Android
       const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
-      
+
       const result = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
         interval: 10000,
       });
@@ -360,7 +367,7 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                   await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
                     interval: 10000,
                   });
-                } catch (err) {}
+                } catch (err) { }
               },
             },
           ],
@@ -548,11 +555,11 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) {}
+                      } catch (error) { }
                     }
-                  } catch (error) {}
+                  } catch (error) { }
                 },
-                error => {},
+                error => { },
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -610,20 +617,16 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
     logout();
   };
 
+
   return (
     <View style={{ flex: 1 }}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="#1a237e"
-        translucent={false}
-      />
 
       <SafeAreaView style={homeStyles.container}>
-        <View style={homeStyles.header}>
-          <Image
-            source={require('../../assets/fondo3.png')}
-            style={homeStyles.backgroundImage}
-          />
+        <StatusBar translucent backgroundColor="transparent" />
+        <View style={[homeStyles.header, { marginTop: -insets.top }, {paddingTop:insets.top-20}]}>          <Image
+          source={require('../../assets/fondo3.png')}
+          style={homeStyles.backgroundImage}
+        />
           <View style={homeStyles.backgroundOverlay} />
 
           <View style={homeStyles.headerContent}>
@@ -632,30 +635,30 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                 <Text style={homeStyles.greeting}>{obtenerSaludo()}</Text>
                 <View style={homeStyles.weatherContainer}>
 
-         {weather.loading ? (
-  <>
-    <Sun size={20} color="#FFD700" />
-    <Text style={homeStyles.temperature}>--°</Text>
-  </>
-) : location.error && location.error.includes('GPS') ? (
-  <>
-    <Sun size={20} color="#FFD700" />
-    <Text style={[homeStyles.temperature, { fontSize: 10 }]}>
-      Active GPS
-    </Text>
-  </>
-) : (
-  <>
-    {obtenerIconoClima(
-      weather.weatherCode,
-      weather.isDay,
-      weather.temperature,
-    )}
-    <Text style={homeStyles.temperature}>
-      {weather.temperature || '--'}°
-    </Text>
-  </>
-)}
+                  {weather.loading ? (
+                    <>
+                      <Sun size={20} color="#FFD700" />
+                      <Text style={homeStyles.temperature}>--°</Text>
+                    </>
+                  ) : location.error && location.error.includes('GPS') ? (
+                    <>
+                      <Sun size={20} color="#FFD700" />
+                      <Text style={[homeStyles.temperature, { fontSize: 10 }]}>
+                        Active GPS
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      {obtenerIconoClima(
+                        weather.weatherCode,
+                        weather.isDay,
+                        weather.temperature,
+                      )}
+                      <Text style={homeStyles.temperature}>
+                        {weather.temperature || '--'}°
+                      </Text>
+                    </>
+                  )}
 
                 </View>
               </View>
@@ -683,11 +686,11 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                 )}
               </View>
             </View>
-           
-              <Text style={homeStyles.companyName}>
-             {user?.description || (user?.username && `${user.username}`)}
-            
-           </Text>
+
+            <Text style={homeStyles.companyName}>
+              {user?.description || (user?.username && `${user.username}`)}
+
+            </Text>
 
             <View style={homeStyles.locationContainer}>
               <MapPin size={25} color="#FFF" />
@@ -697,10 +700,10 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                 </Text>
 
                 <Text style={homeStyles.locationLabel}>
-  {location.error && location.error.includes('GPS') 
-    ? 'Active su GPS para obtener su dirección exacta'
-    : direccionCoordenadas}
-</Text>
+                  {location.error && location.error.includes('GPS')
+                    ? 'Active su GPS para obtener su dirección exacta'
+                    : direccionCoordenadas}
+                </Text>
 
 
               </View>

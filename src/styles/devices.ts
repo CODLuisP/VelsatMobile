@@ -70,7 +70,7 @@ export const styles = StyleSheet.create({
   // Device list styles
   devicesList: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -80,7 +80,7 @@ export const styles = StyleSheet.create({
 
   // Device item styles
   deviceItem: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffffff',
     marginHorizontal: 20,
     marginBottom: 1,
     borderRadius: 0,

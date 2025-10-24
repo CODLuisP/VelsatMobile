@@ -3,13 +3,12 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
   
   // === HEADER (Sin cambios) ===
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: 20,
   },
   headerTop: {
     flexDirection: 'row',
@@ -47,7 +46,7 @@ export const styles = StyleSheet.create({
   // === CONTENT ===
   contentList: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
@@ -58,21 +57,12 @@ export const styles = StyleSheet.create({
 
   // === CONTACT CARD ===
   contactCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffffff',
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 10,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+ 
   },
 
   // === CARD HEADER ===
@@ -237,14 +227,6 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 20,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
@@ -258,17 +240,17 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   infoTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#0f172a',
     marginBottom: 8,
     letterSpacing: 0.2,
   },
   infoDescription: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#64748b',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 15,
     fontWeight: '500',
   },
 });

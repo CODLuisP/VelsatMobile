@@ -55,6 +55,7 @@ const Profile = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const insets = useSafeAreaInsets();
+  
   const navigationDetection = useNavigationMode();
 
   const bottomSpace = getBottomSpace(
