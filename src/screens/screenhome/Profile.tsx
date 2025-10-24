@@ -134,7 +134,7 @@ const Profile = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
@@ -384,7 +384,10 @@ const Profile = () => {
               <View style={styles.companyCard}>
                 <View style={styles.companyHeader}>
                   <View style={styles.companyLogoPlaceholder}>
-                    <Text style={styles.companyLogoText}>V</Text>
+                      <Image
+              source={require('../../../assets/logoV.jpeg')}
+              style={styles.avatarImageV}
+            />
                   </View>
                   <View style={styles.companyDetails}>
                     <Text style={styles.companyName}>VELSAT SAC</Text>

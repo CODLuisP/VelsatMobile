@@ -155,6 +155,7 @@ export const homeStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
     marginVertical: 10,
+    marginBottom:20
   },
   optionsGrid: {
     flexDirection: 'row',

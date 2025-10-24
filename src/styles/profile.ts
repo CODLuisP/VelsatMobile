@@ -36,6 +36,12 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     resizeMode: 'cover',
   },
+    avatarImageV: {
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    resizeMode: 'cover',
+  },
   companyNameTitle: {
     fontSize: 14,
     fontWeight: '700',
@@ -200,12 +206,10 @@ export const styles = StyleSheet.create({
     paddingBottom: 0,
   },
   companyCard: {
-    backgroundColor: '#f8f9fa',
     borderRadius: 16,
     paddingVertical: 10,
     paddingHorizontal: 10,
-    borderWidth: 1,        
-      borderColor: '#e9ecef',  
+
 
     marginBottom: 16,
   },
@@ -217,7 +221,6 @@ export const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#e36414',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
