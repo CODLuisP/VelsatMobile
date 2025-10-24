@@ -26,7 +26,7 @@ export const homeStyles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#021e4bf0'
+    backgroundColor: '#022761f0'
   },
   satelliteContainer: {
     position: 'absolute',
