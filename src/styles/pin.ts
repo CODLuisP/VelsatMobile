@@ -58,14 +58,7 @@ export const styles = StyleSheet.create({
   optionCard: {
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
+  
   },
   cardGradient: {
     borderRadius: 25,
