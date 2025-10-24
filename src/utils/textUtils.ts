@@ -20,7 +20,7 @@ export const formatThreeDecimals = (num: any) => {
   if (Number.isInteger(number)) {
     return number.toString();
   }
-  return parseFloat(number.toFixed(2)).toString();
+  return parseFloat(number.toFixed(1)).toString();
 };
 
 export const openGoogleMaps = (latitude: number, longitude: number) => {

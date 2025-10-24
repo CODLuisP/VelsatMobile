@@ -38,8 +38,17 @@ export const styles = StyleSheet.create({
     opacity: 0.9,
   },
 
+  // Search and Filter Container
+  searchFilterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    gap: 10,
+  },
+
   // Search styles
   searchInputContainer: {
+    flex: 1,
     backgroundColor: '#fff',
     borderRadius: 10,
     flexDirection: 'row',
@@ -54,8 +63,6 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    marginHorizontal:20
-    
   },
   searchIcon: {
     marginRight: 10,
@@ -65,6 +72,40 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     paddingVertical: Platform.OS === 'ios' ? 10 : 10,
+  },
+
+  // Filter Button
+  filterButton: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    position: 'relative',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#FF4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  filterBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
   },
 
   // Device list styles
@@ -222,70 +263,198 @@ export const styles = StyleSheet.create({
   },
 
   deviceItemFirst: {
-  borderTopLeftRadius: 15,
-  borderTopRightRadius: 15,
-  marginTop: 0,
-},
-deviceItemLast: {
-  borderBottomLeftRadius: 15,
-  borderBottomRightRadius: 15,
-  marginBottom: 20,
-},
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    marginTop: 0,
+  },
+  deviceItemLast: {
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    marginBottom: 20,
+  },
 
-// Estilos para el componente de búsqueda vacía
-emptyContainer: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  paddingHorizontal: 40,
-  paddingVertical: 60,
-},
-emptyIconContainer: {
-  width: 120,
-  height: 120,
-  borderRadius: 60,
-  backgroundColor: '#F7FAFC',
-  justifyContent: 'center',
-  alignItems: 'center',
-  marginBottom: 24,
-  borderWidth: 2,
-  borderColor: '#E2E8F0',
-  borderStyle: 'dashed',
-},
-emptyTitle: {
-  fontSize: 14,
-  fontWeight: '600',
-  color: '#2D3748',
-  textAlign: 'center',
-  marginBottom: 8,
-},
-emptySubtitle: {
-  fontSize: 16,
-  color: '#718096',
-  textAlign: 'center',
-  marginBottom: 4,
-  lineHeight: 22,
-},
-emptyHint: {
-  fontSize: 14,
-  color: '#A0AEC0',
-  textAlign: 'center',
-  fontStyle: 'italic',
-},
-retryButton: {
-  backgroundColor: '#1e3a8a',
-  paddingHorizontal: 24,
-  paddingVertical: 12,
-  borderRadius: 8,
-  marginTop: 16,
-},
-retryButtonText: {
-  color: '#fff',
-  fontSize: 16,
-  fontWeight: '600',
-},
+  // Estilos para el componente de búsqueda vacía
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 60,
+  },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#F7FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2D3748',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#718096',
+    textAlign: 'center',
+    marginBottom: 4,
+    lineHeight: 22,
+  },
+  emptyHint: {
+    fontSize: 14,
+    color: '#A0AEC0',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  retryButton: {
+    backgroundColor: '#1e3a8a',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 
-
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    maxHeight: '80%',
+    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e3a8a',
+  },
+  modalCloseButton: {
+    padding: 5,
+  },
+  modalBody: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  filterSection: {
+    marginBottom: 25,
+  },
+  filterSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2D3748',
+    marginBottom: 12,
+  },
+  filterOptions: {
+    gap: 10,
+  },
+  filterOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F7FAFC',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  filterOptionActive: {
+    backgroundColor: '#E0E7FF',
+    borderColor: '#1e3a8a',
+  },
+  filterOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  filterOptionText: {
+    fontSize: 12,
+    color: '#4A5568',
+    fontWeight: '500',
+  },
+  filterOptionTextActive: {
+    color: '#1e3a8a',
+    fontWeight: '600',
+  },
+  speedColorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  locationInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F7FAFC',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    gap: 10,
+  },
+  locationInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#2D3748',
+    paddingVertical: 0,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  clearButton: {
+    flex: 1,
+    backgroundColor: '#F7FAFC',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#CBD5E0',
+  },
+  clearButtonText: {
+    color: '#4A5568',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  applyButton: {
+    flex: 1,
+    backgroundColor: '#1e3a8a',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  applyButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
-
-

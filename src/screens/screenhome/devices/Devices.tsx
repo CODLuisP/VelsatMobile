@@ -7,6 +7,8 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
+  Modal,
+  ScrollView,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -14,6 +16,9 @@ import {
   BatteryFull,
   MapPinned,
   SearchX,
+  Filter,
+  X,
+  Check,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { styles } from '../../../styles/devices';
@@ -48,6 +53,12 @@ interface ApiDevice {
   direccion: string;
 }
 
+interface FilterOptions {
+  speedRange: 'all' | 'stopped' | 'slow' | 'medium' | 'fast';
+  status: 'all' | 'stopped' | 'moving';
+  location: string;
+}
+
 const Devices = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [searchText, setSearchText] = useState('');
@@ -56,6 +67,13 @@ const Devices = () => {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    speedRange: 'all',
+    status: 'all',
+    location: '',
+  });
+  const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
 
   const handleDetailDevice = (device: Device) => {
     navigation.navigate('DetailDevice', { device });
@@ -142,9 +160,381 @@ const Devices = () => {
     return '#0066FF';
   };
 
-  const filteredDevices = devices.filter(device =>
-    device.name.toLowerCase().includes(searchText.toLowerCase()),
-  );
+  const applyFilters = (device: Device) => {
+    // Filtro por búsqueda de texto
+    const matchesSearch = device.name
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
+
+    // Filtro por rango de velocidad
+    let matchesSpeed = true;
+    switch (filters.speedRange) {
+      case 'stopped':
+        matchesSpeed = device.speed === 0;
+        break;
+      case 'slow':
+        matchesSpeed = device.speed > 0 && device.speed < 11;
+        break;
+      case 'medium':
+        matchesSpeed = device.speed >= 11 && device.speed < 60;
+        break;
+      case 'fast':
+        matchesSpeed = device.speed >= 60;
+        break;
+      default:
+        matchesSpeed = true;
+    }
+
+    // Filtro por estado
+    let matchesStatus = true;
+    if (filters.status === 'stopped') {
+      matchesStatus = device.status === 'Detenido';
+    } else if (filters.status === 'moving') {
+      matchesStatus = device.status === 'Movimiento';
+    }
+
+    // Filtro por ubicación
+    const matchesLocation =
+      filters.location === '' ||
+      device.location.toLowerCase().includes(filters.location.toLowerCase());
+
+    return matchesSearch && matchesSpeed && matchesStatus && matchesLocation;
+  };
+
+  const filteredDevices = devices.filter(applyFilters);
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (filters.speedRange !== 'all') count++;
+    if (filters.status !== 'all') count++;
+    if (filters.location !== '') count++;
+    return count;
+  };
+
+  const handleOpenFilter = () => {
+    setTempFilters(filters);
+    setShowFilterModal(true);
+  };
+
+  const handleApplyFilters = () => {
+    setFilters(tempFilters);
+    setShowFilterModal(false);
+  };
+
+  const handleClearFilters = () => {
+    const clearedFilters = {
+      speedRange: 'all' as const,
+      status: 'all' as const,
+      location: '',
+    };
+    setTempFilters(clearedFilters);
+    setFilters(clearedFilters);
+    setShowFilterModal(false);
+  };
+
+  const renderFilterModal = () => {
+    return (
+      <Modal
+        visible={showFilterModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Filtrar Unidades</Text>
+              <TouchableOpacity
+                onPress={() => setShowFilterModal(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {/* Filtro por Velocidad */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>Velocidad</Text>
+                <View style={styles.filterOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.speedRange === 'all' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, speedRange: 'all' })
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.filterOptionText,
+                        tempFilters.speedRange === 'all' &&
+                          styles.filterOptionTextActive,
+                      ]}
+                    >
+                      Todas
+                    </Text>
+                    {tempFilters.speedRange === 'all' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.speedRange === 'stopped' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, speedRange: 'stopped' })
+                    }
+                  >
+                    <View style={styles.filterOptionContent}>
+                      <View
+                        style={[
+                          styles.speedColorDot,
+                          { backgroundColor: '#FF4444' },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.filterOptionText,
+                          tempFilters.speedRange === 'stopped' &&
+                            styles.filterOptionTextActive,
+                        ]}
+                      >
+                        Detenidos (0 km/h)
+                      </Text>
+                    </View>
+                    {tempFilters.speedRange === 'stopped' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.speedRange === 'slow' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, speedRange: 'slow' })
+                    }
+                  >
+                    <View style={styles.filterOptionContent}>
+                      <View
+                        style={[
+                          styles.speedColorDot,
+                          { backgroundColor: '#FFA500' },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.filterOptionText,
+                          tempFilters.speedRange === 'slow' &&
+                            styles.filterOptionTextActive,
+                        ]}
+                      >
+                        Lento (1-10 km/h)
+                      </Text>
+                    </View>
+                    {tempFilters.speedRange === 'slow' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.speedRange === 'medium' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, speedRange: 'medium' })
+                    }
+                  >
+                    <View style={styles.filterOptionContent}>
+                      <View
+                        style={[
+                          styles.speedColorDot,
+                          { backgroundColor: '#00AA00' },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.filterOptionText,
+                          tempFilters.speedRange === 'medium' &&
+                            styles.filterOptionTextActive,
+                        ]}
+                      >
+                        Medio (11-59 km/h)
+                      </Text>
+                    </View>
+                    {tempFilters.speedRange === 'medium' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.speedRange === 'fast' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, speedRange: 'fast' })
+                    }
+                  >
+                    <View style={styles.filterOptionContent}>
+                      <View
+                        style={[
+                          styles.speedColorDot,
+                          { backgroundColor: '#0066FF' },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.filterOptionText,
+                          tempFilters.speedRange === 'fast' &&
+                            styles.filterOptionTextActive,
+                        ]}
+                      >
+                        Rápido (60+ km/h)
+                      </Text>
+                    </View>
+                    {tempFilters.speedRange === 'fast' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Filtro por Estado */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>Estado</Text>
+                <View style={styles.filterOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.status === 'all' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, status: 'all' })
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.filterOptionText,
+                        tempFilters.status === 'all' &&
+                          styles.filterOptionTextActive,
+                      ]}
+                    >
+                      Todos
+                    </Text>
+                    {tempFilters.status === 'all' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.status === 'moving' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, status: 'moving' })
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.filterOptionText,
+                        tempFilters.status === 'moving' &&
+                          styles.filterOptionTextActive,
+                      ]}
+                    >
+                      En Movimiento
+                    </Text>
+                    {tempFilters.status === 'moving' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      tempFilters.status === 'stopped' &&
+                        styles.filterOptionActive,
+                    ]}
+                    onPress={() =>
+                      setTempFilters({ ...tempFilters, status: 'stopped' })
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.filterOptionText,
+                        tempFilters.status === 'stopped' &&
+                          styles.filterOptionTextActive,
+                      ]}
+                    >
+                      Detenidos
+                    </Text>
+                    {tempFilters.status === 'stopped' && (
+                      <Check size={16} color="#1e3a8a" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Filtro por Ubicación */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterSectionTitle}>Ubicación</Text>
+                <View style={styles.locationInputContainer}>
+                  <MapPinned size={20} color="#999" />
+                  <TextInput
+                    style={styles.locationInput}
+                    placeholder="Ej: Lima, Av. Principal, etc."
+                    placeholderTextColor="#999"
+                    value={tempFilters.location}
+                    onChangeText={text =>
+                      setTempFilters({ ...tempFilters, location: text })
+                    }
+                  />
+                  {tempFilters.location !== '' && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        setTempFilters({ ...tempFilters, location: '' })
+                      }
+                    >
+                      <X size={20} color="#999" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleClearFilters}
+              >
+                <Text style={styles.clearButtonText}>Limpiar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={handleApplyFilters}
+              >
+                <Text style={styles.applyButtonText}>Aplicar Filtros</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   const renderDeviceItem = ({
     item,
@@ -171,11 +561,12 @@ const Devices = () => {
             <View style={styles.vehicleImage}>
               <Image
                 source={{
-                  uri: selectedVehiclePin === 's'
-                    ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png'
-                    : selectedVehiclePin === 'p'
-                      ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407171/base_ahivtq.png'
-                      : 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/base_yhxknp.png'
+                  uri:
+                    selectedVehiclePin === 's'
+                      ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png'
+                      : selectedVehiclePin === 'p'
+                        ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407171/base_ahivtq.png'
+                        : 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/base_yhxknp.png',
                 }}
                 style={styles.carImage}
               />
@@ -255,40 +646,29 @@ const Devices = () => {
           <Text style={styles.emptyTitle}>{error}</Text>
           <TouchableOpacity
             onPress={() => fetchDevices(true)}
-            style={{
-              backgroundColor: '#1e3a8a',
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              borderRadius: 8,
-              marginTop: 16,
-            }}
+            style={styles.retryButton}
           >
-            <Text
-              style={{
-                color: '#fff',
-                fontSize: 16,
-                fontWeight: '600',
-              }}
-            >
-              Reintentar
-            </Text>
+            <Text style={styles.retryButtonText}>Reintentar</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
-    if (searchText) {
+    const activeFiltersCount = getActiveFiltersCount();
+    if (activeFiltersCount > 0 || searchText) {
       return (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconContainer}>
             <SearchX size={64} color="#CBD5E0" />
           </View>
-          <Text style={styles.emptyTitle}>No se encontró la unidad</Text>
+          <Text style={styles.emptyTitle}>No se encontraron unidades</Text>
           <Text style={styles.emptySubtitle}>
-            No hay vehículos que coincidan con "{searchText}"
+            {searchText
+              ? `No hay vehículos que coincidan con "${searchText}"`
+              : 'No hay vehículos con los filtros aplicados'}
           </Text>
           <Text style={styles.emptyHint}>
-            Intenta con otro término de búsqueda
+            Intenta ajustar los filtros o el término de búsqueda
           </Text>
         </View>
       );
@@ -305,10 +685,11 @@ const Devices = () => {
   };
 
   const topSpace = insets.top + 5;
+  const activeFiltersCount = getActiveFiltersCount();
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
       style={[styles.container, { paddingBottom: bottomSpace }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
@@ -322,22 +703,42 @@ const Devices = () => {
           <View style={styles.headerContent}>
             <Text style={styles.headerTitle}>Lista de Unidades</Text>
             <Text style={styles.headerSubtitle}>
-              {loading ? 'Cargando...' : `${devices.length} unid.`}
+              {loading
+                ? 'Cargando...'
+                : `${filteredDevices.length} de ${devices.length} unid.`}
             </Text>
           </View>
         </View>
 
-        {/* Buscador dentro del header */}
-        <View style={styles.searchInputContainer}>
-          <Search size={20} color="#999" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar unidad"
-            placeholderTextColor="#999"
-            value={searchText}
-            onChangeText={setSearchText}
-            editable={!loading}
-          />
+        {/* Buscador y Filtro */}
+        <View style={styles.searchFilterContainer}>
+          <View style={styles.searchInputContainer}>
+            <Search size={20} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar unidad"
+              placeholderTextColor="#999"
+              value={searchText}
+              onChangeText={setSearchText}
+              editable={!loading}
+            />
+          </View>
+
+          {devices.length > 1 && (
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={handleOpenFilter}
+            >
+              <Filter size={20} color="#1e3a8a" />
+              {activeFiltersCount > 0 && (
+                <View style={styles.filterBadge}>
+                  <Text style={styles.filterBadgeText}>
+                    {activeFiltersCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -353,6 +754,8 @@ const Devices = () => {
         refreshing={isRefreshing}
         onRefresh={handleRefresh}
       />
+
+      {renderFilterModal()}
     </LinearGradient>
   );
 };
