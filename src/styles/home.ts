@@ -5,7 +5,7 @@ export const homeStyles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 200,
+    height: Platform.OS==='ios'? 200:190,
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
