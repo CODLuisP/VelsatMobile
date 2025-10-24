@@ -26,7 +26,7 @@ export const homeStyles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#00296bd6'
+    backgroundColor: '#00296be8'
   },
   satelliteContainer: {
     position: 'absolute',
@@ -210,7 +210,7 @@ export const homeStyles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.97)',
+    backgroundColor: '#e66d11fb',
   },
 
   optionContentAbove: {
@@ -218,8 +218,8 @@ export const homeStyles = StyleSheet.create({
   },
 
   optionCardWithBorder: {
-    borderWidth: 1,
-    borderColor: '#e36414',
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
 
   optionTextWhite: {
@@ -255,13 +255,13 @@ export const homeStyles = StyleSheet.create({
   optionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#e36414',
+    color: '#ffffffff',
     marginBottom: 8,
     textAlign: 'center',
   },
   optionSubtitle: {
     fontSize: 11,
-    color: '#666',
+    color: '#ffffffff',
     textAlign: 'center',
     lineHeight: 16,
   },
@@ -295,7 +295,7 @@ export const homeStyles = StyleSheet.create({
   customerCareTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#e36414',
+    color: '#ffffffff',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -308,7 +308,7 @@ export const homeStyles = StyleSheet.create({
   },
   customerCareSubtitle: {
     fontSize: 11,
-    color: '#666',
+    color: '#ffffffff',
     textAlign: 'center',
     lineHeight: 16,
   },

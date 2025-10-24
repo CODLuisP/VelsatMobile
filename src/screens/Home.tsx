@@ -748,7 +748,7 @@ const Home: React.FC = () => {
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
               >
-                <User size={24} color="#e36414" />
+                <User size={24} color="#ffffffff" />
               </View>
               <Text style={homeStyles.optionTitle}>Perfil</Text>
 
@@ -787,7 +787,7 @@ const Home: React.FC = () => {
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
               >
-                <Car size={24} color="#e36414" />
+                <Car size={24} color="#fff" />
               </View>
               <Text style={homeStyles.optionTitle}>Unidades</Text>
 
@@ -826,7 +826,7 @@ const Home: React.FC = () => {
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
               >
-                <BarChart3 size={24} color="#e36414" />
+                <BarChart3 size={24} color="#fff" />
               </View>
               <Text style={homeStyles.optionTitle}>Reportes</Text>
 
@@ -865,7 +865,7 @@ const Home: React.FC = () => {
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
               >
-                <Shield size={24} color="#e36414" />
+                <Shield size={24} color="#ffffffff" />
               </View>
               <Text style={homeStyles.optionTitle}>Seguridad</Text>
 
@@ -909,7 +909,7 @@ const Home: React.FC = () => {
                   homeStyles.optionContentAbove,
                 ]}
               >
-                <Headphones size={24} color="#e36414" />
+                <Headphones size={24} color="#ffffffff" />
               </View>
               <Text
                 style={[
