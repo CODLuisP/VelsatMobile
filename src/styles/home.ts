@@ -9,7 +9,6 @@ export const homeStyles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: 'red',
     },
   backgroundImage: {
     position: 'absolute',

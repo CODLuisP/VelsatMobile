@@ -623,7 +623,7 @@ const Home: React.FC = () => {
 
       <SafeAreaView style={homeStyles.container}>
         <StatusBar translucent backgroundColor="transparent" />
-        <View style={[homeStyles.header, { marginTop: -insets.top }, {paddingTop:insets.top-20}]}>          <Image
+        <View style={[homeStyles.header, { marginTop: -insets.top }, {paddingTop:insets.top-10}]}>          <Image
           source={require('../../assets/fondo3.png')}
           style={homeStyles.backgroundImage}
         />
