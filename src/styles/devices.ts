@@ -329,7 +329,7 @@ export const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -344,12 +344,12 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1e3a8a',
   },
@@ -364,7 +364,7 @@ export const styles = StyleSheet.create({
     marginBottom: 25,
   },
   filterSectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#2D3748',
     marginBottom: 12,
@@ -378,7 +378,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F7FAFC',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 14,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: 'transparent',
@@ -393,7 +393,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   filterOptionText: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#4A5568',
     fontWeight: '500',
   },

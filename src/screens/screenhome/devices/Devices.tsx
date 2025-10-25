@@ -54,8 +54,8 @@ interface ApiDevice {
 }
 
 interface FilterOptions {
-  speedRange: 'all' | 'stopped' | 'slow' | 'medium' | 'fast';
-  status: 'all' | 'stopped' | 'moving';
+  speedRange: '' | 'stopped' | 'slow' | 'medium' | 'fast';
+  status: '' | 'stopped' | 'moving';
   location: string;
 }
 
@@ -69,8 +69,8 @@ const Devices = () => {
   const [error, setError] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
-    speedRange: 'all',
-    status: 'all',
+    speedRange: '',
+    status: '',
     location: '',
   });
   const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
@@ -168,29 +168,31 @@ const Devices = () => {
 
     // Filtro por rango de velocidad
     let matchesSpeed = true;
-    switch (filters.speedRange) {
-      case 'stopped':
-        matchesSpeed = device.speed === 0;
-        break;
-      case 'slow':
-        matchesSpeed = device.speed > 0 && device.speed < 11;
-        break;
-      case 'medium':
-        matchesSpeed = device.speed >= 11 && device.speed < 60;
-        break;
-      case 'fast':
-        matchesSpeed = device.speed >= 60;
-        break;
-      default:
-        matchesSpeed = true;
+    if (filters.speedRange !== '') {
+      switch (filters.speedRange) {
+        case 'stopped':
+          matchesSpeed = device.speed === 0;
+          break;
+        case 'slow':
+          matchesSpeed = device.speed > 0 && device.speed < 11;
+          break;
+        case 'medium':
+          matchesSpeed = device.speed >= 11 && device.speed < 60;
+          break;
+        case 'fast':
+          matchesSpeed = device.speed >= 60;
+          break;
+      }
     }
 
     // Filtro por estado
     let matchesStatus = true;
-    if (filters.status === 'stopped') {
-      matchesStatus = device.status === 'Detenido';
-    } else if (filters.status === 'moving') {
-      matchesStatus = device.status === 'Movimiento';
+    if (filters.status !== '') {
+      if (filters.status === 'stopped') {
+        matchesStatus = device.status === 'Detenido';
+      } else if (filters.status === 'moving') {
+        matchesStatus = device.status === 'Movimiento';
+      }
     }
 
     // Filtro por ubicación
@@ -205,8 +207,8 @@ const Devices = () => {
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filters.speedRange !== 'all') count++;
-    if (filters.status !== 'all') count++;
+    if (filters.speedRange !== '') count++;
+    if (filters.status !== '') count++;
     if (filters.location !== '') count++;
     return count;
   };
@@ -223,13 +225,33 @@ const Devices = () => {
 
   const handleClearFilters = () => {
     const clearedFilters = {
-      speedRange: 'all' as const,
-      status: 'all' as const,
+      speedRange: '' as const,
+      status: '' as const,
       location: '',
     };
     setTempFilters(clearedFilters);
     setFilters(clearedFilters);
     setShowFilterModal(false);
+  };
+
+  const handleSpeedFilterToggle = (speedValue: 'stopped' | 'slow' | 'medium' | 'fast') => {
+    if (tempFilters.speedRange === speedValue) {
+      // Si ya está seleccionado, deseleccionar
+      setTempFilters({ ...tempFilters, speedRange: '' });
+    } else {
+      // Si no está seleccionado, seleccionar
+      setTempFilters({ ...tempFilters, speedRange: speedValue });
+    }
+  };
+
+  const handleStatusFilterToggle = (statusValue: 'stopped' | 'moving') => {
+    if (tempFilters.status === statusValue) {
+      // Si ya está seleccionado, deseleccionar
+      setTempFilters({ ...tempFilters, status: '' });
+    } else {
+      // Si no está seleccionado, seleccionar
+      setTempFilters({ ...tempFilters, status: statusValue });
+    }
   };
 
   const renderFilterModal = () => {
@@ -260,36 +282,10 @@ const Devices = () => {
                   <TouchableOpacity
                     style={[
                       styles.filterOption,
-                      tempFilters.speedRange === 'all' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, speedRange: 'all' })
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.filterOptionText,
-                        tempFilters.speedRange === 'all' &&
-                          styles.filterOptionTextActive,
-                      ]}
-                    >
-                      Todas
-                    </Text>
-                    {tempFilters.speedRange === 'all' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
                       tempFilters.speedRange === 'stopped' &&
                         styles.filterOptionActive,
                     ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, speedRange: 'stopped' })
-                    }
+                    onPress={() => handleSpeedFilterToggle('stopped')}
                   >
                     <View style={styles.filterOptionContent}>
                       <View
@@ -319,9 +315,7 @@ const Devices = () => {
                       tempFilters.speedRange === 'slow' &&
                         styles.filterOptionActive,
                     ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, speedRange: 'slow' })
-                    }
+                    onPress={() => handleSpeedFilterToggle('slow')}
                   >
                     <View style={styles.filterOptionContent}>
                       <View
@@ -351,9 +345,7 @@ const Devices = () => {
                       tempFilters.speedRange === 'medium' &&
                         styles.filterOptionActive,
                     ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, speedRange: 'medium' })
-                    }
+                    onPress={() => handleSpeedFilterToggle('medium')}
                   >
                     <View style={styles.filterOptionContent}>
                       <View
@@ -383,9 +375,7 @@ const Devices = () => {
                       tempFilters.speedRange === 'fast' &&
                         styles.filterOptionActive,
                     ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, speedRange: 'fast' })
-                    }
+                    onPress={() => handleSpeedFilterToggle('fast')}
                   >
                     <View style={styles.filterOptionContent}>
                       <View
@@ -418,36 +408,10 @@ const Devices = () => {
                   <TouchableOpacity
                     style={[
                       styles.filterOption,
-                      tempFilters.status === 'all' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, status: 'all' })
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.filterOptionText,
-                        tempFilters.status === 'all' &&
-                          styles.filterOptionTextActive,
-                      ]}
-                    >
-                      Todos
-                    </Text>
-                    {tempFilters.status === 'all' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
                       tempFilters.status === 'moving' &&
                         styles.filterOptionActive,
                     ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, status: 'moving' })
-                    }
+                    onPress={() => handleStatusFilterToggle('moving')}
                   >
                     <Text
                       style={[
@@ -469,9 +433,7 @@ const Devices = () => {
                       tempFilters.status === 'stopped' &&
                         styles.filterOptionActive,
                     ]}
-                    onPress={() =>
-                      setTempFilters({ ...tempFilters, status: 'stopped' })
-                    }
+                    onPress={() => handleStatusFilterToggle('stopped')}
                   >
                     <Text
                       style={[
