@@ -329,7 +329,7 @@ export const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0)',
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -344,12 +344,12 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1e3a8a',
   },
@@ -364,7 +364,7 @@ export const styles = StyleSheet.create({
     marginBottom: 25,
   },
   filterSectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#2D3748',
     marginBottom: 12,
@@ -393,7 +393,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   filterOptionText: {
-    fontSize: 15,
+    fontSize: 12,
     color: '#4A5568',
     fontWeight: '500',
   },
@@ -433,7 +433,7 @@ export const styles = StyleSheet.create({
   },
   clearButton: {
     flex: 1,
-    backgroundColor: '#F7FAFC',
+    backgroundColor: '#e36414',
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
@@ -441,7 +441,7 @@ export const styles = StyleSheet.create({
     borderColor: '#CBD5E0',
   },
   clearButtonText: {
-    color: '#4A5568',
+    color: '#ffffffff',
     fontSize: 16,
     fontWeight: '600',
   },
