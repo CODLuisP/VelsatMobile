@@ -330,7 +330,7 @@ export const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
 justifyContent: 'flex-end',
-backgroundColor:'#00296b9a'
+backgroundColor:'#06102188'
   },
   modalContent: {
     backgroundColor: '#fff',
