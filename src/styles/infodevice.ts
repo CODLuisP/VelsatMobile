@@ -49,11 +49,11 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   statusStopped: {
-  color: '#ef4444', // rojo
+  color: '#ef4444', 
   fontWeight: 'bold',
 },
 statusMoving: {
-  color: '#008000', // verde
+  color: '#008000', 
   fontWeight: 'bold',
 },
   temperatureBadge: {
@@ -90,14 +90,6 @@ statusMoving: {
     marginTop: 16,
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
     height: 130,
     padding: 20,
   },
