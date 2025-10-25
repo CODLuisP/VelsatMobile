@@ -121,19 +121,13 @@ export const styles = StyleSheet.create({
 
   // Device item styles
   deviceItem: {
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#f8f8f8ff',
     marginHorizontal: 20,
     marginBottom: 1,
-    borderRadius: 0,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.09,
-    shadowRadius: 2,
-    elevation: 1,
+      borderBottomWidth: 0.5,
+  borderColor: '#bfbfbfff', // o el color que prefieras   
   },
+
   deviceContent: {
     flexDirection: 'row',
     padding: 10,
