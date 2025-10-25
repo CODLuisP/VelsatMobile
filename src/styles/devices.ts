@@ -121,7 +121,7 @@ export const styles = StyleSheet.create({
 
   // Device item styles
   deviceItem: {
-    backgroundColor: '#f8f8f8ff',
+    backgroundColor: '#fcfcfcff',
     marginHorizontal: 20,
     marginBottom: 1,
       borderBottomWidth: 0.5,

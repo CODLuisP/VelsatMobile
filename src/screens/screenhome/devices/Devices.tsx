@@ -516,6 +516,7 @@ const Devices = () => {
           isLast && styles.deviceItemLast,
         ]}
         onPress={() => handleDetailDevice(item)}
+        activeOpacity={0.7}
       >
         <View style={styles.deviceContent}>
           {/* Imagen del vehículo */}
@@ -652,7 +653,7 @@ const Devices = () => {
   return (
     <LinearGradient
       colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
