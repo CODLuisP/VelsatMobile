@@ -7,7 +7,6 @@ import {
   Platform,
   Image,
   ScrollView,
-  Linking,
   ActivityIndicator,
 } from 'react-native';
 import {
@@ -53,6 +52,8 @@ import {
   getDirectionImage,
   getDirectionImageData,
 } from '../../../styles/directionImages';
+import { generateLeafletHTML } from './leafletMapTemplate';
+import CoordinatesModal from './Coordinatesmodal';
 
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
@@ -89,13 +90,27 @@ const DetailDevice = () => {
   const [connection, setConnection] = useState<signalR.HubConnection | null>(
     null,
   );
+
+
+const [isModalVisible, setIsModalVisible] = useState(false);
+
+const handleOpenCoordinatesModal = () => {
+  setIsModalVisible(true);
+};
+
+const handleCloseCoordinatesModal = () => {
+  setIsModalVisible(false);
+};
+
+
+
   const [connectionStatus, setConnectionStatus] = useState<
     'connecting' | 'connected' | 'disconnected' | 'error'
   >('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
 
   const { device } = route.params;
-const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
+  const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -182,7 +197,6 @@ const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
       .build();
 
     newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
-      console.log('📡 Datos recibidos:', JSON.stringify(datos, null, 2));
       if (datos.vehiculo) {
         setVehicleData(datos.vehiculo);
         setConnectionStatus('connected');
@@ -245,7 +259,6 @@ const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
   const speed = vehicleData?.lastValidSpeed || 0;
   const address = vehicleData?.direccion || 'Cargando ubicación...';
-  const gpsTimestamp = vehicleData?.lastGPSTimestamp || Date.now() / 1000;
   const heading = vehicleData?.lastValidHeading || 0;
 
   const getStatus = () => {
@@ -255,13 +268,6 @@ const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
   };
 
   const status = getStatus();
-  const GOOGLE_MAPS_API_KEY = 'AIzaSyDjSwibBACnjf7AZXR2sj1yBUEMGq2o1ho';
-
-
-
-  const getStreetViewUrl = () => {
-    return `https://maps.googleapis.com/maps/api/streetview?size=300x150&location=${latitude},${longitude}&heading=0&pitch=0&key=${GOOGLE_MAPS_API_KEY}`;
-  };
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -285,7 +291,7 @@ const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
           overlayUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
           attribution: '&copy; Esri &copy; OpenStreetMap'
         };
-      default: // 'standard'
+      default: 
         return {
           url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
           attribution: '&copy; OpenStreetMap contributors'
@@ -295,367 +301,33 @@ const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
 
   const tileConfig = getLeafletTileLayer(mapType);
 
-const pinType = selectedVehiclePin || 's';
+  const pinType = selectedVehiclePin || 's';
 
 
-const iconSizes = pinType === 'c' 
-  ? {
-      vertical: [35, 90],    // up y down para camiones
-      horizontal: [90, 45],  // resto para camiones
+  const iconSizes = pinType === 'c'
+    ? {
+      vertical: [35, 90] as [number, number],
+      horizontal: [90, 45] as [number, number],
     }
-  : {
-      vertical: [30, 40],    // up y down para autos/personas
-      horizontal: [55, 35],  // resto para autos/personas
+    : {
+      vertical: [30, 40] as [number, number],
+      horizontal: [55, 35] as [number, number],
     };
-
 
   const popupOffset = pinType === 'c' ? -50 : -30;
 
 
-  const leafletHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ubicación del Vehículo</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-        #map {
-            height: 100vh;
-            width: 100vw;
-            z-index: 0;
-        }
-
-        .radar-pulse {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            animation: pulse 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
-            animation-fill-mode: both;
-            pointer-events: none;
-        }
-        @keyframes pulse {
-            0% {
-                transform: scale(0.2);
-                opacity: 0.4;
-            }
-            50% {
-                opacity: 0.2;
-            }
-            100% {
-                transform: scale(6);
-                opacity: 0;
-            }
-        }
-
-     .leaflet-top.leaflet-left {
-               left: auto !important;
-               right: 20px !important;
-               top:90px !important;
-           }
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <script>
-        var map = L.map('map', {
-            zoomControl: true,
-            scrollWheelZoom: true,
-            doubleClickZoom: true,
-            touchZoom: true
-        }).setView([-12.0464, -77.0428], 16);
-
-        // Capa base inicial
-        ${mapType === 'hybrid' ? `
-        var baseLayer = L.tileLayer('${tileConfig.baseUrl}', {
-            attribution: '${tileConfig.attribution}',
-            maxZoom: 19
-        }).addTo(map);
-        
-        var overlayLayer = L.tileLayer('${tileConfig.overlayUrl}', {
-            maxZoom: 19,
-            opacity: 0.5
-        }).addTo(map);
-        ` : `
-        var baseLayer = L.tileLayer('${tileConfig.url}', {
-            attribution: '${tileConfig.attribution}',
-            maxZoom: 19
-        }).addTo(map);
-        var overlayLayer = null;
-        `}
-
-        // Guardar todas las URLs de imágenes
-    // Guardar todas las URLs de imágenes
-// Guardar todas las URLs de imágenes
-window.imageUrls = {
-    up: '${DIRECTION_IMAGES[pinType]['up.png']}',
-    topright: '${DIRECTION_IMAGES[pinType]['topright.png']}',
-    right: '${DIRECTION_IMAGES[pinType]['right.png']}',
-    downright: '${DIRECTION_IMAGES[pinType]['downright.png']}',
-    down: '${DIRECTION_IMAGES[pinType]['down.png']}',
-    downleft: '${DIRECTION_IMAGES[pinType]['downleft.png']}',
-    left: '${DIRECTION_IMAGES[pinType]['left.png']}',
-    topleft: '${DIRECTION_IMAGES[pinType]['topleft.png']}'
-};
-        
-        var marker = null;
-
-        map.on('focus', function() {
-            map.scrollWheelZoom.enable();
-        });
-        map.on('blur', function() {
-            map.scrollWheelZoom.disable();
-        });
-
-   
-        // Función para crear o actualizar el marcador
-window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
-    // Determinar qué imagen y tamaño usar según el ángulo
-    var imageUrl = '';
-    var iconSize = [42, 25]; // Tamaño por defecto
-    
-    // Tamaños configurados desde React Native
-    var verticalSize = ${JSON.stringify(iconSizes.vertical)};
-    var horizontalSize = ${JSON.stringify(iconSizes.horizontal)};
-    
-    if (heading >= 0 && heading <= 22.5) {
-        imageUrl = window.imageUrls.up;
-        iconSize = verticalSize;
-    } else if (heading > 22.5 && heading <= 67.5) {
-        imageUrl = window.imageUrls.topright;
-        iconSize = horizontalSize;
-    } else if (heading > 67.5 && heading <= 112.5) {
-        imageUrl = window.imageUrls.right;
-        iconSize = horizontalSize;
-    } else if (heading > 112.5 && heading <= 157.5) {
-        imageUrl = window.imageUrls.downright;
-        iconSize = horizontalSize;
-    } else if (heading > 157.5 && heading <= 202.5) {
-        imageUrl = window.imageUrls.down;
-        iconSize = verticalSize;
-    } else if (heading > 202.5 && heading <= 247.5) {
-        imageUrl = window.imageUrls.downleft;
-        iconSize = horizontalSize;
-    } else if (heading > 247.5 && heading <= 292.5) {
-        imageUrl = window.imageUrls.left;
-        iconSize = horizontalSize;
-    } else if (heading > 292.5 && heading <= 337.5) {
-        imageUrl = window.imageUrls.topleft;
-        iconSize = horizontalSize;
-    } else {
-        imageUrl = window.imageUrls.up;
-        iconSize = verticalSize;
-    }
-    
-    
-            // Determinar color del radar según velocidad
-            var radarColor = '';
-            if (speed === 0) {
-                radarColor = '#ef4444'; // ROJO
-            } else if (speed > 0 && speed < 11) {
-                radarColor = '#ff8000'; // AMARILLO
-            } else if (speed >= 11 && speed < 60) {
-                radarColor = '#38b000'; // VERDE
-            } else {
-                radarColor = '#00509d'; // AZUL
-            }
-
-            var statusColor = statusText === 'Movimiento' ? '#38b000' : '#ef4444';
-
-            var popupContent = \`
-                <div style="text-align: center; font-family: Arial, sans-serif; min-width: 200px;">
-                    <h3 style="margin: 8px 0; color: #f97316; font-size: 14.5px;text-transform: uppercase;font-weight: 800;">\${deviceName}</h3>
-                    <div style="display: flex; flex-direction: column; gap: 3px; text-align: left;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Estado:</span>
-                            <span style="color: \${statusColor}; font-weight: 600;">\${statusText}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Velocidad:</span>
-                            <span style="color: #6b7280;">\${speed} Km/h</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Dirección:</span>
-                            <span style="color: #6b7280;">\${heading}°</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Conexión:</span>
-                            <span style="color: #38b000; font-weight: 600;">Online</span>
-                        </div>
-                        <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
-                            <div style="font-size: 12px; color: #6b7280;">Monitoreo activo</div>
-                        </div>
-                    </div>
-                </div>
-            \`;
-
-            // Si es la primera vez, crear el marcador Y el radar como capa separada
-            if (marker === null) {
-                // Crear overlay SVG para el radar (permanente)
-                var RadarOverlay = L.Layer.extend({
-                    onAdd: function(map) {
-                        this._map = map;
-                        this._container = L.DomUtil.create('div', 'radar-overlay');
-                        this._container.style.position = 'absolute';
-                        this._container.style.pointerEvents = 'none';
-                        this._container.style.width = '100%';
-                        this._container.style.height = '100%';
-                        this._container.style.top = '0';
-                        this._container.style.left = '0';
-                        this._container.style.zIndex = '400';
-                        
-                        this._container.innerHTML = '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute;"></div>' +
-                            '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute; animation-delay: 1s;"></div>' +
-                            '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute; animation-delay: 2s;"></div>';
-                        
-                        map.getPanes().overlayPane.appendChild(this._container);
-                        this._update();
-                        map.on('viewreset zoom move', this._update, this);
-                    },
-                    
-                    onRemove: function(map) {
-                        L.DomUtil.remove(this._container);
-                        map.off('viewreset zoom move', this._update, this);
-                    },
-                    
-                    _update: function() {
-                        if (!this._map || !marker) return;
-                        var point = this._map.latLngToLayerPoint(marker.getLatLng());
-                        var pulses = this._container.getElementsByClassName('radar-pulse');
-                        for (var i = 0; i < pulses.length; i++) {
-                            pulses[i].style.left = (point.x - 10) + 'px';
-                            pulses[i].style.top = (point.y - 10) + 'px';
-                        }
-                    },
-                    
-                    updateColor: function(color) {
-                        var pulses = this._container.getElementsByClassName('radar-pulse');
-                        for (var i = 0; i < pulses.length; i++) {
-                            pulses[i].style.backgroundColor = color;
-                        }
-                    }
-                });
-                
-                window.radarLayer = new RadarOverlay().addTo(map);
-                
-                // Crear marcador simple sin radar
-                var vehicleIcon = L.divIcon({
-                    html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
-                    iconSize: iconSize,
-                    iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
-                    popupAnchor: [0, ${popupOffset}],
-                    className: 'custom-vehicle-icon'
-                });
-                
-                marker = L.marker([lat, lng], {
-                    icon: vehicleIcon,
-                    autoPan: false
-                }).addTo(map);
-                
-                marker.bindPopup(popupContent, {
-                    autoPan: false,
-                    closeButton: true,
-                    autoClose: false,
-                    closeOnClick: false
-                }).openPopup();
-                
-                map.setView([lat, lng], 16);
-            } else {
-                // Actualizar imagen solo si cambió la dirección
-                if (!marker.lastHeading || Math.abs(marker.lastHeading - heading) > 22.5) {
-                    var vehicleIcon = L.divIcon({
-                        html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
-                        iconSize: iconSize,
-                        iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
-                        popupAnchor: [0, ${popupOffset}], 
-                        className: 'custom-vehicle-icon'
-                    });
-                    marker.setIcon(vehicleIcon);
-                    marker.lastHeading = heading;
-                }
-                
-                // Actualizar posición
-                marker.setLatLng([lat, lng]);
-                
-                // Actualizar color del radar si cambió
-                var oldColor = marker.lastSpeed === 0 ? '#ef4444' : 
-                              (marker.lastSpeed > 0 && marker.lastSpeed < 11) ? '#fbbf24' :
-                              (marker.lastSpeed >= 11 && marker.lastSpeed < 60) ? '#10b981' : '#3b82f6';
-                
-                if (oldColor !== radarColor && window.radarLayer) {
-                    window.radarLayer.updateColor(radarColor);
-                }
-                marker.lastSpeed = speed;
-                
-                // Actualizar posición del radar
-                if (window.radarLayer) {
-                    window.radarLayer._update();
-                }
-                
-                marker.getPopup().setContent(popupContent);
-                map.setView([lat, lng], map.getZoom());
-                
-                if (!marker.isPopupOpen()) {
-                    marker.openPopup();
-                }
-            }
-        };
-
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && map) {
-                setTimeout(function() {
-                    console.log('Página visible - invalidando mapa');
-                    map.invalidateSize(true);
-                   
-                    // Forzar redibujado de tiles
-                    map.eachLayer(function(layer) {
-                        if (layer instanceof L.TileLayer) {
-                            layer.redraw();
-                        }
-                    });
-                }, 250);
-            }
-        });
-
-        // Para mensajes desde React Native
-        document.addEventListener('message', function(event) {
-            if (event.data === 'invalidate-size') {
-                if (map) {
-                    setTimeout(function() {
-                        map.invalidateSize(true);
-                    }, 100);
-                }
-            }
-        });
-
-        window.addEventListener('message', function(event) {
-            if (event.data === 'invalidate-size') {
-                if (map) {
-                    setTimeout(function() {
-                        map.invalidateSize(true);
-                    }, 100);
-                }
-            }
-        });
-
-        // Señalar que el WebView está listo
-        window.ReactNativeWebView.postMessage('webview-ready');
-    </script>
-</body>
-</html>
-`;
+  const leafletHTML = useMemo(() =>
+    generateLeafletHTML({
+      mapType,
+      tileConfig,
+      pinType,
+      DIRECTION_IMAGES,
+      iconSizes,
+      popupOffset
+    }),
+    [mapType, tileConfig, pinType, iconSizes, popupOffset]
+  );
 
   const webViewRef = useRef<WebView>(null);
   const mapRef = useRef<MapView>(null);
@@ -667,7 +339,6 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
       vehicleData &&
       isWebViewReady
     ) {
-      // Pequeño delay para asegurar que el mapa esté completamente cargado
       setTimeout(() => {
         const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device.name}', '${device.id}'); true;`;
         webViewRef.current?.injectJavaScript(script);
@@ -681,10 +352,8 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
     status,
     vehicleData,
     isWebViewReady,
-    mapType, // ← IMPORTANTE: Agregar mapType
+    mapType, 
   ]);
-
-
 
   useEffect(() => {
     if (Platform.OS === 'ios' && mapRef.current && vehicleData) {
@@ -716,18 +385,14 @@ window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, dev
 
   const renderMap = () => {
     if (Platform.OS === 'ios') {
-const imageData = getDirectionImageData(heading);
+      const imageData = getDirectionImageData(heading);
 
-// Ajustar tamaños según el tipo de vehículo (solo para iOS)
-const iosImageSize: [number, number] = 
-  imageData.name === 'up.png' || imageData.name === 'down.png'
-    ? (pinType === 'c' ? [35, 90] : imageData.size)  // Vertical: camiones más grandes
-    : (pinType === 'c' ? [90, 50] : imageData.size); // Horizontal: camiones más grandes
+      const iosImageSize: [number, number] =
+        imageData.name === 'up.png' || imageData.name === 'down.png'
+          ? (pinType === 'c' ? [35, 90] : imageData.size)  
+          : (pinType === 'c' ? [90, 50] : imageData.size); 
 
-
-
-
-const radarColor =
+      const radarColor =
         speed === 0
           ? '#ef4444'
           : speed > 0 && speed < 11
@@ -814,14 +479,14 @@ const radarColor =
                   }}
                   coordinate={{ latitude, longitude }}
                 >
-<Image
-  source={getDirectionImage(heading, pinType)}
-  style={{
-    width: iosImageSize[0],
-    height: iosImageSize[1],
-  }}
-  resizeMode="contain"
-/>
+                  <Image
+                    source={getDirectionImage(heading, pinType)}
+                    style={{
+                      width: iosImageSize[0],
+                      height: iosImageSize[1],
+                    }}
+                    resizeMode="contain"
+                  />
                   <Callout>
                     <View style={{ padding: 0, minWidth: 230 }}>
                       <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
@@ -837,17 +502,16 @@ const radarColor =
             )}
           </MapView>
 
-          {/* Botones de tipo de mapa para iOS */}
-          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>          
-            
+          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
+
             <TouchableOpacity
-            style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
-            onPress={() => setMapType('standard')}
-          >
-            <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
-              Calles
-            </Text>
-          </TouchableOpacity>
+              style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
+              onPress={() => setMapType('standard')}
+            >
+              <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
+                Calles
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
               onPress={() => setMapType('satellite')}
@@ -868,7 +532,6 @@ const radarColor =
         </>
       );
     } else {
-      // Android - WebView con Leaflet
       return (
         <>
           <WebView
@@ -892,8 +555,7 @@ const radarColor =
             }}
           />
 
-          {/* Botones de tipo de mapa para Android */}
-          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>          
+          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
             <TouchableOpacity
               style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
               onPress={() => setMapType('standard')}
@@ -1112,12 +774,17 @@ const radarColor =
               <View style={styles.streetViewRow}>
                 <View style={styles.streetViewContainer}>
                   {vehicleData ? (
-                    <Image
-                      source={{ uri: getStreetViewUrl() }}
-                      style={styles.streetViewImage}
-                      resizeMode="cover"
-                      key={`${latitude}-${longitude}`}
-                    />
+                  <TouchableOpacity 
+  onPress={handleOpenCoordinatesModal} 
+  activeOpacity={0.8}
+  disabled={!vehicleData}
+>
+  <Image
+    source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761452839/camino_gyy3ip.jpg' }}
+    style={styles.streetViewImage}
+    resizeMode="cover"
+  />
+</TouchableOpacity>
                   ) : (
                     <View
                       style={[
@@ -1164,10 +831,18 @@ const radarColor =
               </TouchableOpacity>
             </ScrollView>
 
-        
+
           </View>
         )}
       </View>
+
+      <CoordinatesModal
+  visible={isModalVisible}
+  onClose={handleCloseCoordinatesModal}
+  latitude={latitude}
+  longitude={longitude}
+
+/>
     </View>
   );
 };

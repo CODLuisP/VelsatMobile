@@ -258,7 +258,7 @@ const Devices = () => {
     return (
       <Modal
         visible={showFilterModal}
-        animationType="slide"
+        animationType="fade" 
         transparent={true}
         onRequestClose={() => setShowFilterModal(false)}
       >

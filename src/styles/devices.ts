@@ -121,7 +121,7 @@ export const styles = StyleSheet.create({
 
   // Device item styles
   deviceItem: {
-    backgroundColor: '#fcfcfcff',
+    backgroundColor: '#f8f8f8ff',
     marginHorizontal: 20,
     marginBottom: 1,
       borderBottomWidth: 0.5,
@@ -321,11 +321,12 @@ export const styles = StyleSheet.create({
   },
 
   // Modal Styles
-  modalOverlay: {
-    flex: 1,
-justifyContent: 'flex-end',
-backgroundColor:'#06102188'
-  },
+// Modal Styles
+modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  justifyContent: 'flex-end',
+},
   modalContent: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 25,
@@ -338,7 +339,7 @@ backgroundColor:'#06102188'
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 5,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
     backgroundColor:'#ffffffff',

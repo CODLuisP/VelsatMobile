@@ -59,16 +59,14 @@ export const styles = StyleSheet.create({
     backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    
   },
   notificationCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    
+  
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 8,

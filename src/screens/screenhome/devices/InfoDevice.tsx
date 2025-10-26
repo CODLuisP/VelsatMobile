@@ -138,24 +138,23 @@ const InfoDevice = () => {
 
     const googleMapsLink = `https://www.google.com/maps?q=${vehiculoData.lastValidLatitude},${vehiculoData.lastValidLongitude}`;
     const mensaje = `
-*INFORMACIÓN DEL VEHÍCULO*
+    *INFORMACIÓN DEL VEHÍCULO*
 
-✅ *UNIDAD:* ${deviceName}
-✅ *ESTADO:* ${estado}
-✅ *VELOCIDAD:* ${vehiculoData.lastValidSpeed} km/h
-✅ *FECHA Y HORA:* ${fechaHora}
-✅ *UBICACIÓN ACTUAL:* ${vehiculoData.direccion}
-✅ *DIRECCIÓN:* ${direccion}
-✅ *KILOMETRAJE:* ${kilometraje} Km
-✅ *COORDENADAS:*
-  Latitud:  ${vehiculoData.lastValidLatitude}
-  Longitud: ${vehiculoData.lastValidLongitude}
-
-✅ *VER EN GOOGLE MAPS:*
-  ${googleMapsLink}
+🚗 *UNIDAD:* ${deviceName}
+📊 *ESTADO:* ${estado}
+💨 *VELOCIDAD:* ${vehiculoData.lastValidSpeed} km/h
+🗓️ *FECHA Y HORA:* ${fechaHora}
+🌍 *UBICACIÓN ACTUAL:* ${vehiculoData.direccion}
+🧭 *DIRECCIÓN:* ${direccion}
+⏲️ *KILOMETRAJE:* ${kilometraje} Km
+🗺️ *COORDENADAS:*
+Latitud:  ${vehiculoData.lastValidLatitude} - Longitud: ${vehiculoData.lastValidLongitude}
+   
+*VER EN GOOGLE MAPS:*
+${googleMapsLink}
 
 Compartido desde Velsat Mobile
-  `.trim();
+`.trim();
 
     try {
       await Share.share({
@@ -185,8 +184,8 @@ Compartido desde Velsat Mobile
 
   return (
     <LinearGradient
-     colors={['#021e4bff', '#183890ff', '#032660ff']}
-          style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
@@ -351,20 +350,20 @@ Compartido desde Velsat Mobile
           </View>
 
           {/* Daily Distance Item */}
-<View style={styles.infoItem}>
-  <View style={styles.iconContainer}>
-    <SatelliteDish size={20} color="#666" />
-  </View>
-  <View style={styles.infoContent}>
-    <Text style={styles.infoValue}>
-      Conectado al sistema de rastreo
-    </Text>
-    <Text style={styles.infoSubtitle}>
-      Velsat Mobile - Sistema GPS
-    </Text>
-  </View>
-</View>
-          
+          <View style={styles.infoItem}>
+            <View style={styles.iconContainer}>
+              <SatelliteDish size={20} color="#666" />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoValue}>
+                Conectado al sistema de rastreo
+              </Text>
+              <Text style={styles.infoSubtitle}>
+                Velsat Mobile - Sistema GPS
+              </Text>
+            </View>
+          </View>
+
         </View>
 
         {/* Action Buttons */}

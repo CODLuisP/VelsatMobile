@@ -236,8 +236,8 @@ const Events = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+     colors={['#021e4bff', '#183890ff', '#032660ff']}
+         style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
@@ -247,13 +247,13 @@ const Events = () => {
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>
-            Eventos de la unidad: {deviceName}
+            Alertas de la unidad: {deviceName}
           </Text>
         </View>
         <View style={styles.headerBottom}>
-          <Text style={styles.headerTitle}>Eventos de tus unidades</Text>
+          <Text style={styles.headerTitle}>Alertas de tus unidades</Text>
           <Text style={styles.headerSubtitle}>
-            Visualiza el detalle de los eventos de tus unidades, desconexión de
+            Visualiza el detalle de las alertas de tus unidades, desconexión de
             batería, apagado de motor, encendido de motor y botón de pánico.
           </Text>
         </View>
@@ -262,6 +262,7 @@ const Events = () => {
       <ScrollView
         style={styles.notificationsList}
         showsVerticalScrollIndicator={false}
+        
       >
         <View style={styles.formContainer}>
           {loading ? (
@@ -303,8 +304,8 @@ const Events = () => {
               </View>
               <Text
                 style={{
-                  color: '#f1f5f9',
-                  fontSize: 18,
+                  color: '#585959ff',
+                  fontSize: 14,
                   fontWeight: '600',
                   textAlign: 'center',
                   marginBottom: 0,
@@ -380,7 +381,7 @@ const Events = () => {
                 >
                   <View style={styles.notificationHeader}>
                     <View style={styles.iconContainer}>
-                      <IconComponent size={24} color="#FF8C42" />
+                      <IconComponent size={24} color="#e0681dff" />
                     </View>
                     <View style={styles.notificationContent}>
                       <Text style={styles.notificationTitle}>

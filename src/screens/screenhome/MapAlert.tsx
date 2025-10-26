@@ -412,8 +412,8 @@ const MapAlert = () => {
 
   return (
     <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+         colors={['#021e4bff', '#183890ff', '#032660ff']}
+         style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
