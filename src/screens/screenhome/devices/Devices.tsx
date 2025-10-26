@@ -33,6 +33,7 @@ import {
 import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
+import CoordinatesModal from './Coordinatesmodal';
 
 interface Device {
   id: string;
@@ -649,6 +650,7 @@ const Devices = () => {
 
   const topSpace = insets.top + 5;
   const activeFiltersCount = getActiveFiltersCount();
+  const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <LinearGradient
@@ -702,6 +704,34 @@ const Devices = () => {
               )}
             </TouchableOpacity>
           )}
+
+ <CoordinatesModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        latitude={-7.161872}
+        longitude={-78.512649}
+      />
+      
+           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#3b82f6',
+            paddingHorizontal: 32,
+            paddingVertical: 16,
+            borderRadius: 12,
+            shadowColor: '#3b82f6',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+            elevation: 5,
+          }}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
+            Prueba Modal
+          </Text>
+        </TouchableOpacity>
+      </View>
         </View>
       </View>
 
