@@ -13,6 +13,8 @@ import {
   TextInput,
 } from 'react-native';
 import { X, MapPinned, Check, Filter } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
 
 interface FilterModalProps {
   visible: boolean;
@@ -37,7 +39,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
   const [tempFilters, setTempFilters] = useState(filters);
   const slideAnim = useState(new Animated.Value(height))[0];
-
+ const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
   useEffect(() => {
     if (visible) {
       setTempFilters(filters);
@@ -370,7 +377,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
               </ScrollView>
 
               {/* Footer */}
-              <View style={styles.modalFooter}>
+              <View style={[styles.modalFooter,{marginBottom:bottomSpace-2}]}>
                 <TouchableOpacity
                   style={styles.clearButton}
                   onPress={handleClearFilters}
@@ -524,6 +531,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     gap: 12,
+    backgroundColor:'red',
+    
   },
   clearButton: {
     flex: 1,
