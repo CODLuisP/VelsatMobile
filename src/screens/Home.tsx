@@ -732,7 +732,7 @@ const Home: React.FC = () => {
             >
               {/* Fondo degradado */}
               <LinearGradient
-             colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
                 style={{
                   position: 'absolute',
                   left: 0,
@@ -756,158 +756,158 @@ const Home: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-        <TouchableOpacity
-  style={[
-    homeStyles.optionCard,
-  ]}
-  onPress={handleNavigateToDevice}
-  activeOpacity={0.95}
->
-  {/* Fondo degradado */}
-  <LinearGradient
-    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
-    style={{
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-    }}
-  />
+            <TouchableOpacity
+              style={[
+                homeStyles.optionCard,
+              ]}
+              onPress={handleNavigateToDevice}
+              activeOpacity={0.95}
+            >
+              {/* Fondo degradado */}
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              />
 
-  <View
-    style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-  >
-    <Car size={24} color="#e36414" />
-  </View>
-  
-  <Text style={homeStyles.optionTitle}>Unidades</Text>
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
+                <Car size={24} color="#e36414" />
+              </View>
 
-  <Text style={homeStyles.optionSubtitle}>
-    Rastrea tus unidades, conoce su última ubicación, velocidad,
-    dirección y estado.
-  </Text>
-</TouchableOpacity>
+              <Text style={homeStyles.optionTitle}>Unidades</Text>
 
-           <TouchableOpacity
-  style={[
-    homeStyles.optionCard,
-  ]}
-  onPress={handleNavigateToReports}
-  activeOpacity={0.95}
->
-  {/* Fondo degradado */}
-  <LinearGradient
-    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
-    style={{
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-    }}
-  />
+              <Text style={homeStyles.optionSubtitle}>
+                Rastrea tus unidades, conoce su última ubicación, velocidad,
+                dirección y estado.
+              </Text>
+            </TouchableOpacity>
 
-  <View
-    style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-  >
-    <BarChart3 size={24} color="#e36414" />
-  </View>
-  
-  <Text style={homeStyles.optionTitle}>Reportes</Text>
+            <TouchableOpacity
+              style={[
+                homeStyles.optionCard,
+              ]}
+              onPress={handleNavigateToReports}
+              activeOpacity={0.95}
+            >
+              {/* Fondo degradado */}
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              />
 
-  <Text style={homeStyles.optionSubtitle}>
-    Genera reportes de tus unidades, general, velocidad,
-    kilometraje, paradas y detalle de recorrido.
-  </Text>
-</TouchableOpacity>
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
+                <BarChart3 size={24} color="#e36414" />
+              </View>
 
-<TouchableOpacity
-  style={[
-    homeStyles.optionCard,
-  ]}
-  onPress={handleNavigateToSecurity}
-  activeOpacity={0.95}
->
-  {/* Fondo degradado */}
-  <LinearGradient
-    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
-    style={{
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-    }}
-  />
+              <Text style={homeStyles.optionTitle}>Reportes</Text>
 
-  <View
-    style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-  >
-    <Shield size={24} color="#e36414" />
-  </View>
-  
-  <Text style={homeStyles.optionTitle}>Seguridad</Text>
+              <Text style={homeStyles.optionSubtitle}>
+                Genera reportes de tus unidades, general, velocidad,
+                kilometraje, paradas y detalle de recorrido.
+              </Text>
+            </TouchableOpacity>
 
-  <Text style={homeStyles.optionSubtitle}>
-    Activa la autenticación con datos biométricos y habilita o
-    deshabilita las notificaciones.
-  </Text>
-</TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                homeStyles.optionCard,
+              ]}
+              onPress={handleNavigateToSecurity}
+              activeOpacity={0.95}
+            >
+              {/* Fondo degradado */}
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              />
+
+              <View
+                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+              >
+                <Shield size={24} color="#e36414" />
+              </View>
+
+              <Text style={homeStyles.optionTitle}>Seguridad</Text>
+
+              <Text style={homeStyles.optionSubtitle}>
+                Activa la autenticación con datos biométricos y habilita o
+                deshabilita las notificaciones.
+              </Text>
+            </TouchableOpacity>
 
 
           </View>
 
           <View style={homeStyles.customerCareContainer}>
-<TouchableOpacity
-  style={[
-    homeStyles.customerCareCard,
-  ]}
-  onPress={handleNavigateToHelp}
-  activeOpacity={0.95}
->
-  {/* Fondo degradado */}
-  <LinearGradient
-    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
-    style={{
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      borderRadius:15
-    }}
-  />
+            <TouchableOpacity
+              style={[
+                homeStyles.customerCareCard,
+              ]}
+              onPress={handleNavigateToHelp}
+              activeOpacity={0.95}
+            >
+              {/* Fondo degradado */}
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  borderRadius: 15
+                }}
+              />
 
-  <View
-    style={[
-      homeStyles.customerCareIcon,
-      homeStyles.optionContentAbove,
-    ]}
-  >
-    <Headphones size={24} color="#e36414" />
-  </View>
-  
-  <Text
-    style={[
-      homeStyles.customerCareTitle,
-      homeStyles.optionContentAbove,
-    ]}
-  >
-    Ayuda
-  </Text>
-  
-  <Text
-    style={[
-      homeStyles.customerCareSubtitle,
-      homeStyles.optionContentAbove,
-    ]}
-  >
-    Conoce nuestros números telefónicos, llámanos a la central de
-    monitoreo, escríbenos al Whatsapp, revisa las preguntas
-    frecuentes y visualiza tutoriales útiles.
-  </Text>
-</TouchableOpacity>
+              <View
+                style={[
+                  homeStyles.customerCareIcon,
+                  homeStyles.optionContentAbove,
+                ]}
+              >
+                <Headphones size={24} color="#e36414" />
+              </View>
+
+              <Text
+                style={[
+                  homeStyles.customerCareTitle,
+                  homeStyles.optionContentAbove,
+                ]}
+              >
+                Ayuda
+              </Text>
+
+              <Text
+                style={[
+                  homeStyles.customerCareSubtitle,
+                  homeStyles.optionContentAbove,
+                ]}
+              >
+                Conoce nuestros números telefónicos, llámanos a la central de
+                monitoreo, escríbenos al Whatsapp, revisa las preguntas
+                frecuentes y visualiza tutoriales útiles.
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
