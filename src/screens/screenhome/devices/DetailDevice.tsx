@@ -92,15 +92,15 @@ const DetailDevice = () => {
   );
 
 
-const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-const handleOpenCoordinatesModal = () => {
-  setIsModalVisible(true);
-};
+  const handleOpenCoordinatesModal = () => {
+    setIsModalVisible(true);
+  };
 
-const handleCloseCoordinatesModal = () => {
-  setIsModalVisible(false);
-};
+  const handleCloseCoordinatesModal = () => {
+    setIsModalVisible(false);
+  };
 
 
 
@@ -291,7 +291,7 @@ const handleCloseCoordinatesModal = () => {
           overlayUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
           attribution: '&copy; Esri &copy; OpenStreetMap'
         };
-      default: 
+      default:
         return {
           url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
           attribution: '&copy; OpenStreetMap contributors'
@@ -352,7 +352,7 @@ const handleCloseCoordinatesModal = () => {
     status,
     vehicleData,
     isWebViewReady,
-    mapType, 
+    mapType,
   ]);
 
   useEffect(() => {
@@ -389,8 +389,8 @@ const handleCloseCoordinatesModal = () => {
 
       const iosImageSize: [number, number] =
         imageData.name === 'up.png' || imageData.name === 'down.png'
-          ? (pinType === 'c' ? [35, 90] : imageData.size)  
-          : (pinType === 'c' ? [90, 50] : imageData.size); 
+          ? (pinType === 'c' ? [35, 90] : imageData.size)
+          : (pinType === 'c' ? [90, 50] : imageData.size);
 
       const radarColor =
         speed === 0
@@ -653,6 +653,7 @@ const handleCloseCoordinatesModal = () => {
         <TouchableOpacity
           style={[styles.floatingBackButton, { top: insets.top + 10 }]}
           onPress={handleGoBack}
+          activeOpacity={0.7}
         >
           <ChevronLeft size={26} color="#ffffffff" />
         </TouchableOpacity>
@@ -774,17 +775,17 @@ const handleCloseCoordinatesModal = () => {
               <View style={styles.streetViewRow}>
                 <View style={styles.streetViewContainer}>
                   {vehicleData ? (
-                  <TouchableOpacity 
-  onPress={handleOpenCoordinatesModal} 
-  activeOpacity={0.8}
-  disabled={!vehicleData}
->
-  <Image
-    source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761452839/camino_gyy3ip.jpg' }}
-    style={styles.streetViewImage}
-    resizeMode="cover"
-  />
-</TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleOpenCoordinatesModal}
+                      activeOpacity={0.8}
+                      disabled={!vehicleData}
+                    >
+                      <Image
+                        source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761452839/camino_gyy3ip.jpg' }}
+                        style={styles.streetViewImage}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
                   ) : (
                     <View
                       style={[
@@ -837,12 +838,12 @@ const handleCloseCoordinatesModal = () => {
       </View>
 
       <CoordinatesModal
-  visible={isModalVisible}
-  onClose={handleCloseCoordinatesModal}
-  latitude={latitude}
-  longitude={longitude}
+        visible={isModalVisible}
+        onClose={handleCloseCoordinatesModal}
+        latitude={latitude}
+        longitude={longitude}
 
-/>
+      />
     </View>
   );
 };

@@ -45,7 +45,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
     insets,
     navigationDetection.hasNavigationBar,
   );
-  
+
   useEffect(() => {
     if (visible) {
       setTempFilters(filters);
@@ -536,13 +536,13 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f97316',
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
   },
   clearButtonText: {
-    color: '#475569',
+    color: '#ffffffff',
     fontSize: 15,
     fontWeight: '600',
   },
