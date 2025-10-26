@@ -41,7 +41,7 @@ export const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#E3F2FD',
+    color: '#fff',
     lineHeight: 20,
     opacity: 0.9,
   },
@@ -65,8 +65,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 10,
-    
-  
+
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 8,
@@ -98,7 +97,6 @@ export const styles = StyleSheet.create({
   notificationHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 0,
   },
   iconContainer: {
     width: 52,
@@ -126,16 +124,13 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#2C3E50',
-    marginBottom: 6,
     letterSpacing: 0.5,
   },
   deviceName: {
     fontSize: 14,
     fontWeight: '600',
     color: '#5D6D7E',
-    marginBottom: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    marginBottom: 4,
     alignSelf: 'flex-start',
   },
   timestamp: {

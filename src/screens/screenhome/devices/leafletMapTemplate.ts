@@ -211,16 +211,14 @@ export const generateLeafletHTML = ({
                             <span style="color: #6b7280;">\${speed} Km/h</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Dirección:</span>
+                            <span style="font-weight: 600; color: #374151;">Rotación:</span>
                             <span style="color: #6b7280;">\${heading}°</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Conexión:</span>
                             <span style="color: #38b000; font-weight: 600;">Online</span>
                         </div>
-                        <div style="border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
-                            <div style="font-size: 12px; color: #6b7280;">Monitoreo activo</div>
-                        </div>
+                  
                     </div>
                 </div>
             \`;

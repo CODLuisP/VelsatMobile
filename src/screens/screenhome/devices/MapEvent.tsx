@@ -280,7 +280,7 @@ const MapAlert = () => {
                 <div style="text-align: center; font-family: Arial, sans-serif;">
                     <h3 style="margin: 5px 0; color: ${alertColor};">${notificationData?.title || 'Alerta'}</h3>
                     <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${notificationData?.device || 'Sin información'}</p>
-                    <p style="margin: 3px 0;"><strong>ID:</strong> ${notificationData?.id || 'N/A'}</p>
+                    <p style="margin: 3px 0;"><strong>N° Alerta:</strong> ${notificationData?.id || 'N/A'}</p>
                     <p style="margin: 3px 0;"><strong>Coordenadas:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
                     <p style="margin: 3px 0;"><strong>Fecha:</strong> ${notificationData?.timestamp || 'Sin fecha'}</p>
                 </div>
