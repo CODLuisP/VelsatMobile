@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { X, MapPin, Clock } from 'lucide-react-native';
 import { WebView } from 'react-native-webview';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
 
 interface CoordinatesModalProps {
   visible: boolean;
@@ -34,6 +36,37 @@ const CoordinatesModal: React.FC<CoordinatesModalProps> = ({
   const [webViewKey, setWebViewKey] = useState(0);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const slideAnim = useState(new Animated.Value(height))[0];
+  const pulseAnim = useState(new Animated.Value(1))[0];
+
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
+  // Animación de pulso para el indicador EN VIVO
+  useEffect(() => {
+    if (visible) {
+      // Animación de pulso continuo
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [visible]);
 
   // Actualizar la vista cuando cambien las coordenadas
   useEffect(() => {
@@ -125,43 +158,42 @@ const CoordinatesModal: React.FC<CoordinatesModalProps> = ({
     });
   };
 
-
-  // PanResponder para arrastrar hacia abajo - CORREGIDO
-const panResponder = PanResponder.create({
-  onStartShouldSetPanResponder: () => true,
-  onStartShouldSetPanResponderCapture: () => false,
-  onMoveShouldSetPanResponder: (_, gestureState) => {
-    // Solo activar cuando se arrastra hacia ABAJO (dy positivo)
-    return gestureState.dy > 5;  // ✅ Quitar Math.abs()
-  },
-  onMoveShouldSetPanResponderCapture: () => false,
-  onPanResponderMove: (_, gestureState) => {
-    // Solo mover cuando es hacia abajo
-    if (gestureState.dy > 0) {
-      slideAnim.setValue(gestureState.dy);
-    }
-  },
-  onPanResponderRelease: (_, gestureState) => {
-    if (gestureState.dy > 150) {
-      handleClose();
-    } else {
+  // PanResponder para arrastrar hacia abajo
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onStartShouldSetPanResponderCapture: () => false,
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      // Solo activar cuando se arrastra hacia ABAJO (dy positivo)
+      return gestureState.dy > 5;
+    },
+    onMoveShouldSetPanResponderCapture: () => false,
+    onPanResponderMove: (_, gestureState) => {
+      // Solo mover cuando es hacia abajo
+      if (gestureState.dy > 0) {
+        slideAnim.setValue(gestureState.dy);
+      }
+    },
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dy > 150) {
+        handleClose();
+      } else {
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 8,
+        }).start();
+      }
+    },
+    onPanResponderTerminate: () => {
       Animated.spring(slideAnim, {
         toValue: 0,
         useNativeDriver: true,
         tension: 50,
         friction: 8,
       }).start();
-    }
-  },
-  onPanResponderTerminate: () => {
-    Animated.spring(slideAnim, {
-      toValue: 0,
-      useNativeDriver: true,
-      tension: 50,
-      friction: 8,
-    }).start();
-  },
-}); 
+    },
+  });
 
   return (
     <Modal
@@ -182,14 +214,25 @@ const panResponder = PanResponder.create({
                 },
               ]}
             >
-            
-
               {/* Header */}
               <View style={styles.modalHeader}>
                 <View style={styles.headerLeft}>
                   <MapPin size={24} color="#3b82f6" />
                   <Text style={styles.modalTitle}>Vista 3D en Tiempo Real</Text>
                 </View>
+
+                <View style={styles.liveIndicator}>
+                  <Animated.View
+                    style={[
+                      styles.liveDot,
+                      {
+                        transform: [{ scale: pulseAnim }],
+                      },
+                    ]}
+                  />
+                  <Text style={styles.liveText}>EN VIVO</Text>
+                </View>
+
                 <TouchableOpacity
                   onPress={handleClose}
                   style={styles.closeButton}
@@ -226,12 +269,6 @@ const panResponder = PanResponder.create({
                   originWhitelist={['*']}
                   mixedContentMode="always"
                 />
-
-                {/* Overlay de actualización en tiempo real */}
-                <View style={styles.liveIndicator}>
-                  <View style={styles.liveDot} />
-                  <Text style={styles.liveText}>EN VIVO</Text>
-                </View>
               </View>
 
               {/* Content - Coordenadas */}
@@ -255,8 +292,6 @@ const panResponder = PanResponder.create({
                   </View>
                 </View>
 
-                <View style={styles.divider} />
-
                 {/* Longitude */}
                 <View style={styles.coordinateRow}>
                   <Text style={styles.coordinateLabel}>Longitud:</Text>
@@ -270,7 +305,7 @@ const panResponder = PanResponder.create({
               </View>
 
               {/* Footer */}
-              <View style={styles.modalFooter}>
+              <View style={[styles.modalFooter, { marginBottom: bottomSpace - 2 }]}>
                 <TouchableOpacity
                   style={styles.primaryButton}
                   onPress={handleClose}
@@ -326,7 +361,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 10,
+    paddingTop: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -370,23 +406,29 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   liveIndicator: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.9)',
+    backgroundColor: 'rgba(239, 68, 68, 0.95)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     gap: 6,
     zIndex: 2,
+    
   },
   liveDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#fff',
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 3,
+    elevation: 2,
   },
   liveText: {
     color: '#fff',
@@ -416,7 +458,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 4,
   },
   coordinateLabel: {
     fontSize: 12,
@@ -446,8 +488,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 32,
     paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
   },
   primaryButton: {
     backgroundColor: '#3b82f6',
