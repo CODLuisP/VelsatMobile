@@ -369,7 +369,7 @@ Compartido desde Velsat Mobile
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.eventsButton} onPress={handleEvents}>
-            <TriangleAlert />
+            <TriangleAlert color='#fff'/>
             <Text style={styles.eventsButtonText}>Eventos</Text>
           </TouchableOpacity>
 

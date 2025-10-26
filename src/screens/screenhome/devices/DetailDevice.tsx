@@ -816,7 +816,7 @@ const DetailDevice = () => {
                     onPress={() => openGoogleMaps(latitude, longitude)}
                     disabled={!vehicleData}
                   >
-                    <Forward size={15} color="#fff" />
+                    <MapPin size={15} color="#fff" />
                   </TouchableOpacity>
                 </View>
               </View>

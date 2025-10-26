@@ -166,7 +166,7 @@ statusMoving: {
     gap: 12,
   },
   eventsButton: {
-    backgroundColor: '#FFC107',
+    backgroundColor: '#f97316',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -177,7 +177,7 @@ statusMoving: {
     gap: 8,
   },
   eventsButtonText: {
-    color: '#333',
+    color: '#ffffffff',
     fontSize: 16,
     fontWeight: '600',
   },

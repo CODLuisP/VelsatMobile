@@ -186,42 +186,10 @@ export const homeStyles = StyleSheet.create({
   },
 
 
-  // En tu archivo de estilos (donde está homeStyles)
-
-  optionCardWithBackground: {
-    position: 'relative',
-    overflow: 'hidden',
-  },
-
-  optionCardBackgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-  },
-
-  optionCardOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.97)',
-  },
-
   optionContentAbove: {
     zIndex: 1,
   },
 
-  optionCardWithBorder: {
-    borderWidth: 0,
-    borderColor: '#e36414',
-  },
 
   optionTextWhite: {
     color: '#fff',

@@ -366,7 +366,7 @@ const Home: React.FC = () => {
                       interval: 10000,
                     },
                   );
-                } catch (err) {}
+                } catch (err) { }
               },
             },
           ],
@@ -554,11 +554,11 @@ const Home: React.FC = () => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) {}
+                      } catch (error) { }
                     }
-                  } catch (error) {}
+                  } catch (error) { }
                 },
-                error => {},
+                error => { },
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -632,7 +632,7 @@ const Home: React.FC = () => {
             { paddingTop: insets.top - 10 },
           ]}
         >
-      
+
           <Image
             source={require('../../assets/fondo3.png')}
             style={homeStyles.backgroundImage}
@@ -722,37 +722,32 @@ const Home: React.FC = () => {
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
           <View style={homeStyles.optionsGrid}>
+
             <TouchableOpacity
               style={[
                 homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
               ]}
               onPress={handleNavigateToProfile}
-              activeOpacity={0.95}
+              activeOpacity={0.70}
             >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760626069/perfil_zspvsr.jpg',
-                }}
+              {/* Fondo degradado */}
+              <LinearGradient
+             colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
                 style={{
                   position: 'absolute',
-                  top: 0,
                   left: 0,
                   right: 0,
+                  top: 0,
                   bottom: 0,
                 }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+              />
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
               >
                 <User size={24} color="#e36414" />
               </View>
+
               <Text style={homeStyles.optionTitle}>Perfil</Text>
 
               <Text style={homeStyles.optionSubtitle}>
@@ -761,178 +756,158 @@ const Home: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
-              ]}
-              onPress={handleNavigateToDevice}
-              activeOpacity={0.95}
-            >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/auto_zzrijf.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+        <TouchableOpacity
+  style={[
+    homeStyles.optionCard,
+  ]}
+  onPress={handleNavigateToDevice}
+  activeOpacity={0.95}
+>
+  {/* Fondo degradado */}
+  <LinearGradient
+    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
+    style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+    }}
+  />
 
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <Car size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Unidades</Text>
+  <View
+    style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+  >
+    <Car size={24} color="#e36414" />
+  </View>
+  
+  <Text style={homeStyles.optionTitle}>Unidades</Text>
 
-              <Text style={homeStyles.optionSubtitle}>
-                Rastrea tus unidades, conoce su última ubicación, velocidad,
-                dirección y estado.
-              </Text>
-            </TouchableOpacity>
+  <Text style={homeStyles.optionSubtitle}>
+    Rastrea tus unidades, conoce su última ubicación, velocidad,
+    dirección y estado.
+  </Text>
+</TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
-              ]}
-              onPress={handleNavigateToReports}
-              activeOpacity={0.95}
-            >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/reportes_loh65w.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+           <TouchableOpacity
+  style={[
+    homeStyles.optionCard,
+  ]}
+  onPress={handleNavigateToReports}
+  activeOpacity={0.95}
+>
+  {/* Fondo degradado */}
+  <LinearGradient
+    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
+    style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+    }}
+  />
 
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <BarChart3 size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Reportes</Text>
+  <View
+    style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+  >
+    <BarChart3 size={24} color="#e36414" />
+  </View>
+  
+  <Text style={homeStyles.optionTitle}>Reportes</Text>
 
-              <Text style={homeStyles.optionSubtitle}>
-                Genera reportes de tus unidades, general, velocidad,
-                kilometraje, paradas y detalle de recorrido.
-              </Text>
-            </TouchableOpacity>
+  <Text style={homeStyles.optionSubtitle}>
+    Genera reportes de tus unidades, general, velocidad,
+    kilometraje, paradas y detalle de recorrido.
+  </Text>
+</TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
-              ]}
-              onPress={handleNavigateToSecurity}
-              activeOpacity={0.95}
-            >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/biometria_o2lzop.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+<TouchableOpacity
+  style={[
+    homeStyles.optionCard,
+  ]}
+  onPress={handleNavigateToSecurity}
+  activeOpacity={0.95}
+>
+  {/* Fondo degradado */}
+  <LinearGradient
+    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
+    style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+    }}
+  />
 
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <Shield size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Seguridad</Text>
+  <View
+    style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
+  >
+    <Shield size={24} color="#e36414" />
+  </View>
+  
+  <Text style={homeStyles.optionTitle}>Seguridad</Text>
 
-              <Text style={homeStyles.optionSubtitle}>
-                Activa la autenticación con datos biométricos y habilita o
-                deshabilita las notificaciones.
-              </Text>
-            </TouchableOpacity>
+  <Text style={homeStyles.optionSubtitle}>
+    Activa la autenticación con datos biométricos y habilita o
+    deshabilita las notificaciones.
+  </Text>
+</TouchableOpacity>
+
+
           </View>
 
           <View style={homeStyles.customerCareContainer}>
-            <TouchableOpacity
-              style={[
-                homeStyles.customerCareCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
-              ]}
-              onPress={handleNavigateToHelp}
-              activeOpacity={0.95}
-            >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/ayuda_a9nubh.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+<TouchableOpacity
+  style={[
+    homeStyles.customerCareCard,
+  ]}
+  onPress={handleNavigateToHelp}
+  activeOpacity={0.95}
+>
+  {/* Fondo degradado */}
+  <LinearGradient
+    colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']} 
+    style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      borderRadius:15
+    }}
+  />
 
-              <View
-                style={[
-                  homeStyles.customerCareIcon,
-                  homeStyles.optionContentAbove,
-                ]}
-              >
-                <Headphones size={24} color="#e36414" />
-              </View>
-              <Text
-                style={[
-                  homeStyles.customerCareTitle,
-                  homeStyles.optionContentAbove,
-                ]}
-              >
-                Ayuda
-              </Text>
-              <Text
-                style={[
-                  homeStyles.customerCareSubtitle,
-                  homeStyles.optionContentAbove,
-                ]}
-              >
-                Conoce nuestros números telefónicos, llámanos a la central de
-                monitoreo, escríbenos al Whatsapp, revisa las preguntas
-                frecuentes y visualiza tutoriales útiles.
-              </Text>
-            </TouchableOpacity>
+  <View
+    style={[
+      homeStyles.customerCareIcon,
+      homeStyles.optionContentAbove,
+    ]}
+  >
+    <Headphones size={24} color="#e36414" />
+  </View>
+  
+  <Text
+    style={[
+      homeStyles.customerCareTitle,
+      homeStyles.optionContentAbove,
+    ]}
+  >
+    Ayuda
+  </Text>
+  
+  <Text
+    style={[
+      homeStyles.customerCareSubtitle,
+      homeStyles.optionContentAbove,
+    ]}
+  >
+    Conoce nuestros números telefónicos, llámanos a la central de
+    monitoreo, escríbenos al Whatsapp, revisa las preguntas
+    frecuentes y visualiza tutoriales útiles.
+  </Text>
+</TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
