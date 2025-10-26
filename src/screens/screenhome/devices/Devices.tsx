@@ -34,6 +34,7 @@ import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
 import CoordinatesModal from './Coordinatesmodal';
+import FilterModal from './FilterModal';
 
 interface Device {
   id: string;
@@ -214,290 +215,9 @@ const Devices = () => {
     return count;
   };
 
-  const handleOpenFilter = () => {
-    setTempFilters(filters);
-    setShowFilterModal(true);
-  };
 
-  const handleApplyFilters = () => {
-    setFilters(tempFilters);
-    setShowFilterModal(false);
-  };
 
-  const handleClearFilters = () => {
-    const clearedFilters = {
-      speedRange: '' as const,
-      status: '' as const,
-      location: '',
-    };
-    setTempFilters(clearedFilters);
-    setFilters(clearedFilters);
-    setShowFilterModal(false);
-  };
 
-  const handleSpeedFilterToggle = (speedValue: 'stopped' | 'slow' | 'medium' | 'fast') => {
-    if (tempFilters.speedRange === speedValue) {
-      // Si ya está seleccionado, deseleccionar
-      setTempFilters({ ...tempFilters, speedRange: '' });
-    } else {
-      // Si no está seleccionado, seleccionar
-      setTempFilters({ ...tempFilters, speedRange: speedValue });
-    }
-  };
-
-  const handleStatusFilterToggle = (statusValue: 'stopped' | 'moving') => {
-    if (tempFilters.status === statusValue) {
-      // Si ya está seleccionado, deseleccionar
-      setTempFilters({ ...tempFilters, status: '' });
-    } else {
-      // Si no está seleccionado, seleccionar
-      setTempFilters({ ...tempFilters, status: statusValue });
-    }
-  };
-
-  const renderFilterModal = () => {
-    return (
-      <Modal
-        visible={showFilterModal}
-        animationType="fade" 
-        transparent={true}
-        onRequestClose={() => setShowFilterModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filtrar Unidades</Text>
-              <TouchableOpacity
-                onPress={() => setShowFilterModal(false)}
-                style={styles.modalCloseButton}
-              >
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalBody}>
-              {/* Filtro por Velocidad */}
-              <View style={styles.filterSection}>
-                <Text style={styles.filterSectionTitle}>Velocidad</Text>
-                <View style={styles.filterOptions}>
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
-                      tempFilters.speedRange === 'stopped' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() => handleSpeedFilterToggle('stopped')}
-                  >
-                    <View style={styles.filterOptionContent}>
-                      <View
-                        style={[
-                          styles.speedColorDot,
-                          { backgroundColor: '#FF4444' },
-                        ]}
-                      />
-                      <Text
-                        style={[
-                          styles.filterOptionText,
-                          tempFilters.speedRange === 'stopped' &&
-                            styles.filterOptionTextActive,
-                        ]}
-                      >
-                        Detenidos (0 km/h)
-                      </Text>
-                    </View>
-                    {tempFilters.speedRange === 'stopped' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
-                      tempFilters.speedRange === 'slow' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() => handleSpeedFilterToggle('slow')}
-                  >
-                    <View style={styles.filterOptionContent}>
-                      <View
-                        style={[
-                          styles.speedColorDot,
-                          { backgroundColor: '#FFA500' },
-                        ]}
-                      />
-                      <Text
-                        style={[
-                          styles.filterOptionText,
-                          tempFilters.speedRange === 'slow' &&
-                            styles.filterOptionTextActive,
-                        ]}
-                      >
-                        Lento (1-10 km/h)
-                      </Text>
-                    </View>
-                    {tempFilters.speedRange === 'slow' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
-                      tempFilters.speedRange === 'medium' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() => handleSpeedFilterToggle('medium')}
-                  >
-                    <View style={styles.filterOptionContent}>
-                      <View
-                        style={[
-                          styles.speedColorDot,
-                          { backgroundColor: '#00AA00' },
-                        ]}
-                      />
-                      <Text
-                        style={[
-                          styles.filterOptionText,
-                          tempFilters.speedRange === 'medium' &&
-                            styles.filterOptionTextActive,
-                        ]}
-                      >
-                        Medio (11-59 km/h)
-                      </Text>
-                    </View>
-                    {tempFilters.speedRange === 'medium' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
-                      tempFilters.speedRange === 'fast' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() => handleSpeedFilterToggle('fast')}
-                  >
-                    <View style={styles.filterOptionContent}>
-                      <View
-                        style={[
-                          styles.speedColorDot,
-                          { backgroundColor: '#0066FF' },
-                        ]}
-                      />
-                      <Text
-                        style={[
-                          styles.filterOptionText,
-                          tempFilters.speedRange === 'fast' &&
-                            styles.filterOptionTextActive,
-                        ]}
-                      >
-                        Rápido (60+ km/h)
-                      </Text>
-                    </View>
-                    {tempFilters.speedRange === 'fast' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Filtro por Estado */}
-              <View style={styles.filterSection}>
-                <Text style={styles.filterSectionTitle}>Estado</Text>
-                <View style={styles.filterOptions}>
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
-                      tempFilters.status === 'moving' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() => handleStatusFilterToggle('moving')}
-                  >
-                    <Text
-                      style={[
-                        styles.filterOptionText,
-                        tempFilters.status === 'moving' &&
-                          styles.filterOptionTextActive,
-                      ]}
-                    >
-                      En Movimiento
-                    </Text>
-                    {tempFilters.status === 'moving' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.filterOption,
-                      tempFilters.status === 'stopped' &&
-                        styles.filterOptionActive,
-                    ]}
-                    onPress={() => handleStatusFilterToggle('stopped')}
-                  >
-                    <Text
-                      style={[
-                        styles.filterOptionText,
-                        tempFilters.status === 'stopped' &&
-                          styles.filterOptionTextActive,
-                      ]}
-                    >
-                      Detenidos
-                    </Text>
-                    {tempFilters.status === 'stopped' && (
-                      <Check size={16} color="#1e3a8a" />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Filtro por Ubicación */}
-              <View style={styles.filterSection}>
-                <Text style={styles.filterSectionTitle}>Ubicación</Text>
-                <View style={styles.locationInputContainer}>
-                  <MapPinned size={20} color="#999" />
-                  <TextInput
-                    style={styles.locationInput}
-                    placeholder="Ej: Lima, Av. Principal, etc."
-                    placeholderTextColor="#999"
-                    value={tempFilters.location}
-                    onChangeText={text =>
-                      setTempFilters({ ...tempFilters, location: text })
-                    }
-                  />
-                  {tempFilters.location !== '' && (
-                    <TouchableOpacity
-                      onPress={() =>
-                        setTempFilters({ ...tempFilters, location: '' })
-                      }
-                    >
-                      <X size={20} color="#999" />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClearFilters}
-              >
-                <Text style={styles.clearButtonText}>Limpiar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.applyButton}
-                onPress={handleApplyFilters}
-              >
-                <Text style={styles.applyButtonText}>Aplicar Filtros</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
 
   const renderDeviceItem = ({
     item,
@@ -650,7 +370,6 @@ const Devices = () => {
 
   const topSpace = insets.top + 5;
   const activeFiltersCount = getActiveFiltersCount();
-  const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <LinearGradient
@@ -690,10 +409,10 @@ const Devices = () => {
           </View>
 
           {devices.length > 1 && (
-            <TouchableOpacity
-              style={styles.filterButton}
-              onPress={handleOpenFilter}
-            >
+          <TouchableOpacity
+  style={styles.filterButton}
+  onPress={() => setShowFilterModal(true)} // ✅ Simplificado
+>
               <Filter size={20} color="#1e3a8a" />
               {activeFiltersCount > 0 && (
                 <View style={styles.filterBadge}>
@@ -705,33 +424,6 @@ const Devices = () => {
             </TouchableOpacity>
           )}
 
- <CoordinatesModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        latitude={-7.161872}
-        longitude={-78.512649}
-      />
-      
-           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#3b82f6',
-            paddingHorizontal: 32,
-            paddingVertical: 16,
-            borderRadius: 12,
-            shadowColor: '#3b82f6',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 6,
-            elevation: 5,
-          }}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
-            Prueba Modal
-          </Text>
-        </TouchableOpacity>
-      </View>
         </View>
       </View>
 
@@ -748,7 +440,12 @@ const Devices = () => {
         onRefresh={handleRefresh}
       />
 
-      {renderFilterModal()}
+<FilterModal
+  visible={showFilterModal}
+  onClose={() => setShowFilterModal(false)}
+  filters={filters}
+  onApplyFilters={(newFilters) => setFilters(newFilters)}
+/>
     </LinearGradient>
   );
 };
