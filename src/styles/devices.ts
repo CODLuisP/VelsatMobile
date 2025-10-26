@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     marginRight: 15,
-    marginLeft:5
+    marginLeft: 5
   },
   headerContent: {
     flex: 1,
@@ -121,11 +121,11 @@ export const styles = StyleSheet.create({
 
   // Device item styles
   deviceItem: {
-    backgroundColor: '#f8f8f8ff',
+    backgroundColor: '#ffffffff',
     marginHorizontal: 20,
     marginBottom: 1,
-      borderBottomWidth: 0.5,
-  borderColor: '#bfbfbfff', // o el color que prefieras   
+    borderBottomWidth: 0.5,
+    borderColor: '#bfbfbfff', // o el color que prefieras   
   },
 
   deviceContent: {
@@ -319,6 +319,5 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-
 
 });

@@ -125,30 +125,43 @@ const CoordinatesModal: React.FC<CoordinatesModalProps> = ({
     });
   };
 
-  // PanResponder para arrastrar hacia abajo
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: (_, gestureState) => {
-      return gestureState.dy > 5;
-    },
-    onPanResponderMove: (_, gestureState) => {
-      if (gestureState.dy > 0) {
-        slideAnim.setValue(gestureState.dy);
-      }
-    },
-    onPanResponderRelease: (_, gestureState) => {
-      if (gestureState.dy > 150) {
-        handleClose();
-      } else {
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 50,
-          friction: 8,
-        }).start();
-      }
-    },
-  });
+
+  // PanResponder para arrastrar hacia abajo - CORREGIDO
+const panResponder = PanResponder.create({
+  onStartShouldSetPanResponder: () => true,
+  onStartShouldSetPanResponderCapture: () => false,
+  onMoveShouldSetPanResponder: (_, gestureState) => {
+    // Solo activar cuando se arrastra hacia ABAJO (dy positivo)
+    return gestureState.dy > 5;  // ✅ Quitar Math.abs()
+  },
+  onMoveShouldSetPanResponderCapture: () => false,
+  onPanResponderMove: (_, gestureState) => {
+    // Solo mover cuando es hacia abajo
+    if (gestureState.dy > 0) {
+      slideAnim.setValue(gestureState.dy);
+    }
+  },
+  onPanResponderRelease: (_, gestureState) => {
+    if (gestureState.dy > 150) {
+      handleClose();
+    } else {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 8,
+      }).start();
+    }
+  },
+  onPanResponderTerminate: () => {
+    Animated.spring(slideAnim, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 8,
+    }).start();
+  },
+}); 
 
   return (
     <Modal
@@ -169,10 +182,7 @@ const CoordinatesModal: React.FC<CoordinatesModalProps> = ({
                 },
               ]}
             >
-              {/* Indicador de arrastre */}
-              <View style={styles.dragIndicatorContainer} {...panResponder.panHandlers}>
-                <View style={styles.dragIndicator} />
-              </View>
+            
 
               {/* Header */}
               <View style={styles.modalHeader}>
@@ -303,6 +313,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     paddingVertical: 12,
+    paddingHorizontal: 20,
   },
   dragIndicator: {
     width: 40,

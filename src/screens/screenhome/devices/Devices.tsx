@@ -409,10 +409,10 @@ const Devices = () => {
           </View>
 
           {devices.length > 1 && (
-          <TouchableOpacity
-  style={styles.filterButton}
-  onPress={() => setShowFilterModal(true)} // ✅ Simplificado
->
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setShowFilterModal(true)} // ✅ Simplificado
+            >
               <Filter size={20} color="#1e3a8a" />
               {activeFiltersCount > 0 && (
                 <View style={styles.filterBadge}>
@@ -440,12 +440,12 @@ const Devices = () => {
         onRefresh={handleRefresh}
       />
 
-<FilterModal
-  visible={showFilterModal}
-  onClose={() => setShowFilterModal(false)}
-  filters={filters}
-  onApplyFilters={(newFilters) => setFilters(newFilters)}
-/>
+      <FilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filters={filters}
+        onApplyFilters={(newFilters) => setFilters(newFilters)}
+      />
     </LinearGradient>
   );
 };

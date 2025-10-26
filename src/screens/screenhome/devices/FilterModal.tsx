@@ -82,19 +82,19 @@ const FilterModal: React.FC<FilterModalProps> = ({
     });
   };
 
-const handleClearFilters = () => {
-  setTempFilters({
-    speedRange: '',
-    status: '',
-    location: '',
-  });
-  onApplyFilters({
-    speedRange: '',
-    status: '',
-    location: '',
-  });
-  handleClose();  
-};
+  const handleClearFilters = () => {
+    setTempFilters({
+      speedRange: '',
+      status: '',
+      location: '',
+    });
+    onApplyFilters({
+      speedRange: '',
+      status: '',
+      location: '',
+    });
+    handleClose();
+  };
   const handleApplyFilters = () => {
     onApplyFilters(tempFilters);
     handleClose();
@@ -174,7 +174,7 @@ const handleClearFilters = () => {
                       style={[
                         styles.filterOption,
                         tempFilters.speedRange === 'stopped' &&
-                          styles.filterOptionActive,
+                        styles.filterOptionActive,
                       ]}
                       onPress={() => handleSpeedFilterToggle('stopped')}
                     >
@@ -189,7 +189,7 @@ const handleClearFilters = () => {
                           style={[
                             styles.filterOptionText,
                             tempFilters.speedRange === 'stopped' &&
-                              styles.filterOptionTextActive,
+                            styles.filterOptionTextActive,
                           ]}
                         >
                           Detenidos (0 km/h)
@@ -204,7 +204,7 @@ const handleClearFilters = () => {
                       style={[
                         styles.filterOption,
                         tempFilters.speedRange === 'slow' &&
-                          styles.filterOptionActive,
+                        styles.filterOptionActive,
                       ]}
                       onPress={() => handleSpeedFilterToggle('slow')}
                     >
@@ -219,7 +219,7 @@ const handleClearFilters = () => {
                           style={[
                             styles.filterOptionText,
                             tempFilters.speedRange === 'slow' &&
-                              styles.filterOptionTextActive,
+                            styles.filterOptionTextActive,
                           ]}
                         >
                           Lento (1-10 km/h)
@@ -234,7 +234,7 @@ const handleClearFilters = () => {
                       style={[
                         styles.filterOption,
                         tempFilters.speedRange === 'medium' &&
-                          styles.filterOptionActive,
+                        styles.filterOptionActive,
                       ]}
                       onPress={() => handleSpeedFilterToggle('medium')}
                     >
@@ -249,7 +249,7 @@ const handleClearFilters = () => {
                           style={[
                             styles.filterOptionText,
                             tempFilters.speedRange === 'medium' &&
-                              styles.filterOptionTextActive,
+                            styles.filterOptionTextActive,
                           ]}
                         >
                           Medio (11-59 km/h)
@@ -264,7 +264,7 @@ const handleClearFilters = () => {
                       style={[
                         styles.filterOption,
                         tempFilters.speedRange === 'fast' &&
-                          styles.filterOptionActive,
+                        styles.filterOptionActive,
                       ]}
                       onPress={() => handleSpeedFilterToggle('fast')}
                     >
@@ -279,7 +279,7 @@ const handleClearFilters = () => {
                           style={[
                             styles.filterOptionText,
                             tempFilters.speedRange === 'fast' &&
-                              styles.filterOptionTextActive,
+                            styles.filterOptionTextActive,
                           ]}
                         >
                           Rápido (60+ km/h)
@@ -300,7 +300,7 @@ const handleClearFilters = () => {
                       style={[
                         styles.filterOption,
                         tempFilters.status === 'moving' &&
-                          styles.filterOptionActive,
+                        styles.filterOptionActive,
                       ]}
                       onPress={() => handleStatusFilterToggle('moving')}
                     >
@@ -308,7 +308,7 @@ const handleClearFilters = () => {
                         style={[
                           styles.filterOptionText,
                           tempFilters.status === 'moving' &&
-                            styles.filterOptionTextActive,
+                          styles.filterOptionTextActive,
                         ]}
                       >
                         En Movimiento
@@ -322,7 +322,7 @@ const handleClearFilters = () => {
                       style={[
                         styles.filterOption,
                         tempFilters.status === 'stopped' &&
-                          styles.filterOptionActive,
+                        styles.filterOptionActive,
                       ]}
                       onPress={() => handleStatusFilterToggle('stopped')}
                     >
@@ -330,7 +330,7 @@ const handleClearFilters = () => {
                         style={[
                           styles.filterOptionText,
                           tempFilters.status === 'stopped' &&
-                            styles.filterOptionTextActive,
+                          styles.filterOptionTextActive,
                         ]}
                       >
                         Detenidos
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
-    maxHeight: height * 0.85,
+    height: height * 0.80,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   modalBody: {
     paddingHorizontal: 20,
     paddingVertical: 20,
-    maxHeight: height * 0.55,
+    height: height * 0.55,
   },
   filterSection: {
     marginBottom: 24,
