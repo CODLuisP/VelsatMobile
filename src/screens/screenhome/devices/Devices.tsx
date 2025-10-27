@@ -409,6 +409,7 @@ const Devices = () => {
             <TouchableOpacity
               style={styles.filterButton}
               onPress={() => setShowFilterModal(true)} 
+              activeOpacity={0.7}
             >
               <Filter size={20} color="#1e3a8a" />
               {activeFiltersCount > 0 && (
