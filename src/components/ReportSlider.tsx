@@ -52,7 +52,9 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
   const renderReportCard = (item: ReportType, index: number) => {
     const IconComponent = item.icon;
     const isSelected = selectedReportId === item.id;
-    const imageUrl = item.imageUrl || 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
+    const imageUrl =
+      item.imageUrl ||
+      'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
 
     return (
       <View key={item.id} style={styles.slideCardContainer}>
@@ -190,6 +192,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 8,
+    marginRight: Platform.OS == 'android' ? -20 : 0,
   },
   cardImage: {
     width: '100%',
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop:-25
+    marginTop: -25,
   },
   cardTitle: {
     fontSize: 14,
@@ -220,12 +223,12 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.95)',
     fontWeight: '500',
     lineHeight: 14,
-    marginTop:0
+    marginTop: 0,
   },
   selectedBadge: {
     position: 'absolute',
     top: 90,
-    left: Platform.select({ android: 20, ios: 20 }), 
+    left: Platform.select({ android: 20, ios: 20 }),
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 13,
