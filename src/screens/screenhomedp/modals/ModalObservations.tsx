@@ -275,13 +275,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E5E5',
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1A1A1A',
     marginBottom: 4,
   },
   modalSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
     fontWeight: '400',
   },
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#1A1A1A',
   },
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   dropdownText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#1A1A1A',
     flex: 1,
   },
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#E5E5E5',
     padding: 16,
-    fontSize: 16,
+    fontSize: 14,
     color: '#1A1A1A',
     minHeight: 160,
     maxHeight: 200,

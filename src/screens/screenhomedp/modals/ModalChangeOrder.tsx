@@ -10,6 +10,8 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { X, GripVertical } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +20,8 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import axios from 'axios';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Habilitar LayoutAnimation en Android
 if (
@@ -58,10 +62,25 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
     insets,
     navigationDetection.hasNavigationBar,
   );
-  const topSpace = insets.top + 5;
+  const topSpace = insets.top;
 
   const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  
+  // Animación del modal
+  const slideAnim = React.useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  useEffect(() => {
+    if (visible) {
+      // Abrir modal
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 65,
+        friction: 11,
+      }).start();
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (initialPassengers && initialPassengers.length > 0) {
@@ -81,36 +100,47 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
     }
   }, [initialPassengers]);
 
-const handleSave = async () => {
-  try {
-    console.log('💾 Guardando nuevo orden...');
-    
-    const cambios = passengers.map((passenger, index) => ({
-      orden: (index + 1).toString(),
-      codpedido: parseInt(passenger.id),
-    }));
+  const handleClose = () => {
+    Animated.timing(slideAnim, {
+      toValue: SCREEN_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  };
 
-    console.log('📤 Enviando cambios:', cambios);
+  const handleSave = async () => {
+    try {
+      console.log('💾 Guardando nuevo orden...');
+      
+      const cambios = passengers.map((passenger, index) => ({
+        orden: (index + 1).toString(),
+        codpedido: parseInt(passenger.id),
+      }));
 
-    const response = await axios.put(
-      'https://velsat.pe:2087/api/Aplicativo/cambiarOrdenBatch',
-      cambios
-    );
+      console.log('📤 Enviando cambios:', cambios);
 
-    console.log('✅ Orden actualizado correctamente:', response.data);
-    onShowAlert('Éxito', 'Orden actualizado correctamente', '#0b692eff');
+      const response = await axios.put(
+        'https://velsat.pe:2087/api/Aplicativo/cambiarOrdenBatch',
+        cambios
+      );
 
-    onClose(); // Cerrar modal después de guardar
-  } catch (error: any) {
-    console.error('❌ Error al guardar orden:', error);
-    console.error('Response data:', error.response?.data);
+      console.log('✅ Orden actualizado correctamente:', response.data);
+      onShowAlert('Éxito', 'Orden actualizado correctamente', '#0b692eff');
 
-    onShowAlert(
-          'Error', 
-          error.response?.data?.message || 'No se pudo actualizar el orden. Intenta nuevamente.', '#b10202ff'
-        );
-  }
-};
+      handleClose(); // Cerrar modal después de guardar
+    } catch (error: any) {
+      console.error('❌ Error al guardar orden:', error);
+      console.error('Response data:', error.response?.data);
+
+      onShowAlert(
+        'Error', 
+        error.response?.data?.message || 'No se pudo actualizar el orden. Intenta nuevamente.', 
+        '#b10202ff'
+      );
+    }
+  };
 
   const movePassenger = (fromIndex: number, toIndex: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -194,58 +224,91 @@ const handleSave = async () => {
     );
   };
 
+  if (!visible) {
+    return null;
+  }
+
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="none"
       transparent={false}
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
+      statusBarTranslucent
     >
-      <View style={styles.modalContainer}>
-        <View style={[styles.modalContent, { paddingTop: topSpace - 35 }]}>
-          <View style={styles.modalHeader}>
-            <View>
-              <Text style={styles.modalTitle}>Cambiar Orden</Text>
-              <Text style={styles.modalSubtitle}>
-                Mantén presionado y arrastra
-              </Text>
+      <Animated.View
+        style={[
+          styles.modalContainer,
+          {
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
+        <View style={[styles.modalContent, { paddingTop: topSpace + 10 }]}>
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <View style={styles.headerLeft}>
+                <Text style={styles.modalTitle}>Cambiar Orden</Text>
+                <Text style={styles.modalSubtitle}>
+                  Mantén presionado y arrastra
+                </Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.closeButton} 
+                onPress={handleClose}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <X size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.contentContainer}>
-            <View style={styles.listContainer}>
-              {passengers.map((passenger, index) => (
-                <PassengerItem
-                  key={passenger.id}
-                  passenger={passenger}
-                  index={index}
-                />
-              ))}
+            {/* Content */}
+            <ScrollView
+              style={styles.contentContainer}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              <View style={styles.listContainer}>
+                {passengers.map((passenger, index) => (
+                  <PassengerItem
+                    key={passenger.id}
+                    passenger={passenger}
+                    index={index}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+
+            {/* Footer */}
+            <View style={[styles.footer, { paddingBottom: bottomSpace + 20 }]}>
+              <TouchableOpacity 
+                style={styles.cancelButton} 
+                onPress={handleClose}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.saveButton} 
+                onPress={handleSave}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.saveButtonText}>Guardar Orden</Text>
+              </TouchableOpacity>
             </View>
           </View>
-
-          <View style={[styles.footer, { paddingBottom: bottomSpace + 20 }]}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Guardar Orden</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-};
+        </Animated.View>
+      </Modal>
+    );
+  };
 
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: '#F8F9FA',
+    overflow: 'hidden',
   },
   modalContent: {
     flex: 1,
@@ -254,29 +317,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
+  headerLeft: {
+    flex: 1,
+  },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1A1A1A',
     marginBottom: 4,
   },
   modalSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
     fontWeight: '400',
   },
   closeButton: {
     padding: 5,
-    marginTop: -5,
+    marginLeft: 10,
   },
   contentContainer: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: 10,
   },
   listContainer: {
     flex: 1,
@@ -286,7 +356,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 18,
+    padding: 14,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: {
@@ -303,6 +373,8 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 10,
     opacity: 0.95,
+    borderWidth: 2,
+    borderColor: '#007AFF',
   },
   orderBadge: {
     width: 40,
@@ -320,7 +392,7 @@ const styles = StyleSheet.create({
   },
   passengerName: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '500',
     color: '#1A1A1A',
     lineHeight: 22,

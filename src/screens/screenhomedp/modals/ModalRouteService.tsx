@@ -273,13 +273,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1A1A1A',
     marginBottom: 4,
   },
   modalSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
     fontWeight: '400',
   },
