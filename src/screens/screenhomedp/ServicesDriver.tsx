@@ -12,6 +12,8 @@ import {
   Calendar,
   User,
   CalendarX2,
+  ChevronRight,
+  Eye,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
@@ -25,6 +27,7 @@ import {
 import { styles } from '../../styles/servicesdriver';
 import axios from 'axios';
 import { useAuthStore } from '../../store/authStore';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface Service {
   codservicio: string;
@@ -255,7 +258,7 @@ const ServicesDriver = () => {
       // Cambiar estado local
       setServiceStates(prev => ({ ...prev, [codservicio]: 'started' }));
     } catch (error) {
-      console.error('❌ Error al iniciar servicio:', error);
+      console.error(error);
     } finally {
       setLoadingStart(null);
     }
@@ -281,7 +284,7 @@ const ServicesDriver = () => {
       // Cambiar estado local
       setServiceStates(prev => ({ ...prev, [codservicio]: 'finished' }));
     } catch (error) {
-      console.error('❌ Error al finalizar servicio:', error);
+      console.error(error);
     } finally {
       setLoadingEnd(null);
     }
@@ -290,10 +293,15 @@ const ServicesDriver = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+   <LinearGradient
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Servicios programados</Text>
@@ -479,20 +487,43 @@ const ServicesDriver = () => {
                                     ? 'Finalizando...'
                                     : 'Finalizar'}
                                 </Text>
+
+
+
                               </TouchableOpacity>
+
+                              
                             </View>
                           )}
                         </View>
+
+                        
                       </View>
+
                     </View>
+                    <TouchableOpacity
+                        style={styles.clickPrompt}
+                        onPress={() =>
+                          handleNavigateToServicesDetailDriver(service)
+                        }
+                        activeOpacity={0.7}
+                      >
+                        <Eye size={16} color="#032660ff" />
+                        <Text style={styles.clickPromptText}>
+                          Ver detalles completos
+                        </Text>
+                        <ChevronRight size={16} color="#032660ff" />
+                      </TouchableOpacity>
                   </View>
+
+                  
                 </TouchableOpacity>
               );
             })
           )}
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

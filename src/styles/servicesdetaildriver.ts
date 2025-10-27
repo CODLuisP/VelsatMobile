@@ -30,22 +30,25 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
   },
   formContainer: {
-    marginTop:5,
+    marginTop: 5,
     paddingHorizontal: 5,
   },
   // Indicador de pasajero
   passengerIndicator: {
     alignItems: 'center',
-    marginBottom: 5,
+    paddingVertical: 8
+
   },
   passengerIndicatorLabel: {
     fontSize: 12,
-    color: '#363333ff',
+    color: '#000000ff',
+    fontWeight: '600',
+
   },
   passengerIndicatorNumber: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#333',
+    color: '#001845',
     marginTop: 2,
   },
   // Contenedor del slider completo
@@ -54,47 +57,60 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginBottom: 10,
+    borderRadius: 20
+  },
+
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom:5,
+    marginTop:5
   },
   // Contenedor de las tarjetas del slider
   sliderCardsContainer: {
     flex: 1,
-  
+
   },
   // Botones de navegación (izquierda y derecha)
   navButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffefe0ff',
     justifyContent: 'center',
     alignItems: 'center',
-  
+
   },
   // Cards
   card: {
     borderRadius: 12,
-     borderBottomWidth: 1,
-  borderBottomColor: '#e0e0e0',
-  paddingHorizontal:'10%',
-  marginBottom:10,
-  paddingBottom:10
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    paddingBottom: 10,
+    backgroundColor:'#f8f9fa',
+    marginHorizontal:20
+    
   },
 
- cardslider: {
-  marginBottom: 2,
-  borderBottomWidth: 1,
-  borderBottomColor: '#e0e0e0', 
-},
+  cardslider: {
+    marginBottom: 2,
+    borderBottomWidth: 1,
+    borderColor:'#e0e0e0'
+
+  },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    color: '#000000ff',
   },
   centerLabel: {
     fontSize: 12,
-    color: '#999',
+    color: '#000000ff',
     textAlign: 'center',
+        fontWeight: '600',
+
     marginBottom: 12,
   },
   // Rows y contenedores
@@ -102,12 +118,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 0,
+    backgroundColor:'#ffffffff'
 
   },
   infoRowWithIcon: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom:0,
+    marginBottom: 0,
   },
   iconButton: {
     width: 38,
@@ -120,34 +137,34 @@ export const styles = StyleSheet.create({
     marginLeft: 6,
   },
   iconButtonSmall: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#e36414',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 15,
   },
   infoRow: {
     marginBottom: 3,
   },
-gridRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  marginBottom: 5,
-},
-gridItem: {
-  flex: 1
-},
-gridItemRight: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-    width: 100
-},
+  gridRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  gridItem: {
+    flex: 1
+  },
+  gridItemRight: {
+    width: 120,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent:'center',
+  },
 
-actionButton: {
-  marginBottom: 10,
-},
+  actionButton: {
+    marginBottom: 10,
+  },
 
   // Textos
   label: {
@@ -202,63 +219,63 @@ actionButton: {
     fontSize: 10,
     fontWeight: '500',
   },
-    emptyStateContainer: {
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginTop: 40,
-  marginBottom: 20,
-  paddingHorizontal: 20,
-},
+  emptyStateContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
 
   loadingContainer: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  backgroundColor: '#F8F9FA',
-},
-emptyStateTitle: {
-  color: '#00296b',
-  fontSize: 16,
-  fontWeight: '600',
-  marginBottom: 8,
-  textAlign: 'center',
-},
-emptyStateTitleDark: {
-  color: '#1a237e',
-  fontSize: 18,
-  fontWeight: '700',
-  marginBottom: 8,
-  textAlign: 'center',
-},
-emptyStateSubtitle: {
-  color: '#212529',
-  fontSize: 14,
-  textAlign: 'center',
-},
-emptyStateDescription: {
-  color: '#666',
-  fontSize: 14,
-  textAlign: 'center',
-  lineHeight: 20,
-},
-iconCircle: {
-  width: 60,
-  height: 60,
-  borderRadius: 30,
-  backgroundColor: 'rgba(227, 100, 20, 0.1)',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: 15,
-},
-iconCircleLarge: {
-  width: 80,
-  height: 80,
-  borderRadius: 40,
-  marginBottom: 20,
-},
-actionButtons: {
-  flexDirection: 'column',
-  gap: 8,
-  alignItems: 'flex-end',
-},
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+  },
+  emptyStateTitle: {
+    color: '#00296b',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyStateTitleDark: {
+    color: '#1a237e',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyStateSubtitle: {
+    color: '#212529',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptyStateDescription: {
+    color: '#666',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(227, 100, 20, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  iconCircleLarge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 20,
+  },
+  actionButtons: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent:'center',
+  },
 });
