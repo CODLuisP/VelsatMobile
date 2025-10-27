@@ -116,7 +116,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
-    alignSelf: 'center', // <- 🔥 Centra el botón y ajusta al contenido
 
   },
   buttonBajar: {

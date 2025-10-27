@@ -13,6 +13,8 @@ import {
   MapPin,
   ChevronRight,
   AlertCircle,
+  User,
+  MapPinHouse,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
@@ -32,6 +34,7 @@ import ModalObservations from './modals/ModalObservations';
 import { ActivityIndicator } from 'react-native';
 import PassengerActionBtn from '../../components/PassengerActionBtn';
 import ModalAlert from '../../components/ModalAlert';
+import LinearGradient from 'react-native-linear-gradient';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,
@@ -249,7 +252,7 @@ const ServicesDetailDriver = () => {
         case 'ubicacion':
           return 'Aeropuerto Internacional Jorge Chávez';
         case 'referencia':
-          return '-';
+          return 'No han agregado niguna referencia';
         default:
           return '-';
       }
@@ -273,7 +276,12 @@ const ServicesDetailDriver = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -345,7 +353,11 @@ const ServicesDetailDriver = () => {
                   <>
                     {/* Datos del Pasajero */}
                     <View style={styles.cardslider}>
-                      <Text style={styles.sectionTitle}>Datos Pasajero</Text>
+
+                      <View style={styles.sectionTitleContainer}>
+                        <User size={20} color="#000" />
+                        <Text style={styles.sectionTitle}>Datos Pasajero</Text>
+                      </View>
 
                       <View style={styles.rowWithIcon}>
                         <View style={{ flex: 1 }}>
@@ -353,6 +365,17 @@ const ServicesDetailDriver = () => {
                           <Text style={styles.value}>
                             {currentPassenger.apellidos || '-'}
                           </Text>
+
+                              <Text style={styles.label}>Teléfono</Text>
+                        <Text style={styles.value}>
+                          {currentPassenger.telefono || '-'}
+                        </Text>
+
+
+                            <Text style={styles.label}>DNI</Text>
+                        <Text style={styles.value}>
+                          {currentPassenger.dni || '-'}
+                        </Text>
                         </View>
                         <View style={styles.actionButtons}>
                           <TouchableOpacity
@@ -369,19 +392,19 @@ const ServicesDetailDriver = () => {
                         </View>
                       </View>
 
-                      <View style={styles.infoRow}>
+                      {/* <View style={styles.infoRow}>
                         <Text style={styles.label}>Teléfono</Text>
                         <Text style={styles.value}>
                           {currentPassenger.telefono || '-'}
                         </Text>
-                      </View>
+                      </View> */}
 
-                      <View style={styles.infoRow}>
+                      {/* <View style={styles.infoRow}>
                         <Text style={styles.label}>DNI</Text>
                         <Text style={styles.value}>
                           {currentPassenger.dni || '-'}
                         </Text>
-                      </View>
+                      </View> */}
 
                       <View style={styles.actionButton}>
                         <PassengerActionBtn
@@ -394,7 +417,10 @@ const ServicesDetailDriver = () => {
 
                     {/* Lugar de Recojo */}
                     <View style={styles.cardslider}>
-                      <Text style={styles.sectionTitle}>Lugar de recojo</Text>
+                       <View style={styles.sectionTitleContainer}>
+                        <MapPinHouse size={18} color="#000" />
+                        <Text style={styles.sectionTitle}>Lugar de Recojo</Text>
+                      </View>
 
                       <View style={styles.gridRow}>
                         <View style={styles.gridItem}>
@@ -403,10 +429,29 @@ const ServicesDetailDriver = () => {
                             {isEntrada
                               ? currentPassenger.direccion
                               : getLocationData(
-                                  orderZeroPassenger,
-                                  'direccion',
-                                )}
+                                orderZeroPassenger,
+                                'direccion',
+                              )}
                           </Text>
+
+
+                           <Text style={styles.label}>Distrito</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? currentPassenger.distrito
+                              : getLocationData(orderZeroPassenger, 'distrito')}
+                          </Text>
+
+   <Text style={styles.label}>Ubicación</Text>
+                        <Text style={styles.value}>
+                          {isEntrada
+                            ? '-'
+                            : getLocationData(orderZeroPassenger, 'ubicacion')}
+                        </Text>
+
+
+                        
+                      
                         </View>
 
                         <View style={styles.gridItemRight}>
@@ -442,17 +487,18 @@ const ServicesDetailDriver = () => {
                         </View>
                       </View>
 
-                      <View style={styles.infoRowWithIcon}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.label}>Distrito</Text>
-                          <Text style={styles.value}>
-                            {isEntrada
-                              ? currentPassenger.distrito
-                              : getLocationData(orderZeroPassenger, 'distrito')}
-                          </Text>
-                        </View>
-                      </View>
-
+                      {/* <View style={styles.infoRowWithIcon}>
+                        
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.label}>Distrito</Text>
+                            <Text style={styles.value}>
+                              {isEntrada
+                                ? currentPassenger.distrito
+                                : getLocationData(orderZeroPassenger, 'distrito')}
+                            </Text>
+                          </View>
+                      </View> */}
+{/* 
                       <View style={styles.infoRow}>
                         <Text style={styles.label}>Ubicación</Text>
                         <Text style={styles.value}>
@@ -460,7 +506,7 @@ const ServicesDetailDriver = () => {
                             ? '-'
                             : getLocationData(orderZeroPassenger, 'ubicacion')}
                         </Text>
-                      </View>
+                      </View> */}
 
                       <View style={styles.infoRow}>
                         <Text style={styles.label}>Referencia</Text>
@@ -474,8 +520,11 @@ const ServicesDetailDriver = () => {
 
                     {/* Destino de Viaje */}
                     <View style={styles.cardslider}>
-                      <Text style={styles.sectionTitle}>Destino de viaje</Text>
-
+                      
+                      <View style={styles.sectionTitleContainer}>
+                        <MapPinHouse size={18} color="#000" />
+                        <Text style={styles.sectionTitle}>Destino de Viaje</Text>
+                      </View>
                       <View style={styles.gridRow}>
                         <View style={styles.gridItem}>
                           <Text style={styles.label}>Dirección</Text>
@@ -484,6 +533,23 @@ const ServicesDetailDriver = () => {
                               ? getLocationData(orderZeroPassenger, 'direccion')
                               : currentPassenger.direccion}
                           </Text>
+
+
+                             <Text style={styles.label}>Distrito</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? getLocationData(orderZeroPassenger, 'distrito')
+                              : currentPassenger.distrito}
+                          </Text>
+
+
+ <Text style={styles.label}>Ubicación</Text>
+                        <Text style={styles.value}>
+                          {isEntrada
+                            ? getLocationData(orderZeroPassenger, 'ubicacion')
+                            : '-'}
+                        </Text>
+
                         </View>
                         <View style={styles.gridItemRight}>
                           <Text style={styles.label}>Fecha y hora</Text>
@@ -519,7 +585,7 @@ const ServicesDetailDriver = () => {
                         </View>
                       </View>
 
-                      <View style={styles.infoRowWithIcon}>
+                      {/* <View style={styles.infoRowWithIcon}>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.label}>Distrito</Text>
                           <Text style={styles.value}>
@@ -528,23 +594,23 @@ const ServicesDetailDriver = () => {
                               : currentPassenger.distrito}
                           </Text>
                         </View>
-                      </View>
+                      </View> */}
 
-                      <View style={styles.infoRow}>
+                      {/* <View style={styles.infoRow}>
                         <Text style={styles.label}>Ubicación</Text>
                         <Text style={styles.value}>
                           {isEntrada
                             ? getLocationData(orderZeroPassenger, 'ubicacion')
                             : '-'}
                         </Text>
-                      </View>
+                      </View> */}
 
                       <View style={styles.infoRow}>
                         <Text style={styles.label}>Referencia</Text>
                         <Text style={styles.value}>
                           {isEntrada
                             ? getLocationData(orderZeroPassenger, 'referencia')
-                            : currentPassenger.referencia || '-'}
+                            : currentPassenger.referencia || 'No han agregado ninguna referencia'}
                         </Text>
                       </View>
                     </View>
@@ -571,10 +637,11 @@ const ServicesDetailDriver = () => {
                     {serviceData.tipo === 'I'
                       ? 'Entrada'
                       : serviceData.tipo === 'S'
-                      ? 'Salida'
-                      : '-'}
+                        ? 'Salida'
+                        : '-'}
                   </Text>
                 </View>
+
                 <View style={styles.gridItemRight}>
                   <Text style={styles.label}>Cantidad de pasajeros</Text>
                   <Text style={styles.value}>
@@ -595,8 +662,8 @@ const ServicesDetailDriver = () => {
                     {serviceData.grupo === 'A'
                       ? 'Aire'
                       : serviceData.grupo === 'T'
-                      ? 'Tierra'
-                      : '-'}
+                        ? 'Tierra'
+                        : '-'}
                   </Text>
                 </View>
               </View>
@@ -609,10 +676,10 @@ const ServicesDetailDriver = () => {
                     {serviceData.codusuario === 'movilbus'
                       ? 'Empresa Movil Bus'
                       : serviceData.codusuario === 'cgacela'
-                      ? 'Gacela Express'
-                      : serviceData.codusuario === 'aremys'
-                      ? 'Empresa Aremys'
-                      : serviceData.codusuario || '-'}
+                        ? 'Gacela Express'
+                        : serviceData.codusuario === 'aremys'
+                          ? 'Empresa Aremys'
+                          : serviceData.codusuario || '-'}
                   </Text>
                 </View>
                 <View style={styles.gridItemRight}>
@@ -624,7 +691,7 @@ const ServicesDetailDriver = () => {
 
             {/* Opciones de Servicio */}
             <View style={styles.card}>
-              <Text style={styles.centerLabel}>Opciones de servicio</Text>
+              <Text style={styles.centerLabel}>Opciones de Servicio</Text>
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
@@ -683,7 +750,7 @@ const ServicesDetailDriver = () => {
         message={alertConfig.message}
         color={alertConfig.color}
       />
-    </View>
+    </LinearGradient>
   );
 };
 
