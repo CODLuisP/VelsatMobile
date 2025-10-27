@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,25 +12,36 @@ import {
 } from 'react-native';
 import { X, User, MessageSquare, ChevronDown } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import axios from 'axios';
 
 interface Passenger {
   id: string;
   name: string;
+  orden: string;
 }
 
 interface ModalObservationsProps {
   visible: boolean;
   onClose: () => void;
-  passengers?: Passenger[];
+  passengers: Array<{
+    apellidos: string;
+    codpedido: string;
+    orden: string;
+  }>;
   onSubmit?: (passengerId: string, observation: string) => void;
+  onShowAlert: (title: string, message: string, color?: string) => void;
 }
 
-const ModalObservations: React.FC<ModalObservationsProps> = ({ 
-  visible, 
+const ModalObservations: React.FC<ModalObservationsProps> = ({
+  visible,
   onClose,
   passengers: initialPassengers,
-  onSubmit 
+  onSubmit,
+  onShowAlert
 }) => {
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -40,26 +51,63 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
   );
   const topSpace = insets.top + 5;
 
-  const [passengers] = useState<Passenger[]>(
-    initialPassengers || [
-      { id: '1', name: 'Luis Castrejón Cabrera' },
-      { id: '2', name: 'Diego Guevara Campos' },
-      { id: '3', name: 'Lucía Ramírez Martínez' },
-      { id: '4', name: 'Renato Salazar Quispe' },
-    ]
+  const [passengers, setPassengers] = useState<Passenger[]>([]);
+  const [selectedPassenger, setSelectedPassenger] = useState<Passenger | null>(
+    null,
   );
-
-  const [selectedPassenger, setSelectedPassenger] = useState<Passenger | null>(null);
   const [observation, setObservation] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (initialPassengers && initialPassengers.length > 0) {
+      const mappedPassengers = initialPassengers.map(p => ({
+        id: p.codpedido,
+        name: p.apellidos.toUpperCase(),
+        orden: p.orden,
+      }));
+      setPassengers(mappedPassengers);
+    }
+  }, [initialPassengers]);
+
+  const handleSubmit = async () => {
     if (selectedPassenger && observation.trim()) {
-      onSubmit?.(selectedPassenger.id, observation);
-      // Reset
-      setSelectedPassenger(null);
-      setObservation('');
-      onClose();
+      try {
+        console.log('📤 Enviando observación...', {
+          codpedido: selectedPassenger.id,
+          observacion: observation,
+        });
+
+        const response = await axios.post(
+          `https://velsat.pe:2087/api/Aplicativo/EnviarObservacion?codpedido=${selectedPassenger.id}`,
+          `"${observation.trim()}"`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+
+        console.log('✅ Observación enviada exitosamente:', response.data);
+        
+        // 🔥 Mostrar alerta de éxito
+        onShowAlert('Éxito', 'La observación se envió correctamente', '#0b692eff');
+        
+        setSelectedPassenger(null);
+        setObservation('');
+        onClose();
+      } catch (error: any) {
+        console.error('❌ Error al enviar observación:', error);
+        console.error('Response data:', error.response?.data);
+        
+        // 🔥 Mostrar alerta de error
+        onShowAlert(
+          'Error', 
+          error.response?.data?.message || 'No se pudo enviar la observación. Intenta nuevamente.', '#b10202ff'
+        );
+      }
+    } else {
+      // 🔥 Mostrar alerta si falta información
+      onShowAlert('Atención', 'Por favor seleccione un pasajero e ingrese una observación');
     }
   };
 
@@ -87,15 +135,12 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
                 Registra una observación del servicio
               </Text>
             </View>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <X size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView 
+          <ScrollView
             style={styles.contentContainer}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
@@ -106,43 +151,60 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
                 <User size={20} color="#007AFF" />
                 <Text style={styles.label}>Seleccione un pasajero</Text>
               </View>
-              
+
               <TouchableOpacity
                 style={styles.dropdown}
                 onPress={() => setShowDropdown(!showDropdown)}
               >
-                <Text style={[
-                  styles.dropdownText,
-                  !selectedPassenger && styles.dropdownPlaceholder
-                ]}>
-                  {selectedPassenger ? selectedPassenger.name : 'Seleccione un pasajero'}
+                <Text
+                  style={[
+                    styles.dropdownText,
+                    !selectedPassenger && styles.dropdownPlaceholder,
+                  ]}
+                >
+                  {selectedPassenger
+                    ? `${selectedPassenger.name}`
+                    : passengers.length > 0
+                    ? 'Seleccione un pasajero'
+                    : 'No hay pasajeros disponibles'}{' '}
                 </Text>
-                <ChevronDown 
-                  size={20} 
-                  color="#666" 
+                <ChevronDown
+                  size={20}
+                  color="#666"
                   style={[
                     styles.dropdownIcon,
-                    showDropdown && styles.dropdownIconRotated
+                    showDropdown && styles.dropdownIconRotated,
                   ]}
                 />
               </TouchableOpacity>
 
               {showDropdown && (
                 <View style={styles.dropdownList}>
-                  {passengers.map((passenger) => (
+                  {passengers.map(passenger => (
                     <TouchableOpacity
                       key={passenger.id}
                       style={[
                         styles.dropdownItem,
-                        selectedPassenger?.id === passenger.id && styles.dropdownItemSelected
+                        selectedPassenger?.id === passenger.id &&
+                          styles.dropdownItemSelected,
                       ]}
                       onPress={() => selectPassenger(passenger)}
                     >
-                      <User size={18} color={selectedPassenger?.id === passenger.id ? '#007AFF' : '#666'} />
-                      <Text style={[
-                        styles.dropdownItemText,
-                        selectedPassenger?.id === passenger.id && styles.dropdownItemTextSelected
-                      ]}>
+                      <User
+                        size={18}
+                        color={
+                          selectedPassenger?.id === passenger.id
+                            ? '#007AFF'
+                            : '#666'
+                        }
+                      />
+                      <Text
+                        style={[
+                          styles.dropdownItemText,
+                          selectedPassenger?.id === passenger.id &&
+                            styles.dropdownItemTextSelected,
+                        ]}
+                      >
                         {passenger.name}
                       </Text>
                     </TouchableOpacity>
@@ -157,7 +219,7 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
                 <MessageSquare size={20} color="#007AFF" />
                 <Text style={styles.label}>Ingrese observación</Text>
               </View>
-              
+
               <TextInput
                 style={styles.textArea}
                 placeholder="Ingrese observación ..."
@@ -170,7 +232,7 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
               />
 
               <Text style={styles.charCount}>
-                {observation.length} / 500 caracteres
+                {observation.length} / 200 caracteres
               </Text>
             </View>
           </ScrollView>
@@ -180,7 +242,8 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
             <TouchableOpacity
               style={[
                 styles.submitButton,
-                (!selectedPassenger || !observation.trim()) && styles.submitButtonDisabled
+                (!selectedPassenger || !observation.trim()) &&
+                  styles.submitButtonDisabled,
               ]}
               onPress={handleSubmit}
               disabled={!selectedPassenger || !observation.trim()}

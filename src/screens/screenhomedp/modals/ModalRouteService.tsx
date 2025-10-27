@@ -13,51 +13,27 @@ import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationM
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 
-interface ModalChangeOrderProps {
-  visible: boolean;
-  onClose: () => void;
+interface Marker {
+  id: string;
+  latitude: number;
+  longitude: number;
+  title: string;
+  description: string;
 }
 
-// Marcadores GPS aleatorios en Cajamarca, Perú
-const randomMarkers = [
-  {
-    id: '1',
-    latitude: -7.1639,
-    longitude: -78.5126,
-    title: 'Punto 1',
-    description: 'Luis Castrejón Cabrera',
-  },
-  {
-    id: '2',
-    latitude: -7.1580,
-    longitude: -78.5180,
-    title: 'Punto 2',
-    description: 'Diego Guevara Campos',
-  },
-  {
-    id: '3',
-    latitude: -7.1620,
-    longitude: -78.5080,
-    title: 'Punto 3',
-    description: 'Lucía Ramírez Martínez',
-  },
-  {
-    id: '4',
-    latitude: -7.1700,
-    longitude: -78.5150,
-    title: 'Punto 4',
-    description: 'Renato Salazar Quispe',
-  },
-  {
-    id: '5',
-    latitude: -7.1560,
-    longitude: -78.5100,
-    title: 'Punto 5',
-    description: 'Ana Torres Silva',
-  },
-];
+interface ModalRouteServiceProps {
+  visible: boolean;
+  onClose: () => void;
+  passengers: Array<{
+    apellidos: string;
+    codpedido: string;
+    orden: string;
+    wx: string;
+    wy: string;
+  }>;
+}
 
-const ModalRouteService: React.FC<ModalChangeOrderProps> = ({ visible, onClose }) => {
+const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose, passengers: initialPassengers }) => {
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
@@ -67,156 +43,117 @@ const ModalRouteService: React.FC<ModalChangeOrderProps> = ({ visible, onClose }
   const topSpace = insets.top + 5;
   const mapRef = useRef<MapView>(null);
 
-  useEffect(() => {
-    if (visible && mapRef.current && Platform.OS === 'ios') {
-      setTimeout(() => {
-        mapRef.current?.fitToCoordinates(
-          randomMarkers.map(marker => ({
-            latitude: marker.latitude,
-            longitude: marker.longitude,
-          })),
-          {
-            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-            animated: true,
-          }
-        );
-      }, 500);
-    }
-  }, [visible]);
+  const [markers, setMarkers] = useState<Marker[]>([]);
+
+useEffect(() => {
+  if (initialPassengers && initialPassengers.length > 0) {
+    const mappedMarkers = initialPassengers
+      .filter(p => p.wx && p.wy && p.wx !== '0' && p.wy !== '0') // Filtrar coordenadas válidas
+      .map((p, index) => ({
+        id: p.codpedido,
+        latitude: parseFloat(p.wy), // wy es latitud
+        longitude: parseFloat(p.wx), // wx es longitud
+        title: `Pasajero ${index + 1}`,
+        description: p.apellidos,
+      }));
+    
+    setMarkers(mappedMarkers);
+    console.log('🗺️ Marcadores generados:', mappedMarkers);
+  }
+}, [initialPassengers]);
 
   // HTML para Leaflet en Android
-  const leafletHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-      <style>
-        body, html {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-          width: 100%;
-        }
-        #map {
-          height: 100%;
-          width: 100%;
-        }
-        .legend {
-          position: absolute;
-          top: 20px;
-          left: 20px;
-          background: white;
-          border-radius: 12px;
-          padding: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-          z-index: 1000;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        .legend-item {
-          display: flex;
-          align-items: center;
-          margin-bottom: 8px;
-        }
-        .legend-item:last-child {
-          margin-bottom: 0;
-        }
-        .legend-dot {
-          width: 12px;
-          height: 12px;
-          border-radius: 6px;
-          margin-right: 8px;
-        }
-        .legend-text {
-          font-size: 13px;
-          color: #333;
-          font-weight: 500;
-        }
-        .custom-marker {
-          width: 36px;
-          height: 36px;
-          border-radius: 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: bold;
-          font-size: 14px;
-          border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-        }
-        .marker-start {
-          background-color: #00C853;
-        }
-        .marker-middle {
-          background-color: #007AFF;
-        }
-        .marker-end {
-          background-color: #FF3D00;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background-color: #00C853;"></div>
-          <span class="legend-text">Inicio</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background-color: #007AFF;"></div>
-          <span class="legend-text">Paradas</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background-color: #FF3D00;"></div>
-          <span class="legend-text">Final</span>
-        </div>
-      </div>
-      <div id="map"></div>
-      <script>
-        // Inicializar mapa
-        var map = L.map('map').setView([-7.1639, -78.5126], 13);
-        
-        // Agregar tiles de OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors',
-          maxZoom: 19
-        }).addTo(map);
+const leafletHTML = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+      .custom-marker {
+        position: relative;
+        width: 32px;
+        height: 40px;
+      }
+      .marker-pin {
+        width: 32px;
+        height: 32px;
+        border-radius: 50% 50% 50% 0;
+        background: #00C853;
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 50%;
+        top: 50%;
+        margin: -16px 0 0 -16px;
+        border: 2px solid white;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      }
+      .marker-number {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-30%);
+        color: white;
+        font-weight: 900;
+        font-size: 18px;
+        z-index: 10;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      // Inicializar mapa
+      var map = L.map('map').setView([-7.1639, -78.5126], 13);
+      
+      // Agregar tiles de OpenStreetMap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
 
-        // Marcadores
-        var markers = ${JSON.stringify(randomMarkers)};
-        var bounds = [];
+      // Marcadores
+      var markers = ${JSON.stringify(markers)};
+      var bounds = [];
 
-        markers.forEach(function(marker, index) {
-          var markerClass = index === 0 ? 'marker-start' : 
-                           index === markers.length - 1 ? 'marker-end' : 
-                           'marker-middle';
-          
-          var icon = L.divIcon({
-            className: 'custom-marker ' + markerClass,
-            html: '<div class="custom-marker ' + markerClass + '">' + (index + 1) + '</div>',
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-            popupAnchor: [0, -18]
-          });
-
-          var leafletMarker = L.marker([marker.latitude, marker.longitude], {
-            icon: icon
-          }).addTo(map);
-
-          leafletMarker.bindPopup('<b>' + marker.title + '</b><br>' + marker.description);
-          
-          bounds.push([marker.latitude, marker.longitude]);
+      markers.forEach(function(marker, index) {
+        var icon = L.divIcon({
+          className: 'custom-marker',
+          html: '<div class="marker-pin"></div><div class="marker-number">' + (index + 1) + '</div>',
+          iconSize: [32, 40],
+          iconAnchor: [16, 40],
+          popupAnchor: [0, -40]
         });
 
-        // Ajustar vista para mostrar todos los marcadores
-        if (bounds.length > 0) {
-          map.fitBounds(bounds, { padding: [50, 50] });
-        }
-      </script>
-    </body>
-    </html>
-  `;
+        var leafletMarker = L.marker([marker.latitude, marker.longitude], {
+          icon: icon
+        }).addTo(map);
+
+        leafletMarker.bindPopup('<b>' + marker.title + '</b><br>' + marker.description);
+        
+        bounds.push([marker.latitude, marker.longitude]);
+      });
+
+      // Ajustar vista para mostrar todos los marcadores
+      if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    </script>
+  </body>
+  </html>
+`;
 
   return (
     <Modal
@@ -231,7 +168,7 @@ const ModalRouteService: React.FC<ModalChangeOrderProps> = ({ visible, onClose }
             <View>
               <Text style={styles.modalTitle}>Ruta de Servicio</Text>
               <Text style={styles.modalSubtitle}>
-                {randomMarkers.length} puntos de parada
+                {markers.length} puntos de parada
               </Text>
             </View>
             <TouchableOpacity
@@ -261,7 +198,7 @@ const ModalRouteService: React.FC<ModalChangeOrderProps> = ({ visible, onClose }
                   showsCompass={true}
                   showsScale={true}
                 >
-                  {randomMarkers.map((marker, index) => (
+                  {markers.map((marker, index) => (
                     <Marker
                       key={marker.id}
                       coordinate={{
@@ -275,7 +212,7 @@ const ModalRouteService: React.FC<ModalChangeOrderProps> = ({ visible, onClose }
                         <View style={[
                           styles.markerBadge,
                           index === 0 && styles.markerStart,
-                          index === randomMarkers.length - 1 && styles.markerEnd,
+                          index === markers.length - 1 && styles.markerEnd,
                         ]}>
                           <Text style={styles.markerText}>{index + 1}</Text>
                         </View>

@@ -220,4 +220,16 @@ emptyStateDescription: {
   textAlign: 'center',
   lineHeight: 20,
 },
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#F8F9FA',
+},
+loadingText: {
+  marginTop: 12,
+  fontSize: 16,
+  color: '#666',
+  fontWeight: '500',
+}
 });

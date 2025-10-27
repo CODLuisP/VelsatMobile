@@ -75,11 +75,9 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
      borderBottomWidth: 1,
   borderBottomColor: '#e0e0e0',
-  paddingHorizontal:10,
+  paddingHorizontal:'10%',
   marginBottom:10,
   paddingBottom:10
- 
-
   },
 
  cardslider: {
@@ -122,14 +120,13 @@ export const styles = StyleSheet.create({
     marginLeft: 6,
   },
   iconButtonSmall: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    borderWidth: 2,
-    borderColor: '#ddd',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e36414',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 6,
+    marginTop: 15,
   },
   infoRow: {
     marginBottom: 3,
@@ -140,12 +137,18 @@ gridRow: {
   marginBottom: 5,
 },
 gridItem: {
-  flex: 1,
+  flex: 1
 },
 gridItemRight: {
-  // Sin flex, se ajusta a su contenido y queda a la derecha
-  alignItems: 'flex-end', // Alinea el texto a la derecha dentro del item
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    width: 100
 },
+
+actionButton: {
+  marginBottom: 10,
+},
+
   // Textos
   label: {
     fontSize: 10,
@@ -159,8 +162,9 @@ gridItemRight: {
   },
   linkText: {
     fontSize: 11,
-    color: '#666',
-    marginTop: 2,
+    color: '#000',
+    marginTop: 5,
+    textAlign: 'center',
   },
   // Botón de ubicación
   locationButton: {
@@ -198,4 +202,63 @@ gridItemRight: {
     fontSize: 10,
     fontWeight: '500',
   },
+    emptyStateContainer: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 40,
+  marginBottom: 20,
+  paddingHorizontal: 20,
+},
+
+  loadingContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#F8F9FA',
+},
+emptyStateTitle: {
+  color: '#00296b',
+  fontSize: 16,
+  fontWeight: '600',
+  marginBottom: 8,
+  textAlign: 'center',
+},
+emptyStateTitleDark: {
+  color: '#1a237e',
+  fontSize: 18,
+  fontWeight: '700',
+  marginBottom: 8,
+  textAlign: 'center',
+},
+emptyStateSubtitle: {
+  color: '#212529',
+  fontSize: 14,
+  textAlign: 'center',
+},
+emptyStateDescription: {
+  color: '#666',
+  fontSize: 14,
+  textAlign: 'center',
+  lineHeight: 20,
+},
+iconCircle: {
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: 'rgba(227, 100, 20, 0.1)',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 15,
+},
+iconCircleLarge: {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  marginBottom: 20,
+},
+actionButtons: {
+  flexDirection: 'column',
+  gap: 8,
+  alignItems: 'flex-end',
+},
 });

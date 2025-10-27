@@ -7,7 +7,13 @@ import {
   Linking,
 } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, Phone, MapPin, ChevronRight } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Phone,
+  MapPin,
+  ChevronRight,
+  AlertCircle,
+} from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
@@ -23,6 +29,9 @@ import axios from 'axios';
 import ModalChangeOrder from './modals/ModalChangeOrder';
 import ModalRouteService from './modals/ModalRouteService';
 import ModalObservations from './modals/ModalObservations';
+import { ActivityIndicator } from 'react-native';
+import PassengerActionBtn from '../../components/PassengerActionBtn';
+import ModalAlert from '../../components/ModalAlert';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,
@@ -33,6 +42,7 @@ interface PassengerAPI {
   apellidos: string;
   codcliente: string;
   codlan: string;
+  estado: string;
   codpedido: string;
   direccion: string;
   distrito: string;
@@ -66,15 +76,28 @@ const ServicesDetailDriver = () => {
     useState<PassengerAPI | null>(null);
 
   const [modalChangeOrderVisible, setModalChangeOrderVisible] = useState(false);
-
-  const [modalRouteServiceVisible, setModalRouteServiceVisible] = useState(false);
-  const [modalObservationsVisible, setModalObservationsVisible] = useState(false);
+  const [modalRouteServiceVisible, setModalRouteServiceVisible] =
+    useState(false);
+  const [modalObservationsVisible, setModalObservationsVisible] =
+    useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [allOrdersZero, setAllOrdersZero] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
 
   // useEffect para consumir la API
   useEffect(() => {
     const fetchServiceDetails = async () => {
+      setIsLoading(true); // Inicia loading
+      setApiError(null); // Limpiar errores previos
+
       try {
         const response = await axios.get<PassengerAPI[]>(
           `https://velsat.pe:2087/api/Aplicativo/detalleServicioConductor/${serviceData.codservicio}`,
@@ -82,35 +105,56 @@ const ServicesDetailDriver = () => {
 
         console.log('📡 Respuesta de la API:', response.data);
 
-        // Guardar el pasajero con orden 0
         const orderZero = response.data.find(p => p.orden === '0');
         setOrderZeroPassenger(orderZero || null);
 
-        // Filtrar y ordenar pasajeros (orden != 0)
         const filtered = response.data
           .filter(p => p.orden !== '0')
           .sort((a, b) => parseInt(a.orden) - parseInt(b.orden));
 
-        setApiPassengers(filtered);
+        const uniquePassengers = filtered.reduce((acc, current) => {
+          const exists = acc.find(p => p.codpedido === current.codpedido);
+          if (!exists) {
+            acc.push(current);
+          }
+          return acc;
+        }, [] as PassengerAPI[]);
 
-        // Verificar si todos tienen orden 0
+        setApiPassengers(uniquePassengers);
+
         const allZero = response.data.every(p => p.orden === '0');
         setAllOrdersZero(allZero);
       } catch (error) {
         console.error('Error al consumir la API:', error);
+        setApiError('Error al obtener los detalles del servicio');
+      } finally {
+        setIsLoading(false); // Termina loading
       }
     };
 
     if (serviceData.codservicio) {
       fetchServiceDetails();
     }
-  }, [serviceData.codservicio]);
+  }, [serviceData.codservicio, refreshTrigger]);
+
+  const passengersForModal = apiPassengers.map(passenger => ({
+    apellidos: passenger.apellidos,
+    codpedido: passenger.codpedido,
+    orden: passenger.orden,
+    wx: passenger.wx,
+    wy: passenger.wy,
+  }));
 
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#00296b', false);
     }, []),
   );
+
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
+  };
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -239,346 +283,406 @@ const ServicesDetailDriver = () => {
         </View>
       </View>
 
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.contentList}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        <View style={styles.formContainer}>
-          {/* Indicador de Pasajero */}
-          <View style={styles.passengerIndicator}>
-            <Text style={styles.passengerIndicatorLabel}>
-              Visualizando Pasajero
+      {isLoading ? (
+        // Loading
+        <View style={styles.loadingContainer}>
+          <View style={styles.emptyStateContainer}>
+            <ActivityIndicator size="large" color="#e36414" />
+            <Text style={styles.emptyStateTitle}>Cargando detalles</Text>
+            <Text style={styles.emptyStateSubtitle}>
+              Por favor espera un momento
             </Text>
-            {allOrdersZero ? (
-              <Text style={styles.passengerIndicatorNumber}>
-                Solicite orden de atención
-              </Text>
-            ) : (
-              <Text style={styles.passengerIndicatorNumber}>
-                {currentIndex + 1}/{apiPassengers.length}
-              </Text>
-            )}
           </View>
-
-          {/* Contenedor del slider (solo las 3 primeras tarjetas) */}
-          <View style={styles.sliderWrapper}>
-            {/* Botón izquierdo */}
-            <TouchableOpacity onPress={handlePrevious} style={styles.navButton}>
-              <ChevronLeft size={24} color="#333" />
-            </TouchableOpacity>
-
-            {/* Contenedor de las tarjetas del slider */}
-            <View style={styles.sliderCardsContainer}>
-              {currentPassenger && (
-                <>
-                  {/* Datos del Pasajero */}
-                  <View style={styles.cardslider}>
-                    <Text style={styles.sectionTitle}>Datos Pasajero</Text>
-
-                    <View style={styles.rowWithIcon}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>Nombres</Text>
-                        <Text style={styles.value}>
-                          {currentPassenger.apellidos || '-'}
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        style={[
-                          styles.iconButton,
-                          { opacity: currentPassenger?.telefono ? 1 : 0.3 },
-                        ]}
-                        onPress={makePhoneCallPassenger}
-                        disabled={!currentPassenger?.telefono}
-                      >
-                        <Phone size={20} color="#333" />
-                      </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>Teléfono</Text>
-                      <Text style={styles.value}>
-                        {currentPassenger.telefono || '-'}
-                      </Text>
-                    </View>
-
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>DNI</Text>
-                      <Text style={styles.value}>
-                        {currentPassenger.dni || '-'}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Lugar de Recojo */}
-                  <View style={styles.cardslider}>
-                    <Text style={styles.sectionTitle}>Lugar de recojo</Text>
-
-                    <View style={styles.gridRow}>
-                      <View style={styles.gridItem}>
-                        <Text style={styles.label}>Dirección</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? currentPassenger.direccion
-                            : getLocationData(orderZeroPassenger, 'direccion')}
-                        </Text>
-                      </View>
-                      <View style={styles.gridItemRight}>
-                        <Text style={styles.label}>Fecha y hora</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? currentPassenger.fechapasajero
-                            : orderZeroPassenger?.fechapasajero || '-'}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.infoRowWithIcon}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>Distrito</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? currentPassenger.distrito
-                            : getLocationData(orderZeroPassenger, 'distrito')}
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        style={[
-                          styles.iconButtonSmall,
-                          {
-                            opacity: (
-                              isEntrada
-                                ? currentPassenger?.wy
-                                : orderZeroPassenger?.wy
-                            )
-                              ? 1
-                              : 0.3,
-                          },
-                        ]}
-                        onPress={() => openGoogleMapsPassenger(true)}
-                        disabled={
-                          !(isEntrada
-                            ? currentPassenger?.wy
-                            : orderZeroPassenger?.wy)
-                        }
-                      >
-                        <MapPin size={20} color="#333" />
-                      </TouchableOpacity>
-                      <Text style={styles.linkText}>¿Cómo llegar?</Text>
-                    </View>
-
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>Ubicación</Text>
-                      <Text style={styles.value}>
-                        {isEntrada
-                          ? '-'
-                          : getLocationData(orderZeroPassenger, 'ubicacion')}
-                      </Text>
-                    </View>
-
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>Referencia</Text>
-                      <Text style={styles.value}>
-                        {isEntrada
-                          ? currentPassenger.referencia || '-'
-                          : getLocationData(orderZeroPassenger, 'referencia')}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Destino de Viaje */}
-                  <View style={styles.cardslider}>
-                    <Text style={styles.sectionTitle}>Destino de viaje</Text>
-
-                    <View style={styles.gridRow}>
-                      <View style={styles.gridItem}>
-                        <Text style={styles.label}>Dirección</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? getLocationData(orderZeroPassenger, 'direccion')
-                            : currentPassenger.direccion}
-                        </Text>
-                      </View>
-                      <View style={styles.gridItemRight}>
-                        <Text style={styles.label}>Fecha y hora</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? orderZeroPassenger?.fechapasajero || '-'
-                            : currentPassenger.fechapasajero}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.infoRowWithIcon}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>Distrito</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? getLocationData(orderZeroPassenger, 'distrito')
-                            : currentPassenger.distrito}
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        style={[
-                          styles.iconButtonSmall,
-                          {
-                            opacity: (
-                              isEntrada
-                                ? orderZeroPassenger?.wy
-                                : currentPassenger?.wy
-                            )
-                              ? 1
-                              : 0.3,
-                          },
-                        ]}
-                        onPress={() => openGoogleMapsPassenger(false)}
-                        disabled={
-                          !(isEntrada
-                            ? orderZeroPassenger?.wy
-                            : currentPassenger?.wy)
-                        }
-                      >
-                        <MapPin size={20} color="#333" />
-                      </TouchableOpacity>
-                      <Text style={styles.linkText}>¿Cómo llegar?</Text>
-                    </View>
-
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>Ubicación</Text>
-                      <Text style={styles.value}>
-                        {isEntrada
-                          ? getLocationData(orderZeroPassenger, 'ubicacion')
-                          : '-'}
-                      </Text>
-                    </View>
-
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>Referencia</Text>
-                      <Text style={styles.value}>
-                        {isEntrada
-                          ? getLocationData(orderZeroPassenger, 'referencia')
-                          : currentPassenger.referencia || '-'}
-                      </Text>
-                    </View>
-                  </View>
-                </>
+        </View>
+      ) : apiError ? (
+        // Error
+        <View style={styles.loadingContainer}>
+          <View style={styles.emptyStateContainer}>
+            <View style={[styles.iconCircle, styles.iconCircleLarge]}>
+              <AlertCircle size={40} color="#ff4444" />
+            </View>
+            <Text style={styles.emptyStateTitleDark}>Error al cargar</Text>
+            <Text style={styles.emptyStateDescription}>{apiError}</Text>
+          </View>
+        </View>
+      ) : (
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.contentList}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          <View style={styles.formContainer}>
+            {/* Indicador de Pasajero */}
+            <View style={styles.passengerIndicator}>
+              <Text style={styles.passengerIndicatorLabel}>
+                Visualizando Pasajero
+              </Text>
+              {allOrdersZero ? (
+                <Text style={styles.passengerIndicatorNumber}>
+                  Solicite orden de atención
+                </Text>
+              ) : (
+                <Text style={styles.passengerIndicatorNumber}>
+                  {currentIndex + 1}/{apiPassengers.length}
+                </Text>
               )}
             </View>
 
-            {/* Botón derecho */}
-            <TouchableOpacity onPress={handleNext} style={styles.navButton}>
-              <ChevronRight size={24} color="#333" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Tarjetas fijas (fuera del slider) */}
-          {/* Detalles de Servicio */}
-          <View style={styles.card}>
-            <Text style={styles.centerLabel}>Detalles de servicio</Text>
-
-            {/* Tipo y Cantidad de pasajeros */}
-            <View style={styles.gridRow}>
-              <View style={styles.gridItem}>
-                <Text style={styles.label}>Tipo</Text>
-                <Text style={styles.value}>
-                  {serviceData.tipo === 'I'
-                    ? 'Entrada'
-                    : serviceData.tipo === 'S'
-                      ? 'Salida'
-                      : '-'}
-                </Text>
-              </View>
-              <View style={styles.gridItemRight}>
-                <Text style={styles.label}>Cantidad de pasajeros</Text>
-                <Text style={styles.value}>{serviceData.totalpax ?? '-'}</Text>
-              </View>
-            </View>
-
-            {/* Empresa y Grupo */}
-            <View style={styles.gridRow}>
-              <View style={styles.gridItem}>
-                <Text style={styles.label}>Empresa</Text>
-                <Text style={styles.value}>{serviceData.empresa || '-'}</Text>
-              </View>
-              <View style={styles.gridItemRight}>
-                <Text style={styles.label}>Grupo</Text>
-                <Text style={styles.value}>
-                  {serviceData.grupo === 'A'
-                    ? 'Aire'
-                    : serviceData.grupo === 'T'
-                      ? 'Tierra'
-                      : '-'}
-                </Text>
-              </View>
-            </View>
-
-            {/* Proveedor y Unidad */}
-            <View style={styles.gridRow}>
-              <View style={styles.gridItem}>
-                <Text style={styles.label}>Proveedor</Text>
-                <Text style={styles.value}>
-                  {serviceData.codusuario === 'movilbus'
-                    ? 'Empresa Movil Bus'
-                    : serviceData.codusuario === 'cgacela'
-                      ? 'Gacela Express'
-                      : serviceData.codusuario === 'aremys'
-                        ? 'Empresa Aremys'
-                        : serviceData.codusuario || '-'}
-                </Text>
-              </View>
-              <View style={styles.gridItemRight}>
-                <Text style={styles.label}>Unidad</Text>
-                <Text style={styles.value}>{serviceData.unidad || '-'}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Opciones de Servicio */}
-          <View style={styles.card}>
-            <Text style={styles.centerLabel}>Opciones de servicio</Text>
-
-            <View style={styles.buttonContainer}>
+            {/* Contenedor del slider (solo las 3 primeras tarjetas) */}
+            <View style={styles.sliderWrapper}>
+              {/* Botón izquierdo */}
               <TouchableOpacity
-                style={styles.buttonBlue}
-                onPress={() => setModalChangeOrderVisible(true)}
+                onPress={handlePrevious}
+                style={styles.navButton}
               >
-                <Text style={styles.buttonText}>Cambiar orden</Text>
+                <ChevronLeft size={24} color="#333" />
               </TouchableOpacity>
 
-          <TouchableOpacity 
-  style={styles.buttonGray}
-  onPress={() => setModalRouteServiceVisible(true)}
->
-  <Text style={styles.buttonText}>Ruta de servicio</Text>
-</TouchableOpacity>
+              {/* Contenedor de las tarjetas del slider */}
+              <View style={styles.sliderCardsContainer}>
+                {currentPassenger && (
+                  <>
+                    {/* Datos del Pasajero */}
+                    <View style={styles.cardslider}>
+                      <Text style={styles.sectionTitle}>Datos Pasajero</Text>
 
-          <TouchableOpacity 
-  style={styles.buttonOrange}
-  onPress={() => setModalObservationsVisible(true)}
->
-  <Text style={styles.buttonText}>Observaciones</Text>
-</TouchableOpacity>
+                      <View style={styles.rowWithIcon}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.label}>Nombres</Text>
+                          <Text style={styles.value}>
+                            {currentPassenger.apellidos || '-'}
+                          </Text>
+                        </View>
+                        <View style={styles.actionButtons}>
+                          <TouchableOpacity
+                            style={[
+                              styles.iconButtonSmall,
+                              { opacity: currentPassenger?.telefono ? 1 : 0.3 },
+                            ]}
+                            onPress={makePhoneCallPassenger}
+                            disabled={!currentPassenger?.telefono}
+                          >
+                            <Phone size={20} color="#fff" />
+                          </TouchableOpacity>
+                          <Text style={styles.linkText}>Llamar pasajero</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Teléfono</Text>
+                        <Text style={styles.value}>
+                          {currentPassenger.telefono || '-'}
+                        </Text>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>DNI</Text>
+                        <Text style={styles.value}>
+                          {currentPassenger.dni || '-'}
+                        </Text>
+                      </View>
+
+                      <View style={styles.actionButton}>
+                        <PassengerActionBtn
+                          codpedido={currentPassenger.codpedido}
+                          estado={currentPassenger.estado}
+                          codusuario={serviceData.codusuario}
+                        />
+                      </View>
+                    </View>
+
+                    {/* Lugar de Recojo */}
+                    <View style={styles.cardslider}>
+                      <Text style={styles.sectionTitle}>Lugar de recojo</Text>
+
+                      <View style={styles.gridRow}>
+                        <View style={styles.gridItem}>
+                          <Text style={styles.label}>Dirección</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? currentPassenger.direccion
+                              : getLocationData(
+                                  orderZeroPassenger,
+                                  'direccion',
+                                )}
+                          </Text>
+                        </View>
+
+                        <View style={styles.gridItemRight}>
+                          <Text style={styles.label}>Fecha y hora</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? currentPassenger.fechapasajero
+                              : orderZeroPassenger?.fechapasajero || '-'}
+                          </Text>
+                          <TouchableOpacity
+                            style={[
+                              styles.iconButtonSmall,
+                              {
+                                opacity: (
+                                  isEntrada
+                                    ? currentPassenger?.wy
+                                    : orderZeroPassenger?.wy
+                                )
+                                  ? 1
+                                  : 0.3,
+                              },
+                            ]}
+                            onPress={() => openGoogleMapsPassenger(true)}
+                            disabled={
+                              !(isEntrada
+                                ? currentPassenger?.wy
+                                : orderZeroPassenger?.wy)
+                            }
+                          >
+                            <MapPin size={20} color="#fff" />
+                          </TouchableOpacity>
+                          <Text style={styles.linkText}>¿Cómo llegar?</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.infoRowWithIcon}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.label}>Distrito</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? currentPassenger.distrito
+                              : getLocationData(orderZeroPassenger, 'distrito')}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Ubicación</Text>
+                        <Text style={styles.value}>
+                          {isEntrada
+                            ? '-'
+                            : getLocationData(orderZeroPassenger, 'ubicacion')}
+                        </Text>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Referencia</Text>
+                        <Text style={styles.value}>
+                          {isEntrada
+                            ? currentPassenger.referencia || '-'
+                            : getLocationData(orderZeroPassenger, 'referencia')}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Destino de Viaje */}
+                    <View style={styles.cardslider}>
+                      <Text style={styles.sectionTitle}>Destino de viaje</Text>
+
+                      <View style={styles.gridRow}>
+                        <View style={styles.gridItem}>
+                          <Text style={styles.label}>Dirección</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? getLocationData(orderZeroPassenger, 'direccion')
+                              : currentPassenger.direccion}
+                          </Text>
+                        </View>
+                        <View style={styles.gridItemRight}>
+                          <Text style={styles.label}>Fecha y hora</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? orderZeroPassenger?.fechapasajero || '-'
+                              : currentPassenger.fechapasajero}
+                          </Text>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.iconButtonSmall,
+                              {
+                                opacity: (
+                                  isEntrada
+                                    ? orderZeroPassenger?.wy
+                                    : currentPassenger?.wy
+                                )
+                                  ? 1
+                                  : 0.3,
+                              },
+                            ]}
+                            onPress={() => openGoogleMapsPassenger(false)}
+                            disabled={
+                              !(isEntrada
+                                ? orderZeroPassenger?.wy
+                                : currentPassenger?.wy)
+                            }
+                          >
+                            <MapPin size={20} color="#fff" />
+                          </TouchableOpacity>
+                          <Text style={styles.linkText}>¿Cómo llegar?</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.infoRowWithIcon}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.label}>Distrito</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? getLocationData(orderZeroPassenger, 'distrito')
+                              : currentPassenger.distrito}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Ubicación</Text>
+                        <Text style={styles.value}>
+                          {isEntrada
+                            ? getLocationData(orderZeroPassenger, 'ubicacion')
+                            : '-'}
+                        </Text>
+                      </View>
+
+                      <View style={styles.infoRow}>
+                        <Text style={styles.label}>Referencia</Text>
+                        <Text style={styles.value}>
+                          {isEntrada
+                            ? getLocationData(orderZeroPassenger, 'referencia')
+                            : currentPassenger.referencia || '-'}
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                )}
+              </View>
+
+              {/* Botón derecho */}
+              <TouchableOpacity onPress={handleNext} style={styles.navButton}>
+                <ChevronRight size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Tarjetas fijas (fuera del slider) */}
+            {/* Detalles de Servicio */}
+            <View style={styles.card}>
+              <Text style={styles.centerLabel}>Detalles de servicio</Text>
+
+              {/* Tipo y Cantidad de pasajeros */}
+              <View style={styles.gridRow}>
+                <View style={styles.gridItem}>
+                  <Text style={styles.label}>Tipo</Text>
+                  <Text style={styles.value}>
+                    {serviceData.tipo === 'I'
+                      ? 'Entrada'
+                      : serviceData.tipo === 'S'
+                      ? 'Salida'
+                      : '-'}
+                  </Text>
+                </View>
+                <View style={styles.gridItemRight}>
+                  <Text style={styles.label}>Cantidad de pasajeros</Text>
+                  <Text style={styles.value}>
+                    {serviceData.totalpax ?? '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Empresa y Grupo */}
+              <View style={styles.gridRow}>
+                <View style={styles.gridItem}>
+                  <Text style={styles.label}>Empresa</Text>
+                  <Text style={styles.value}>{serviceData.empresa || '-'}</Text>
+                </View>
+                <View style={styles.gridItemRight}>
+                  <Text style={styles.label}>Grupo</Text>
+                  <Text style={styles.value}>
+                    {serviceData.grupo === 'A'
+                      ? 'Aire'
+                      : serviceData.grupo === 'T'
+                      ? 'Tierra'
+                      : '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Proveedor y Unidad */}
+              <View style={styles.gridRow}>
+                <View style={styles.gridItem}>
+                  <Text style={styles.label}>Proveedor</Text>
+                  <Text style={styles.value}>
+                    {serviceData.codusuario === 'movilbus'
+                      ? 'Empresa Movil Bus'
+                      : serviceData.codusuario === 'cgacela'
+                      ? 'Gacela Express'
+                      : serviceData.codusuario === 'aremys'
+                      ? 'Empresa Aremys'
+                      : serviceData.codusuario || '-'}
+                  </Text>
+                </View>
+                <View style={styles.gridItemRight}>
+                  <Text style={styles.label}>Unidad</Text>
+                  <Text style={styles.value}>{serviceData.unidad || '-'}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Opciones de Servicio */}
+            <View style={styles.card}>
+              <Text style={styles.centerLabel}>Opciones de servicio</Text>
+
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.buttonBlue}
+                  onPress={() => setModalChangeOrderVisible(true)}
+                >
+                  <Text style={styles.buttonText}>Cambiar orden</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.buttonGray}
+                  onPress={() => setModalRouteServiceVisible(true)}
+                >
+                  <Text style={styles.buttonText}>Ruta de servicio</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.buttonOrange}
+                  onPress={() => setModalObservationsVisible(true)}
+                >
+                  <Text style={styles.buttonText}>Observaciones</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <ModalChangeOrder
         visible={modalChangeOrderVisible}
-        onClose={() => setModalChangeOrderVisible(false)}
+        onClose={() => {
+          setModalChangeOrderVisible(false);
+          setRefreshTrigger(prev => prev + 1);
+        }}
+        passengers={passengersForModal}
+        onShowAlert={handleShowAlert}
       />
 
       <ModalRouteService
-  visible={modalRouteServiceVisible}
-  onClose={() => setModalRouteServiceVisible(false)}
-/>
+        visible={modalRouteServiceVisible}
+        onClose={() => setModalRouteServiceVisible(false)}
+        passengers={passengersForModal}
+      />
 
-<ModalObservations
-  visible={modalObservationsVisible}
-  onClose={() => setModalObservationsVisible(false)}
-/>
+      <ModalObservations
+        visible={modalObservationsVisible}
+        onClose={() => setModalObservationsVisible(false)}
+        passengers={passengersForModal}
+        onShowAlert={handleShowAlert}
+      />
+
+      <ModalAlert
+        isVisible={modalAlertVisible}
+        onClose={() => setModalAlertVisible(false)}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        color={alertConfig.color}
+      />
     </View>
   );
 };

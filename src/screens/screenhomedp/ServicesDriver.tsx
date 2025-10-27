@@ -6,7 +6,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Users, Calendar, User } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Users,
+  Calendar,
+  User,
+  CalendarX2,
+} from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
@@ -25,6 +31,7 @@ interface Service {
   fechapasajero: string | null;
   empresa: string;
   numero: string;
+  estado: string;
   codconductor: string;
   destino: string;
   fechaservicio: string;
@@ -39,7 +46,7 @@ interface Service {
 const ServicesDriver = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadingStart, setLoadingStart] = useState<string | null>(null);
   const [loadingEnd, setLoadingEnd] = useState<string | null>(null);
 
@@ -165,7 +172,7 @@ const ServicesDriver = () => {
   // Función para obtener los servicios de la API
   const fetchServices = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
 
       const url = `https://velsat.pe:2087/api/Aplicativo/serviciosConductor/${codigo}`;
 
@@ -207,7 +214,7 @@ const ServicesDriver = () => {
       }
       setServices([]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -293,203 +300,198 @@ const ServicesDriver = () => {
         </View>
       </View>
 
-      {loading ? (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <ActivityIndicator size="large" color="#1e3a8a" />
-          <Text style={{ marginTop: 10, color: '#666' }}>
-            Cargando servicios...
-          </Text>
-        </View>
-      ) : (
-        <ScrollView
-          style={styles.contentList}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        >
-          <View style={styles.formContainer}>
-            {services.length === 0 ? (
-              <View style={{ padding: 20, alignItems: 'center' }}>
-                <Text style={{ color: '#666', fontSize: 16 }}>
-                  No hay servicios programados
-                </Text>
+      <ScrollView
+        style={styles.contentList}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <View style={styles.formContainer}>
+          {isLoading ? (
+            <View style={styles.emptyStateContainer}>
+              <ActivityIndicator size="large" color="#e36414" />
+              <Text style={styles.emptyStateTitle}>Cargando servicios</Text>
+              <Text style={styles.emptyStateSubtitle}>
+                Por favor espera un momento
+              </Text>
+            </View>
+          ) : services.length === 0 ? (
+            <View style={styles.emptyStateContainer}>
+              <View style={[styles.iconCircle, styles.iconCircleLarge]}>
+                <CalendarX2 size={40} color="#e36414" />
               </View>
-            ) : (
-              services.map(service => {
-                const inicioServicio = getInicioServicio(service);
-                const finServicio = getFinServicio(service);
-                const status = getServiceStatus(service);
+              <Text style={styles.emptyStateTitleDark}>
+                Sin servicios programados
+              </Text>
+              <Text style={styles.emptyStateDescription}>
+                Aún no hay servicios programados para el día de hoy
+              </Text>
+            </View>
+          ) : (
+            services.map(service => {
+              const inicioServicio = getInicioServicio(service);
+              const finServicio = getFinServicio(service);
+              const status = getServiceStatus(service);
 
-                return (
-                  <TouchableOpacity
-                    key={service.codservicio}
-                    onPress={() =>
-                      handleNavigateToServicesDetailDriver(service)
-                    }
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.serviceCard}>
-                      {/* Header del servicio */}
-                      <View style={styles.serviceHeader}>
-                        <View style={styles.serviceHeaderLeft}>
-                          <Text style={styles.serviceNumber}>
-                            Servicio #{service.numero}
+              return (
+                <TouchableOpacity
+                  key={service.codservicio}
+                  onPress={() => handleNavigateToServicesDetailDriver(service)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.serviceCard}>
+                    {/* Header del servicio */}
+                    <View style={styles.serviceHeader}>
+                      <View style={styles.serviceHeaderLeft}>
+                        <Text style={styles.serviceNumber}>
+                          Servicio #{service.numero}
+                        </Text>
+                        <View style={styles.passengersContainer}>
+                          <User size={14} color="#FFFFFF" />
+                          <Text style={styles.passengersText}>
+                            {service.totalpax !== null
+                              ? `${service.totalpax} pasajero${
+                                  service.totalpax > 1 ? 's' : ''
+                                }`
+                              : 'No especificado'}
                           </Text>
-                          <View style={styles.passengersContainer}>
-                            <User size={14} color="#FFFFFF" />
-                            <Text style={styles.passengersText}>
-                              {service.totalpax !== null
-                                ? `${service.totalpax} pasajero${
-                                    service.totalpax > 1 ? 's' : ''
-                                  }`
-                                : 'No especificado'}
+                        </View>
+                      </View>
+                      <View style={styles.serviceHeaderRight}>
+                        <Text style={styles.locationText}>
+                          {service.empresa}
+                        </Text>
+                      </View>
+                      <View
+                        style={[
+                          styles.statusBadge,
+                          { backgroundColor: status.color },
+                        ]}
+                      >
+                        <Text style={styles.statusText}>{status.text}</Text>
+                      </View>
+                    </View>
+
+                    {/* Body del servicio */}
+                    <View style={styles.serviceBody}>
+                      <View style={styles.infoRow}>
+                        <View style={styles.leftColumn}>
+                          <View style={styles.dateSection}>
+                            <View style={styles.dateIconRow}>
+                              <User size={16} color="#666" />
+                              <Text style={styles.dateLabel}>
+                                Inicio servicio
+                              </Text>
+                            </View>
+                            <Text style={styles.dateValue}>
+                              {inicioServicio}
+                            </Text>
+                          </View>
+
+                          <View style={styles.groupSection}>
+                            <View style={styles.groupRow}>
+                              <Users size={16} color="#666" />
+                              <Text style={styles.groupLabel}>
+                                Grupo y tipo
+                              </Text>
+                            </View>
+                            <Text style={styles.groupValue}>
+                              {getGrupo(service.grupo)} -{' '}
+                              {getTipoServicio(service.tipo)}
                             </Text>
                           </View>
                         </View>
-                        <View style={styles.serviceHeaderRight}>
-                          <Text style={styles.locationText}>
-                            {service.empresa}
-                          </Text>
-                        </View>
-                        <View
-                          style={[
-                            styles.statusBadge,
-                            { backgroundColor: status.color },
-                          ]}
-                        >
-                          <Text style={styles.statusText}>{status.text}</Text>
-                        </View>
-                      </View>
 
-                      {/* Body del servicio */}
-                      <View style={styles.serviceBody}>
-                        <View style={styles.infoRow}>
-                          <View style={styles.leftColumn}>
-                            <View style={styles.dateSection}>
-                              <View style={styles.dateIconRow}>
-                                <User size={16} color="#666" />
-                                <Text style={styles.dateLabel}>
-                                  Inicio servicio
-                                </Text>
-                              </View>
-                              <Text style={styles.dateValue}>
-                                {inicioServicio}
-                              </Text>
+                        <View style={styles.rightColumn}>
+                          <View style={styles.dateSection}>
+                            <View style={styles.dateIconRow}>
+                              <Calendar size={16} color="#666" />
+                              <Text style={styles.dateLabel}>Fin servicio</Text>
                             </View>
-
-                            <View style={styles.groupSection}>
-                              <View style={styles.groupRow}>
-                                <Users size={16} color="#666" />
-                                <Text style={styles.groupLabel}>
-                                  Grupo y tipo
-                                </Text>
-                              </View>
-                              <Text style={styles.groupValue}>
-                                {getGrupo(service.grupo)} -{' '}
-                                {getTipoServicio(service.tipo)}
-                              </Text>
-                            </View>
+                            <Text style={styles.dateValue}>{finServicio}</Text>
                           </View>
 
-                          <View style={styles.rightColumn}>
-                            <View style={styles.dateSection}>
-                              <View style={styles.dateIconRow}>
-                                <Calendar size={16} color="#666" />
-                                <Text style={styles.dateLabel}>
-                                  Fin servicio
+                          {serviceStates[service.codservicio] !==
+                            'finished' && (
+                            <View style={styles.actionButtons}>
+                              <TouchableOpacity
+                                style={[
+                                  styles.actionButton,
+                                  serviceStates[service.codservicio] === 'idle'
+                                    ? styles.actionButtonActive
+                                    : styles.actionButtonDisabled,
+                                ]}
+                                onPress={() =>
+                                  handleStartService(
+                                    service.codservicio,
+                                    service.unidad,
+                                    service.codconductor,
+                                  )
+                                }
+                                disabled={
+                                  serviceStates[service.codservicio] !==
+                                    'idle' ||
+                                  loadingStart === service.codservicio
+                                }
+                              >
+                                <Text
+                                  style={[
+                                    styles.actionButtonText,
+                                    serviceStates[service.codservicio] !==
+                                      'idle' && styles.actionButtonTextDisabled,
+                                  ]}
+                                >
+                                  {loadingStart === service.codservicio
+                                    ? 'Iniciando...'
+                                    : 'Iniciar'}
                                 </Text>
-                              </View>
-                              <Text style={styles.dateValue}>
-                                {finServicio}
-                              </Text>
+                              </TouchableOpacity>
+
+                              <TouchableOpacity
+                                style={[
+                                  styles.actionButton,
+                                  serviceStates[service.codservicio] ===
+                                  'started'
+                                    ? styles.actionButtonEnd
+                                    : styles.actionButtonDisabled,
+                                ]}
+                                onPress={() =>
+                                  handleEndService(
+                                    service.codservicio,
+                                    service.unidad,
+                                    service.codconductor,
+                                  )
+                                }
+                                disabled={
+                                  serviceStates[service.codservicio] !==
+                                    'started' ||
+                                  loadingEnd === service.codservicio
+                                }
+                              >
+                                <Text
+                                  style={[
+                                    styles.actionButtonText,
+                                    serviceStates[service.codservicio] !==
+                                      'started' &&
+                                      styles.actionButtonTextDisabled,
+                                  ]}
+                                >
+                                  {loadingEnd === service.codservicio
+                                    ? 'Finalizando...'
+                                    : 'Finalizar'}
+                                </Text>
+                              </TouchableOpacity>
                             </View>
-
-                            {serviceStates[service.codservicio] !==
-                              'finished' && (
-                              <View style={styles.actionButtons}>
-                                <TouchableOpacity
-                                  style={[
-                                    styles.actionButton,
-                                    serviceStates[service.codservicio] ===
-                                    'idle'
-                                      ? styles.actionButtonActive
-                                      : styles.actionButtonDisabled,
-                                  ]}
-                                  onPress={() =>
-                                    handleStartService(
-                                      service.codservicio,
-                                      service.unidad,
-                                      service.codconductor,
-                                    )
-                                  }
-                                  disabled={
-                                    serviceStates[service.codservicio] !==
-                                      'idle' ||
-                                    loadingStart === service.codservicio
-                                  }
-                                >
-                                  <Text
-                                    style={[
-                                      styles.actionButtonText,
-                                      serviceStates[service.codservicio] !==
-                                        'idle' &&
-                                        styles.actionButtonTextDisabled,
-                                    ]}
-                                  >
-                                    {loadingStart === service.codservicio
-                                      ? 'Iniciando...'
-                                      : 'Iniciar'}
-                                  </Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                  style={[
-                                    styles.actionButton,
-                                    serviceStates[service.codservicio] ===
-                                    'started'
-                                      ? styles.actionButtonEnd
-                                      : styles.actionButtonDisabled,
-                                  ]}
-                                  onPress={() =>
-                                    handleEndService(
-                                      service.codservicio,
-                                      service.unidad,
-                                      service.codconductor,
-                                    )
-                                  }
-                                  disabled={
-                                    serviceStates[service.codservicio] !==
-                                      'started' ||
-                                    loadingEnd === service.codservicio
-                                  }
-                                >
-                                  <Text
-                                    style={[
-                                      styles.actionButtonText,
-                                      serviceStates[service.codservicio] !==
-                                        'started' &&
-                                        styles.actionButtonTextDisabled,
-                                    ]}
-                                  >
-                                    {loadingEnd === service.codservicio
-                                      ? 'Finalizando...'
-                                      : 'Finalizar'}
-                                  </Text>
-                                </TouchableOpacity>
-                              </View>
-                            )}
-                          </View>
+                          )}
                         </View>
                       </View>
                     </View>
-                  </TouchableOpacity>
-                );
-              })
-            )}
-          </View>
-        </ScrollView>
-      )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 };

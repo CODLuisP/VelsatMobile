@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,10 +13,17 @@ import {
 } from 'react-native';
 import { X, GripVertical } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import axios from 'axios';
 
 // Habilitar LayoutAnimation en Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -29,15 +36,21 @@ interface Passenger {
 interface ModalChangeOrderProps {
   visible: boolean;
   onClose: () => void;
-  passengers?: Passenger[];
+  passengers: Array<{
+    apellidos: string;
+    codpedido: string;
+    orden: string;
+  }>;
   onSaveOrder?: (passengers: Passenger[]) => void;
+  onShowAlert: (title: string, message: string, color?: string) => void;
 }
 
-const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({ 
-  visible, 
+const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
+  visible,
   onClose,
   passengers: initialPassengers,
-  onSaveOrder 
+  onSaveOrder,
+  onShowAlert
 }) => {
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -47,25 +60,57 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
   );
   const topSpace = insets.top + 5;
 
-  const [passengers, setPassengers] = useState<Passenger[]>(
-    initialPassengers || [
-      { id: '1', name: 'Luis Castrejón Cabrera', order: 1 },
-      { id: '2', name: 'Diego Guevara Campos', order: 2 },
-      { id: '3', name: 'Lucía Ramírez Martínez', order: 3 },
-      { id: '4', name: 'Renato Salazar Quispe', order: 4 },
-    ]
-  );
-
+  const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
-  const handleSave = () => {
-    const updatedPassengers = passengers.map((passenger, index) => ({
-      ...passenger,
-      order: index + 1,
+  useEffect(() => {
+    if (initialPassengers && initialPassengers.length > 0) {
+      const mappedPassengers = initialPassengers
+        .map(p => ({
+          id: p.codpedido,
+          name: p.apellidos,
+          order: parseInt(p.orden),
+        }))
+        .sort((a, b) => a.order - b.order);
+
+      setPassengers(mappedPassengers);
+      console.log(
+        '🔄 Pasajeros recibidos para cambiar orden (ordenados):',
+        mappedPassengers,
+      );
+    }
+  }, [initialPassengers]);
+
+const handleSave = async () => {
+  try {
+    console.log('💾 Guardando nuevo orden...');
+    
+    const cambios = passengers.map((passenger, index) => ({
+      orden: (index + 1).toString(),
+      codpedido: parseInt(passenger.id),
     }));
-    onSaveOrder?.(updatedPassengers);
-    onClose();
-  };
+
+    console.log('📤 Enviando cambios:', cambios);
+
+    const response = await axios.put(
+      'https://velsat.pe:2087/api/Aplicativo/cambiarOrdenBatch',
+      cambios
+    );
+
+    console.log('✅ Orden actualizado correctamente:', response.data);
+    onShowAlert('Éxito', 'Orden actualizado correctamente', '#0b692eff');
+
+    onClose(); // Cerrar modal después de guardar
+  } catch (error: any) {
+    console.error('❌ Error al guardar orden:', error);
+    console.error('Response data:', error.response?.data);
+
+    onShowAlert(
+          'Error', 
+          error.response?.data?.message || 'No se pudo actualizar el orden. Intenta nuevamente.', '#b10202ff'
+        );
+  }
+};
 
   const movePassenger = (fromIndex: number, toIndex: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -75,7 +120,13 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
     setPassengers(newPassengers);
   };
 
-  const PassengerItem = ({ passenger, index }: { passenger: Passenger; index: number }) => {
+  const PassengerItem = ({
+    passenger,
+    index,
+  }: {
+    passenger: Passenger;
+    index: number;
+  }) => {
     const pan = React.useRef(new Animated.ValueXY()).current;
     const [itemHeight] = useState(80);
 
@@ -96,7 +147,10 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
         onPanResponderRelease: (_, gesture) => {
           const moveY = gesture.dy;
           const newIndex = Math.round(index + moveY / itemHeight);
-          const clampedIndex = Math.max(0, Math.min(passengers.length - 1, newIndex));
+          const clampedIndex = Math.max(
+            0,
+            Math.min(passengers.length - 1, newIndex),
+          );
 
           if (clampedIndex !== index) {
             movePassenger(index, clampedIndex);
@@ -110,7 +164,7 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
             setDraggingIndex(null);
           });
         },
-      })
+      }),
     ).current;
 
     const isDragging = draggingIndex === index;
@@ -156,10 +210,7 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
                 Mantén presionado y arrastra
               </Text>
             </View>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <X size={24} color="#666" />
             </TouchableOpacity>
           </View>
@@ -167,9 +218,9 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
           <View style={styles.contentContainer}>
             <View style={styles.listContainer}>
               {passengers.map((passenger, index) => (
-                <PassengerItem 
-                  key={passenger.id} 
-                  passenger={passenger} 
+                <PassengerItem
+                  key={passenger.id}
+                  passenger={passenger}
                   index={index}
                 />
               ))}
@@ -177,17 +228,11 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
           </View>
 
           <View style={[styles.footer, { paddingBottom: bottomSpace + 20 }]}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={onClose}
-            >
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancelar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleSave}
-            >
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>Guardar Orden</Text>
             </TouchableOpacity>
           </View>

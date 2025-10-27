@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, MapPin, Phone, Star, X } from 'lucide-react-native';
+import { ChevronLeft, MapPin, Phone, Star } from 'lucide-react-native';
 import {
   NavigationProp,
   useNavigation,
@@ -84,6 +84,8 @@ const ServicesDetailPassenger = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+  const [driverError, setDriverError] = useState('');
+  const [destinoError, setDestinoError] = useState<string | null>(null);
 
   console.log('📥 Datos recibidos del servicio:', serviceData);
 
@@ -91,7 +93,10 @@ const ServicesDetailPassenger = () => {
   const fetchDriverData = async () => {
     try {
       setLoadingDriver(true);
-      console.log('🔍 Obteniendo datos del conductor:', serviceData.codconductor);
+      console.log(
+        '🔍 Obteniendo datos del conductor:',
+        serviceData.codconductor,
+      );
 
       const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
       console.log('🌐 URL Conductor:', url);
@@ -103,9 +108,14 @@ const ServicesDetailPassenger = () => {
       setDriverData(response.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('❌ Error al obtener datos del conductor:', error.response?.data || error.message);
+        console.error(
+          '❌ Error al obtener datos del conductor:',
+          error.response?.data || error.message,
+        );
+        setDriverError('No se pudieron cargar los datos del conductor');
       } else {
         console.error('❌ Error desconocido:', error);
+        setDriverError('Error al cargar los datos del conductor');
       }
       setDriverData(null);
     } finally {
@@ -117,6 +127,7 @@ const ServicesDetailPassenger = () => {
   const fetchDestinoData = async (codcliente: string) => {
     try {
       setLoadingDestino(true);
+      setDestinoError(null); // Limpia errores anteriores
       console.log('🔍 Obteniendo datos del destino:', codcliente);
 
       const url = `https://velsat.pe:2087/api/Aplicativo/detalleDestino/${codcliente}`;
@@ -133,9 +144,14 @@ const ServicesDetailPassenger = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('❌ Error al obtener datos del destino:', error.response?.data || error.message);
+        console.error(
+          '❌ Error al obtener datos del destino:',
+          error.response?.data || error.message,
+        );
+        setDestinoError('No se pudieron cargar los datos del destino');
       } else {
         console.error('❌ Error desconocido:', error);
+        setDestinoError('Error al cargar los datos del destino');
       }
       setDestinoData(null);
     } finally {
@@ -267,8 +283,14 @@ const ServicesDetailPassenger = () => {
       navigation.goBack();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('❌ Error al cancelar el servicio:', error.response?.data || error.message);
-        Alert.alert('Error', 'No se pudo cancelar el servicio. Intenta nuevamente.');
+        console.error(
+          '❌ Error al cancelar el servicio:',
+          error.response?.data || error.message,
+        );
+        Alert.alert(
+          'Error',
+          'No se pudo cancelar el servicio. Intenta nuevamente.',
+        );
       } else {
         console.error('❌ Error desconocido:', error);
       }
@@ -316,7 +338,10 @@ const ServicesDetailPassenger = () => {
       Alert.alert('¡Éxito!', 'Calificación enviada correctamente');
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('❌ Error al enviar calificación:', error.response?.data || error.message);
+        console.error(
+          '❌ Error al enviar calificación:',
+          error.response?.data || error.message,
+        );
         Alert.alert('Error', 'No se pudo enviar la calificación');
       } else {
         console.error('❌ Error desconocido:', error);
@@ -384,6 +409,18 @@ const ServicesDetailPassenger = () => {
                   Cargando datos del conductor...
                 </Text>
               </View>
+            ) : driverError ? (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text
+                  style={{
+                    color: '#2b2b2bff',
+                    textAlign: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  {driverError}
+                </Text>
+              </View>
             ) : (
               <View style={styles.driverContainer}>
                 <TouchableOpacity
@@ -391,22 +428,24 @@ const ServicesDetailPassenger = () => {
                   onPress={handleImagePress}
                   activeOpacity={0.7}
                 >
-                  {driverData?.imagen ? (
-                    <Image
-                      source={{ uri: driverData.imagen }}
-                      style={styles.avatarPlaceholder}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={styles.avatarPlaceholder} />
-                  )}
+                  <Image
+                    source={{
+                      uri:
+                        driverData?.imagen ||
+                        'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761536505/user_aulzrl.png',
+                    }}
+                    style={styles.avatarPlaceholder}
+                    resizeMode="cover"
+                  />
                 </TouchableOpacity>
 
                 <View style={styles.driverInfo}>
                   <Text style={styles.driverLabel}>Conductor</Text>
                   <Text style={styles.driverValue}>
                     {driverData
-                      ? `${driverData.apellidos?.trim() || ''} ${driverData.nombres?.trim() || ''}`.trim() || 'No disponible'
+                      ? `${driverData.apellidos?.trim() || ''} ${
+                          driverData.nombres?.trim() || ''
+                        }`.trim() || 'No disponible'
                       : 'No asignado'}
                   </Text>
 
@@ -565,6 +604,18 @@ const ServicesDetailPassenger = () => {
                   <ActivityIndicator size="large" color="#fff" />
                   <Text style={{ color: '#fff', marginTop: 10 }}>
                     Cargando destino...
+                  </Text>
+                </View>
+              ) : destinoError ? (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                  <Text
+                    style={{
+                      color: '#2b2b2bff',
+                      textAlign: 'center',
+                      marginBottom: 10,
+                    }}
+                  >
+                    {destinoError}
                   </Text>
                 </View>
               ) : (
@@ -737,13 +788,12 @@ const ServicesDetailPassenger = () => {
               Ubicación actual de la unidad asignada
             </Text>
 
-            
             {/* 👇 USO DEL COMPONENTE SEPARADO */}
             <VehicleMap
-             username={serviceData.codusuario}
-             placa={serviceData.unidad || ''}
-             vehicleName={serviceData.unidad || ''}
-             />
+              username={serviceData.codusuario}
+              placa={serviceData.unidad || ''}
+              vehicleName={serviceData.unidad || ''}
+            />
           </View>
 
           {/* Opciones del servicio */}

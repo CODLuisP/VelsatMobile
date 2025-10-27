@@ -48,6 +48,7 @@ interface Service {
   fechapasajero: string | null;
   empresa: string;
   numero: string;
+  estado: string;
   codconductor: string;
   destino: string;
   fechaservicio: string;

@@ -251,6 +251,15 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
             var marker = null;
             var radarLayer = null;
 
+            // Función para ajustar el centro del mapa (mover hacia arriba)
+            function adjustMapCenter(lat, lng, zoom) {
+                var targetPoint = map.project([lat, lng], zoom);
+                var offsetY = 50;
+                targetPoint.y -= offsetY;
+                var adjustedLatLng = map.unproject(targetPoint, zoom);
+                map.setView(adjustedLatLng, zoom);
+            }
+
             window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol, direccion) {
                 // Determinar qué imagen y tamaño usar según el ángulo
                 var imageUrl = '';
@@ -325,7 +334,8 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
                         closeOnClick: false
                     }).openPopup();
                     
-                    map.setView([lat, lng], ${isFullscreenView ? 16 : 15});
+                    // Usar la función de ajuste en lugar de setView directo
+                    adjustMapCenter(lat, lng, ${isFullscreenView ? 16 : 15});
                     
                     // DESPUÉS: Crear el radar overlay con delay
                     setTimeout(function() {
@@ -404,7 +414,8 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
                     }
                     
                     marker.getPopup().setContent(popupContent);
-                    map.setView([lat, lng], map.getZoom());
+                    // Usar la función de ajuste también en las actualizaciones
+                    adjustMapCenter(lat, lng, map.getZoom());
                     
                     if (!marker.isPopupOpen()) {
                         marker.openPopup();
@@ -417,7 +428,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     </body>
     </html>
     `;
-  };
+};
 
   // Actualizar WebView cuando cambien los datos
   useEffect(() => {

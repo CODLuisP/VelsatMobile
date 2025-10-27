@@ -191,7 +191,7 @@ const ServicesPassenger = () => {
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerMainTitle}>Servicios pasajeros</Text>
+          <Text style={styles.headerMainTitle}>Servicios programados</Text>
         </View>
       </View>
 
