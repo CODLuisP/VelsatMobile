@@ -108,7 +108,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
     handleClose();
   };
 
-  // PanResponder para arrastrar hacia abajo
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: (_, gestureState) => {
@@ -152,12 +151,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 },
               ]}
             >
-              {/* Indicador de arrastre */}
+
               <View style={styles.dragIndicatorContainer} {...panResponder.panHandlers}>
                 <View style={styles.dragIndicator} />
               </View>
 
-              {/* Header */}
               <View style={styles.modalHeader}>
                 <View style={styles.headerLeft}>
                   <Filter size={24} color="#3b82f6" />
@@ -172,9 +170,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </TouchableOpacity>
               </View>
 
-              {/* Body */}
               <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-                {/* Filtro por Velocidad */}
+
+                
                 <View style={styles.filterSection}>
                   <Text style={styles.filterSectionTitle}>Velocidad</Text>
                   <View style={styles.filterOptions}>
@@ -300,7 +298,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   </View>
                 </View>
 
-                {/* Filtro por Estado */}
                 <View style={styles.filterSection}>
                   <Text style={styles.filterSectionTitle}>Estado</Text>
                   <View style={styles.filterOptions}>
@@ -350,7 +347,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   </View>
                 </View>
 
-                {/* Filtro por Ubicación */}
                 <View style={styles.filterSection}>
                   <Text style={styles.filterSectionTitle}>Ubicación</Text>
                   <View style={styles.locationInputContainer}>
@@ -377,15 +373,15 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </View>
               </ScrollView>
 
-              {/* Footer */}
               <View style={[
                 styles.modalFooter,
                 {
                   marginBottom: Platform.OS === 'android' && bottomSpace < 10
-                    ? 45
-                    : bottomSpace - 2
+                    ? 35
+                    : bottomSpace - 15
                 }
-              ]}>                <TouchableOpacity
+              ]}>                
+              <TouchableOpacity
                 style={styles.clearButton}
                 onPress={handleClearFilters}
               >
@@ -406,7 +402,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   );
 };
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   modalOverlay: {
