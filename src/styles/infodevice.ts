@@ -102,7 +102,7 @@ statusMoving: {
   // Information Section Styles
   infoSection: {
     marginHorizontal: 16,
-    marginTop: 5,
+    marginTop: 0,
     borderRadius: 12,
     padding: 16,
    
