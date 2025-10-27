@@ -81,6 +81,10 @@ export const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
+    optionCardFull: {
+    width: '100%',
+    maxWidth: '100%',
+  },
   cardContent: {
     alignItems: 'center',
     justifyContent: 'center',

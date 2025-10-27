@@ -37,6 +37,7 @@ interface HelpOption {
   backgroundColor: string;
   borderColor: string;
   action: string;
+  fullWidth?: boolean; 
 }
 
 const Help = () => {
@@ -97,9 +98,8 @@ const Help = () => {
         handleWhatsAppPress();
         break;
       case 'faq':
-        // Navegar a preguntas frecuentes
-        console.log('Ver FAQ');
-        break;
+        navigation.navigate('FAQ'); // 👈 Navegar a FAQ
+      break;
       case 'tutorials':
         // Navegar a video tutoriales
         console.log('Ver tutoriales');
@@ -120,18 +120,18 @@ const Help = () => {
       borderColor: '#FF6B6B',
       action: 'contact',
     },
+    // {
+    //   id: 2,
+    //   title: 'Chatea por WhatsApp',
+    //   subtitle: 'Realiza tus consultas por chat',
+    //   icon: MessageCircle,
+    //   color: '#25D366',
+    //   backgroundColor: '#F8FFF8',
+    //   borderColor: '#25D366',
+    //   action: 'whatsapp',
+    // },
     {
       id: 2,
-      title: 'Chatea por WhatsApp',
-      subtitle: 'Realiza tus consultas por chat',
-      icon: MessageCircle,
-      color: '#25D366',
-      backgroundColor: '#F8FFF8',
-      borderColor: '#25D366',
-      action: 'whatsapp',
-    },
-    {
-      id: 3,
       title: 'Preguntas frecuentes',
       subtitle: 'Revisa consultas recurrentes',
       icon: HelpCircle,
@@ -141,7 +141,7 @@ const Help = () => {
       action: 'faq',
     },
     {
-      id: 4,
+      id: 3,
       title: 'Videos tutoriales',
       subtitle: 'Observa guías visuales y vídeos',
       icon: Play,
@@ -149,6 +149,7 @@ const Help = () => {
       backgroundColor: '#FFF8F3',
       borderColor: '#FF8C42',
       action: 'tutorials',
+      fullWidth: true,
     },
   ];
 
@@ -195,6 +196,8 @@ const Help = () => {
                       backgroundColor: option.backgroundColor,
                       borderColor: option.borderColor,
                     },
+                  option.fullWidth && styles.optionCardFull,
+
                   ]}
                   activeOpacity={0.8}
                   onPress={() => handleOptionPress(option)}

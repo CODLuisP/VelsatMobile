@@ -75,7 +75,7 @@ const Central = () => {
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerMainTitle}>Central de Contacto</Text>
+          <Text style={styles.headerMainTitle}>Central de Monitoreo y Gestión</Text>
         </View>
       </View>
 

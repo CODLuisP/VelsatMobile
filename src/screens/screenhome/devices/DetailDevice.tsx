@@ -150,106 +150,162 @@ const DetailDevice = () => {
     }
   }, [vehicleData]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+// 1. Agregar el ref al inicio del componente
+const isMountedRef = useRef(true);
 
-    return () => clearInterval(timer);
-  }, []);
+// 2. useEffect del timer (este está bien, pero lo incluyo para contexto)
+useEffect(() => {
+  const timer = setInterval(() => {
+    setCurrentTime(new Date());
+  }, 1000);
 
-  useEffect(() => {
-    const username = user?.username;
-    const placa = device.name;
+  return () => clearInterval(timer);
+}, []);
 
-    if (!username || !placa) {
-      console.error('Faltan datos para conectar SignalR');
-      setConnectionStatus('error');
+// 3. useEffect de SignalR CORREGIDO
+useEffect(() => {
+  const username = user?.username;
+  const placa = device.name;
+
+  if (!username || !placa) {
+    console.error('Faltan datos para conectar SignalR');
+    setConnectionStatus('error');
+    return;
+  }
+
+  const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
+  console.log('Conectando a:', hubUrl);
+  setConnectionStatus('connecting');
+
+  const newConnection = new signalR.HubConnectionBuilder()
+    .withUrl(hubUrl, {
+      skipNegotiation: false,
+      transport:
+        signalR.HttpTransportType.WebSockets |
+        signalR.HttpTransportType.LongPolling,
+    })
+    .withAutomaticReconnect({
+      nextRetryDelayInMilliseconds: retryContext => {
+        // No reintentar si el componente está desmontado
+        if (!isMountedRef.current) return null;
+        
+        if (retryContext.previousRetryCount === 0) {
+          return 0;
+        }
+        if (retryContext.previousRetryCount < 3) {
+          return 2000;
+        }
+        if (retryContext.previousRetryCount < 6) {
+          return 10000;
+        }
+        return 30000;
+      },
+    })
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+  newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
+    // Solo actualizar si el componente está montado
+    if (!isMountedRef.current) {
+      console.log('⚠️ Datos recibidos pero componente desmontado, ignorando');
       return;
     }
-
-    const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
-    console.log('Conectando a:', hubUrl);
-    setConnectionStatus('connecting');
-
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl(hubUrl, {
-        skipNegotiation: false,
-        transport:
-          signalR.HttpTransportType.WebSockets |
-          signalR.HttpTransportType.LongPolling,
-      })
-      .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: retryContext => {
-          if (retryContext.previousRetryCount === 0) {
-            return 0;
-          }
-          if (retryContext.previousRetryCount < 3) {
-            return 2000;
-          }
-          if (retryContext.previousRetryCount < 6) {
-            return 10000;
-          }
-          return 30000;
-        },
-      })
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
-      if (datos.vehiculo) {
-        setVehicleData(datos.vehiculo);
-              console.log('Conectado exitosamente:', datos.vehiculo);
-
-        setConnectionStatus('connected');
-      }
-    });
-
-    newConnection.on('ConectadoExitosamente', data => {
-      console.log('Conectado exitosamente:', data);
+    
+    if (datos.vehiculo) {
+      setVehicleData(datos.vehiculo);
+      console.log('Conectado exitosamente:', datos.vehiculo);
       setConnectionStatus('connected');
-    });
+    }
+  });
 
-    newConnection.on('Error', msg => {
-      console.error('Error desde SignalR:', msg);
+  newConnection.on('ConectadoExitosamente', data => {
+    if (!isMountedRef.current) return;
+    console.log('Conectado exitosamente:', data);
+    setConnectionStatus('connected');
+  });
+
+  newConnection.on('Error', msg => {
+    if (!isMountedRef.current) return;
+    console.error('Error desde SignalR:', msg);
+    setConnectionStatus('error');
+  });
+
+  newConnection.onreconnecting(error => {
+    if (!isMountedRef.current) {
+      // Si el componente está desmontado, detener la reconexión
+      newConnection.stop();
+      return;
+    }
+    setConnectionStatus('connecting');
+  });
+
+  newConnection.onreconnected(connectionId => {
+    if (!isMountedRef.current) return;
+    setConnectionStatus('connected');
+  });
+
+  newConnection.onclose(error => {
+    if (!isMountedRef.current) return;
+    console.log('🔌 Conexión cerrada', error);
+    setConnectionStatus('disconnected');
+  });
+
+  newConnection
+    .start()
+    .then(() => {
+      if (!isMountedRef.current) {
+        newConnection.stop();
+        return;
+      }
+      setConnectionStatus('connected');
+    })
+    .catch(err => {
+      if (!isMountedRef.current) return;
+      console.error('Error al conectar:', err);
       setConnectionStatus('error');
     });
 
-    newConnection.onreconnecting(error => {
-      setConnectionStatus('connecting');
-    });
+  setConnection(newConnection);
 
-    newConnection.onreconnected(connectionId => {
-      setConnectionStatus('connected');
-    });
+  // CLEANUP MEJORADO
+  return () => {
+    console.log('🧹 Limpiando conexión SignalR...');
+    isMountedRef.current = false;
 
-    newConnection.onclose(error => {
-      console.log('🔌 Conexión cerrada', error);
-      setConnectionStatus('disconnected');
-    });
+    // Remover todos los listeners
+    newConnection.off('ActualizarDatosVehiculo');
+    newConnection.off('ConectadoExitosamente');
+    newConnection.off('Error');
 
-    newConnection
-      .start()
-      .then(() => {
-        setConnectionStatus('connected');
-      })
-      .catch(err => {
-        setConnectionStatus('error');
-      });
-
-    setConnection(newConnection);
-
-    return () => {
-      if (
-        newConnection &&
-        newConnection.state === signalR.HubConnectionState.Connected
-      ) {
-        newConnection.stop().then(() => {
-          console.log('🔌 SignalR desconectado correctamente');
-        });
+    // Detener la conexión de forma más agresiva
+    if (newConnection) {
+      const currentState = newConnection.state;
+      console.log('Estado actual de conexión:', currentState);
+      
+      if (currentState === signalR.HubConnectionState.Connected || 
+          currentState === signalR.HubConnectionState.Connecting ||
+          currentState === signalR.HubConnectionState.Reconnecting) {
+        
+        newConnection.stop()
+          .then(() => {
+            console.log('✅ SignalR desconectado correctamente');
+          })
+          .catch(err => {
+            console.error('❌ Error al desconectar SignalR:', err);
+          });
       }
-    };
-  }, [device.name, user?.username]);
+    }
+  };
+}, [device.name, user?.username, server]);
+
+// 4. Agregar cleanup para el componente completo
+useEffect(() => {
+  isMountedRef.current = true;
+  
+  return () => {
+    isMountedRef.current = false;
+  };
+}, []);
 
   const handleInfiDevice = () => {
     navigation.navigate('InfoDevice', {

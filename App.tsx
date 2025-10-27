@@ -33,6 +33,7 @@ import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import SystemNavigationBar from 'react-native-system-navigation-bar';
+import FAQ from './src/screens/screenhome/help/Faq';
 
 interface Device {
   id: string;
@@ -160,6 +161,7 @@ export type RootStackParamList = {
   Security: undefined;
   Help: undefined;
   Central: undefined;
+  FAQ: undefined;
   ServicesDriver: undefined;
   ServicesPassenger: undefined;
   ServicesDetailDriver: {
@@ -245,6 +247,7 @@ const App = () => {
                 <Stack.Screen name="Security" component={Security} />
                 <Stack.Screen name="Help" component={Help} />
                 <Stack.Screen name="Central" component={Central} />
+                <Stack.Screen name="FAQ" component={FAQ} options={{ headerShown: false }}/>
                 <Stack.Screen
                   name="ServicesDriver"
                   component={ServicesDriver}

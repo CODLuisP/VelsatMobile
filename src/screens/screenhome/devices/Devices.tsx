@@ -382,7 +382,7 @@ const Devices = () => {
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Lista de Unidades {bottomSpace}</Text>
+            <Text style={styles.headerTitle}>Lista de Unidades</Text>
 
             <Text style={styles.headerSubtitle}>
               {loading
