@@ -99,7 +99,6 @@ statusMoving: {
     resizeMode: 'contain',
   },
 
-  // Information Section Styles
   infoSection: {
     marginHorizontal: 16,
     marginTop: 0,

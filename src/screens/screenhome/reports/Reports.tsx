@@ -103,7 +103,7 @@ const Reports: React.FC = () => {
       name: 'Reporte General',
       icon: BarChart3,
       description: 'Análisis completo de la actividad',
-      gradient: ['#c32f27', '#dc5400ff'],
+      gradient: ['#497fc65b', '#08499ff5'],
     },
     {
       id: 1,
@@ -123,8 +123,8 @@ const Reports: React.FC = () => {
       id: 3,
       name: 'Reporte de Kilometraje',
       icon: Route,
-      description: 'Distancias recorridas por unidad o todas la unidades',
-      gradient: ['#c32f27', '#dc5400ff'],
+description: 'Distancias recorridas por unidad(es)',      
+gradient: ['#c32f27', '#dc5400ff'],
     },
     {
       id: 4,
@@ -640,15 +640,15 @@ const Reports: React.FC = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+   <LinearGradient
+       colors={['#021e4bff', '#183890ff', '#032660ff']}
+       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+       start={{ x: 0, y: 0 }}
+       end={{ x: 0, y: 1 }}
+     >
       <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+          <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
             <ChevronLeft size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Seleccione tipo de reporte</Text>
