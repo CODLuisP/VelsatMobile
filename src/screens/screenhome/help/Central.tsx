@@ -1,273 +1,384 @@
 import {
   View,
   Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
+  TouchableOpacity,
+  Linking,
   ActivityIndicator,
 } from 'react-native';
-import React, { useState } from 'react';
-import { WebView } from 'react-native-webview';
+import React, { useState, useEffect } from 'react';
+import {
+  ChevronLeft,
+  Phone,
+  User,
+  Clock,
+  Calendar,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react-native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import NavigationBarColor from 'react-native-navigation-bar-color';
+import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RootStackParamList } from '../../../../App';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
+import { styles } from '../../../styles/central';
+import LinearGradient from 'react-native-linear-gradient';
+import axios from 'axios';
 
-// Tu API Key de Google
-const GOOGLE_API_KEY = 'AIzaSyB69HY-OKCtBsbRsKuHns-7HJxjvSqpogg';
+interface ContactPerson {
+  id: number;
+  nombres: string;
+  telefono: string;
+  tmañana: boolean;
+  ttarde: boolean;
+  tnoche: boolean;
+  tcompleto: boolean;
+  habilitado: boolean;
+}
 
-const locations = [
-  { id: 1, name: 'Plaza de Armas - Lima', lat: -12.0464, lng: -77.0428 },
-  { id: 2, name: 'Miraflores - Lima', lat: -12.1196, lng: -77.0283 },
-  { id: 3, name: 'Barranco - Lima', lat: -12.1467, lng: -77.0208 },
-  { id: 4, name: 'San Isidro - Lima', lat: -12.0947, lng: -77.0364 },
-  { id: 5, name: 'Callao Centro', lat: -12.0565, lng: -77.1181 },
-  { id: 6, name: 'Plaza de Armas - Cusco', lat: -13.5164, lng: -71.9785 },
-  { id: 7, name: 'Plaza de Armas - Arequipa', lat: -16.3989, lng: -71.5350 },
-  { id: 8, name: 'Trujillo Centro', lat: -8.1116, lng: -79.0288 },
-];
+interface ProcessedContact extends ContactPerson {
+  isCurrentShift: boolean;
+  schedule: string;
+  hours: string;
+  extraInfo?: string;
+}
 
 const Central = () => {
-  const [selectedLocation, setSelectedLocation] = useState(locations[0]);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
+  const navigationDetection = useNavigationMode();
+  const bottomSpace = getBottomSpace(
+    insets,
+    navigationDetection.hasNavigationBar,
+  );
+
+  const [contacts, setContacts] = useState<ProcessedContact[]>([]);
   const [loading, setLoading] = useState(true);
-  const [webViewKey, setWebViewKey] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  // Crear HTML con el iframe de Google Street View
-  const getStreetViewHTML = (lat:any, lng:any) => {
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            body, html {
-              width: 100%;
-              height: 100%;
-              overflow: hidden;
-            }
-            iframe {
-              width: 100%;
-              height: 100%;
-              border: none;
-            }
-          </style>
-        </head>
-        <body>
-          <iframe
-            src="https://www.google.com/maps/embed/v1/streetview?location=${lat},${lng}&heading=0&pitch=0&fov=90&key=${GOOGLE_API_KEY}"
-            frameborder="0"
-            allowfullscreen
-          ></iframe>
-        </body>
-      </html>
-    `;
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#00296b', false);
+    }, []),
+  );
+
+  // Función para obtener el turno actual
+  const getCurrentShift = (): 'mañana' | 'tarde' | 'noche' => {
+    const now = new Date();
+    const hours = now.getHours();
+
+    if (hours >= 6 && hours < 14) {
+      return 'mañana';
+    } else if (hours >= 14 && hours < 22) {
+      return 'tarde';
+    } else {
+      return 'noche';
+    }
   };
 
-  const handleLocationChange = (location:any) => {
-    setSelectedLocation(location);
-    setLoading(true);
-    setWebViewKey(prev => prev + 1);
+  // Función para obtener la información del horario según el turno
+  const getShiftInfo = (contact: ContactPerson) => {
+    let schedule = '';
+    let hours = '';
+    let extraInfo = '';
+
+    if (contact.tcompleto) {
+      schedule = 'Domingos y feriados';
+      hours = 'Todo el día';
+      extraInfo = 'Disponible en horarios especiales';
+    } else if (contact.tmañana) {
+      schedule = 'Lunes a Sábado';
+      hours = '6:00 AM - 2:00 PM';
+    } else if (contact.ttarde) {
+      schedule = 'Lunes a Sábado';
+      hours = '2:00 PM - 10:00 PM';
+    } else if (contact.tnoche) {
+      schedule = 'Lunes a Sábado';
+      hours = '10:00 PM - 6:00 AM';
+    }
+
+    return { schedule, hours, extraInfo };
   };
+
+  // Función para verificar si está en su turno actual
+  const isInCurrentShift = (contact: ContactPerson): boolean => {
+    const currentShift = getCurrentShift();
+
+    if (currentShift === 'mañana') {
+      return contact.tmañana;
+    } else if (currentShift === 'tarde') {
+      return contact.ttarde;
+    } else {
+      return contact.tnoche || contact.tcompleto;
+    }
+  };
+
+  // Función para obtener los contactos de la API
+  const fetchContacts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get<ContactPerson[]>(
+        'https://velsat.pe:2087/api/Aplicativo/central',
+        {
+          timeout: 10000, // 10 segundos de timeout
+        }
+      );
+
+      // Filtrar solo los habilitados y procesarlos
+      const enabledContacts = response.data.filter(
+        (contact) => contact.habilitado
+      );
+
+      // Procesar los contactos y añadir información adicional
+      const processedContacts: ProcessedContact[] = enabledContacts.map(
+        (contact) => {
+          const shiftInfo = getShiftInfo(contact);
+          return {
+            ...contact,
+            isCurrentShift: isInCurrentShift(contact),
+            schedule: shiftInfo.schedule,
+            hours: shiftInfo.hours,
+            extraInfo: shiftInfo.extraInfo || undefined,
+          };
+        }
+      );
+
+      // Ordenar: primero el que está en turno actual
+      const sortedContacts = processedContacts.sort((a, b) => {
+        if (a.isCurrentShift && !b.isCurrentShift) return -1;
+        if (!a.isCurrentShift && b.isCurrentShift) return 1;
+        return 0;
+      });
+
+      setContacts(sortedContacts);
+    } catch (error) {
+      console.error('Error al obtener contactos:', error);
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          setError('Tiempo de espera agotado. Por favor, verifica tu conexión.');
+        } else if (error.response) {
+          setError(`Error del servidor: ${error.response.status}`);
+        } else if (error.request) {
+          setError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+        } else {
+          setError('Ocurrió un error al cargar los operadores.');
+        }
+      } else {
+        setError('Ocurrió un error inesperado.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
+  const handleCall = (phone: string, isCurrentShift: boolean) => {
+    if (isCurrentShift) {
+      Linking.openURL(`tel:${phone}`);
+    }
+  };
+
+  const handleRetry = () => {
+    fetchContacts();
+  };
+
+  const topSpace = insets.top + 5;
 
   return (
-    <View style={styles.container}>
-      {/* Lista de ubicaciones */}
-      <View style={styles.locationsList}>
-        <Text style={styles.title}>Ubicaciones en Perú</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}>
-          {locations.map((location) => (
-            <TouchableOpacity
-              key={location.id}
-              style={[
-                styles.locationButton,
-                selectedLocation.id === location.id &&
-                  styles.locationButtonActive,
-              ]}
-              onPress={() => handleLocationChange(location)}>
-              <Text
-                style={[
-                  styles.locationButtonText,
-                  selectedLocation.id === location.id &&
-                    styles.locationButtonTextActive,
-                ]}
-                numberOfLines={2}>
-                {location.name}
+    <LinearGradient
+      colors={['#00296b', '#1e3a8a', '#00296b']}
+      style={[styles.container, { paddingBottom: bottomSpace }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <View style={[styles.header, { paddingTop: topSpace }]}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+            <ChevronLeft size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerMainTitle}>Central</Text>
+        </View>
+        <View style={styles.headerBottom}>
+          <Text style={styles.headerSubtitle}>
+            Contacta con nuestros operadores disponibles
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView
+        style={styles.contentList}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <View style={styles.formContainer}>
+          {loading ? (
+            <View style={{ paddingVertical: 80, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#e36414" />
+              <Text style={{ color: '#1c1b1bff', marginTop: 16, fontSize: 14 }}>
+                Cargando operadores...
               </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Vista previa de Street View INTERACTIVO */}
-      <View style={styles.previewContainer}>
-        <View style={styles.previewHeader}>
-          <Text style={styles.previewTitle}>{selectedLocation.name}</Text>
-          <Text style={styles.coordinates}>
-            {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
-          </Text>
-        </View>
-
-        <View style={styles.webViewContainer}>
-          {loading && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#4285F4" />
-              <Text style={styles.loadingText}>Cargando Street View...</Text>
             </View>
+          ) : error ? (
+            <View style={{ paddingVertical: 60, alignItems: 'center', paddingHorizontal: 20 }}>
+              <View style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderRadius: 50,
+                padding: 16,
+                marginBottom: 0,
+              }}>
+                <AlertCircle size={48} color="#ef4444" />
+              </View>
+              <Text style={{
+                color: '#FFFFFF',
+                fontSize: 18,
+                fontWeight: '600',
+                marginBottom: 8,
+                textAlign: 'center',
+              }}>
+                Error al cargar
+              </Text>
+              <Text style={{
+                color: '#131212ff',
+                fontSize: 14,
+                textAlign: 'center',
+                marginBottom: 24,
+                opacity: 0.8,
+              }}>
+                {error}
+              </Text>
+
+            </View>
+          ) : (
+            <>
+              {contacts.map((contact, index) => (
+                <View key={contact.id} style={styles.contactCard}>
+                  {/* Header de la tarjeta */}
+                  <View style={styles.cardHeader}>
+                    <View style={styles.avatarSection}>
+                      <View style={styles.avatarCircle}>
+                        <User size={28} color="#1e3a8a" strokeWidth={2} />
+                      </View>
+                      <View style={styles.statusIndicator}>
+                        <View
+                          style={[
+                            styles.statusDot,
+                            {
+                              backgroundColor: contact.isCurrentShift
+                                ? '#38b000'
+                                : '#c2354dff',
+                            },
+                          ]}
+                        />
+                        <Text
+                          style={[
+                            styles.statusText,
+                            { color: contact.isCurrentShift ? '#38b000' : '#c6465bff' }
+                          ]}
+                        >
+                          {contact.isCurrentShift ? 'Disponible' : 'Fuera de turno'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.nameSection}>
+                      <Text style={styles.contactName}>{contact.nombres}</Text>
+                      <Text style={styles.operatorLabel}>
+                        {contact.isCurrentShift
+                          ? 'Operador de turno'
+                          : 'Próximo turno'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Divisor */}
+                  <View style={styles.divider} />
+
+                  {/* Información de horario */}
+                  <View style={styles.scheduleSection}>
+                    <View style={styles.scheduleItem}>
+                      <View style={styles.iconWrapper}>
+                        <Calendar size={18} color="#1e3a8a" />
+                      </View>
+                      <View style={styles.scheduleTextContainer}>
+                        <Text style={styles.scheduleLabel}>Días</Text>
+                        <Text style={styles.scheduleValue}>{contact.schedule}</Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.scheduleItem}>
+                      <View style={styles.iconWrapper}>
+                        <Clock size={18} color="#1e3a8a" />
+                      </View>
+                      <View style={styles.scheduleTextContainer}>
+                        <Text style={styles.scheduleLabel}>Horario</Text>
+                        <Text style={styles.scheduleValue}>{contact.hours}</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Información extra */}
+                  {contact.extraInfo && (
+                    <View style={styles.extraInfoContainer}>
+                      <Text style={styles.extraInfoText}>{contact.extraInfo}</Text>
+                    </View>
+                  )}
+
+                  {/* Footer con teléfono y botón */}
+                  <View style={styles.cardFooter}>
+                    <View style={styles.phoneInfo}>
+                      <Text style={styles.phoneNumber}>{contact.telefono}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[
+                        styles.callButton,
+                        {
+                          opacity: contact.isCurrentShift ? 1 : 0.5,
+                          backgroundColor: contact.isCurrentShift
+                            ? '#e36414'
+                            : '#6b7280',
+                        },
+                      ]}
+                      onPress={() => handleCall(contact.telefono, contact.isCurrentShift)}
+                      activeOpacity={contact.isCurrentShift ? 0.8 : 1}
+                      disabled={!contact.isCurrentShift}
+                    >
+                      <Phone size={20} color="#FFFFFF" />
+                      <Text style={styles.callButtonText}>
+                        {contact.isCurrentShift ? 'Llamar' : 'No disponible'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+
+              {/* Información adicional */}
+              <View style={styles.infoCard}>
+                <View style={styles.infoIconContainer}>
+                  <Phone size={20} color="#1e3a8a" />
+                </View>
+                <Text style={styles.infoTitle}>Atención 24/7</Text>
+                <Text style={styles.infoDescription}>
+                  Nuestro equipo está disponible para atenderte en los horarios
+                  indicados. Para emergencias, siempre tendrás un operador disponible.
+                </Text>
+              </View>
+            </>
           )}
-
-          <WebView
-            key={webViewKey}
-            source={{
-              html: getStreetViewHTML(
-                selectedLocation.lat,
-                selectedLocation.lng
-              ),
-            }}
-            style={styles.webView}
-            onLoadStart={() => setLoading(true)}
-            onLoadEnd={() => setLoading(false)}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            allowsFullscreenVideo={true}
-            scrollEnabled={true}
-            bounces={false}
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-            originWhitelist={['*']}
-            mixedContentMode="always"
-          />
         </View>
-
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>
-            🌍 Street View interactivo - Arrastra para moverte y girar
-          </Text>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
+    </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  locationsList: {
-    backgroundColor: '#fff',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 15,
-    marginBottom: 10,
-    color: '#333',
-  },
-  scrollContent: {
-    paddingHorizontal: 10,
-  },
-  locationButton: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginHorizontal: 5,
-    minWidth: 120,
-    maxWidth: 150,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  locationButtonActive: {
-    backgroundColor: '#4285F4',
-    borderColor: '#1a73e8',
-  },
-  locationButtonText: {
-    fontSize: 13,
-    color: '#666',
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  locationButtonTextActive: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  previewContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    margin: 10,
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  previewHeader: {
-    padding: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  previewTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  coordinates: {
-    fontSize: 12,
-    color: '#666',
-  },
-  webViewContainer: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    position: 'relative',
-  },
-  webView: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    zIndex: 1,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#666',
-  },
-  infoBox: {
-    backgroundColor: '#E8F5E9',
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#A5D6A7',
-  },
-  infoText: {
-    fontSize: 12,
-    color: '#2E7D32',
-    lineHeight: 18,
-    textAlign: 'center',
-  },
-});
 
 export default Central;
