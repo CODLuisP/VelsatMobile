@@ -73,7 +73,6 @@ export const styles = StyleSheet.create({
     height: 120,
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: '#ff5900ff',
     position: 'relative',
     borderWidth: 3,
     borderColor: '#e8e8e8',

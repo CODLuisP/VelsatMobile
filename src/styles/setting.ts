@@ -42,7 +42,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#1a1a1a',
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   iconCircle: {
@@ -206,21 +206,16 @@ export const styles = StyleSheet.create({
   },
   buttonWrapper: {
     paddingHorizontal: 20,
-    marginTop: 8,
+    marginTop: 4,
   },
 
   gradientButton: {
     flexDirection: 'row',
-    height: 54,
+    height: 48,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    shadowColor: '#e36414',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+ 
   },
 
   buttonText: {

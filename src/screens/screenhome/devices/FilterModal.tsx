@@ -60,7 +60,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
       // Animar salida
       Animated.timing(slideAnim, {
         toValue: height,
-        duration: 250,
+        duration: 10,
         useNativeDriver: true,
       }).start();
     }
@@ -69,7 +69,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   const handleClose = () => {
     Animated.timing(slideAnim, {
       toValue: height,
-      duration: 250,
+      duration: 0,
       useNativeDriver: true,
     }).start(() => {
       onClose();

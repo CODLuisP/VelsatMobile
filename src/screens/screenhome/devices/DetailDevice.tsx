@@ -602,7 +602,7 @@ const DetailDevice = () => {
   const connectionDisplay = getConnectionDisplay();
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <View style={[styles.container, { paddingBottom: bottomSpace-2 }]}>
       <View style={styles.mapContainer}>
         {renderMap()}
 

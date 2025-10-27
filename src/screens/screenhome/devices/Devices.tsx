@@ -216,9 +216,6 @@ const Devices = () => {
   };
 
 
-
-
-
   const renderDeviceItem = ({
     item,
     index,
@@ -381,7 +378,7 @@ const Devices = () => {
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -411,7 +408,7 @@ const Devices = () => {
           {devices.length > 1 && (
             <TouchableOpacity
               style={styles.filterButton}
-              onPress={() => setShowFilterModal(true)} // ✅ Simplificado
+              onPress={() => setShowFilterModal(true)} 
             >
               <Filter size={20} color="#1e3a8a" />
               {activeFiltersCount > 0 && (

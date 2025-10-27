@@ -7,8 +7,7 @@ export const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+  
   },
   headerTop: {
     flexDirection: 'row',
@@ -63,11 +62,8 @@ export const styles = StyleSheet.create({
   },
   notificationCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 15,
     padding: 10,
-
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
     elevation: 8,
     borderLeftWidth: 5,
     borderTopWidth: 1,
@@ -75,16 +71,16 @@ export const styles = StyleSheet.create({
     marginBottom:10
   },
   batteryNotification: {
-    borderLeftColor: '#FF6B6B',
-    backgroundColor: '#FFFBFB',
+    borderLeftColor: '#d51e1edd',
+    backgroundColor: '#feefefff',
   },
   motorNotification: {
-    borderLeftColor: '#4ECDC4',
-    backgroundColor: '#F8FFFE',
+    borderLeftColor: '#23bfb5ff',
+    backgroundColor: '#eafffcff',
   },
   motorOffNotification: {
     borderLeftColor: '#FF8C42',
-    backgroundColor: '#FFF8F3',
+    backgroundColor: '#fef1e8ff',
   },
   panicNotification: {
     borderLeftColor: '#FFD93D',

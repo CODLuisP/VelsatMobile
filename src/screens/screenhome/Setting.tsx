@@ -662,7 +662,7 @@ const Setting = () => {
       end={{ x: 0, y: 1 }}
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+        <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
           <ChevronLeft size={26} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Configuraciones</Text>

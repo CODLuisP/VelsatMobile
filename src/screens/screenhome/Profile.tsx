@@ -142,8 +142,9 @@ const Profile = () => {
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <TouchableOpacity
-          style={[styles.backButton, { top: insets.top + 10 }]}
+          style={[styles.backButton, { top: insets.top + 10 }, ]}
           onPress={handleGoBack}
+          activeOpacity={0.7}
         >
           <ChevronLeft size={26} color="#fff" />
         </TouchableOpacity>
@@ -309,7 +310,7 @@ const Profile = () => {
               <TouchableOpacity 
                 style={styles.menuItem} 
                 onPress={handleSettings}
-                activeOpacity={0.7}
+                activeOpacity={0.96}
               >
                 <View style={styles.menuItemLeft}>
                   <View style={styles.iconContainer}>
@@ -328,7 +329,7 @@ const Profile = () => {
                   <TouchableOpacity 
                     style={styles.menuItem} 
                     onPress={handlePin}
-                    activeOpacity={0.7}
+                    activeOpacity={0.96}
                   >
                     <View style={styles.menuItemLeft}>
                       <View style={styles.iconContainer}>
@@ -345,7 +346,7 @@ const Profile = () => {
                   <TouchableOpacity
                     style={styles.menuItemEnd}
                     onPress={handleNotifications}
-                    activeOpacity={0.7}
+                    activeOpacity={0.96}
                   >
                     <View style={styles.menuItemLeft}>
                       <View style={styles.iconContainer}>
@@ -368,7 +369,7 @@ const Profile = () => {
               <TouchableOpacity 
                 style={[styles.menuItemEnd]} 
                 onPress={handleLogout}
-                activeOpacity={0.7}
+                activeOpacity={0.96}
               >
                 <View style={styles.menuItemLeft}>
                   <View style={[styles.iconContainer, styles.logoutIconContainer]}>

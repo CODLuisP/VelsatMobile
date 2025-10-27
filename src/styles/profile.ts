@@ -82,12 +82,13 @@ export const styles = StyleSheet.create({
   },
   infoContent: {
     paddingHorizontal: 18,
-    paddingTop: 5,
+    paddingTop: 8,
+    marginBottom:8
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 6,
     gap: 10,
   },
   infoLabel: {
@@ -136,11 +137,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 20,
     backgroundColor: '#f8f9fa',
-      borderWidth: 1,        
-      borderColor: '#e9ecef',   
+
       
   },
 
@@ -151,8 +151,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 20,
     backgroundColor: '#f8f9fa',
-      borderWidth: 1,        
-      borderColor: '#e9ecef',   
+     
         borderBottomLeftRadius: 13,
   borderBottomRightRadius: 13,
   },
@@ -201,17 +200,13 @@ export const styles = StyleSheet.create({
 
   // Footer / Company Info
   footerContainer: {
-    padding: 20,
-    paddingTop: 5,
     paddingBottom: 0,
+    paddingHorizontal:15
   },
   companyCard: {
     borderRadius: 16,
-    paddingVertical: 10,
+    paddingVertical: 0,
     paddingHorizontal: 10,
-
-
-    marginBottom: 16,
   },
   companyHeader: {
     flexDirection: 'row',

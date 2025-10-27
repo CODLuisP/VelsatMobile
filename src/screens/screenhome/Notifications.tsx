@@ -60,7 +60,7 @@ const Notifications = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  
+
   const apiClient = axios.create({
     baseURL: `${server}/api/Aplicativo`,
     timeout: 15000,
@@ -68,7 +68,7 @@ const Notifications = () => {
       'Content-Type': 'application/json',
     },
   });
-  
+
   // Refs para controlar el estado del componente
   const isMountedRef = useRef(true);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -93,13 +93,13 @@ const Notifications = () => {
     return () => {
       console.log('Desmontando componente...');
       isMountedRef.current = false;
-      
+
       // Cancelar cualquier petición pendiente
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
       }
-      
+
       // Limpiar estados
       setLoading(false);
       setRefreshing(false);
@@ -174,7 +174,7 @@ const Notifications = () => {
 
     const startTime = Date.now();
     console.log('Iniciando petición...');
-    
+
     // Cancelar petición anterior si existe
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -182,16 +182,16 @@ const Notifications = () => {
 
     // Crear nuevo AbortController
     abortControllerRef.current = new AbortController();
-    
+
     try {
       // Verificar antes de actualizar estado
       if (!isMountedRef.current) return;
-      
+
       if (!isRefreshing) {
         setLoading(true);
       }
       setError('');
-      
+
       const response = await apiClient.get<ApiNotification[]>(
         `/notifications/${user?.username}`,
         { signal: abortControllerRef.current.signal }
@@ -231,7 +231,7 @@ const Notifications = () => {
       }
 
       setNotifications(transformedNotifications);
-      
+
       console.log(`Mostrando ${transformedNotifications.length} notificaciones`);
     } catch (err: any) {
       // Si la petición fue cancelada, no hacer nada
@@ -245,7 +245,7 @@ const Notifications = () => {
       const endTime = Date.now();
       console.error('Error al cargar notificaciones:', err);
       console.log(`Error después de ${endTime - startTime}ms`);
-      
+
       if (err.code === 'ECONNABORTED') {
         setError('La petición tardó demasiado. Verifica tu conexión.');
       } else if (err.response) {
@@ -281,17 +281,17 @@ const Notifications = () => {
   const handleGoBack = () => {
     // Marcar como desmontado PRIMERO
     isMountedRef.current = false;
-    
+
     // Cancelar operaciones pendientes
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    
+
     // Limpiar estados antes de navegar
     setLoading(false);
     setRefreshing(false);
-    
+
     // Navegar después de la limpieza
     navigation.goBack();
   };
@@ -350,13 +350,13 @@ const Notifications = () => {
   return (
     <LinearGradient
       colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace -2}]}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Notificaciones</Text>
@@ -367,18 +367,18 @@ const Notifications = () => {
             Visualiza el detalle de los eventos de tus unidades, falla de energía,
             motor apagado, motor encendido y botón de pánico.
           </Text>
-          
-        
-            <View style={styles.counterContainer}>
-              <View style={styles.counterTextContainer}>
-                <Text style={styles.counterText}>
-                  Total de notificaciones: 
-                  <Text style={styles.counterNumber}> {notifications.length}</Text>
-                </Text>
-              </View>
+
+
+          <View style={styles.counterContainer}>
+            <View style={styles.counterTextContainer}>
+              <Text style={styles.counterText}>
+                Total de notificaciones:
+                <Text style={styles.counterNumber}> {notifications.length}</Text>
+              </Text>
             </View>
-       
-        
+          </View>
+
+
         </View>
       </View>
 
@@ -401,10 +401,10 @@ const Notifications = () => {
               <Text style={styles.loadingText}>Cargando notificaciones...</Text>
             </View>
           ) : error ? (
-          <View style={styles.errorContainer}>
-    <AlertCircle size={60} color="#FFB74D" />
-    <Text style={styles.errorText}>{error}</Text>
-  </View>
+            <View style={styles.errorContainer}>
+              <AlertCircle size={60} color="#FFB74D" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
           ) : notifications.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Bell size={48} color="#fff" style={{ opacity: 0.5 }} />
