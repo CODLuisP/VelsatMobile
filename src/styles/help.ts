@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
   },
   optionsList: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -126,22 +126,14 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop:20,
     paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#f8f9fa',
     borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
     alignItems: 'center',
+      borderWidth: 1,
+    borderColor: '#E2E8F0',
+
   },
   infoIconContainer: {
-
     borderRadius: 24,
     backgroundColor: '#F7FAFC',
     justifyContent: 'center',
@@ -175,14 +167,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius:10,
-    shadowColor: '#1e3a8a',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
     marginBottom:10
   },
   websiteButtonText: {

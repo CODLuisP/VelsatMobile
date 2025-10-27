@@ -85,7 +85,6 @@ statusMoving: {
 
   // Vehicle Image Styles
   imageContainer: {
-    backgroundColor: '#fff',
     marginHorizontal: 16,
     marginTop: 16,
     borderRadius: 12,
@@ -100,11 +99,9 @@ statusMoving: {
     resizeMode: 'contain',
   },
 
-  // Information Section Styles
   infoSection: {
-    backgroundColor: '#ffffffff',
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 0,
     borderRadius: 12,
     padding: 16,
    

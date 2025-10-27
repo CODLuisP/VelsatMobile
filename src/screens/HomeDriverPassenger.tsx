@@ -725,29 +725,12 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
           <View style={homeStyles.optionsGrid}>
             <TouchableOpacity
               style={[
-                homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
+                homeStyles.optionCard
               ]}
               onPress={handleNavigateToProfile}
               activeOpacity={0.95}
             >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760626069/perfil_zspvsr.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
@@ -765,28 +748,11 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
             <TouchableOpacity
               style={[
                 homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
               ]}
               onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
               activeOpacity={0.95}
             >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/auto_zzrijf.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
@@ -802,29 +768,12 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
 
             <TouchableOpacity
               style={[
-                homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
+                homeStyles.optionCard
               ]}
               onPress={handleNavigateToSecurity}
               activeOpacity={0.95}
             >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/biometria_o2lzop.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
@@ -842,28 +791,11 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
             <TouchableOpacity
               style={[
                 homeStyles.optionCard,
-                homeStyles.optionCardWithBackground,
-                homeStyles.optionCardWithBorder,
               ]}
               onPress={handleNavigateToHelp}
               activeOpacity={0.95}
             >
-              <ImageBackground
-                source={{
-                  uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760625956/ayuda_a9nubh.jpg',
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                imageStyle={{ borderRadius: 12 }}
-                resizeMode="cover"
-              >
-                <View style={homeStyles.optionCardOverlay} />
-              </ImageBackground>
+   
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
@@ -873,8 +805,7 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
               <Text style={homeStyles.optionTitle}>Ayuda</Text>
 
               <Text style={homeStyles.optionSubtitle}>
-                Conoce nuestros números telefónicos, llámanos a la central de
-                monitoreo, escríbenos al Whatsapp, revisa las preguntas
+                Conoce nuestros números telefónicos, escríbenos al Whatsapp, revisa las preguntas
                 frecuentes y visualiza tutoriales útiles.
               </Text>
             </TouchableOpacity>

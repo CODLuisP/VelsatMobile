@@ -4,14 +4,13 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Animated,
   Dimensions,
   StyleSheet,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
+  Image,
 } from 'react-native';
-import { LucideIcon } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -21,7 +20,9 @@ export interface ReportType {
   name: string;
   icon: React.ComponentType<any>;
   description: string;
-  gradient: string[]; 
+  gradient: string[];
+  imageUrl?: string;
+  eos?: string; // Nueva propiedad para la URL de la imagen
 }
 
 interface ReportSliderProps {
@@ -42,7 +43,7 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
     const offsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(offsetX / SCREEN_WIDTH);
     setActiveIndex(index);
-    
+
     // Seleccionar automáticamente el reporte visible
     if (reports[index]) {
       onSelectReport(reports[index].id);
@@ -52,6 +53,8 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
   const renderReportCard = (item: ReportType, index: number) => {
     const IconComponent = item.icon;
     const isSelected = selectedReportId === item.id;
+    // Usar eos como URL de la imagen, con fallback a imageUrl y luego a la imagen por defecto
+    const imageUrl = item.eos || item.imageUrl || 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
 
     return (
       <View key={item.id} style={styles.slideCardContainer}>
@@ -67,15 +70,26 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.cardContent}>
-              <View style={styles.cardIconContainer}>
-                <IconComponent size={40} color="#fff" strokeWidth={2.5} />
-              </View>
+              {/* Contenido de Texto a la Izquierda */}
               <View style={styles.cardTextContainer}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={styles.cardDescription} numberOfLines={2}>
+                <View style={styles.iconTitleRow}>
+                  <IconComponent size={28} color="#161616ff" strokeWidth={2.5} />
+                  <Text style={styles.cardTitle}>{item.name}</Text>
+                </View>
+                <Text style={styles.cardDescription} numberOfLines={3}>
                   {item.description}
                 </Text>
               </View>
+
+              {/* Imagen Ovalada a la Derecha */}
+             <View style={styles.imageContainer}>
+  <Image
+    source={{ uri: imageUrl }}
+    style={styles.cardImage}
+    resizeMode="cover"
+  />
+  <View style={styles.imageOverlay} />
+</View>
             </View>
 
             {isSelected && (
@@ -132,7 +146,6 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: SCREEN_WIDTH,
-    
   },
   scrollContent: {
     flexDirection: 'row',
@@ -144,59 +157,93 @@ const styles = StyleSheet.create({
   },
   slideCard: {
     width: SCREEN_WIDTH,
-    height: 127,
+    height: 140,
   },
   cardGradient: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     borderRadius: 20,
     overflow: 'hidden',
     paddingVertical: 0,
     paddingHorizontal: 20,
-  marginHorizontal: Platform.select({
-    android: 20,
-    ios: 0,
-  }),  },
-
+    marginHorizontal: Platform.select({
+      android: 20,
+      ios: 0,
+    }),
+  },
   cardContent: {
     flex: 1,
-  },
-  cardIconContainer: {
-    width: 50,
-    height: 50,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 5,
-    marginTop: 10,
-    shadowColor: '#000',
+    gap: 0,
   },
+
+imageContainer: {
+  width: 140,
+  height: '100%',
+  borderTopLeftRadius: 70,
+  borderBottomLeftRadius: 70,
+  overflow: 'hidden',
+  shadowColor: '#000',
+  shadowOffset: {
+    width: -2,
+    height: 0,
+  },
+  shadowOpacity: 0.3,
+  shadowRadius: 5,
+  elevation: 8,
+},
+cardImage: {
+  width: '100%',
+  height: '100%',
+},
+imageOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: '#003f8838', 
+},
   cardTextContainer: {
     flex: 1,
-    gap: 6,
+    gap: 8,
+    paddingLeft: 16,
+    paddingRight: 16,
+    justifyContent: 'center',
+    marginLeft: -20
+  },
+  iconTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: -25
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#1a1818ff',
     letterSpacing: 0.5,
-    marginBottom: 0,
+    flex: 1,
   },
   cardDescription: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.90)',
+    fontSize: 12,
+    color: '#3b3939ff',
     fontWeight: '500',
-    lineHeight: 15,
+    lineHeight: 14,
+    marginTop: 0
   },
   selectedBadge: {
     position: 'absolute',
-    top: 20,
-    right: Platform.select({ android: 20, ios: 60 }) ,
-    paddingVertical: 8,
+    top: 90,
+    left: Platform.select({ android: 0, ios: 0 }),
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 13,
   },
   selectedBadgeText: {
-    color: '#fff',
-    fontSize: 13,
+    color: '#000000ff',
+    fontSize: 12,
     fontWeight: '700',
   },
   paginationContainer: {

@@ -4,8 +4,8 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  
-  // === HEADER (Sin cambios) ===
+
+  // === HEADER ===
   header: {
     paddingHorizontal: 20,
     paddingBottom: 20,
@@ -13,7 +13,6 @@ export const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
     marginTop: 10,
   },
   backButton: {
@@ -22,235 +21,126 @@ export const styles = StyleSheet.create({
   },
   headerMainTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#FFFFFF',
     marginLeft: 15,
   },
-  headerBottom: {
-    marginTop: 5,
-    marginLeft: 10,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#E3F2FD',
-    lineHeight: 20,
-    opacity: 0.9,
-  },
 
-  // === CONTENT ===
-  contentList: {
+  // === SCROLL ===
+  scrollContainer: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#ffffff',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
-  formContainer: {
-    marginTop: 20,
+  scrollContent: {
+    paddingBottom: 24,
+  },
+
+  // === CONTENT ===
+  contentContainer: {
+    paddingTop: 28,
     paddingHorizontal: 20,
   },
 
-  // === CONTACT CARD ===
-  contactCard: {
-    backgroundColor: '#ffffffff',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    marginBottom: 10,
- 
-  },
-
-  // === CARD HEADER ===
-  cardHeader: {
-    flexDirection: 'row',
+  // === TITLE ===
+  titleContainer: {
+    marginBottom: 24,
     alignItems: 'center',
-    marginBottom: 10,
   },
-  avatarSection: {
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  avatarCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#f1f5f9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#e0e7ff',
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#22c55e',
-    marginRight: 4,
-  },
-  statusText: {
-    fontSize: 10,
-    color: '#22c55e',
-    fontWeight: '600',
-  },
-  nameSection: {
-    flex: 1,
-  },
-  contactName: {
-    fontSize: 16,
+  mainTitle: {
+    fontSize: 22,
     fontWeight: '700',
-    color: '#0f172a',
-    marginBottom: 4,
-    letterSpacing: 0.3,
-  },
-  operatorLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    fontWeight: '500',
+    color: '#1e293b',
+    textAlign: 'center',
+    lineHeight: 28,
   },
 
-  // === DIVIDER ===
-  divider: {
-    height: 1,
-    backgroundColor: '#e2e8f0',
+  // === SECTION CARD ===
+  sectionCard: {
+    borderRadius: 16,
+    marginBottom: 16,
+   
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0a3674ff',
+    marginBottom: 12,
   },
 
-  // === SCHEDULE SECTION ===
-  scheduleSection: {
-    backgroundColor: 'transparent',
-  },
-  scheduleItem: {
+  // === CONTACT ROW ===
+  contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
-    backgroundColor: '#f8fafc',
-    padding: 6,
+    backgroundColor: '#f6fbffff',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
     borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
-  iconWrapper: {
-    width: 36,
-    height: 36,
+  iconContainer: {
+    width: 40,
+    height: 40,
     borderRadius: 10,
     backgroundColor: '#e0e7ff',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  scheduleTextContainer: {
+  contactInfo: {
     flex: 1,
   },
-  scheduleLabel: {
+  contactLabel: {
     fontSize: 11,
     color: '#64748b',
     fontWeight: '600',
     marginBottom: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
-  scheduleValue: {
+  contactValue: {
     fontSize: 12,
+    fontWeight: '700',
     color: '#1e293b',
-    fontWeight: '600',
-  },
-
-  // === EXTRA INFO ===
-  extraInfoContainer: {
-    backgroundColor: '#fef3c7',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 16,
-    
-  },
-  extraInfoText: {
-    fontSize: 12,
-    color: '#92400e',
-    fontWeight: '600',
-    lineHeight: 18,
-  },
-
-  // === CARD FOOTER ===
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  phoneInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  phoneNumber: {
-    fontSize: 13,
-    color: '#475569',
-    fontWeight: '700',
-    marginLeft: 8,
-    letterSpacing: 0.5,
-  },
-  callButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e36414',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    shadowColor: '#e36414',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  callButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-    marginLeft: 6,
     letterSpacing: 0.3,
   },
-
-  // === INFO CARD ===
-  infoCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 8,
-    marginBottom: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+  actionButton: {
+    backgroundColor: '#e36414',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
-  infoIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#e0e7ff',
-    justifyContent: 'center',
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  // === SCHEDULE CARD ===
+  scheduleCard: {
+    backgroundColor: '#fffbeb',
+    borderRadius: 16,
+    padding: 18,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#fef3c7',
+  },
+  scheduleHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  infoTitle: {
+  scheduleTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
-    marginBottom: 8,
-    letterSpacing: 0.2,
+    color: '#92400e',
+    marginLeft: 10,
   },
-  infoDescription: {
-    fontSize: 11,
-    color: '#64748b',
-    textAlign: 'center',
+  scheduleText: {
+    fontSize: 12,
+    color: '#78350f',
     lineHeight: 15,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

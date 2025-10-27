@@ -272,15 +272,15 @@ const SpeedReport = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -481,10 +481,10 @@ const SpeedReport = () => {
             {/* Card de Consejo */}
             <View style={inlineStyles.tipCard}>
               <View style={inlineStyles.tipIconWrapper}>
-                <Info size={18} color="#0891b2" />
+                <Info size={18} color="#d57004ff" />
               </View>
               <View style={inlineStyles.tipTextContainer}>
-                <Text style={inlineStyles.tipTitle}>💡 Consejo</Text>
+                <Text style={inlineStyles.tipTitle}>Consejo</Text>
                 <Text style={inlineStyles.tipText}>
                   Toca cualquier registro para ver la ubicación en vista Street View 3D
                 </Text>
@@ -516,7 +516,7 @@ const inlineStyles = {
     marginHorizontal: 15,
     marginTop: 15,
     marginBottom: 10,
-    padding: 14,
+    padding: 10,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: {
@@ -531,9 +531,9 @@ const inlineStyles = {
     backgroundColor: '#f59e0b',
   },
   totalIconWrapper: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
@@ -550,7 +550,7 @@ const inlineStyles = {
     opacity: 0.95,
   },
   totalValue: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '700' as const,
     color: '#fff',
   },
@@ -630,13 +630,13 @@ const inlineStyles = {
     marginBottom: 10,
     padding: 12,
     borderRadius: 14,
-    backgroundColor: '#ecfeff',
+    backgroundColor: '#fff6edff',
   },
   tipIconWrapper: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#cffafe',
+    backgroundColor: '#ffd0a0ff',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     marginRight: 10,
@@ -648,12 +648,12 @@ const inlineStyles = {
   tipTitle: {
     fontSize: 10.5,
     fontWeight: '700' as const,
-    color: '#0e7490',
+    color: '#d57004ff',
     marginBottom: 2,
   },
   tipText: {
     fontSize: 10.5,
-    color: '#0e7490',
+    color: '#d57004ff',
     lineHeight: 14,
     fontWeight: '500' as const,
     opacity: 0.95,

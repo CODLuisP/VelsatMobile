@@ -329,18 +329,11 @@ export const styles = StyleSheet.create({
   activateButton: {
     backgroundColor: '#e36414',
     borderRadius: 20,
-    paddingVertical: 18,
+    paddingVertical: 14,
     marginBottom: 15,
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: '#e36414',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 10,
+
   },
   buttonContent: {
     flexDirection: 'row',

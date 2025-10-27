@@ -11,6 +11,7 @@ import {
   PanResponder,
   ScrollView,
   TextInput,
+  Platform,
 } from 'react-native';
 import { X, MapPinned, Check, Filter } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,7 +40,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
   const [tempFilters, setTempFilters] = useState(filters);
   const slideAnim = useState(new Animated.Value(height))[0];
- const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
     insets,
@@ -66,14 +67,14 @@ const FilterModal: React.FC<FilterModalProps> = ({
     }
   }, [visible]);
 
- const handleClose = () => {
-  Animated.timing(slideAnim, {
-    toValue: height,
-    duration: 0,
-    useNativeDriver: true,
-  }).start();
-  onClose();  // <-- Ejecuta INMEDIATAMENTE
-};
+  const handleClose = () => {
+    Animated.timing(slideAnim, {
+      toValue: height,
+      duration: 0,
+      useNativeDriver: true,
+    }).start();
+    onClose();  // <-- Ejecuta INMEDIATAMENTE
+  };
 
   const handleSpeedFilterToggle = (speed: 'stopped' | 'slow' | 'medium' | 'fast') => {
     setTempFilters({
@@ -107,7 +108,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
     handleClose();
   };
 
-  // PanResponder para arrastrar hacia abajo
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: (_, gestureState) => {
@@ -151,12 +151,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 },
               ]}
             >
-              {/* Indicador de arrastre */}
+
               <View style={styles.dragIndicatorContainer} {...panResponder.panHandlers}>
                 <View style={styles.dragIndicator} />
               </View>
 
-              {/* Header */}
               <View style={styles.modalHeader}>
                 <View style={styles.headerLeft}>
                   <Filter size={24} color="#3b82f6" />
@@ -171,9 +170,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </TouchableOpacity>
               </View>
 
-              {/* Body */}
               <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-                {/* Filtro por Velocidad */}
+
+                
                 <View style={styles.filterSection}>
                   <Text style={styles.filterSectionTitle}>Velocidad</Text>
                   <View style={styles.filterOptions}>
@@ -299,7 +298,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   </View>
                 </View>
 
-                {/* Filtro por Estado */}
                 <View style={styles.filterSection}>
                   <Text style={styles.filterSectionTitle}>Estado</Text>
                   <View style={styles.filterOptions}>
@@ -349,7 +347,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   </View>
                 </View>
 
-                {/* Filtro por Ubicación */}
                 <View style={styles.filterSection}>
                   <Text style={styles.filterSectionTitle}>Ubicación</Text>
                   <View style={styles.locationInputContainer}>
@@ -376,12 +373,18 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </View>
               </ScrollView>
 
-              {/* Footer */}
-              <View style={[styles.modalFooter,{marginBottom:bottomSpace-2}]}>
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={handleClearFilters}
-                >
+              <View style={[
+                styles.modalFooter,
+                {
+                  marginBottom: Platform.OS === 'android' && bottomSpace < 10
+                    ? 35
+                    : bottomSpace - 15
+                }
+              ]}>                
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleClearFilters}
+              >
                   <Text style={styles.clearButtonText}>Limpiar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -399,7 +402,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
   );
 };
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -412,7 +415,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
-    height: height * 0.86,
+    height: height * 0.89,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -531,7 +534,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     gap: 12,
-    
+
   },
   clearButton: {
     flex: 1,

@@ -56,7 +56,6 @@ export const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#fff',
   },
-  // ===== FIN DE ESTILOS DEL SLIDER MODERNO =====
 
   // Estilos del slider anterior (mantener por compatibilidad)
   scrollContainer: {
@@ -118,7 +117,7 @@ export const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     paddingHorizontal: 20,
@@ -146,22 +145,25 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 8,
-    backgroundColor: 'white',
+    backgroundColor: '#f3f3f3ff',
     paddingHorizontal: 12,
     paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 5,
+    
   },
 
   unitInputContent: {
     flex: 1,
+    
   },
 
   unitInputPlaceholder: {
     color: '#9CA3AF',
     fontSize: 14,
+
   },
 
   selectedUnitContainer: {
@@ -199,7 +201,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     marginBottom: 10,
-    backgroundColor: 'white',
+    backgroundColor: '#f3f3f3ff',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -220,7 +222,7 @@ export const styles = StyleSheet.create({
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#f3f3f3ff',
     borderRadius: 12,
     padding: 8,
     marginBottom: 8,
@@ -278,7 +280,7 @@ export const styles = StyleSheet.create({
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#f3f3f3ff',
     borderRadius: 12,
     padding: 10,
     marginBottom: 8,

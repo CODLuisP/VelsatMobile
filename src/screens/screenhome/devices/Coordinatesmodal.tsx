@@ -10,11 +10,15 @@ import {
   ActivityIndicator,
   Animated,
   PanResponder,
+  Platform,
 } from 'react-native';
 import { X, MapPin, Clock } from 'lucide-react-native';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
 
 interface CoordinatesModalProps {
   visible: boolean;
@@ -61,7 +65,7 @@ const CoordinatesModal: React.FC<CoordinatesModalProps> = ({
             duration: 800,
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       pulseAnim.setValue(1);
@@ -305,7 +309,17 @@ const CoordinatesModal: React.FC<CoordinatesModalProps> = ({
               </View>
 
               {/* Footer */}
-              <View style={[styles.modalFooter, { marginBottom: bottomSpace - 2 }]}>
+              <View
+                style={[
+                  styles.modalFooter,
+                  {
+                    marginBottom:
+                      Platform.OS === 'android' && bottomSpace < 10
+                        ? 35
+                        : bottomSpace - 15,
+                  },
+                ]}
+              >
                 <TouchableOpacity
                   style={styles.primaryButton}
                   onPress={handleClose}
@@ -414,7 +428,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
     zIndex: 2,
-    
   },
   liveDot: {
     width: 8,

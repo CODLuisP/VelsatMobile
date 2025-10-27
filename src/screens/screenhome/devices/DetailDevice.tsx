@@ -199,6 +199,8 @@ const DetailDevice = () => {
     newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
       if (datos.vehiculo) {
         setVehicleData(datos.vehiculo);
+              console.log('Conectado exitosamente:', datos.vehiculo);
+
         setConnectionStatus('connected');
       }
     });
@@ -602,7 +604,7 @@ const DetailDevice = () => {
   const connectionDisplay = getConnectionDisplay();
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace-2 }]}>
+    <View style={[styles.container, { paddingBottom: bottomSpace - 2 }]}>
       <View style={styles.mapContainer}>
         {renderMap()}
 
@@ -663,7 +665,7 @@ const DetailDevice = () => {
         style={[
           styles.infoPanel,
           {
-            bottom: bottomSpace,
+            bottom: Platform.OS === 'ios' ? bottomSpace : bottomSpace - 2,
             height: isInfoExpanded ? 280 : 50,
             backgroundColor: '#1e3a8a',
           },

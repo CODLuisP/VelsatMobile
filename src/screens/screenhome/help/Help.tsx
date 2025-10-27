@@ -156,14 +156,14 @@ const Help = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Ayuda</Text>
