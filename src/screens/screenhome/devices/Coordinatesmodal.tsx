@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Animated,
   PanResponder,
+  Platform,
 } from 'react-native';
 import { X, MapPin, Clock } from 'lucide-react-native';
 import { WebView } from 'react-native-webview';
@@ -305,11 +306,17 @@ const CoordinatesModal: React.FC<CoordinatesModalProps> = ({
               </View>
 
               {/* Footer */}
-              <View style={[styles.modalFooter, { marginBottom: bottomSpace - 2 }]}>
-                <TouchableOpacity
-                  style={styles.primaryButton}
-                  onPress={handleClose}
-                >
+              <View style={[
+                styles.modalFooter,
+                {
+                  marginBottom: Platform.OS === 'android' && bottomSpace < 10
+                    ? 45
+                    : bottomSpace - 2
+                }
+              ]}>                <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleClose}
+              >
                   <Text style={styles.primaryButtonText}>Cerrar</Text>
                 </TouchableOpacity>
               </View>
@@ -414,7 +421,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
     zIndex: 2,
-    
+
   },
   liveDot: {
     width: 8,

@@ -11,6 +11,7 @@ import {
   PanResponder,
   ScrollView,
   TextInput,
+  Platform,
 } from 'react-native';
 import { X, MapPinned, Check, Filter } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,7 +40,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
   const [tempFilters, setTempFilters] = useState(filters);
   const slideAnim = useState(new Animated.Value(height))[0];
- const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
     insets,
@@ -66,14 +67,14 @@ const FilterModal: React.FC<FilterModalProps> = ({
     }
   }, [visible]);
 
- const handleClose = () => {
-  Animated.timing(slideAnim, {
-    toValue: height,
-    duration: 0,
-    useNativeDriver: true,
-  }).start();
-  onClose();  // <-- Ejecuta INMEDIATAMENTE
-};
+  const handleClose = () => {
+    Animated.timing(slideAnim, {
+      toValue: height,
+      duration: 0,
+      useNativeDriver: true,
+    }).start();
+    onClose();  // <-- Ejecuta INMEDIATAMENTE
+  };
 
   const handleSpeedFilterToggle = (speed: 'stopped' | 'slow' | 'medium' | 'fast') => {
     setTempFilters({
@@ -377,11 +378,17 @@ const FilterModal: React.FC<FilterModalProps> = ({
               </ScrollView>
 
               {/* Footer */}
-              <View style={[styles.modalFooter,{marginBottom:bottomSpace-2}]}>
-                <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={handleClearFilters}
-                >
+              <View style={[
+                styles.modalFooter,
+                {
+                  marginBottom: Platform.OS === 'android' && bottomSpace < 10
+                    ? 45
+                    : bottomSpace - 2
+                }
+              ]}>                <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleClearFilters}
+              >
                   <Text style={styles.clearButtonText}>Limpiar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -531,7 +538,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     gap: 12,
-    
+
   },
   clearButton: {
     flex: 1,
