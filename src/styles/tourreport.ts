@@ -95,7 +95,7 @@ export const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   sidebarHeader: {
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#0d2466ff',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

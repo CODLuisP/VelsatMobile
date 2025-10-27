@@ -53,7 +53,8 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
   const renderReportCard = (item: ReportType, index: number) => {
     const IconComponent = item.icon;
     const isSelected = selectedReportId === item.id;
-    const imageUrl = item.imageUrl || 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
+    // Usar eos como URL de la imagen, con fallback a imageUrl y luego a la imagen por defecto
+    const imageUrl = item.eos || item.imageUrl || 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
 
     return (
       <View key={item.id} style={styles.slideCardContainer}>
@@ -81,13 +82,14 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
               </View>
 
               {/* Imagen Ovalada a la Derecha */}
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: imageUrl }}
-                  style={styles.cardImage}
-                  resizeMode="cover"
-                />
-              </View>
+             <View style={styles.imageContainer}>
+  <Image
+    source={{ uri: imageUrl }}
+    style={styles.cardImage}
+    resizeMode="cover"
+  />
+  <View style={styles.imageOverlay} />
+</View>
             </View>
 
             {isSelected && (
@@ -175,27 +177,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 0,
   },
-  imageContainer: {
-    width: 140,
-    height: '100%',
-    borderTopLeftRadius: 70,
-    borderBottomLeftRadius: 70,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: -2,
-      height: 0,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
-    marginRight: Platform.OS == 'android' ? -20 : 0,
+
+imageContainer: {
+  width: 140,
+  height: '100%',
+  borderTopLeftRadius: 70,
+  borderBottomLeftRadius: 70,
+  overflow: 'hidden',
+  shadowColor: '#000',
+  shadowOffset: {
+    width: -2,
+    height: 0,
   },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-  },
+  shadowOpacity: 0.3,
+  shadowRadius: 5,
+  elevation: 8,
+},
+cardImage: {
+  width: '100%',
+  height: '100%',
+},
+imageOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: '#003f8838', 
+},
   cardTextContainer: {
     flex: 1,
     gap: 8,
@@ -208,7 +217,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop:-25
+    marginTop: -25
   },
   cardTitle: {
     fontSize: 14,
@@ -222,12 +231,12 @@ const styles = StyleSheet.create({
     color: '#3b3939ff',
     fontWeight: '500',
     lineHeight: 14,
-    marginTop:0
+    marginTop: 0
   },
   selectedBadge: {
     position: 'absolute',
     top: 90,
-    left: Platform.select({ android: 20, ios: 20 }), 
+    left: Platform.select({ android: 0, ios: 0 }),
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 13,

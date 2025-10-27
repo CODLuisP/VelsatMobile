@@ -225,14 +225,13 @@ const TourReport = () => {
       return;
     }
     
-    // CORRECCIÓN: El usuario ingresa 1-based, pero el array es 0-based
-    // Si el usuario ingresa "1", queremos el índice 0
+
     const arrayIndex = pointNum - 1;
     
     console.log(`Usuario ingresó: ${pointNum}, navegando al índice del array: ${arrayIndex}`);
     
     focusOnPoint(arrayIndex);
-    setSelectedPoint(''); // Limpiar el input después de ir al punto
+    setSelectedPoint(''); 
   };
 
   const leafletHTML = `
@@ -520,14 +519,14 @@ const TourReport = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -612,7 +611,7 @@ const TourReport = () => {
                       <TextInput
                         style={{
                           flex: 1,
-                          backgroundColor: '#fff',
+                          backgroundColor: '#fcefdeff',
                           borderRadius: 6,
                           paddingHorizontal: 12,
                           paddingVertical: 8,

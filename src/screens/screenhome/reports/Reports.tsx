@@ -111,7 +111,7 @@ const Reports: React.FC = () => {
       icon: Hand,
       description: 'Detalle de paradas realizadas',
       gradient: ['#c1d3fe', '#7f94c5ff'],
-      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544460/rparadas_dsulnz.jpg',
+      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761576820/rpardas_jjwfx3.jpg',
 
     },
     {
@@ -127,7 +127,7 @@ const Reports: React.FC = () => {
       id: 3,
       name: 'Reporte de Kilometraje',
       icon: Route,
-      description: 'Distancias recorridas por unidad(es)',      
+      description: 'Distancias recorridas por unidad(es)',
       gradient: ['#c1d3fe', '#7f94c5ff'],
       eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761545353/kilometraje_gpkdde.jpg',
 
@@ -648,12 +648,12 @@ const Reports: React.FC = () => {
   const topSpace = insets.top + 5;
 
   return (
-   <LinearGradient
-       colors={['#021e4bff', '#183890ff', '#032660ff']}
-       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-       start={{ x: 0, y: 0 }}
-       end={{ x: 0, y: 1 }}
-     >
+    <LinearGradient
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
@@ -703,7 +703,7 @@ const Reports: React.FC = () => {
                   <X size={18} color="#999" />
                 </TouchableOpacity>
               </View>
-              ) : (
+            ) : (
               <Text style={styles.unitInputPlaceholder}>
                 {loadingUnits ? 'Cargando unidades...' : 'Seleccione unidad'}
               </Text>
@@ -800,37 +800,37 @@ const Reports: React.FC = () => {
         </View>
 
         <View style={styles.buttonsContainer}>
-     <TouchableOpacity
-  style={[
-    styles.excelButton,
-    downloadingExcel && { opacity: 0.7 },
-    selectedReport === 4 && { opacity: 0.7, backgroundColor: '#023047' },
-  ]}
-  onPress={handleDownloadExcel}
-  disabled={downloadingExcel || selectedReport === 4}
-  activeOpacity={0.8}
->
-  {downloadingExcel ? (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <ActivityIndicator size="small" color="#fff" />
-      <Text style={styles.buttonText}>Descargando...</Text>
-    </View>
-  ) : (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <Image 
-        source={require('../../../../assets/excel.png')} 
-        style={{ width: 20, height: 20 }}
-        resizeMode="contain"
-      />
-      <Text style={styles.buttonText}>Descargar Excel</Text>
-    </View>
-  )}
-</TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.excelButton,
+              downloadingExcel && { opacity: 0.7 },
+              selectedReport === 4 && { opacity: 0.7, backgroundColor: '#023047' },
+            ]}
+            onPress={handleDownloadExcel}
+            disabled={downloadingExcel || selectedReport === 4}
+            activeOpacity={0.8}
+          >
+            {downloadingExcel ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.buttonText}>Descargando...</Text>
+              </View>
+            ) : (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Image
+                  source={require('../../../../assets/excel.png')}
+                  style={{ width: 20, height: 20 }}
+                  resizeMode="contain"
+                />
+                <Text style={styles.buttonText}>Descargar Excel</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.showButton}
             onPress={handleShowReport}
-              activeOpacity={0.8}
+            activeOpacity={0.8}
 
           >
             <Text style={styles.buttonText}>Mostrar</Text>

@@ -64,7 +64,7 @@ export const styles = StyleSheet.create({
 
   listWrapper: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     overflow: 'hidden',
@@ -80,7 +80,6 @@ export const styles = StyleSheet.create({
     height: 16,
   },
 
-  // ===== SECCIÓN DE ESTADÍSTICAS =====
   statisticsContainer: {
     marginBottom: 18,
   },
@@ -182,7 +181,7 @@ statGradient: {
 
   // ===== DISEÑO DE CARDS =====
   vehicleCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
@@ -293,10 +292,8 @@ statGradient: {
   },
 
   mileageCard: {
-    backgroundColor: '#f8fafc',
     borderRadius: 12,
     padding: 12,
- 
     marginBottom: 8,
     marginTop:8
   },

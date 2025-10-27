@@ -252,8 +252,8 @@ const GeneralReport = () => {
 
   return (
     <LinearGradient
-      colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
@@ -261,7 +261,7 @@ const GeneralReport = () => {
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -330,7 +330,7 @@ const GeneralReport = () => {
               {/* Columna derecha - Consejo */}
               <View style={inlineStyles.rightColumn}>
                 <View style={inlineStyles.tipIconWrapper}>
-                  <Info size={18} color="#0891b2" />
+                  <Info size={18} color="#d57004ff" />
                 </View>
                 <View style={inlineStyles.tipTextContainer}>
                   <Text style={inlineStyles.tipTitle}>Consejo</Text>
@@ -421,10 +421,8 @@ const inlineStyles = {
     flex: 1,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: '#ecfeff',
-
+    backgroundColor: '#fff6edff',
     paddingHorizontal: 10,
-
     paddingVertical: 10
 
   },
@@ -432,7 +430,7 @@ const inlineStyles = {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#cffafe',
+    backgroundColor: '#ffd0a0ff',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     marginRight: 10,
@@ -443,12 +441,12 @@ const inlineStyles = {
   tipTitle: {
     fontSize: 11,
     fontWeight: '700' as const,
-    color: '#0e7490',
+    color: '#d57004ff',
     marginBottom: 2,
   },
   tipText: {
     fontSize: 11,
-    color: '#0891b2',
+    color: '#d57004ff',
     lineHeight: 15,
     fontWeight: '500' as const,
   },

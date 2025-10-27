@@ -57,17 +57,14 @@ interface Statistics {
   totalVehicles: number;
 }
 
-// Componente wrapper condicional para gradientes
 const GradientWrapper: React.FC<{
   colors: string[];
   style: any;
   children: React.ReactNode;
 }> = ({ colors, style, children }) => {
   if (Platform.OS === 'ios') {
-    // Para iOS, usar View con color sólido (el primer color del gradiente)
     return <View style={[style, { backgroundColor: colors[0] }]}>{children}</View>;
   }
-  // Para Android, usar LinearGradient
   return (
     <LinearGradient
       colors={colors}
@@ -366,13 +363,13 @@ const MileageReport = () => {
 
   return (
     <GradientWrapper
-      colors={['#00296b', '#1e3a8a', '#00296b']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
-            <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+            <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
               <ChevronLeft size={24} color="#fff" />
             </TouchableOpacity>
             <View style={styles.headerTextContainer}>
