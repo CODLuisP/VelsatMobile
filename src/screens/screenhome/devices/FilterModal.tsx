@@ -60,21 +60,20 @@ const FilterModal: React.FC<FilterModalProps> = ({
       // Animar salida
       Animated.timing(slideAnim, {
         toValue: height,
-        duration: 10,
+        duration: 0,
         useNativeDriver: true,
       }).start();
     }
   }, [visible]);
 
-  const handleClose = () => {
-    Animated.timing(slideAnim, {
-      toValue: height,
-      duration: 0,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose();
-    });
-  };
+ const handleClose = () => {
+  Animated.timing(slideAnim, {
+    toValue: height,
+    duration: 0,
+    useNativeDriver: true,
+  }).start();
+  onClose();  // <-- Ejecuta INMEDIATAMENTE
+};
 
   const handleSpeedFilterToggle = (speed: 'stopped' | 'slow' | 'medium' | 'fast') => {
     setTempFilters({
