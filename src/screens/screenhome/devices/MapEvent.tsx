@@ -369,7 +369,7 @@ const MapAlert = () => {
     >
       <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+          <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Detalle de Alerta</Text>

@@ -191,7 +191,7 @@ Compartido desde Velsat Mobile
     >
 
       <View style={[styles.header, { paddingTop: topSpace }]}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+        <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
           <ChevronLeft size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerContent}>

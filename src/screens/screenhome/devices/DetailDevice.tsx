@@ -663,7 +663,7 @@ const DetailDevice = () => {
         style={[
           styles.infoPanel,
           {
-            bottom: bottomSpace-2,
+    bottom: Platform.OS === 'ios' ? bottomSpace : bottomSpace - 2,
             height: isInfoExpanded ? 280 : 50,
             backgroundColor: '#1e3a8a',
           },
