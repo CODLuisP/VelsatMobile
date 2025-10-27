@@ -103,35 +103,43 @@ const Reports: React.FC = () => {
       name: 'Reporte General',
       icon: BarChart3,
       description: 'Análisis completo de la actividad',
-      gradient: ['#497fc65b', '#08499ff5'],
+      gradient: ['#c1d3fe', '#7f94c5ff'],
     },
     {
       id: 1,
       name: 'Reporte de Paradas',
       icon: Hand,
       description: 'Detalle de paradas realizadas',
-      gradient: ['#c32f27', '#dc5400ff'],
+      gradient: ['#c1d3fe', '#7f94c5ff'],
+      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544460/rparadas_dsulnz.jpg',
+
     },
     {
       id: 2,
       name: 'Reporte de Velocidad',
       icon: Gauge,
       description: 'Control de excesos de velocidad',
-      gradient: ['#c32f27', '#dc5400ff'],
+      gradient: ['#c1d3fe', '#7f94c5ff'],
+      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544459/rspeed_fxgibm.jpg',
+
     },
     {
       id: 3,
       name: 'Reporte de Kilometraje',
       icon: Route,
-description: 'Distancias recorridas por unidad(es)',      
-gradient: ['#c32f27', '#dc5400ff'],
+      description: 'Distancias recorridas por unidad(es)',      
+      gradient: ['#c1d3fe', '#7f94c5ff'],
+      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761545353/kilometraje_gpkdde.jpg',
+
     },
     {
       id: 4,
       name: 'Reporte de Recorrido',
       icon: FileText,
       description: 'Rutas y trayectos completos',
-      gradient: ['#c32f27', '#dc5400ff'],
+      gradient: ['#c1d3fe', '#7f94c5ff'],
+      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544460/rrecorrido_tivil8.jpg',
+
     },
   ];
 

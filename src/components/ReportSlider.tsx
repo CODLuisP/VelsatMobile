@@ -21,7 +21,8 @@ export interface ReportType {
   icon: React.ComponentType<any>;
   description: string;
   gradient: string[];
-  imageUrl?: string; // Nueva propiedad para la imagen
+  imageUrl?: string;
+  eos?: string; // Nueva propiedad para la URL de la imagen
 }
 
 interface ReportSliderProps {
@@ -52,7 +53,8 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
   const renderReportCard = (item: ReportType, index: number) => {
     const IconComponent = item.icon;
     const isSelected = selectedReportId === item.id;
-    const imageUrl = item.imageUrl || 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
+    // Usar eos como URL de la imagen, con fallback a imageUrl y luego a la imagen por defecto
+    const imageUrl = item.eos || item.imageUrl || 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
 
     return (
       <View key={item.id} style={styles.slideCardContainer}>
@@ -71,7 +73,7 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
               {/* Contenido de Texto a la Izquierda */}
               <View style={styles.cardTextContainer}>
                 <View style={styles.iconTitleRow}>
-                  <IconComponent size={28} color="#fff" strokeWidth={2.5} />
+                  <IconComponent size={28} color="#161616ff" strokeWidth={2.5} />
                   <Text style={styles.cardTitle}>{item.name}</Text>
                 </View>
                 <Text style={styles.cardDescription} numberOfLines={3}>
@@ -174,7 +176,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 0,
   },
-  // Contenedor de la imagen ovalada
   imageContainer: {
     width: 140,
     height: '100%',
@@ -201,37 +202,38 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 16,
     justifyContent: 'center',
+    marginLeft: -20
   },
   iconTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop:-25
+    marginTop: -25
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#1a1818ff',
     letterSpacing: 0.5,
     flex: 1,
   },
   cardDescription: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#3b3939ff',
     fontWeight: '500',
     lineHeight: 14,
-    marginTop:0
+    marginTop: 0
   },
   selectedBadge: {
     position: 'absolute',
     top: 90,
-    left: Platform.select({ android: 20, ios: 20 }), 
+    left: Platform.select({ android: 0, ios: 0 }),
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 13,
   },
   selectedBadgeText: {
-    color: '#ffffffff',
+    color: '#000000ff',
     fontSize: 12,
     fontWeight: '700',
   },
