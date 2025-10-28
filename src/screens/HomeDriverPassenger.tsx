@@ -326,7 +326,7 @@ const HomeDriverPassenger: React.FC = () => {
     return true;
   };
 
-const verificarYActivarGPS = async (): Promise<boolean> => {
+  const verificarYActivarGPS = async (): Promise<boolean> => {
     // SOLO ejecutar en Android
     if (Platform.OS !== 'android') {
       return true;
@@ -335,7 +335,7 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
     try {
       // Importación dinámica solo para Android
       const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
-      
+
       const result = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
         interval: 10000,
       });
@@ -362,7 +362,7 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                   await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
                     interval: 10000,
                   });
-                } catch (err) {}
+                } catch (err) { }
               },
             },
           ],
@@ -550,11 +550,11 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) {}
+                      } catch (error) { }
                     }
-                  } catch (error) {}
+                  } catch (error) { }
                 },
-                error => {},
+                error => { },
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -613,22 +613,22 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
   };
 
   return (
-     <LinearGradient
-        colors={['#021e4bff', '#00296b', '#00296b']}
-        style={[homeStyles.container]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      >
-    
-     <SafeAreaView style={homeStyles.container}>
-           <StatusBar translucent backgroundColor="transparent" />
-           <View
-             style={[
-               homeStyles.header,
-               { marginTop: -insets.top },
-               { paddingTop: insets.top - 10 },
-             ]}
-           >
+    <LinearGradient
+      colors={['#021e4bff', '#00296b', '#00296b']}
+      style={[homeStyles.container]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+
+      <SafeAreaView style={homeStyles.container}>
+        <StatusBar translucent backgroundColor="transparent" />
+        <View
+          style={[
+            homeStyles.header,
+            { marginTop: -insets.top },
+            { paddingTop: insets.top - 10 },
+          ]}
+        >
           <Image
             source={require('../../assets/fondo3.png')}
             style={homeStyles.backgroundImage}
@@ -723,13 +723,27 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
 
           {/* Grid de opciones principales - SOLO 4 OPCIONES CON IMÁGENES */}
           <View style={homeStyles.optionsGrid}>
+
+
+
             <TouchableOpacity
               style={[
                 homeStyles.optionCard
               ]}
               onPress={handleNavigateToProfile}
-              activeOpacity={0.95}
+              activeOpacity={0.70}
             >
+
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              />
 
 
               <View
@@ -743,6 +757,8 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                 Revisa tu información personal, actualiza tus datos y
                 credenciales y personaliza tus marcadores.
               </Text>
+
+
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -750,9 +766,19 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                 homeStyles.optionCard,
               ]}
               onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
-              activeOpacity={0.95}
+              activeOpacity={0.70}
             >
 
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              />
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
@@ -771,8 +797,19 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                 homeStyles.optionCard
               ]}
               onPress={handleNavigateToSecurity}
-              activeOpacity={0.95}
+              activeOpacity={0.70}
             >
+
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              />
 
 
               <View
@@ -793,9 +830,20 @@ const verificarYActivarGPS = async (): Promise<boolean> => {
                 homeStyles.optionCard,
               ]}
               onPress={handleNavigateToHelp}
-              activeOpacity={0.95}
+              activeOpacity={0.70}
             >
-   
+
+              <LinearGradient
+                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              />
+
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
