@@ -9,7 +9,12 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { ChevronLeft, Calendar, ChevronRight, MapPin } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Calendar,
+  ChevronRight,
+  MapPin,
+} from 'lucide-react-native';
 import {
   NavigationProp,
   RouteProp,
@@ -31,6 +36,7 @@ import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
+import ModalAlert from '../../../components/ModalAlert';
 
 interface RoutePoint {
   date: string;
@@ -41,13 +47,11 @@ interface RoutePoint {
 }
 
 // Marcador simple y optimizado - sin animaciones pesadas
-const SimpleMarker = React.memo(({ 
-  children, 
-}: { 
-  children: React.ReactNode; 
-}) => {
-  return <View>{children}</View>;
-});
+const SimpleMarker = React.memo(
+  ({ children }: { children: React.ReactNode }) => {
+    return <View>{children}</View>;
+  },
+);
 
 const TourReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -73,6 +77,18 @@ const TourReport = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
+
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -101,12 +117,13 @@ const TourReport = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
-      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedStartDate = encodeURIComponent(
+        formatDateForAPI(startDate),
+      );
       const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
       const url = `${server}/api/Reporting/details/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
 
-      console.log('API URL:', url);
 
       const response = await axios.get(url);
 
@@ -116,7 +133,6 @@ const TourReport = () => {
         setError('No se encontraron datos de ruta');
       }
     } catch (err) {
-      console.error('Error fetching route data:', err);
       setError('Error al cargar los datos de la ruta');
     } finally {
       setLoading(false);
@@ -124,10 +140,10 @@ const TourReport = () => {
   };
 
   const getSpeedColor = (speed: number): string => {
-    if (speed === 0) return '#ef4444'; 
-    if (speed > 0 && speed < 11) return '#eab308'; 
-    if (speed >= 11 && speed < 60) return '#22c55e'; 
-    return '#3b82f6'; 
+    if (speed === 0) return '#ef4444';
+    if (speed > 0 && speed < 11) return '#eab308';
+    if (speed >= 11 && speed < 60) return '#22c55e';
+    return '#3b82f6';
   };
 
   const handleGoBack = () => {
@@ -145,14 +161,12 @@ const TourReport = () => {
 
   const focusOnPoint = (pointIndex: number) => {
     if (pointIndex < 0 || pointIndex >= routeData.length) {
-      Alert.alert('Error', 'Punto no válido');
+      handleShowAlert('Error', 'Punto no válido', '#e36414');
       return;
     }
 
     setFocusedPoint(pointIndex);
     const point = routeData[pointIndex];
-
-    console.log(`Focusing on point #${pointIndex + 1} (array index ${pointIndex}):`, point);
 
     if (Platform.OS === 'ios') {
       // Para iOS con MapView
@@ -164,7 +178,7 @@ const TourReport = () => {
             latitudeDelta: 0.005,
             longitudeDelta: 0.005,
           },
-          1000
+          1000,
         );
       }, 100);
     } else {
@@ -173,7 +187,6 @@ const TourReport = () => {
         (function() {
           try {
             if (typeof map !== 'undefined' && map) {
-              console.log('Moving to point ${pointIndex + 1} at [${point.latitude}, ${point.longitude}]');
               
               map.setView([${point.latitude}, ${point.longitude}], 17, {
                 animate: true,
@@ -184,18 +197,17 @@ const TourReport = () => {
               map.eachLayer(function(layer) {
                 if (layer instanceof L.Marker) {
                   var popup = layer.getPopup();
-                  if (popup && popup.getContent().includes('Punto ${pointIndex + 1}<')) {
+                  if (popup && popup.getContent().includes('Punto ${
+                    pointIndex + 1
+                  }<')) {
                     layer.openPopup();
-                    console.log('Opened popup for point ${pointIndex + 1}');
                   }
                 }
               });
               
             } else {
-              console.log('Map not ready');
             }
           } catch(e) {
-            console.log('Error:', e.message);
           }
         })();
         true;
@@ -206,32 +218,37 @@ const TourReport = () => {
 
   const handlePointInput = () => {
     const pointNum = parseInt(selectedPoint.trim());
-    
+
     if (selectedPoint.trim() === '') {
-      Alert.alert('Error', 'Por favor ingrese un número de punto');
-      return;
-    }
-    
-    if (isNaN(pointNum)) {
-      Alert.alert('Error', 'Por favor ingrese un número válido');
-      return;
-    }
-    
-    if (pointNum < 1 || pointNum > routeData.length) {
-      Alert.alert(
-        'Error', 
-        `Por favor ingrese un número entre 1 y ${routeData.length}`
+      handleShowAlert(
+        'Error',
+        'Por favor ingrese un número de punto',
+        '#e36414',
       );
+
       return;
     }
-    
+
+    if (isNaN(pointNum)) {
+      handleShowAlert('Error', 'Por favor ingrese un número válido', '#e36414');
+
+      return;
+    }
+
+    if (pointNum < 1 || pointNum > routeData.length) {
+      handleShowAlert(
+        'Error',
+        'Por favor ingrese un número entre 1 y ${routeData.length}',
+        '#e36414',
+      );
+
+      return;
+    }
 
     const arrayIndex = pointNum - 1;
-    
-    console.log(`Usuario ingresó: ${pointNum}, navegando al índice del array: ${arrayIndex}`);
-    
+
     focusOnPoint(arrayIndex);
-    setSelectedPoint(''); 
+    setSelectedPoint('');
   };
 
   const leafletHTML = `
@@ -346,7 +363,6 @@ const TourReport = () => {
           
           map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
           
-          console.log('Map initialized with ' + routeData.length + ' points');
         }
       </script>
     </body>
@@ -383,12 +399,12 @@ const TourReport = () => {
       // Calcular los límites de todos los puntos para mostrar vista general
       const latitudes = routeData.map(p => p.latitude);
       const longitudes = routeData.map(p => p.longitude);
-      
+
       const minLat = Math.min(...latitudes);
       const maxLat = Math.max(...latitudes);
       const minLng = Math.min(...longitudes);
       const maxLng = Math.max(...longitudes);
-      
+
       const centerLat = (minLat + maxLat) / 2;
       const centerLng = (minLng + maxLng) / 2;
       const deltaLat = (maxLat - minLat) * 1.3;
@@ -507,9 +523,6 @@ const TourReport = () => {
           startInLoadingState={true}
           scalesPageToFit={true}
           mixedContentMode="compatibility"
-          onMessage={(event) => {
-            console.log('WebView message:', event.nativeEvent.data);
-          }}
         />
       );
     }
@@ -526,7 +539,11 @@ const TourReport = () => {
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -555,7 +572,9 @@ const TourReport = () => {
         )}
 
         {sidebarVisible && (
-          <View style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}>
+          <View
+            style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}
+          >
             <View
               style={[
                 styles.sidebarHeader,
@@ -601,13 +620,17 @@ const TourReport = () => {
                   <Text style={styles.sidebarText}>{unit.plate}</Text>
                 </View>
 
-               
-
                 {/* SECCIÓN: IR A PUNTO */}
                 {routeData.length > 0 && (
                   <View style={styles.sidebarSection}>
                     <Text style={styles.sidebarSectionTitle}>IR A PUNTO</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 8,
+                      }}
+                    >
                       <TextInput
                         style={{
                           flex: 1,
@@ -640,46 +663,68 @@ const TourReport = () => {
                         onPress={handlePointInput}
                       >
                         <MapPin size={16} color="#fff" />
-                        <Text style={{ color: '#fff', fontWeight: 'bold', marginLeft: 4 }}>
+                        <Text
+                          style={{
+                            color: '#fff',
+                            fontWeight: 'bold',
+                            marginLeft: 4,
+                          }}
+                        >
                           IR
                         </Text>
                       </TouchableOpacity>
                     </View>
-                    <Text style={{ 
-                      color: '#94a3b8', 
-                      fontSize: 11, 
-                      marginTop: 4,
-                      fontStyle: 'italic' 
-                    }}>
+                    <Text
+                      style={{
+                        color: '#94a3b8',
+                        fontSize: 11,
+                        marginTop: 4,
+                        fontStyle: 'italic',
+                      }}
+                    >
                       Ingresa un número de punto y presiona IR
                     </Text>
                   </View>
                 )}
 
                 <View style={styles.sidebarSection}>
-                  <Text style={styles.sidebarSectionTitle}>RANGO VELOCIDAD</Text>
+                  <Text style={styles.sidebarSectionTitle}>
+                    RANGO VELOCIDAD
+                  </Text>
                   <View style={styles.sidebarRago}>
                     <View style={styles.legendItem}>
                       <View
-                        style={[styles.legendDot, { backgroundColor: '#ef4444' }]}
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#ef4444' },
+                        ]}
                       />
                       <Text style={styles.legendText}>0 km/h</Text>
                     </View>
                     <View style={styles.legendItem}>
                       <View
-                        style={[styles.legendDot, { backgroundColor: '#eab308' }]}
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#eab308' },
+                        ]}
                       />
                       <Text style={styles.legendText}>1 - 10 km/h</Text>
                     </View>
                     <View style={styles.legendItem}>
                       <View
-                        style={[styles.legendDot, { backgroundColor: '#22c55e' }]}
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#22c55e' },
+                        ]}
                       />
                       <Text style={styles.legendText}>11 - 59 km/h</Text>
                     </View>
                     <View style={styles.legendItem}>
                       <View
-                        style={[styles.legendDot, { backgroundColor: '#3b82f6' }]}
+                        style={[
+                          styles.legendDot,
+                          { backgroundColor: '#3b82f6' },
+                        ]}
                       />
                       <Text style={styles.legendText}>&gt;= 60 km/h</Text>
                     </View>
@@ -688,7 +733,9 @@ const TourReport = () => {
 
                 {routeData.length > 0 && (
                   <View style={styles.sidebarSection}>
-                    <Text style={styles.sidebarSectionTitle}>PUNTOS DE RUTA</Text>
+                    <Text style={styles.sidebarSectionTitle}>
+                      PUNTOS DE RUTA
+                    </Text>
                     <Text style={styles.sidebarText}>
                       Total: {routeData.length} puntos
                     </Text>
@@ -699,6 +746,14 @@ const TourReport = () => {
           </View>
         )}
       </View>
+
+      <ModalAlert
+        isVisible={modalAlertVisible}
+        onClose={() => setModalAlertVisible(false)}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        color={alertConfig.color}
+      />
     </LinearGradient>
   );
 };

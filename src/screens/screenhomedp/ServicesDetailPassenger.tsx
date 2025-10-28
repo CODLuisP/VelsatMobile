@@ -32,6 +32,7 @@ import { RatingModal } from './modals/RatingModal';
 import VehicleMap from './VehicleMap'; // 👈 Importar el nuevo componente
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
+import ModalAlert from '../../components/ModalAlert';
 
 type ServicesDetailPassengerRouteProp = RouteProp<
   RootStackParamList,
@@ -88,34 +89,35 @@ const ServicesDetailPassenger = () => {
   const [driverError, setDriverError] = useState('');
   const [destinoError, setDestinoError] = useState<string | null>(null);
 
-  console.log('📥 Datos recibidos del servicio:', serviceData);
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
+
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
+  };
+
 
   // Función para obtener los datos del conductor
   const fetchDriverData = async () => {
     try {
       setLoadingDriver(true);
-      console.log(
-        '🔍 Obteniendo datos del conductor:',
-        serviceData.codconductor,
-      );
+
 
       const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
-      console.log('🌐 URL Conductor:', url);
 
       const response = await axios.get(url);
-      console.log('📡 Status de respuesta conductor:', response.status);
-      console.log('📦 Datos del conductor recibidos:', response.data);
 
       setDriverData(response.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          '❌ Error al obtener datos del conductor:',
-          error.response?.data || error.message,
-        );
+
         setDriverError('No se pudieron cargar los datos del conductor');
       } else {
-        console.error('❌ Error desconocido:', error);
         setDriverError('Error al cargar los datos del conductor');
       }
       setDriverData(null);
@@ -129,14 +131,10 @@ const ServicesDetailPassenger = () => {
     try {
       setLoadingDestino(true);
       setDestinoError(null); // Limpia errores anteriores
-      console.log('🔍 Obteniendo datos del destino:', codcliente);
 
       const url = `https://velsat.pe:2087/api/Aplicativo/detalleDestino/${codcliente}`;
-      console.log('🌐 URL Destino:', url);
 
       const response = await axios.get(url);
-      console.log('📡 Status de respuesta destino:', response.status);
-      console.log('📦 Datos del destino recibidos:', response.data);
 
       if (response.data && response.data.length > 0) {
         setDestinoData(response.data[0]);
@@ -145,13 +143,9 @@ const ServicesDetailPassenger = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          '❌ Error al obtener datos del destino:',
-          error.response?.data || error.message,
-        );
+
         setDestinoError('No se pudieron cargar los datos del destino');
       } else {
-        console.error('❌ Error desconocido:', error);
         setDestinoError('Error al cargar los datos del destino');
       }
       setDestinoData(null);
@@ -165,7 +159,6 @@ const ServicesDetailPassenger = () => {
     if (serviceData.codconductor) {
       fetchDriverData();
     } else {
-      console.log('⚠️ No hay código de conductor');
       setLoadingDriver(false);
     }
 
@@ -257,10 +250,7 @@ const ServicesDetailPassenger = () => {
   const handleConfirmCancel = async () => {
     try {
       setCancellingService(true);
-      console.log('🚫 Cancelando servicio...');
-
       const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
-      console.log('🌐 URL:', url);
 
       const requestBody = {
         codservicio: serviceData.codservicio,
@@ -273,27 +263,20 @@ const ServicesDetailPassenger = () => {
         tipo: getTipoServicio(serviceData.tipo),
       };
 
-      console.log('📦 Body de la petición:', requestBody);
 
       const response = await axios.post(url, requestBody);
-      console.log('📡 Status de respuesta:', response.status);
-      console.log('📄 Respuesta:', response.data);
 
-      console.log('✅ Servicio cancelado exitosamente');
       setCancelModalVisible(false);
       navigation.goBack();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          '❌ Error al cancelar el servicio:',
-          error.response?.data || error.message,
-        );
-        Alert.alert(
+
+        handleShowAlert(
           'Error',
           'No se pudo cancelar el servicio. Intenta nuevamente.',
+          '#e36414', // Rojo - Error
         );
       } else {
-        console.error('❌ Error desconocido:', error);
       }
     } finally {
       setCancellingService(false);
@@ -312,17 +295,18 @@ const ServicesDetailPassenger = () => {
 
   const handleSendRating = async () => {
     if (selectedRating === 0) {
-      console.log('⚠️ Debe seleccionar una calificación');
-      Alert.alert('Atención', 'Debe seleccionar una calificación');
+      handleShowAlert(
+        'Atención',
+        'Debe seleccionar una calificación',
+        '#e36414', // Naranja - Advertencia/Validación
+      );
       return;
     }
 
     try {
       setSendingRating(true);
-      console.log('⭐ Enviando calificación...');
 
       const url = `https://velsat.pe:2087/api/Aplicativo/enviarCalificacion`;
-      console.log('🌐 URL:', url);
 
       const response = await axios.post(url, null, {
         params: {
@@ -331,21 +315,22 @@ const ServicesDetailPassenger = () => {
         },
       });
 
-      console.log('📡 Status:', response.status);
-      console.log('📄 Respuesta:', response.data);
 
-      console.log('✅ Calificación enviada exitosamente');
       setRatingModalVisible(false);
-      Alert.alert('¡Éxito!', 'Calificación enviada correctamente');
+      handleShowAlert(
+        '¡Éxito!',
+        'Calificación enviada correctamente',
+        '#4CAF50', // Verde - Éxito
+      );
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          '❌ Error al enviar calificación:',
-          error.response?.data || error.message,
+
+        handleShowAlert(
+          'Error',
+          'No se pudo enviar la calificación',
+          '#e36414', // Rojo - Error
         );
-        Alert.alert('Error', 'No se pudo enviar la calificación');
       } else {
-        console.error('❌ Error desconocido:', error);
       }
     } finally {
       setSendingRating(false);
@@ -354,11 +339,10 @@ const ServicesDetailPassenger = () => {
 
   const makePhoneCall = (): void => {
     if (!driverData?.telefono) {
-      console.log('⚠️ No hay teléfono disponible');
-      Alert.alert(
+      handleShowAlert(
         'Teléfono no disponible',
         'No hay un número de teléfono registrado para este conductor.',
-        [{ text: 'Entendido' }],
+        '#e36414', // Naranja - Advertencia
       );
       return;
     }
@@ -368,14 +352,12 @@ const ServicesDetailPassenger = () => {
 
     Linking.openURL(phoneUrl)
       .then(() => {
-        console.log('📞 Marcador abierto exitosamente');
       })
       .catch(error => {
-        console.log('❌ Error abriendo marcador:', error);
-        Alert.alert(
+        handleShowAlert(
           'No se pudo abrir el marcador',
           `Marca manualmente este número:\n${phoneNumber}`,
-          [{ text: 'Entendido' }],
+          '#e36414', // Naranja - Advertencia
         );
       });
   };
@@ -388,9 +370,8 @@ const ServicesDetailPassenger = () => {
       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-    >      
-    
-    <View style={[styles.header, { paddingTop: topSpace }]}>
+    >
+      <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
@@ -450,7 +431,8 @@ const ServicesDetailPassenger = () => {
                   <Text style={styles.driverLabel}>Conductor</Text>
                   <Text style={styles.driverValue}>
                     {driverData
-                      ? `${driverData.apellidos?.trim() || ''} ${driverData.nombres?.trim() || ''
+                      ? `${driverData.apellidos?.trim() || ''} ${
+                          driverData.nombres?.trim() || ''
                         }`.trim() || 'No disponible'
                       : 'No asignado'}
                   </Text>
@@ -556,7 +538,8 @@ const ServicesDetailPassenger = () => {
                       <Text style={styles.locationLabel}>Ubicación</Text>
                       <Text style={styles.locationValue}>
                         {destinoData
-                          ? `${destinoData.apellidos} ${destinoData.nombres || ''
+                          ? `${destinoData.apellidos} ${
+                              destinoData.nombres || ''
                             }`.trim()
                           : 'Aeropuerto Internacional Jorge Chávez'}
                       </Text>
@@ -578,12 +561,12 @@ const ServicesDetailPassenger = () => {
                         onPress={() => {
                           const lat =
                             serviceData.destino === '4175' ||
-                              serviceData.destino === null
+                            serviceData.destino === null
                               ? -12.0249367
                               : parseFloat(destinoData?.wy || '-12.0249367');
                           const lng =
                             serviceData.destino === '4175' ||
-                              serviceData.destino === null
+                            serviceData.destino === null
                               ? -77.1169252
                               : parseFloat(destinoData?.wx || '-77.1169252');
                           openGoogleMaps(lat, lng);
@@ -644,7 +627,8 @@ const ServicesDetailPassenger = () => {
                       <Text style={styles.locationLabel}>Ubicación</Text>
                       <Text style={styles.locationValue}>
                         {destinoData
-                          ? `${destinoData.apellidos} ${destinoData.nombres || ''
+                          ? `${destinoData.apellidos} ${
+                              destinoData.nombres || ''
                             }`.trim()
                           : 'Aeropuerto Internacional Jorge Chávez'}
                       </Text>
@@ -666,12 +650,12 @@ const ServicesDetailPassenger = () => {
                         onPress={() => {
                           const lat =
                             serviceData.destino === '4175' ||
-                              serviceData.destino === null
+                            serviceData.destino === null
                               ? -12.0249367
                               : parseFloat(destinoData?.wy || '-12.0249367');
                           const lng =
                             serviceData.destino === '4175' ||
-                              serviceData.destino === null
+                            serviceData.destino === null
                               ? -77.1169252
                               : parseFloat(destinoData?.wx || '-77.1169252');
                           openGoogleMaps(lat, lng);
@@ -859,6 +843,14 @@ const ServicesDetailPassenger = () => {
         onRatingSelect={setSelectedRating}
         onConfirm={handleSendRating}
         onCancel={handleCloseRatingModal}
+      />
+
+      <ModalAlert
+        isVisible={modalAlertVisible}
+        onClose={() => setModalAlertVisible(false)}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        color={alertConfig.color}
       />
     </LinearGradient>
   );

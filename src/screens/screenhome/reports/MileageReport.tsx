@@ -169,8 +169,6 @@ const MileageReport = () => {
         url = `${server}/api/Kilometer/kilometer/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
       }
 
-      console.log('API URL:', url);
-
       const response = await axios.get(url);
 
       if (
@@ -197,7 +195,6 @@ const MileageReport = () => {
         setError('No se encontraron datos');
       }
     } catch (err) {
-      console.error('Error fetching report data:', err);
       setError('Error al cargar los datos del reporte');
     } finally {
       setLoading(false);
@@ -209,7 +206,6 @@ const MileageReport = () => {
   };
 
   const handleVehiclePress = (vehicle: VehicleReport) => {
-    console.log('Clicked on vehicle:', vehicle);
   };
 
   const renderStatistics = () => {

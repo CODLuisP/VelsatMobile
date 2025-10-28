@@ -104,7 +104,6 @@ const GeneralReport = () => {
 
       const url = `${server}/api/Reporting/general/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
 
-      console.log('API URL:', url);
       const response = await axios.get(url);
 
       if (
@@ -130,7 +129,6 @@ const GeneralReport = () => {
         setError('No se encontraron datos');
       }
     } catch (err) {
-      console.error('Error fetching report data:', err);
       setError('Error al cargar los datos del reporte');
     } finally {
       setLoading(false);
@@ -147,10 +145,6 @@ const GeneralReport = () => {
     // URL para abrir directamente en Street View 3D
     // Este formato garantiza que se abra en vista panorámica 3D
     const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
-
-    Linking.openURL(googleMapsUrl).catch(err =>
-      console.error('Error al abrir Google Maps:', err),
-    );
   };
 
   const getSpeedColor = (speed: number) => {

@@ -104,8 +104,6 @@ const StopReport = () => {
 
       const url = `${server}/api/Reporting/stops/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
 
-      console.log('API URL:', url);
-
       const response = await axios.get(url);
 
       if (response.data && response.data.result) {
@@ -129,7 +127,6 @@ const StopReport = () => {
         setError('No se encontraron datos');
       }
     } catch (err) {
-      console.error('Error fetching report data:', err);
       setError('Error al cargar los datos del reporte');
     } finally {
       setLoading(false);
@@ -145,11 +142,6 @@ const StopReport = () => {
 
     // URL para Google Maps en Street View
    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
-
-
-    Linking.openURL(googleMapsUrl).catch(err =>
-      console.error('Error al abrir Google Maps:', err)
-    );
   };
 
   const renderReportItem = ({

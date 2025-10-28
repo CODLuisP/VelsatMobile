@@ -179,7 +179,6 @@ const Setting = () => {
         },
       );
 
-      console.log('Respuesta del servidor:', response.data);
 
       // Si la respuesta es exitosa, mostrar alerta de éxito
       setModalUpdateSuccessVisible(true);
@@ -191,11 +190,9 @@ const Setting = () => {
         celular: '',
       });
     } catch (error: any) {
-      console.error('Error al actualizar datos:', error);
 
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
-        console.error('Error de respuesta:', error.response?.data);
       }
       setModalPasswordErrorVisible(true);
     } finally {
@@ -224,7 +221,6 @@ const Setting = () => {
         },
       );
 
-      console.log('Respuesta del servidor:', response.data);
 
       // Si la respuesta es exitosa, mostrar alerta de éxito
       setModalUpdateSuccessVisible(true);
@@ -236,11 +232,9 @@ const Setting = () => {
         celular: '',
       });
     } catch (error: any) {
-      console.error('Error al actualizar datos:', error);
 
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
-        console.error('Error de respuesta:', error.response?.data);
       }
       setModalPasswordErrorVisible(true);
     } finally {
@@ -269,7 +263,6 @@ const Setting = () => {
         },
       );
 
-      console.log('Respuesta del servidor:', response.data);
 
       // Si la respuesta es exitosa, mostrar alerta de éxito
       setModalUpdateSuccessVisible(true);
@@ -281,11 +274,9 @@ const Setting = () => {
         celular: '',
       });
     } catch (error: any) {
-      console.error('Error al actualizar datos:', error);
 
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
-        console.error('Error de respuesta:', error.response?.data);
       }
       setModalPasswordErrorVisible(true);
     } finally {
@@ -334,7 +325,6 @@ const Setting = () => {
         },
       );
 
-      console.log('Respuesta del servidor (password):', response.data);
 
       // Si la respuesta es exitosa, mostrar alerta de éxito
       setModalPasswordSuccessVisible(true);
@@ -346,11 +336,9 @@ const Setting = () => {
         confirmPassword: '',
       });
     } catch (error: any) {
-      console.error('Error al cambiar contraseña:', error);
 
       // Mostrar mensaje de error con AlertPro
       if (axios.isAxiosError(error)) {
-        console.error('Error de respuesta:', error.response?.data);
       }
       setModalPasswordErrorVisible(true);
     } finally {

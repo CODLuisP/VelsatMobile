@@ -79,7 +79,6 @@ const Profile = () => {
           );
           setUserDetails(response.data);
         } catch (error) {
-          console.error('Error al obtener detalles del usuario:', error);
         } finally {
           setLoading(false);
         }

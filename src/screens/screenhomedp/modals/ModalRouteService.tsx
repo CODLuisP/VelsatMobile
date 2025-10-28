@@ -58,7 +58,6 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
         }));
       
       setMarkers(mappedMarkers);
-      console.log('🗺️ Marcadores generados:', mappedMarkers);
     }
   }, [initialPassengers]);
 

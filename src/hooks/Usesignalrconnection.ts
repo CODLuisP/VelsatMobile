@@ -54,14 +54,12 @@ export const useSignalRConnection = ({
   useEffect(() => {
     // Validar que tenemos los datos necesarios
     if (!username || !deviceName) {
-      console.error('Faltan datos para conectar SignalR');
       setConnectionStatus('error');
       return;
     }
 
     // Construir la URL del hub
     const hubUrl = `${server}/dataHubVehicle/${username}/${deviceName}`;
-    console.log('Conectando a:', hubUrl);
     setConnectionStatus('connecting');
 
     // Crear la conexión SignalR
@@ -95,7 +93,6 @@ export const useSignalRConnection = ({
 
     // Evento principal: Actualizar datos del vehículo
     newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
-      console.log('📡 Datos recibidos:', JSON.stringify(datos, null, 2));
       if (datos.vehiculo) {
         setVehicleData(datos.vehiculo);
         setConnectionStatus('connected');
@@ -104,31 +101,26 @@ export const useSignalRConnection = ({
 
     // Evento: Conexión exitosa
     newConnection.on('ConectadoExitosamente', data => {
-      console.log('✅ Conectado exitosamente:', data);
       setConnectionStatus('connected');
     });
 
     // Evento: Error
     newConnection.on('Error', msg => {
-      console.error('❌ Error desde SignalR:', msg);
       setConnectionStatus('error');
     });
 
     // Manejador: Reconectando
     newConnection.onreconnecting(error => {
-      console.log('🔄 Reconectando...', error);
       setConnectionStatus('connecting');
     });
 
     // Manejador: Reconectado
     newConnection.onreconnected(connectionId => {
-      console.log('✅ Reconectado con ID:', connectionId);
       setConnectionStatus('connected');
     });
 
     // Manejador: Conexión cerrada
     newConnection.onclose(error => {
-      console.log('🔌 Conexión cerrada', error);
       setConnectionStatus('disconnected');
     });
 
@@ -136,11 +128,9 @@ export const useSignalRConnection = ({
     newConnection
       .start()
       .then(() => {
-        console.log('🚀 SignalR iniciado correctamente');
         setConnectionStatus('connected');
       })
       .catch(err => {
-        console.error('💥 Error al iniciar SignalR:', err);
         setConnectionStatus('error');
       });
 
@@ -152,9 +142,7 @@ export const useSignalRConnection = ({
         newConnection &&
         newConnection.state === signalR.HubConnectionState.Connected
       ) {
-        newConnection.stop().then(() => {
-          console.log('🔌 SignalR desconectado correctamente');
-        });
+        newConnection.stop().then(() => {});
       }
     };
   }, [deviceName, username, server]);

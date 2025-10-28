@@ -72,8 +72,6 @@ const ServicesDetailDriver = () => {
     navigationDetection.hasNavigationBar,
   );
 
-  console.log('Datos recibidos en ServicesDetailDriver:', serviceData);
-
   const [apiPassengers, setApiPassengers] = useState<PassengerAPI[]>([]);
   const [orderZeroPassenger, setOrderZeroPassenger] =
     useState<PassengerAPI | null>(null);
@@ -106,7 +104,6 @@ const ServicesDetailDriver = () => {
           `https://velsat.pe:2087/api/Aplicativo/detalleServicioConductor/${serviceData.codservicio}`,
         );
 
-        console.log('📡 Respuesta de la API:', response.data);
 
         const orderZero = response.data.find(p => p.orden === '0');
         setOrderZeroPassenger(orderZero || null);
@@ -128,7 +125,6 @@ const ServicesDetailDriver = () => {
         const allZero = response.data.every(p => p.orden === '0');
         setAllOrdersZero(allZero);
       } catch (error) {
-        console.error('Error al consumir la API:', error);
         setApiError('Error al obtener los detalles del servicio');
       } finally {
         setIsLoading(false); // Termina loading
@@ -182,11 +178,10 @@ const ServicesDetailDriver = () => {
 
   const makePhoneCallPassenger = (): void => {
     if (!currentPassenger?.telefono) {
-      console.log('⚠️ No hay teléfono disponible');
-      Alert.alert(
+      handleShowAlert(
         'Teléfono no disponible',
         'No hay un número de teléfono registrado para este pasajero.',
-        [{ text: 'Entendido' }],
+        '#FFA726', // Naranja - Advertencia
       );
       return;
     }
@@ -196,14 +191,12 @@ const ServicesDetailDriver = () => {
 
     Linking.openURL(phoneUrl)
       .then(() => {
-        console.log('📞 Marcador abierto exitosamente');
       })
       .catch(error => {
-        console.log('❌ Error abriendo marcador:', error);
-        Alert.alert(
+        handleShowAlert(
           'No se pudo abrir el marcador',
           `Marca manualmente este número:\n${phoneNumber}`,
-          [{ text: 'Entendido' }],
+          '#FFA726', // Naranja - Advertencia
         );
       });
   };
@@ -224,11 +217,10 @@ const ServicesDetailDriver = () => {
     }
 
     if (!latitude || !longitude) {
-      console.log('⚠️ No hay coordenadas disponibles');
-      Alert.alert(
+      handleShowAlert(
         'Ubicación no disponible',
         'No hay coordenadas registradas para esta ubicación.',
-        [{ text: 'Entendido' }],
+        '#FFA726', // Naranja - Advertencia
       );
       return;
     }
@@ -353,7 +345,6 @@ const ServicesDetailDriver = () => {
                   <>
                     {/* Datos del Pasajero */}
                     <View style={styles.cardslider}>
-
                       <View style={styles.sectionTitleContainer}>
                         <User size={20} color="#000" />
                         <Text style={styles.sectionTitle}>Datos Pasajero</Text>
@@ -366,16 +357,15 @@ const ServicesDetailDriver = () => {
                             {currentPassenger.apellidos || '-'}
                           </Text>
 
-                              <Text style={styles.label}>Teléfono</Text>
-                        <Text style={styles.value}>
-                          {currentPassenger.telefono || '-'}
-                        </Text>
+                          <Text style={styles.label}>Teléfono</Text>
+                          <Text style={styles.value}>
+                            {currentPassenger.telefono || '-'}
+                          </Text>
 
-
-                            <Text style={styles.label}>DNI</Text>
-                        <Text style={styles.value}>
-                          {currentPassenger.dni || '-'}
-                        </Text>
+                          <Text style={styles.label}>DNI</Text>
+                          <Text style={styles.value}>
+                            {currentPassenger.dni || '-'}
+                          </Text>
                         </View>
                         <View style={styles.actionButtons}>
                           <TouchableOpacity
@@ -417,7 +407,7 @@ const ServicesDetailDriver = () => {
 
                     {/* Lugar de Recojo */}
                     <View style={styles.cardslider}>
-                       <View style={styles.sectionTitleContainer}>
+                      <View style={styles.sectionTitleContainer}>
                         <MapPinHouse size={18} color="#000" />
                         <Text style={styles.sectionTitle}>Lugar de Recojo</Text>
                       </View>
@@ -429,29 +419,27 @@ const ServicesDetailDriver = () => {
                             {isEntrada
                               ? currentPassenger.direccion
                               : getLocationData(
-                                orderZeroPassenger,
-                                'direccion',
-                              )}
+                                  orderZeroPassenger,
+                                  'direccion',
+                                )}
                           </Text>
 
-
-                           <Text style={styles.label}>Distrito</Text>
+                          <Text style={styles.label}>Distrito</Text>
                           <Text style={styles.value}>
                             {isEntrada
                               ? currentPassenger.distrito
                               : getLocationData(orderZeroPassenger, 'distrito')}
                           </Text>
 
-   <Text style={styles.label}>Ubicación</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? '-'
-                            : getLocationData(orderZeroPassenger, 'ubicacion')}
-                        </Text>
-
-
-                        
-                      
+                          <Text style={styles.label}>Ubicación</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? '-'
+                              : getLocationData(
+                                  orderZeroPassenger,
+                                  'ubicacion',
+                                )}
+                          </Text>
                         </View>
 
                         <View style={styles.gridItemRight}>
@@ -498,7 +486,7 @@ const ServicesDetailDriver = () => {
                             </Text>
                           </View>
                       </View> */}
-{/* 
+                      {/* 
                       <View style={styles.infoRow}>
                         <Text style={styles.label}>Ubicación</Text>
                         <Text style={styles.value}>
@@ -520,10 +508,11 @@ const ServicesDetailDriver = () => {
 
                     {/* Destino de Viaje */}
                     <View style={styles.cardslider}>
-                      
                       <View style={styles.sectionTitleContainer}>
                         <MapPinHouse size={18} color="#000" />
-                        <Text style={styles.sectionTitle}>Destino de Viaje</Text>
+                        <Text style={styles.sectionTitle}>
+                          Destino de Viaje
+                        </Text>
                       </View>
                       <View style={styles.gridRow}>
                         <View style={styles.gridItem}>
@@ -534,22 +523,19 @@ const ServicesDetailDriver = () => {
                               : currentPassenger.direccion}
                           </Text>
 
-
-                             <Text style={styles.label}>Distrito</Text>
+                          <Text style={styles.label}>Distrito</Text>
                           <Text style={styles.value}>
                             {isEntrada
                               ? getLocationData(orderZeroPassenger, 'distrito')
                               : currentPassenger.distrito}
                           </Text>
 
-
- <Text style={styles.label}>Ubicación</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? getLocationData(orderZeroPassenger, 'ubicacion')
-                            : '-'}
-                        </Text>
-
+                          <Text style={styles.label}>Ubicación</Text>
+                          <Text style={styles.value}>
+                            {isEntrada
+                              ? getLocationData(orderZeroPassenger, 'ubicacion')
+                              : '-'}
+                          </Text>
                         </View>
                         <View style={styles.gridItemRight}>
                           <Text style={styles.label}>Fecha y hora</Text>
@@ -610,7 +596,8 @@ const ServicesDetailDriver = () => {
                         <Text style={styles.value}>
                           {isEntrada
                             ? getLocationData(orderZeroPassenger, 'referencia')
-                            : currentPassenger.referencia || 'No han agregado ninguna referencia'}
+                            : currentPassenger.referencia ||
+                              'No han agregado ninguna referencia'}
                         </Text>
                       </View>
                     </View>
@@ -637,8 +624,8 @@ const ServicesDetailDriver = () => {
                     {serviceData.tipo === 'I'
                       ? 'Entrada'
                       : serviceData.tipo === 'S'
-                        ? 'Salida'
-                        : '-'}
+                      ? 'Salida'
+                      : '-'}
                   </Text>
                 </View>
 
@@ -662,8 +649,8 @@ const ServicesDetailDriver = () => {
                     {serviceData.grupo === 'A'
                       ? 'Aire'
                       : serviceData.grupo === 'T'
-                        ? 'Tierra'
-                        : '-'}
+                      ? 'Tierra'
+                      : '-'}
                   </Text>
                 </View>
               </View>
@@ -676,10 +663,10 @@ const ServicesDetailDriver = () => {
                     {serviceData.codusuario === 'movilbus'
                       ? 'Empresa Movil Bus'
                       : serviceData.codusuario === 'cgacela'
-                        ? 'Gacela Express'
-                        : serviceData.codusuario === 'aremys'
-                          ? 'Empresa Aremys'
-                          : serviceData.codusuario || '-'}
+                      ? 'Gacela Express'
+                      : serviceData.codusuario === 'aremys'
+                      ? 'Empresa Aremys'
+                      : serviceData.codusuario || '-'}
                   </Text>
                 </View>
                 <View style={styles.gridItemRight}>

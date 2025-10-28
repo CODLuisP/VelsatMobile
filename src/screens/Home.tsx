@@ -43,6 +43,8 @@ import {
 } from 'lucide-react-native';
 import { getBottomSpace, useNavigationMode } from '../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
+import ModalConfirm from '../components/ModalConfirm';
+import ModalAlert from '../components/ModalAlert';
 
 // Tipos TypeScript
 interface WeatherState {
@@ -93,7 +95,15 @@ const Home: React.FC = () => {
     navigationDetection.hasNavigationBar,
   );
 
-  const topSpace = insets.top + 10;
+  const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+    onConfirm: () => {},
+    confirmText: '',
+    cancelText: '',
+  });
 
   useFocusEffect(
     React.useCallback(() => {
@@ -139,6 +149,37 @@ const Home: React.FC = () => {
     } else {
       return 'Buenas noches';
     }
+  };
+
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
+
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
+  };
+
+  const handleShowConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    color?: string,
+    confirmText?: string,
+    cancelText?: string,
+  ) => {
+    setConfirmConfig({
+      title,
+      message,
+      color: color || '#FFA726',
+      onConfirm,
+      confirmText: confirmText || 'Aceptar',
+      cancelText: cancelText || 'Cancelar',
+    });
+    setModalConfirmVisible(true);
   };
 
   // Función para obtener el ícono del clima
@@ -346,36 +387,32 @@ const Home: React.FC = () => {
     } catch (error: any) {
       // Si falla la importación del módulo, retornar true (iOS u otro error)
       if (error.message && error.message.includes('AndroidLocationEnabler')) {
-        console.log('Módulo no disponible en esta plataforma');
         return true;
       }
 
       if (error.code === 'ERR00') {
-        Alert.alert(
+        handleShowConfirm(
           'GPS Desactivado',
           'Para usar esta función, necesitas activar el GPS. ¿Deseas activarlo ahora?',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-              text: 'Activar GPS',
-              onPress: async () => {
-                try {
-                  const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
-                  await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded(
-                    {
-                      interval: 10000,
-                    },
-                  );
-                } catch (err) { }
-              },
-            },
-          ],
+          async () => {
+            try {
+              const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
+              await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+                interval: 10000,
+              });
+            } catch (err) {
+            }
+          },
+          '#FFA726', // Naranja
+          'Activar GPS',
+          'Cancelar',
         );
         return false;
       } else if (error.code === 'ERR01') {
-        Alert.alert(
+        handleShowAlert(
           'GPS No Disponible',
-          'Los servicios de ubicación están deshabilitados en tu dispositivo.',
+          'Los servicios de ubicación están deshabilitados en tu dispositivo',
+          '#e36414',
         );
         return false;
       } else if (error.code === 'ERR02') {
@@ -554,11 +591,11 @@ const Home: React.FC = () => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) { }
+                      } catch (error) {}
                     }
-                  } catch (error) { }
+                  } catch (error) {}
                 },
-                error => { },
+                error => {},
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -632,7 +669,6 @@ const Home: React.FC = () => {
             { paddingTop: insets.top - 10 },
           ]}
         >
-
           <Image
             source={require('../../assets/fondo3.png')}
             style={homeStyles.backgroundImage}
@@ -722,13 +758,10 @@ const Home: React.FC = () => {
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
           <View style={homeStyles.optionsGrid}>
-
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-              ]}
+              style={[homeStyles.optionCard]}
               onPress={handleNavigateToProfile}
-              activeOpacity={0.70}
+              activeOpacity={0.7}
             >
               {/* Fondo degradado */}
               <LinearGradient
@@ -757,9 +790,7 @@ const Home: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-              ]}
+              style={[homeStyles.optionCard]}
               onPress={handleNavigateToDevice}
               activeOpacity={0.95}
             >
@@ -790,9 +821,7 @@ const Home: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-              ]}
+              style={[homeStyles.optionCard]}
               onPress={handleNavigateToReports}
               activeOpacity={0.95}
             >
@@ -823,9 +852,7 @@ const Home: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-              ]}
+              style={[homeStyles.optionCard]}
               onPress={handleNavigateToSecurity}
               activeOpacity={0.95}
             >
@@ -854,15 +881,11 @@ const Home: React.FC = () => {
                 deshabilita las notificaciones.
               </Text>
             </TouchableOpacity>
-
-
           </View>
 
           <View style={homeStyles.customerCareContainer}>
             <TouchableOpacity
-              style={[
-                homeStyles.customerCareCard,
-              ]}
+              style={[homeStyles.customerCareCard]}
               onPress={handleNavigateToHelp}
               activeOpacity={0.95}
             >
@@ -875,7 +898,7 @@ const Home: React.FC = () => {
                   right: 0,
                   top: 0,
                   bottom: 0,
-                  borderRadius: 15
+                  borderRadius: 15,
                 }}
               />
 
@@ -909,6 +932,28 @@ const Home: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <ModalAlert
+            isVisible={modalAlertVisible}
+            onClose={() => setModalAlertVisible(false)}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            color={alertConfig.color}
+          />
+
+          <ModalConfirm
+            isVisible={modalConfirmVisible}
+            onClose={() => setModalConfirmVisible(false)}
+            onConfirm={() => {
+              confirmConfig.onConfirm();
+              setModalConfirmVisible(false);
+            }}
+            title={confirmConfig.title}
+            message={confirmConfig.message}
+            color={confirmConfig.color}
+            confirmText={confirmConfig.confirmText}
+            cancelText={confirmConfig.cancelText}
+          />
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

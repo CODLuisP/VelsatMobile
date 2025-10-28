@@ -54,7 +54,10 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
     const IconComponent = item.icon;
     const isSelected = selectedReportId === item.id;
     // Usar eos como URL de la imagen, con fallback a imageUrl y luego a la imagen por defecto
-    const imageUrl = item.eos || item.imageUrl || 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
+    const imageUrl =
+      item.eos ||
+      item.imageUrl ||
+      'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
 
     return (
       <View key={item.id} style={styles.slideCardContainer}>
@@ -73,7 +76,11 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
               {/* Contenido de Texto a la Izquierda */}
               <View style={styles.cardTextContainer}>
                 <View style={styles.iconTitleRow}>
-                  <IconComponent size={28} color="#161616ff" strokeWidth={2.5} />
+                  <IconComponent
+                    size={28}
+                    color="#161616ff"
+                    strokeWidth={2.5}
+                  />
                   <Text style={styles.cardTitle}>{item.name}</Text>
                 </View>
                 <Text style={styles.cardDescription} numberOfLines={3}>
@@ -82,14 +89,14 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
               </View>
 
               {/* Imagen Ovalada a la Derecha */}
-             <View style={styles.imageContainer}>
-  <Image
-    source={{ uri: imageUrl }}
-    style={styles.cardImage}
-    resizeMode="cover"
-  />
-  <View style={styles.imageOverlay} />
-</View>
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: imageUrl }}
+                  style={styles.cardImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.imageOverlay} />
+              </View>
             </View>
 
             {isSelected && (
@@ -178,40 +185,39 @@ const styles = StyleSheet.create({
     gap: 0,
   },
 
-imageContainer: {
-  width: 140,
-  height: '100%',
-  borderTopLeftRadius: 70,
-  borderBottomLeftRadius: 70,
-  overflow: 'hidden',
-  marginRight: Platform.OS == 'android' ? -20:0,
-
-},
-cardImage: {
-  width: '100%',
-  height: '100%',
-},
-imageOverlay: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: '#003f8838', 
-},
+  imageContainer: {
+    width: 140,
+    height: '100%',
+    borderTopLeftRadius: 70,
+    borderBottomLeftRadius: 70,
+    overflow: 'hidden',
+    marginRight: Platform.OS == 'android' ? -35 : 0,
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#003f8838',
+  },
   cardTextContainer: {
     flex: 1,
     gap: 8,
     paddingLeft: 16,
     paddingRight: 16,
     justifyContent: 'center',
-    marginLeft: -20
+    marginLeft: -20,
   },
   iconTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: -25
+    marginTop: -25,
   },
   cardTitle: {
     fontSize: 14,
@@ -225,7 +231,7 @@ imageOverlay: {
     color: '#3b3939ff',
     fontWeight: '500',
     lineHeight: 14,
-    marginTop: 0
+    marginTop: 0,
   },
   selectedBadge: {
     position: 'absolute',

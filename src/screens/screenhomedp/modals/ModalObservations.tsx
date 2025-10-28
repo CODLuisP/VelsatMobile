@@ -72,10 +72,6 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
   const handleSubmit = async () => {
     if (selectedPassenger && observation.trim()) {
       try {
-        console.log('📤 Enviando observación...', {
-          codpedido: selectedPassenger.id,
-          observacion: observation,
-        });
 
         const response = await axios.post(
           `https://velsat.pe:2087/api/Aplicativo/EnviarObservacion?codpedido=${selectedPassenger.id}`,
@@ -86,20 +82,13 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
             }
           }
         );
-
-        console.log('✅ Observación enviada exitosamente:', response.data);
         
-        // 🔥 Mostrar alerta de éxito
         onShowAlert('Éxito', 'La observación se envió correctamente', '#0b692eff');
         
         setSelectedPassenger(null);
         setObservation('');
         onClose();
       } catch (error: any) {
-        console.error('❌ Error al enviar observación:', error);
-        console.error('Response data:', error.response?.data);
-        
-        // 🔥 Mostrar alerta de error
         onShowAlert(
           'Error', 
           error.response?.data?.message || 'No se pudo enviar la observación. Intenta nuevamente.', '#b10202ff'

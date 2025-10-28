@@ -93,10 +93,6 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
         .sort((a, b) => a.order - b.order);
 
       setPassengers(mappedPassengers);
-      console.log(
-        '🔄 Pasajeros recibidos para cambiar orden (ordenados):',
-        mappedPassengers,
-      );
     }
   }, [initialPassengers]);
 
@@ -112,28 +108,22 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
 
   const handleSave = async () => {
     try {
-      console.log('💾 Guardando nuevo orden...');
       
       const cambios = passengers.map((passenger, index) => ({
         orden: (index + 1).toString(),
         codpedido: parseInt(passenger.id),
       }));
 
-      console.log('📤 Enviando cambios:', cambios);
 
       const response = await axios.put(
         'https://velsat.pe:2087/api/Aplicativo/cambiarOrdenBatch',
         cambios
       );
 
-      console.log('✅ Orden actualizado correctamente:', response.data);
       onShowAlert('Éxito', 'Orden actualizado correctamente', '#0b692eff');
 
       handleClose(); // Cerrar modal después de guardar
     } catch (error: any) {
-      console.error('❌ Error al guardar orden:', error);
-      console.error('Response data:', error.response?.data);
-
       onShowAlert(
         'Error', 
         error.response?.data?.message || 'No se pudo actualizar el orden. Intenta nuevamente.', 

@@ -91,7 +91,6 @@ const Notifications = () => {
     isMountedRef.current = true;
 
     return () => {
-      console.log('Desmontando componente...');
       isMountedRef.current = false;
 
       // Cancelar cualquier petición pendiente
@@ -168,12 +167,10 @@ const Notifications = () => {
   const fetchNotifications = async (isRefreshing = false) => {
     // Verificar ANTES de comenzar
     if (!isMountedRef.current) {
-      console.log('Componente desmontado, cancelando fetch');
       return;
     }
 
     const startTime = Date.now();
-    console.log('Iniciando petición...');
 
     // Cancelar petición anterior si existe
     if (abortControllerRef.current) {
@@ -199,14 +196,10 @@ const Notifications = () => {
 
       // Verificar INMEDIATAMENTE después de la respuesta
       if (!isMountedRef.current) {
-        console.log('Componente desmontado después de respuesta');
         return;
       }
 
       const endTime = Date.now();
-      console.log(`Petición completada en ${endTime - startTime}ms`);
-      console.log('Total de registros recibidos:', response.data.length);
-
       // Transformar TODOS los datos
       const transformedNotifications: Notification[] = response.data.map((item, index) => {
         const type = getNotificationType(item.statusCode);
@@ -226,25 +219,20 @@ const Notifications = () => {
 
       // Verificar una vez más antes de actualizar
       if (!isMountedRef.current) {
-        console.log('Componente desmontado antes de actualizar estado');
         return;
       }
 
       setNotifications(transformedNotifications);
 
-      console.log(`Mostrando ${transformedNotifications.length} notificaciones`);
     } catch (err: any) {
       // Si la petición fue cancelada, no hacer nada
       if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
-        console.log('Petición cancelada');
         return;
       }
 
       if (!isMountedRef.current) return;
 
       const endTime = Date.now();
-      console.error('Error al cargar notificaciones:', err);
-      console.log(`Error después de ${endTime - startTime}ms`);
 
       if (err.code === 'ECONNABORTED') {
         setError('La petición tardó demasiado. Verifica tu conexión.');

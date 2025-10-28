@@ -334,7 +334,6 @@ const MapAlert = () => {
           mixedContentMode="compatibility"
           onError={syntheticEvent => {
             const { nativeEvent } = syntheticEvent;
-            console.warn('WebView error: ', nativeEvent);
           }}
         />
       );

@@ -42,7 +42,6 @@ export const openGoogleMaps = (latitude: number, longitude: number) => {
         }
       })
       .catch(err => {
-        console.error('Error al abrir Google Maps:', err);
         Linking.openURL(webUrl);
       });
   } else {

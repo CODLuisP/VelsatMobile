@@ -168,13 +168,11 @@ useEffect(() => {
   const placa = device.name;
 
   if (!username || !placa) {
-    console.error('Faltan datos para conectar SignalR');
     setConnectionStatus('error');
     return;
   }
 
   const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
-  console.log('Conectando a:', hubUrl);
   setConnectionStatus('connecting');
 
   const newConnection = new signalR.HubConnectionBuilder()
@@ -207,26 +205,22 @@ useEffect(() => {
   newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
     // Solo actualizar si el componente está montado
     if (!isMountedRef.current) {
-      console.log('⚠️ Datos recibidos pero componente desmontado, ignorando');
       return;
     }
     
     if (datos.vehiculo) {
       setVehicleData(datos.vehiculo);
-      console.log('Conectado exitosamente:', datos.vehiculo);
       setConnectionStatus('connected');
     }
   });
 
   newConnection.on('ConectadoExitosamente', data => {
     if (!isMountedRef.current) return;
-    console.log('Conectado exitosamente:', data);
     setConnectionStatus('connected');
   });
 
   newConnection.on('Error', msg => {
     if (!isMountedRef.current) return;
-    console.error('Error desde SignalR:', msg);
     setConnectionStatus('error');
   });
 
@@ -246,7 +240,6 @@ useEffect(() => {
 
   newConnection.onclose(error => {
     if (!isMountedRef.current) return;
-    console.log('🔌 Conexión cerrada', error);
     setConnectionStatus('disconnected');
   });
 
@@ -261,7 +254,6 @@ useEffect(() => {
     })
     .catch(err => {
       if (!isMountedRef.current) return;
-      console.error('Error al conectar:', err);
       setConnectionStatus('error');
     });
 
@@ -269,7 +261,6 @@ useEffect(() => {
 
   // CLEANUP MEJORADO
   return () => {
-    console.log('🧹 Limpiando conexión SignalR...');
     isMountedRef.current = false;
 
     // Remover todos los listeners
@@ -280,7 +271,6 @@ useEffect(() => {
     // Detener la conexión de forma más agresiva
     if (newConnection) {
       const currentState = newConnection.state;
-      console.log('Estado actual de conexión:', currentState);
       
       if (currentState === signalR.HubConnectionState.Connected || 
           currentState === signalR.HubConnectionState.Connecting ||
@@ -288,10 +278,8 @@ useEffect(() => {
         
         newConnection.stop()
           .then(() => {
-            console.log('✅ SignalR desconectado correctamente');
           })
           .catch(err => {
-            console.error('❌ Error al desconectar SignalR:', err);
           });
       }
     }
@@ -609,7 +597,6 @@ useEffect(() => {
             }}
             onError={syntheticEvent => {
               const { nativeEvent } = syntheticEvent;
-              console.warn('WebView error: ', nativeEvent);
             }}
           />
 

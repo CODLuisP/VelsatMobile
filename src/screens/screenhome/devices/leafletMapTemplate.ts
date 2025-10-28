@@ -338,7 +338,6 @@ export const generateLeafletHTML = ({
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden && map) {
                 setTimeout(function() {
-                    console.log('Página visible - invalidando mapa');
                     map.invalidateSize(true);
                    
                     // Forzar redibujado de tiles

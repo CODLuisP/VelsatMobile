@@ -12,14 +12,22 @@ import {
   ImageBackground,
   Alert,
 } from 'react-native';
-import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
 import { useAuthStore } from '../store/authStore';
 import { homeStyles } from '../styles/home';
 import { RootStackParamList } from '../../App';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 
-import { EdgeInsets, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  EdgeInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import {
   Headphones,
   Sun,
@@ -33,6 +41,8 @@ import {
   Shield,
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import ModalAlert from '../components/ModalAlert';
+import ModalConfirm from '../components/ModalConfirm';
 
 // Tipos TypeScript
 interface WeatherState {
@@ -94,7 +104,7 @@ const HomeDriverPassenger: React.FC = () => {
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#00296b', false);
-    }, [])
+    }, []),
   );
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -123,6 +133,47 @@ const HomeDriverPassenger: React.FC = () => {
 
   const handleNavigateToServicesPassenger = () => {
     navigation.navigate('ServicesPassenger');
+  };
+
+  const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+    onConfirm: () => {},
+    confirmText: '',
+    cancelText: '',
+  });
+
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
+
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
+  };
+
+  const handleShowConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    color?: string,
+    confirmText?: string,
+    cancelText?: string,
+  ) => {
+    setConfirmConfig({
+      title,
+      message,
+      color: color || '#FFA726',
+      onConfirm,
+      confirmText: confirmText || 'Aceptar',
+      cancelText: cancelText || 'Cancelar',
+    });
+    setModalConfirmVisible(true);
   };
 
   // Función para obtener el saludo según la hora
@@ -218,7 +269,6 @@ const HomeDriverPassenger: React.FC = () => {
         error: null,
       });
     } catch (error) {
-      console.error('Error al obtener clima:', error);
       setWeather({
         temperature: 25,
         weatherCode: 0,
@@ -319,7 +369,6 @@ const HomeDriverPassenger: React.FC = () => {
 
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (err) {
-        console.warn(err);
         return false;
       }
     }
@@ -336,42 +385,41 @@ const HomeDriverPassenger: React.FC = () => {
       // Importación dinámica solo para Android
       const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
 
-      const result = await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-        interval: 10000,
-      });
+      const result =
+        await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+          interval: 10000,
+        });
 
       return true;
     } catch (error: any) {
       // Si falla la importación del módulo, retornar true (iOS u otro error)
       if (error.message && error.message.includes('AndroidLocationEnabler')) {
-        console.log('Módulo no disponible en esta plataforma');
         return true;
       }
 
       if (error.code === 'ERR00') {
-        Alert.alert(
+        handleShowConfirm(
           'GPS Desactivado',
           'Para usar esta función, necesitas activar el GPS. ¿Deseas activarlo ahora?',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-              text: 'Activar GPS',
-              onPress: async () => {
-                try {
-                  const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
-                  await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
-                    interval: 10000,
-                  });
-                } catch (err) { }
-              },
-            },
-          ],
+          async () => {
+            try {
+              const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
+              await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+                interval: 10000,
+              });
+            } catch (err) {
+            }
+          },
+          '#FFA726', // Naranja
+          'Activar GPS',
+          'Cancelar',
         );
         return false;
       } else if (error.code === 'ERR01') {
-        Alert.alert(
+        handleShowAlert(
           'GPS No Disponible',
-          'Los servicios de ubicación están deshabilitados en tu dispositivo.',
+          'Los servicios de ubicación están deshabilitados en tu dispositivo',
+          '#e36414',
         );
         return false;
       } else if (error.code === 'ERR02') {
@@ -550,11 +598,11 @@ const HomeDriverPassenger: React.FC = () => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) { }
+                      } catch (error) {}
                     }
-                  } catch (error) { }
+                  } catch (error) {}
                 },
-                error => { },
+                error => {},
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -619,7 +667,6 @@ const HomeDriverPassenger: React.FC = () => {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-
       <SafeAreaView style={homeStyles.container}>
         <StatusBar translucent backgroundColor="transparent" />
         <View
@@ -713,27 +760,18 @@ const HomeDriverPassenger: React.FC = () => {
         </View>
 
         <ScrollView
-          style={[
-            homeStyles.content,
-            { paddingBottom: bottomSpace }
-          ]}
+          style={[homeStyles.content, { paddingBottom: bottomSpace }]}
           showsVerticalScrollIndicator={false}
         >
           <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
           {/* Grid de opciones principales - SOLO 4 OPCIONES CON IMÁGENES */}
           <View style={homeStyles.optionsGrid}>
-
-
-
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard
-              ]}
+              style={[homeStyles.optionCard]}
               onPress={handleNavigateToProfile}
-              activeOpacity={0.70}
+              activeOpacity={0.7}
             >
-
               <LinearGradient
                 colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
                 style={{
@@ -744,7 +782,6 @@ const HomeDriverPassenger: React.FC = () => {
                   bottom: 0,
                 }}
               />
-
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
@@ -757,18 +794,17 @@ const HomeDriverPassenger: React.FC = () => {
                 Revisa tu información personal, actualiza tus datos y
                 credenciales y personaliza tus marcadores.
               </Text>
-
-
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-              ]}
-              onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
-              activeOpacity={0.70}
+              style={[homeStyles.optionCard]}
+              onPress={
+                tipo === 'c'
+                  ? handleNavigateToServicesDriver
+                  : handleNavigateToServicesPassenger
+              }
+              activeOpacity={0.7}
             >
-
               <LinearGradient
                 colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
                 style={{
@@ -793,13 +829,10 @@ const HomeDriverPassenger: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard
-              ]}
+              style={[homeStyles.optionCard]}
               onPress={handleNavigateToSecurity}
-              activeOpacity={0.70}
+              activeOpacity={0.7}
             >
-
               <LinearGradient
                 colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
                 style={{
@@ -810,7 +843,6 @@ const HomeDriverPassenger: React.FC = () => {
                   bottom: 0,
                 }}
               />
-
 
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
@@ -826,13 +858,10 @@ const HomeDriverPassenger: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                homeStyles.optionCard,
-              ]}
+              style={[homeStyles.optionCard]}
               onPress={handleNavigateToHelp}
-              activeOpacity={0.70}
+              activeOpacity={0.7}
             >
-
               <LinearGradient
                 colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
                 style={{
@@ -844,7 +873,6 @@ const HomeDriverPassenger: React.FC = () => {
                 }}
               />
 
-
               <View
                 style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
               >
@@ -853,11 +881,33 @@ const HomeDriverPassenger: React.FC = () => {
               <Text style={homeStyles.optionTitle}>Ayuda</Text>
 
               <Text style={homeStyles.optionSubtitle}>
-                Conoce nuestros números telefónicos, escríbenos al Whatsapp, revisa las preguntas
-                frecuentes y visualiza tutoriales útiles.
+                Conoce nuestros números telefónicos, escríbenos al Whatsapp,
+                revisa las preguntas frecuentes y visualiza tutoriales útiles.
               </Text>
             </TouchableOpacity>
           </View>
+
+          <ModalAlert
+            isVisible={modalAlertVisible}
+            onClose={() => setModalAlertVisible(false)}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            color={alertConfig.color}
+          />
+
+          <ModalConfirm
+            isVisible={modalConfirmVisible}
+            onClose={() => setModalConfirmVisible(false)}
+            onConfirm={() => {
+              confirmConfig.onConfirm();
+              setModalConfirmVisible(false);
+            }}
+            title={confirmConfig.title}
+            message={confirmConfig.message}
+            color={confirmConfig.color}
+            confirmText={confirmConfig.confirmText}
+            cancelText={confirmConfig.cancelText}
+          />
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

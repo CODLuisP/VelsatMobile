@@ -258,7 +258,6 @@ const ServicesDriver = () => {
       // Cambiar estado local
       setServiceStates(prev => ({ ...prev, [codservicio]: 'started' }));
     } catch (error) {
-      console.error(error);
     } finally {
       setLoadingStart(null);
     }
@@ -284,7 +283,6 @@ const ServicesDriver = () => {
       // Cambiar estado local
       setServiceStates(prev => ({ ...prev, [codservicio]: 'finished' }));
     } catch (error) {
-      console.error(error);
     } finally {
       setLoadingEnd(null);
     }

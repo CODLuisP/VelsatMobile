@@ -7,7 +7,6 @@ import {
   Platform,
   Modal,
   Animated,
-  Alert,
   PermissionsAndroid,
   ActivityIndicator,
   Image,
@@ -45,6 +44,7 @@ import Share from 'react-native-share';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
 import ReportSlider, { ReportType } from '../../../components/ReportSlider';
+import ModalAlert from '../../../components/ModalAlert';
 
 interface Unit {
   id: number;
@@ -96,6 +96,13 @@ const Reports: React.FC = () => {
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
+
   // Definición de tipos de reportes
   const reportTypes: ReportType[] = [
     {
@@ -107,7 +114,7 @@ const Reports: React.FC = () => {
     },
     {
       id: 1,
-      name: 'Reporte de Paradas',
+      name: 'Reporte Paradas',
       icon: Hand,
       description: 'Detalle de paradas realizadas',
       gradient: ['#c1d3fe', '#7f94c5ff'],
@@ -116,7 +123,7 @@ const Reports: React.FC = () => {
     },
     {
       id: 2,
-      name: 'Reporte de Velocidad',
+      name: 'Reporte Velocidad',
       icon: Gauge,
       description: 'Control de excesos de velocidad',
       gradient: ['#c1d3fe', '#7f94c5ff'],
@@ -125,7 +132,7 @@ const Reports: React.FC = () => {
     },
     {
       id: 3,
-      name: 'Reporte de Kilometraje',
+      name: 'Reporte Kilometraje',
       icon: Route,
       description: 'Distancias recorridas por unidad(es)',
       gradient: ['#c1d3fe', '#7f94c5ff'],
@@ -134,7 +141,7 @@ const Reports: React.FC = () => {
     },
     {
       id: 4,
-      name: 'Reporte de Recorrido',
+      name: 'Reporte Recorrido',
       icon: FileText,
       description: 'Rutas y trayectos completos',
       gradient: ['#c1d3fe', '#7f94c5ff'],
@@ -147,7 +154,6 @@ const Reports: React.FC = () => {
     const username = user?.username;
 
     if (!username) {
-      console.log('No hay username disponible');
       return;
     }
 
@@ -166,7 +172,6 @@ const Reports: React.FC = () => {
 
       setUnits(formattedUnits);
     } catch (error) {
-      console.error('Error al obtener unidades:', error);
     } finally {
       setLoadingUnits(false);
     }
@@ -195,6 +200,11 @@ const Reports: React.FC = () => {
     navigation.goBack();
   };
 
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
+  };
+
   const handleSelectReport = (reportId: number) => {
     setSelectedReport(reportId);
   };
@@ -203,13 +213,13 @@ const Reports: React.FC = () => {
     const validation = validateForm();
 
     if (!validation.isValid) {
-      Alert.alert('Campos requeridos', validation.message);
+      handleShowAlert('Campos requeridos', validation.message, '#e36414'); // Rojo para error
       return;
     }
 
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) {
-      Alert.alert('Error', 'Se necesitan permisos de almacenamiento');
+      handleShowAlert('Error', 'Se necesitan permisos de almacenamiento', '#e36414');
       return;
     }
 
@@ -275,7 +285,6 @@ const Reports: React.FC = () => {
         url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
       }
 
-      console.log('URL de descarga:', url);
 
       const { dirs } = RNFetchBlob.fs;
       const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
@@ -294,7 +303,6 @@ const Reports: React.FC = () => {
         },
       }).fetch('GET', url);
 
-      console.log('Descarga completada:', filePath);
 
       if (Platform.OS === 'ios') {
         await Share.open({
@@ -307,16 +315,19 @@ const Reports: React.FC = () => {
         setDownloadingExcel(false);
       } else {
         setDownloadingExcel(false);
-        Alert.alert(
+        handleShowAlert(
           'Descarga exitosa',
           'Archivo guardado en Descargas',
-          [{ text: 'OK' }]
+          '#4CAF50' // Verde para éxito
         );
       }
     } catch (error) {
-      console.error('Error al descargar:', error);
       setDownloadingExcel(false);
-      Alert.alert('Error', 'No se pudo descargar el archivo Excel');
+      handleShowAlert(
+        'Error',
+        'No se pudo descargar el archivo Excel',
+        '#e36414' // Rojo para error
+      );
     }
   };
 
@@ -324,7 +335,7 @@ const Reports: React.FC = () => {
     const validation = validateForm();
 
     if (!validation.isValid) {
-      Alert.alert('Campos requeridos', validation.message);
+      handleShowAlert('Campos requeridos', validation.message, '#e36414'); // Rojo para error
       return;
     }
 
@@ -366,9 +377,6 @@ const Reports: React.FC = () => {
         });
         break;
       default:
-        console.warn(
-          `No se encontró pantalla para el reporte: ${selectedReport}`,
-        );
         break;
     }
   };
@@ -544,14 +552,13 @@ const Reports: React.FC = () => {
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (err) {
-        console.warn(err);
         return false;
       }
     }
     return true;
   };
 
-  const validateForm = (): { isValid: boolean; message: string } => {
+  const validateForm = () => {
     if (!selectedUnit && !allUnitsEnabled) {
       return {
         isValid: false,
@@ -809,6 +816,7 @@ const Reports: React.FC = () => {
             onPress={handleDownloadExcel}
             disabled={downloadingExcel || selectedReport === 4}
             activeOpacity={0.8}
+            
           >
             {downloadingExcel ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -845,6 +853,14 @@ const Reports: React.FC = () => {
         units={units}
         onClose={handleCloseUnitModal}
         onSelectUnit={handleSelectUnit}
+      />
+      
+      <ModalAlert
+        isVisible={modalAlertVisible}
+        onClose={() => setModalAlertVisible(false)}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        color={alertConfig.color}
       />
     </LinearGradient>
   );

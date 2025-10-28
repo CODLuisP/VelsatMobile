@@ -40,6 +40,7 @@ import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 import LinearGradient from 'react-native-linear-gradient';
+import ModalAlert from '../../../components/ModalAlert';
 
 type InfoDeviceRouteProp = RouteProp<RootStackParamList, 'InfoDevice'>;
 
@@ -82,6 +83,18 @@ const InfoDevice = () => {
   const [vehiculoData, setVehiculoData] = useState<VehiculoData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
+
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
+  };
+
   const username = user?.username;
 
   useFocusEffect(
@@ -113,7 +126,6 @@ const InfoDevice = () => {
       );
       setVehiculoData(response.data.vehiculo);
     } catch (error) {
-      console.error('Error fetching vehiculo data:', error);
     } finally {
       setLoading(false);
     }
@@ -132,7 +144,11 @@ const InfoDevice = () => {
   };
   const handleShare = async () => {
     if (!vehiculoData) {
-      Alert.alert('Error', 'No hay información disponible para compartir');
+      handleShowAlert(
+        'Error',
+        'No hay información disponible para compartir',
+        '#e36414',
+      );
       return;
     }
 
@@ -162,8 +178,11 @@ Compartido desde Velsat Mobile
         title: `Ubicación de ${deviceName}`,
       });
     } catch (error) {
-      console.error('Error al compartir:', error);
-      Alert.alert('Error', 'No se pudo compartir la información');
+      handleShowAlert(
+        'Error',
+        'No se pudo compartir la información',
+        '#e36414',
+      );
     }
   };
 
@@ -189,9 +208,12 @@ Compartido desde Velsat Mobile
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-
       <View style={[styles.header, { paddingTop: topSpace }]}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={handleGoBack}
+          style={styles.backButton}
+          activeOpacity={0.7}
+        >
           <ChevronLeft size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerContent}>
@@ -363,13 +385,12 @@ Compartido desde Velsat Mobile
               </Text>
             </View>
           </View>
-
         </View>
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.eventsButton} onPress={handleEvents}>
-            <TriangleAlert color='#fff'/>
+            <TriangleAlert color="#fff" />
             <Text style={styles.eventsButtonText}>Eventos</Text>
           </TouchableOpacity>
 
@@ -378,6 +399,14 @@ Compartido desde Velsat Mobile
             <Text style={styles.shareButtonText}>Compartir</Text>
           </TouchableOpacity>
         </View>
+
+        <ModalAlert
+          isVisible={modalAlertVisible}
+          onClose={() => setModalAlertVisible(false)}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          color={alertConfig.color}
+        />
       </ScrollView>
     </LinearGradient>
   );

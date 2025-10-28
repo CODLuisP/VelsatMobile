@@ -74,13 +74,11 @@ const Help = () => {
         if (supported) {
           return Linking.openURL(url);
         } else {
-          console.log('WhatsApp no está instalado');
           // Opción alternativa: abrir en el navegador
           const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
           return Linking.openURL(webUrl);
         }
       })
-      .catch((err) => console.error('Error al abrir WhatsApp:', err));
   };
 
   const handleWebsitePress = () => {
@@ -92,7 +90,6 @@ const Help = () => {
     switch (option.action) {
       case 'contact':
         handleCentral();
-        console.log('Contactar central');
         break;
       case 'whatsapp':
         handleWhatsAppPress();
@@ -102,7 +99,6 @@ const Help = () => {
       break;
       case 'tutorials':
         // Navegar a video tutoriales
-        console.log('Ver tutoriales');
         break;
       default:
         break;

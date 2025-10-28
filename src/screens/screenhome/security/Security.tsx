@@ -32,6 +32,8 @@ import {
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import LinearGradient from 'react-native-linear-gradient';
+import ModalAlert from '../../../components/ModalAlert';
+import ModalConfirm from '../../../components/ModalConfirm';
 
 // Configuración del botón
 interface ButtonConfig {
@@ -56,6 +58,58 @@ const Security: React.FC = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
+
+  const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+    onConfirm: () => {},
+    confirmText: '',
+    cancelText: '',
+  });
+
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+    onDismiss: () => {}, // ← NUEVO
+  });
+
+  const handleShowAlert = (
+    title: string,
+    message: string,
+    color?: string,
+    onDismiss?: () => void, // ← NUEVO parámetro opcional
+  ) => {
+    setAlertConfig({
+      title,
+      message,
+      color: color || '#e36414',
+      onDismiss: onDismiss || (() => {}), // ← NUEVO
+    });
+    setModalAlertVisible(true);
+  };
+
+  const handleShowConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    color?: string,
+    confirmText?: string,
+    cancelText?: string,
+  ) => {
+    setConfirmConfig({
+      title,
+      message,
+      color: color || '#FFA726',
+      onConfirm,
+      confirmText: confirmText || 'Aceptar',
+      cancelText: cancelText || 'Cancelar',
+    });
+    setModalConfirmVisible(true);
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -101,47 +155,45 @@ const Security: React.FC = () => {
 
     try {
       if (isAlreadyEnabled) {
-        Alert.alert(
+        handleShowConfirm(
           'Desactivar Biometría',
           `¿Estás seguro de que quieres desactivar ${getBiometricDisplayName()}? Tendrás que usar tu usuario y contraseña para entrar.`,
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-              text: 'Desactivar',
-              style: 'destructive',
-              onPress: async () => {
-                try {
-                  await disableBiometric();
-                  setIsAlreadyEnabled(false);
-                  Alert.alert(
-                    'Biometría Desactivada',
-                    'La biometría ha sido desactivada correctamente. Ahora deberás usar tu usuario y contraseña para entrar.',
-                    [{ text: 'Entendido' }],
-                  );
-                } catch (error) {
-                  console.log('Error disabling biometrics:', error);
-                  Alert.alert(
-                    'Error',
-                    'Hubo un problema al desactivar la biometría.',
-                    [{ text: 'OK' }],
-                  );
-                }
-              },
-            },
-          ],
+          async () => {
+            try {
+              await disableBiometric();
+              setIsAlreadyEnabled(false);
+
+              // Mostrar alerta de éxito
+              handleShowAlert(
+                'Biometría Desactivada',
+                'La biometría ha sido desactivada correctamente. Ahora deberás usar tu usuario y contraseña para entrar.',
+                '#4CAF50', // Verde - Éxito
+              );
+            } catch (error) {
+              // Mostrar alerta de error
+              handleShowAlert(
+                'Error',
+                'Hubo un problema al desactivar la biometría.',
+                '#e36414', // Rojo - Error
+              );
+            }
+          },
+          '#e36414', // Rojo - Acción destructiva
+          'Desactivar',
+          'Cancelar',
         );
         setIsActivating(false);
         return;
       }
 
       if (!biometric.isAvailable) {
-        Alert.alert(
+        handleShowConfirm(
           'Configurar PIN',
           'Tu dispositivo no tiene biometría disponible. Te dirigiremos a configurar un PIN.',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Configurar', onPress: () => navigateToPin() },
-          ],
+          () => navigateToPin(),
+          '#29B6F6', // Azul - Informativo
+          'Configurar',
+          'Cancelar',
         );
         setIsActivating(false);
         return;
@@ -151,24 +203,24 @@ const Security: React.FC = () => {
 
       if (success) {
         setIsAlreadyEnabled(true);
-        Alert.alert(
+        handleShowAlert(
           'Perfecto!',
-          `${getBiometricDisplayName()} ha sido activada exitosamente. Ahora podrás acceder a la app de forma rápida y segura.`,
-          [{ text: 'Continuar', onPress: () => navigation.goBack() }],
+          `${getBiometricDisplayName()} ha sido activada exitosamente.`,
+          '#4CAF50',
+          () => navigation.goBack(), // ← Cuarto parámetro opcional
         );
       } else {
-        Alert.alert(
+        handleShowAlert(
           'Error',
           'No se pudo activar la biometría. Inténtalo de nuevo.',
-          [{ text: 'OK' }],
+          '#FF6B6B', // Rojo - Error
         );
       }
     } catch (error) {
-      console.log('Error activating biometrics:', error);
-      Alert.alert(
+      handleShowAlert(
         'Error',
         'Hubo un problema al configurar la biometría. Verifica que esté configurada en tu dispositivo.',
-        [{ text: 'OK' }],
+        '#FF6B6B', // Rojo - Error
       );
     }
 
@@ -176,7 +228,6 @@ const Security: React.FC = () => {
   };
 
   const navigateToPin = (): void => {
-    console.log('Navegar a configuración de PIN');
   };
 
   const getButtonConfig = (): ButtonConfig => {
@@ -347,7 +398,11 @@ const Security: React.FC = () => {
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Seguridad</Text>
@@ -438,6 +493,31 @@ const Security: React.FC = () => {
             <View style={styles.buttonGradient} />
           </TouchableOpacity>
         </View>
+
+        <ModalAlert
+          isVisible={modalAlertVisible}
+          onClose={() => {
+            setModalAlertVisible(false);
+            alertConfig.onDismiss(); // ← Ejecuta el callback
+          }}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          color={alertConfig.color}
+        />
+
+        <ModalConfirm
+          isVisible={modalConfirmVisible}
+          onClose={() => setModalConfirmVisible(false)}
+          onConfirm={() => {
+            confirmConfig.onConfirm();
+            setModalConfirmVisible(false);
+          }}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          color={confirmConfig.color}
+          confirmText={confirmConfig.confirmText}
+          cancelText={confirmConfig.cancelText}
+        />
       </ScrollView>
     </LinearGradient>
   );

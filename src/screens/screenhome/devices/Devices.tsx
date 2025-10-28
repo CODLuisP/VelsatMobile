@@ -119,7 +119,6 @@ const Devices = () => {
 
       setDevices(transformedDevices);
     } catch (err) {
-      console.error('Error al obtener dispositivos:', err);
       setError('Error al cargar los dispositivos');
     } finally {
       if (showLoading) {
