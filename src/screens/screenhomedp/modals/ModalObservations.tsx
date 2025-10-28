@@ -120,7 +120,7 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
     <Modal
       visible={visible}
       animationType="slide"
-      transparent={false}
+      transparent={true}
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
