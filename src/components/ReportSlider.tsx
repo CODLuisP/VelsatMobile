@@ -184,14 +184,8 @@ imageContainer: {
   borderTopLeftRadius: 70,
   borderBottomLeftRadius: 70,
   overflow: 'hidden',
-  shadowColor: '#000',
-  shadowOffset: {
-    width: -2,
-    height: 0,
-  },
-  shadowOpacity: 0.3,
-  shadowRadius: 5,
-  elevation: 8,
+  marginRight: Platform.OS == 'android' ? -20:0,
+
 },
 cardImage: {
   width: '100%',
