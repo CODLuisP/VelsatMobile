@@ -275,5 +275,6 @@ export const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent:'center',
+    width:120
   },
 });

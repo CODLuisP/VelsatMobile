@@ -13,6 +13,8 @@ import {
   User,
   CalendarX2,
   Clock,
+  ChevronRight,
+  Eye,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
@@ -26,6 +28,7 @@ import {
 import { styles } from '../../styles/servicesdriver';
 import { useAuthStore } from '../../store/authStore';
 import axios from 'axios';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface ApiService {
   codservicio: string;
@@ -87,9 +90,9 @@ const ServicesPassenger = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
-          if (error.response.data && 
-              typeof error.response.data === 'string' && 
-              error.response.data.includes('No se encontraron servicios')) {
+          if (error.response.data &&
+            typeof error.response.data === 'string' &&
+            error.response.data.includes('No se encontraron servicios')) {
             setApiServices([]);
           }
         }
@@ -141,7 +144,7 @@ const ServicesPassenger = () => {
 
     const ahora = new Date();
     const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
-    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5); 
+    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
 
     const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
     const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
@@ -185,7 +188,12 @@ const ServicesPassenger = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    <LinearGradient
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -268,7 +276,7 @@ const ServicesPassenger = () => {
                             <Text style={styles.groupLabel}>Tipo y orden</Text>
                           </View>
                           <Text style={styles.groupValue}>
-                            {getTipoServicio(service.tipo)} - {service.orden} /{' '}
+                            {getTipoServicio(service.tipo)} - {service.orden} /
                             {service.totalpax}
                           </Text>
                         </View>
@@ -306,13 +314,23 @@ const ServicesPassenger = () => {
                       </View>
                     </View>
                   </View>
+                  <TouchableOpacity
+                    style={styles.clickPrompt}
+                    activeOpacity={0.7}
+                  >
+                    <Eye size={16} color="#032660ff" />
+                    <Text style={styles.clickPromptText}>
+                      Ver detalles completos
+                    </Text>
+                    <ChevronRight size={16} color="#032660ff" />
+                  </TouchableOpacity>
                 </View>
               </TouchableOpacity>
             ))
           )}
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 };
 

@@ -115,7 +115,7 @@ const ServicesDriver = () => {
       if (ahoraPeru.getTime() > fechaFinServicio.getTime()) {
         return {
           text: 'Finalizado',
-          color: '#CF1B1B',
+          color: '#f17b7bff',
         };
       }
 

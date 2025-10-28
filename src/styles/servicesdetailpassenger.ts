@@ -38,10 +38,10 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 15,
+    marginBottom: 8,
   },
   driverContainer: {
     flexDirection: 'row',
@@ -96,8 +96,8 @@ export const styles = StyleSheet.create({
   },
   locationRight: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    width: 100,
+    justifyContent: 'center',
+    width: 110,
   },
   dateLabel: {
     fontSize: 12,
@@ -105,7 +105,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   dateValue: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#000',
     fontWeight: '500',
     textAlign: 'center',

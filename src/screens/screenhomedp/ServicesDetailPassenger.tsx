@@ -31,6 +31,7 @@ import { CancelModal } from './modals/CancelModal';
 import { RatingModal } from './modals/RatingModal';
 import VehicleMap from './VehicleMap'; // 👈 Importar el nuevo componente
 import axios from 'axios';
+import LinearGradient from 'react-native-linear-gradient';
 
 type ServicesDetailPassengerRouteProp = RouteProp<
   RootStackParamList,
@@ -382,8 +383,14 @@ const ServicesDetailPassenger = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <View style={[styles.container, { paddingBottom: bottomSpace - 2 }]}>
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+    <LinearGradient
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >      
+    
+    <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
@@ -443,8 +450,7 @@ const ServicesDetailPassenger = () => {
                   <Text style={styles.driverLabel}>Conductor</Text>
                   <Text style={styles.driverValue}>
                     {driverData
-                      ? `${driverData.apellidos?.trim() || ''} ${
-                          driverData.nombres?.trim() || ''
+                      ? `${driverData.apellidos?.trim() || ''} ${driverData.nombres?.trim() || ''
                         }`.trim() || 'No disponible'
                       : 'No asignado'}
                   </Text>
@@ -524,7 +530,7 @@ const ServicesDetailPassenger = () => {
 
               {loadingDestino ? (
                 <View style={{ padding: 20, alignItems: 'center' }}>
-                  <ActivityIndicator size="large" color="#fff" />
+                  <ActivityIndicator size="large" color="#e36414" />
                   <Text style={{ color: '#fff', marginTop: 10 }}>
                     Cargando lugar de recojo...
                   </Text>
@@ -550,8 +556,7 @@ const ServicesDetailPassenger = () => {
                       <Text style={styles.locationLabel}>Ubicación</Text>
                       <Text style={styles.locationValue}>
                         {destinoData
-                          ? `${destinoData.apellidos} ${
-                              destinoData.nombres || ''
+                          ? `${destinoData.apellidos} ${destinoData.nombres || ''
                             }`.trim()
                           : 'Aeropuerto Internacional Jorge Chávez'}
                       </Text>
@@ -573,12 +578,12 @@ const ServicesDetailPassenger = () => {
                         onPress={() => {
                           const lat =
                             serviceData.destino === '4175' ||
-                            serviceData.destino === null
+                              serviceData.destino === null
                               ? -12.0249367
                               : parseFloat(destinoData?.wy || '-12.0249367');
                           const lng =
                             serviceData.destino === '4175' ||
-                            serviceData.destino === null
+                              serviceData.destino === null
                               ? -77.1169252
                               : parseFloat(destinoData?.wx || '-77.1169252');
                           openGoogleMaps(lat, lng);
@@ -639,8 +644,7 @@ const ServicesDetailPassenger = () => {
                       <Text style={styles.locationLabel}>Ubicación</Text>
                       <Text style={styles.locationValue}>
                         {destinoData
-                          ? `${destinoData.apellidos} ${
-                              destinoData.nombres || ''
+                          ? `${destinoData.apellidos} ${destinoData.nombres || ''
                             }`.trim()
                           : 'Aeropuerto Internacional Jorge Chávez'}
                       </Text>
@@ -662,12 +666,12 @@ const ServicesDetailPassenger = () => {
                         onPress={() => {
                           const lat =
                             serviceData.destino === '4175' ||
-                            serviceData.destino === null
+                              serviceData.destino === null
                               ? -12.0249367
                               : parseFloat(destinoData?.wy || '-12.0249367');
                           const lng =
                             serviceData.destino === '4175' ||
-                            serviceData.destino === null
+                              serviceData.destino === null
                               ? -77.1169252
                               : parseFloat(destinoData?.wx || '-77.1169252');
                           openGoogleMaps(lat, lng);
@@ -856,7 +860,7 @@ const ServicesDetailPassenger = () => {
         onConfirm={handleSendRating}
         onCancel={handleCloseRatingModal}
       />
-    </View>
+    </LinearGradient>
   );
 };
 

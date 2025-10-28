@@ -119,7 +119,7 @@ export const CancelModal: React.FC<CancelModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 
   contentArea: {
