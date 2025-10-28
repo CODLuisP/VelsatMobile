@@ -184,7 +184,7 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
-      statusBarTranslucent
+      
     >
       <View style={styles.modalContainer}>
         <View style={[styles.modalContent, { paddingTop: topSpace - 35 }]}>
