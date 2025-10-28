@@ -409,7 +409,7 @@ const Login = () => {
   return (
     <>
      <LinearGradient
-         colors={['#06152dff', '#082149ff', '#021d49ff']}
+         colors={['#052152ff', '#051d43ff', '#042d6fff']}
          style={[styles.container]}
          start={{ x: 0, y: 0 }}
          end={{ x: 0, y: 1 }}

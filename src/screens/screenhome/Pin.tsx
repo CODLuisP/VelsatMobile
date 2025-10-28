@@ -79,7 +79,7 @@ const Pin = () => {
 
   return (
     <LinearGradient
-      colors={['#05214fff', '#00103dff', '#001a45ff']}
+      colors={['#011435ff', '#102d7cff', '#001a45ff']}
       style={[styles.container, { paddingBottom: bottomSpace }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}

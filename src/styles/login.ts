@@ -5,7 +5,6 @@ const { width, height } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
 
 backgroundMap: {
@@ -22,155 +21,9 @@ backgroundMap: {
     opacity: 0.1,
   },
 
-  orb1: {
-    width: 200,
-    height: 200,
-    backgroundColor: '#f97316',
-    top: height * 0.1,
-    right: -50,
-  },
 
-  orb2: {
-    width: 150,
-    height: 150,
-    backgroundColor: '#3b82f6',
-    top: height * 0.4,
-    left: -30,
-  },
 
-  orb3: {
-    width: 120,
-    height: 120,
-    backgroundColor: '#f97316',
-    top: height * 0.6,
-    right: -20,
-  },
 
-  // ESTILOS GPS
-
-  // Satélites
-  satellite: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: 0.7,
-  },
-
-  satelliteIcon: {
-    fontSize: 16,
-  },
-
-  // Señales GPS
-  gpsSignal: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 0.2,
-    borderColor: '#10b981',
-    backgroundColor: 'rgba(16, 185, 129, 0.)',
-  },
-
-  gpsSignal1Pos: {
-    top: height * 0.2,
-    left: width * 0.15,
-  },
-
-  gpsSignal2Pos: {
-    top: height * 0.35,
-    right: width * 0.2,
-  },
-
-  gpsSignal3Pos: {
-    top: height * 0.5,
-    left: width * 0.1,
-  },
-
-  // Radar
-  radarContainer: {
-    position: 'absolute',
-    top: height * 0.08,
-    left: width * 0.1,
-    width: 80,
-    height: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  radarSweep: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.4)',
-    borderRightColor: '#10b981',
-    borderTopColor: 'transparent',
-    borderBottomColor: 'transparent',
-    borderLeftColor: 'transparent',
-  },
-
-  radarCenter: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.5)',
-  },
-
-  radarIcon: {
-    fontSize: 14,
-  },
-
-  // Antena
-  antennaContainer: {
-    position: 'absolute',
-    top: height * 0.15,
-    right: width * 0.15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  antennaSignal: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderWidth: 2,
-    borderColor: 'rgba(59, 130, 246, 0.5)',
-  },
-
-  antennaIcon: {
-    fontSize: 18,
-    opacity: 0.8,
-  },
-
-  // Pulsos de red
-  networkPulse: {
-    position: 'absolute',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(249, 115, 22, 0.3)',
-    borderWidth: 1,
-    borderColor: 'rgba(249, 115, 22, 0.6)',
-  },
-
-  networkPulse1: {
-    top: height * 0.3,
-    left: width * 0.05,
-  },
-
-  networkPulse2: {
-    top: height * 0.45,
-    right: width * 0.05,
-  },
 
   // Contenido principal
   mainContent: {
