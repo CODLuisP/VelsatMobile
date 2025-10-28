@@ -76,7 +76,6 @@ export const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ecececff',
     justifyContent: 'center',
     alignItems: 'center',
 
@@ -84,12 +83,11 @@ export const styles = StyleSheet.create({
   // Cards
   card: {
     borderRadius: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+ 
     paddingHorizontal: 20,
     marginBottom: 10,
     paddingBottom: 10,
-    backgroundColor:'#f8f9fa',
+    backgroundColor:'#f2f8feff',
     marginHorizontal:20
     
   },
@@ -109,9 +107,9 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#000000ff',
     textAlign: 'center',
-        fontWeight: '600',
-
-    marginBottom: 12,
+    fontWeight: '600',
+    marginBottom: 10,
+    marginTop:10
   },
   // Rows y contenedores
   rowWithIcon: {
@@ -199,19 +197,19 @@ export const styles = StyleSheet.create({
   buttonBlue: {
     backgroundColor: '#2563eb',
     paddingVertical: 9,
-    paddingHorizontal: 10,
+    paddingHorizontal: 7,
     borderRadius: 10,
   },
   buttonGray: {
     backgroundColor: '#018b3aff',
     paddingVertical: 9,
-    paddingHorizontal: 10,
+    paddingHorizontal:7,
     borderRadius: 10,
   },
   buttonOrange: {
     backgroundColor: '#f97316',
     paddingVertical: 9,
-    paddingHorizontal: 10,
+    paddingHorizontal: 7,
     borderRadius: 10,
   },
   buttonText: {
