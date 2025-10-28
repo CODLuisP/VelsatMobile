@@ -36,21 +36,7 @@ export const homeStyles = StyleSheet.create({
     height: 200,
     zIndex: 1,
   },
-  satelliteBeams: {
-    position: 'absolute',
-    top: 80,
-    right: 80,
-    width: 120,
-    height: 120,
-    backgroundColor: 'transparent',
-    borderRadius: 60,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    shadowColor: '#ffffff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-  },
+
   headerContent: {
     zIndex: 2,
     paddingHorizontal: 20,
