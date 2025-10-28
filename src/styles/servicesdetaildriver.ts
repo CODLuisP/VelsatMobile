@@ -76,7 +76,7 @@ export const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ffefe0ff',
+    backgroundColor: '#ecececff',
     justifyContent: 'center',
     alignItems: 'center',
 
@@ -199,19 +199,19 @@ export const styles = StyleSheet.create({
   buttonBlue: {
     backgroundColor: '#2563eb',
     paddingVertical: 9,
-    paddingHorizontal: 18,
+    paddingHorizontal: 10,
     borderRadius: 10,
   },
   buttonGray: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: '#018b3aff',
     paddingVertical: 9,
-    paddingHorizontal: 18,
+    paddingHorizontal: 10,
     borderRadius: 10,
   },
   buttonOrange: {
     backgroundColor: '#f97316',
     paddingVertical: 9,
-    paddingHorizontal: 18,
+    paddingHorizontal: 10,
     borderRadius: 10,
   },
   buttonText: {

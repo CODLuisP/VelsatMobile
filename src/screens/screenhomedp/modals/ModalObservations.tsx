@@ -119,9 +119,10 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      transparent={true}
+      animationType="none"
+      transparent={false}
       onRequestClose={onClose}
+      statusBarTranslucent
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -392,19 +393,12 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E5E5',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0c55b5ff',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#007AFF',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+
   },
   submitButtonDisabled: {
     backgroundColor: '#E5E5E5',

@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
   },
   contentList: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -35,7 +35,6 @@ export const styles = StyleSheet.create({
   },
   
   // ===== NUEVOS ESTILOS =====
-  // Banner de instrucciones
   instructionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -75,6 +74,7 @@ export const styles = StyleSheet.create({
     borderTopColor: '#E0E0E0',
     gap: 6,
     paddingVertical:7,
+    backgroundColor:'#edf5ffff'
   },
   clickPromptText: {
     fontSize: 13,
@@ -84,20 +84,13 @@ export const styles = StyleSheet.create({
   // ===== FIN NUEVOS ESTILOS =====
   
   serviceCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#f8fbffff',
     borderRadius: 10,
     marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#032660ff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.12,
-    shadowRadius: 5,
-    elevation: 4,
+  
   },
   serviceHeader: {
     backgroundColor: '#032660ff',

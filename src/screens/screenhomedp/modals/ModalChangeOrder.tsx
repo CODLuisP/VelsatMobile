@@ -413,14 +413,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#f91f1fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#ffffffff',
   },
   saveButton: {
     flex: 1,
