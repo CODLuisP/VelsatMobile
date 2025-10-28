@@ -60,7 +60,7 @@ const Pin = () => {
       id: 'sedan',
       title: 'Sedán clásico',
       description: 'Ideal para vehículos ligeros y automóviles',
-      image: require('../../../assets/sedannew.jpg'),
+      image: require('../../../assets/sedan.jpg'),
     },
     {
       id: 'pickup',
@@ -79,7 +79,7 @@ const Pin = () => {
 
   return (
     <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      colors={['#05214fff', '#00103dff', '#001a45ff']}
       style={[styles.container, { paddingBottom: bottomSpace }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
