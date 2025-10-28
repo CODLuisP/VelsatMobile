@@ -219,7 +219,7 @@ backgroundMap: {
   },
 
   logoText: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#ffffff',
     letterSpacing: 3,
@@ -250,7 +250,7 @@ backgroundMap: {
   },
 
   welcomeText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
     textAlign: 'center',

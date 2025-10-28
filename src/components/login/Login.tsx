@@ -408,18 +408,12 @@ const Login = () => {
 
   return (
     <>
-      <LinearGradient
-        colors={[
-          '#003f88',
-          '#00296b',
-          '#00296b',
-          '#001845',
-          '#00296b',
-          '#00296b',
-          '#00296b',
-        ]}
-        style={styles.container}
-      >
+     <LinearGradient
+         colors={['#06152dff', '#082149ff', '#021d49ff']}
+         style={[styles.container]}
+         start={{ x: 0, y: 0 }}
+         end={{ x: 0, y: 1 }}
+       >
         <StatusBar
           barStyle="light-content"
           backgroundColor="transparent"
