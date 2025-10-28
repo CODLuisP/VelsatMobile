@@ -655,7 +655,7 @@ const Home: React.FC = () => {
 
   return (
     <LinearGradient
-      colors={['#021e4bff', '#00296b', '#00296b']}
+      colors={['#031838ff', '#00296b', '#06204aff']}
       style={[homeStyles.container]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
