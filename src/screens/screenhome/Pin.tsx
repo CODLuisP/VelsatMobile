@@ -78,12 +78,12 @@ const Pin = () => {
   const topSpace = insets.top + 5;
 
   return (
-    <LinearGradient
-      colors={['#011435ff', '#102d7cff', '#001a45ff']}
-      style={[styles.container, { paddingBottom: bottomSpace }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+   <LinearGradient
+       colors={['#021e4bff', '#183890ff', '#032660ff']}
+       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+       start={{ x: 0, y: 0 }}
+       end={{ x: 0, y: 1 }}
+     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>

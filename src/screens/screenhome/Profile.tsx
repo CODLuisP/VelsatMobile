@@ -132,12 +132,12 @@ const Profile = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#011435ff', '#102d7cff', '#001a45ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+   <LinearGradient
+       colors={['#021e4bff', '#183890ff', '#032660ff']}
+       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+       start={{ x: 0, y: 0 }}
+       end={{ x: 0, y: 1 }}
+     >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <TouchableOpacity

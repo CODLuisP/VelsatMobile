@@ -39,8 +39,8 @@ export const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#E3F2FD',
-    lineHeight: 20,
+    color: '#ffffffff',
+    lineHeight: 15,
     opacity: 0.9,
   },
   scrollContainer: {
