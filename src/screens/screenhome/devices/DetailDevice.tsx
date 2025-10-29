@@ -712,7 +712,7 @@ useEffect(() => {
           styles.infoPanel,
           {
             bottom: Platform.OS === 'ios' ? bottomSpace : bottomSpace - 2,
-            height: isInfoExpanded ? 280 : 50,
+            height: isInfoExpanded ? 270 : 50,
             backgroundColor: '#1e3a8a',
           },
         ]}
@@ -875,7 +875,7 @@ useEffect(() => {
                   </View>
                 </View>
                 <View style={styles.locationInfoRight}>
-                  <Text style={styles.locationTitle}>{address}</Text>
+                  <Text style={styles.locationTitle} numberOfLines={3}>{address}</Text>
                   <Text style={styles.locationSubtitle}>Ubicación actual</Text>
              
                 </View>
