@@ -105,7 +105,7 @@ panelContent: {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 2,
-    marginTop:-35
+    marginTop:-20
   },
   statusItem: {
     flexDirection: 'row',
