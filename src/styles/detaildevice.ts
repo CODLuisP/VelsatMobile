@@ -153,7 +153,7 @@ panelContent: {
     fontSize: 12,
     color: '#9ca3af',
     position:'absolute',
-    top:32,
+    top:35,
     right:0
 
   },
@@ -230,7 +230,7 @@ panelContent: {
   locationButton: {
     position: 'absolute',
     right: 25,
-    top: 15,
+    top: 20,
     transform: [{ translateY: -15 }],
     width: 30,
     height: 30,
