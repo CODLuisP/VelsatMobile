@@ -19,16 +19,14 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
-import { useAuthStore } from '../../store/authStore'; // ⭐ Zustand
+import { useAuthStore } from '../../store/authStore'; 
 
 const Pin = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   
-  // ⭐ Zustand: Mantener la funcionalidad del primer documento
   const selectedVehiclePin = useAuthStore(state => state.selectedVehiclePin);
   const setSelectedVehiclePin = useAuthStore(state => state.setSelectedVehiclePin);
 
-  // ⭐ Convertir el código de pin a id para la UI
   const selectedOption = selectedVehiclePin === 's' ? 'sedan' : 
                          selectedVehiclePin === 'p' ? 'pickup' : 'truck';
 
@@ -49,7 +47,6 @@ const Pin = () => {
     navigation.goBack();
   };
 
-  // ⭐ Actualizar con los códigos de Zustand
   const handleSelect = (option: string) => {
     const pinCode = option === 'sedan' ? 's' : 
                     option === 'pickup' ? 'p' : 'c';
@@ -61,19 +58,19 @@ const Pin = () => {
       id: 'sedan',
       title: 'Sedán clásico',
       description: 'Ideal para vehículos ligeros y automóviles',
-      image: require('../../../assets/sedan.jpg'),
+     image: { uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761749071/sedan_egttoq.jpg' },
     },
     {
       id: 'pickup',
       title: 'Pick-up',
       description: 'Perfecto para camionetas y vehículos medianos',
-      image: require('../../../assets/pickup.jpeg'),
+     image: { uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761749071/pickup_olgsyl.jpg' },
     },
     {
       id: 'truck',
       title: 'Camión cisterna',
       description: 'Diseñado para vehículos de carga pesada',
-      image: require('../../../assets/camion.jpg'),
+     image: { uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761749072/camion_rdbvfj.jpg' },
     },
   ];
 const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;

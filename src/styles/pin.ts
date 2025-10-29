@@ -33,7 +33,7 @@ export const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
   },

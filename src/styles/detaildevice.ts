@@ -126,9 +126,22 @@ deviceHeaderInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    paddingVertical:5,
+    paddingBottom:10,
+    marginRight:60,
   },
+
+
+   dateContainerGPS: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical:0,
+  },
+
+
   dateText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#1f2937',
     fontWeight: '600',
   },
@@ -136,6 +149,17 @@ deviceHeaderInfo: {
     fontSize: 12,
     color: '#9ca3af',
   },
+
+    lastReportTextGps: {
+    fontSize: 12,
+    color: '#9ca3af',
+    position:'absolute',
+    top:32,
+    right:-7
+
+  },
+
+
   distanceInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -206,8 +230,8 @@ deviceHeaderInfo: {
   },
   locationButton: {
     position: 'absolute',
-    right: 0,
-    top: '50%',
+    right: 15,
+    top: 15,
     transform: [{ translateY: -15 }],
     width: 30,
     height: 30,

@@ -36,7 +36,7 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     resizeMode: 'cover',
   },
-    avatarImageV: {
+  avatarImageV: {
     width: 50,
     height: 50,
     borderRadius: 10,
@@ -83,7 +83,7 @@ export const styles = StyleSheet.create({
   infoContent: {
     paddingHorizontal: 18,
     paddingTop: 8,
-    marginBottom:8
+    marginBottom: 8
   },
   infoItem: {
     flexDirection: 'row',
@@ -120,8 +120,8 @@ export const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 16,
     borderRadius: 15,
-    borderWidth: 1,       
-   borderColor: '#dee2e6',
+    borderWidth: 1,
+    borderColor: '#dee2e6',
 
   },
   sectionTitle: {
@@ -139,21 +139,21 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 6,
     paddingHorizontal: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
 
-      
+
   },
 
-   menuItemEnd: {
+  menuItemEnd: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 5,
     paddingHorizontal: 20,
-    backgroundColor: '#f8f9fa',
-     
-        borderBottomLeftRadius: 13,
-  borderBottomRightRadius: 13,
+    backgroundColor: '#ffffffff',
+
+    borderBottomLeftRadius: 13,
+    borderBottomRightRadius: 13,
   },
   menuItemLeft: {
     flexDirection: 'row',
@@ -164,7 +164,7 @@ export const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#fff5f0',
+    backgroundColor: '#fff0e9ff',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -201,7 +201,7 @@ export const styles = StyleSheet.create({
   // Footer / Company Info
   footerContainer: {
     paddingBottom: 0,
-    paddingHorizontal:15
+    paddingHorizontal: 15
   },
   companyCard: {
     borderRadius: 16,
@@ -267,7 +267,6 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Estilos antiguos (por compatibilidad)
   versionContainer: {
     paddingVertical: 0,
     paddingHorizontal: 20,
