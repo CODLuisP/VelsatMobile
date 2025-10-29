@@ -4,6 +4,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import {
@@ -232,7 +233,7 @@ const Events = () => {
     }
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient

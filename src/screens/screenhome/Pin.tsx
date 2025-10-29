@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Platform,
 } from 'react-native';
 import { ChevronLeft, Clock, Check, Sparkles } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -75,7 +76,7 @@ const Pin = () => {
       image: require('../../../assets/camion.jpg'),
     },
   ];
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
    <LinearGradient
@@ -94,9 +95,9 @@ const Pin = () => {
         <View style={styles.headerBottom}>
           <Text style={styles.headerTitle}>Cambiar marcador de unidades</Text>
           <Text style={styles.headerSubtitle}>
-            Seleccionar el marcador de tu preferencia, este marcador será con el
-            que visualizarás tus unidades.
+            Elige el marcador de tu preferencia; este se visualizará en tus unidades.
           </Text>
+
         </View>
       </View>
 

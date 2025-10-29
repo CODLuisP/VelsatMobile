@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   Linking,
   ScrollView,
+  Platform,
 } from 'react-native';
 import React from 'react';
 import {
@@ -56,7 +57,7 @@ const Central = () => {
     Linking.openURL('https://www.velsat.com.pe');
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   const phoneNumbers = [
     { id: 1, number: '989112975' },

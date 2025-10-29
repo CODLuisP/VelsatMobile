@@ -652,7 +652,7 @@ const Reports: React.FC = () => {
 
   const isSpeedOptionEnabled = () => selectedReport === 2;
   const isAllUnitsOptionEnabled = () => selectedReport === 3;
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient

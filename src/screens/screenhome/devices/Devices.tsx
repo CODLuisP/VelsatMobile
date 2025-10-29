@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
+  Platform,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -365,7 +366,7 @@ const handleDetailDevice = (device: Device) => {
     );
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
   const activeFiltersCount = getActiveFiltersCount();
 
   return (

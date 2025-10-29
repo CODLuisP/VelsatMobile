@@ -168,12 +168,16 @@ const SpeedReport = () => {
     navigation.goBack();
   };
 
-  const handleReportItemPress = (item: ReportItem) => {
-    const { latitude, longitude } = item;
+const handleReportItemPress = async (item: ReportItem) => {
+  const { latitude, longitude } = item;
 
-    // URL para abrir directamente en Street View 3D
-    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
-  };
+  const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
+  
+  const supported = await Linking.canOpenURL(googleMapsUrl);
+  if (supported) {
+    await Linking.openURL(googleMapsUrl);
+  }
+};
 
   const getSpeedColor = (speed: number) => {
     if (speed === 0) return '#FF4444';
@@ -262,7 +266,7 @@ const SpeedReport = () => {
     );
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient

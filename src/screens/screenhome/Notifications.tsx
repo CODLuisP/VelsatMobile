@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, BackHandler } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, BackHandler, Platform } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Battery,
@@ -333,7 +333,7 @@ const Notifications = () => {
     }
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient

@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   Linking,
+  Platform,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -137,12 +138,16 @@ const StopReport = () => {
     navigation.goBack();
   };
 
-  const handleReportItemPress = (item: ReportItem) => {
-    const { latitude, longitude } = item;
+const handleReportItemPress = async (item: ReportItem) => {
+  const { latitude, longitude } = item;
 
-    // URL para Google Maps en Street View
-   const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
-  };
+  const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
+  
+  const supported = await Linking.canOpenURL(googleMapsUrl);
+  if (supported) {
+    await Linking.openURL(googleMapsUrl);
+  }
+};
 
   const renderReportItem = ({
     item,
@@ -227,7 +232,7 @@ const StopReport = () => {
     );
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient

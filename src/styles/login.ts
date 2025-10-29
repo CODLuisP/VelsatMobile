@@ -13,19 +13,9 @@ backgroundMap: {
   left: (width - 580) / 2,    
   width: 580,
   height: 500,
-  opacity: 1,
+  opacity: 0.8,
 },
-  orb: {
-    position: 'absolute',
-    borderRadius: 100,
-    opacity: 0.1,
-  },
 
-
-
-
-
-  // Contenido principal
   mainContent: {
     flex: 1,
     paddingTop: 80,
@@ -134,15 +124,15 @@ backgroundMap: {
 
   inputIconContainer: {
     width: 50,
-    height: 56,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(249, 115, 22, 0.2)',
+    backgroundColor: '#3c67a142',
   },
 
   eyeIconContainer: {
     width: 50,
-    height: 56,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
     paddingRight: 8,
@@ -154,7 +144,7 @@ backgroundMap: {
 
   input: {
     flex: 1,
-    height: 56,
+    height: 52,
     paddingHorizontal: 16,
     fontSize: 16,
     color: '#ffffff',

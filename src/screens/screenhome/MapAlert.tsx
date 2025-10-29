@@ -326,7 +326,6 @@ const MapAlert = () => {
                     <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${notificationData?.device || 'Sin información'}</p>
                     <p style="margin: 3px 0;"><strong>N° de alerta:</strong> ${notificationData?.id || 'N/A'}</p>
                     <p style="margin: 3px 0;"><strong>Velocidad:</strong> ${speed} km/h</p>
-                    <p style="margin: 3px 0;"><strong>Código:</strong> ${statusCode}</p>
                     <p style="margin: 3px 0;"><strong>Coordenadas:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
                     <p style="margin: 3px 0;"><strong>Fecha:</strong> ${notificationData?.timestamp || 'Sin fecha'}</p>
                 </div>
@@ -364,7 +363,7 @@ const MapAlert = () => {
                 longitude: longitude,
               }}
               title={notificationData?.title || 'Alerta'}
-              description={`${notificationData?.device || 'Dispositivo'} - Velocidad: ${speed} km/h - Código: ${statusCode}`}
+              description={`${notificationData?.device || 'Dispositivo'} - Velocidad: ${speed} km/h`}
             >
               <CustomMarker color={alertColor} />
             </Marker>
@@ -407,7 +406,7 @@ const MapAlert = () => {
       </View>
     );
   }
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient
