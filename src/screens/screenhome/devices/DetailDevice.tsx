@@ -89,7 +89,11 @@ const DetailDevice = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [connection, setConnection] = useState<signalR.HubConnection | null>(
     null,
-  );
+  );  
+  
+
+const { device } = route.params;
+
 
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -109,7 +113,6 @@ const DetailDevice = () => {
   >('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
 
-  const { device } = route.params;
   const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
 
   const insets = useSafeAreaInsets();
@@ -165,7 +168,7 @@ useEffect(() => {
 // 3. useEffect de SignalR CORREGIDO
 useEffect(() => {
   const username = user?.username;
-  const placa = device.name;
+  const placa = device;
 
   if (!username || !placa) {
     setConnectionStatus('error');
@@ -284,7 +287,7 @@ useEffect(() => {
       }
     }
   };
-}, [device.name, user?.username, server]);
+}, [device, user?.username, server]);
 
 // 4. Agregar cleanup para el componente completo
 useEffect(() => {
@@ -297,7 +300,7 @@ useEffect(() => {
 
   const handleInfiDevice = () => {
     navigation.navigate('InfoDevice', {
-      deviceName: device.name,
+      deviceName: device,
     });
   };
 
@@ -386,7 +389,7 @@ useEffect(() => {
       isWebViewReady
     ) {
       setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device.name}', '${device.id}'); true;`;
+        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device}', '${device}'); true;`;
         webViewRef.current?.injectJavaScript(script);
       }, 100);
     }
@@ -518,7 +521,7 @@ useEffect(() => {
 
                 <Marker
                   ref={markerRef}
-                  key={device.id}
+                  key={device}
                   anchor={{
                     x: imageData.anchor[0] / imageData.size[0],
                     y: imageData.anchor[1] / imageData.size[1],
@@ -536,7 +539,7 @@ useEffect(() => {
                   <Callout>
                     <View style={{ padding: 0, minWidth: 230 }}>
                       <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
-                        {toUpperCaseText(device.name)}
+                        {toUpperCaseText(device)}
                       </Text>
                       <Text style={{ color: '#666' }}>
                         {status} - {formatThreeDecimals(speed)} Km/h - {obtenerDireccion(heading)}
@@ -718,7 +721,7 @@ useEffect(() => {
           <View style={styles.panelHeaderContent}>
             <View style={styles.deviceHeaderInfo}>
               <Text style={styles.deviceName}>
-                {toUpperCaseText(device.name)}
+                {toUpperCaseText(device)}
               </Text>
               <View style={styles.deviceStatusRow}>
                 <View
