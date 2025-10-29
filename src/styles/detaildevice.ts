@@ -37,15 +37,10 @@ export const styles = StyleSheet.create({
     right: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -3,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 8,
+ 
+    
     overflow: 'hidden',
+   
   },
   panelHeader: {
     paddingHorizontal: 20,
@@ -75,7 +70,7 @@ deviceHeaderInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginLeft: 10,
+    marginLeft: 5,
   },
   statusDot: {
     width: 8,
@@ -93,20 +88,24 @@ deviceHeaderInfo: {
     marginLeft:0,
     marginRight:5
   },
-  panelContent: {
-    flex: 1,
-     backgroundColor: '#ffffff', 
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 6,
-  },
+panelContent: {
+  flex: 1,
+  backgroundColor: '#ffffffff',
+  justifyContent: 'center', 
+},
+
+ scrollContent: {
+  flexGrow: 1,              
+  justifyContent: 'center', 
+  paddingHorizontal: 20,
+},
+
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 2,
-    marginTop: 5,
+    marginTop:-35
   },
   statusItem: {
     flexDirection: 'row',

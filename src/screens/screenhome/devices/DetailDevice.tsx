@@ -712,7 +712,7 @@ useEffect(() => {
           styles.infoPanel,
           {
             bottom: Platform.OS === 'ios' ? bottomSpace : bottomSpace - 2,
-            height: isInfoExpanded ? 270 : 50,
+            height: isInfoExpanded ? 260 : 50,
             backgroundColor: '#1e3a8a',
           },
         ]}
@@ -760,8 +760,7 @@ useEffect(() => {
 
         {isInfoExpanded && (
           <View style={styles.panelContent}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
+            <View
               style={styles.scrollContent}
             >
               <View style={styles.statusRow}>
@@ -890,7 +889,7 @@ useEffect(() => {
                   <ChevronRight size={15} color="#fff" />
                 </Text>
               </TouchableOpacity>
-            </ScrollView>
+            </View>
 
 
           </View>
