@@ -797,7 +797,29 @@ useEffect(() => {
                     </Text>
                   )}
                 </View>
-                <View style={styles.dateContainer}>
+
+                <View style={styles.dateContainerGPS}>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.locationButton,
+                      { opacity: vehicleData ? 1 : 0.5 },
+                    ]}
+                    onPress={() => openGoogleMaps(latitude, longitude)}
+                    disabled={!vehicleData}
+                  >
+                    <MapPin size={15} color="#fff" />
+                  </TouchableOpacity>
+                  
+                  <Text style={styles.lastReportTextGps}>¿Cómo llegar?</Text>
+
+                </View>
+
+
+              </View>
+
+
+                 <View style={styles.dateContainer}>
                   <Clock size={14} color="#6b7280" />
                   <View>
                     <Text style={styles.dateText}>
@@ -806,9 +828,8 @@ useEffect(() => {
                     <Text style={styles.lastReportText}>Último reporte</Text>
                   </View>
                 </View>
-              </View>
 
-              <View style={styles.distanceInfo}>
+              {/* <View style={styles.distanceInfo}>
                 <MapPin size={18} color="#6b7280" />
                 <Text style={styles.distanceText}>
                   {vehicleData?.lastOdometerKM
@@ -818,7 +839,7 @@ useEffect(() => {
               </View>
               <Text style={styles.startTimeText}>
                 Kilometraje total de su unidad
-              </Text>
+              </Text> */}
 
               <View style={styles.streetViewRow}>
                 <View style={styles.streetViewContainer}>
@@ -856,16 +877,7 @@ useEffect(() => {
                 <View style={styles.locationInfoRight}>
                   <Text style={styles.locationTitle}>{address}</Text>
                   <Text style={styles.locationSubtitle}>Ubicación actual</Text>
-                  <TouchableOpacity
-                    style={[
-                      styles.locationButton,
-                      { opacity: vehicleData ? 1 : 0.5 },
-                    ]}
-                    onPress={() => openGoogleMaps(latitude, longitude)}
-                    disabled={!vehicleData}
-                  >
-                    <MapPin size={15} color="#fff" />
-                  </TouchableOpacity>
+             
                 </View>
               </View>
 
