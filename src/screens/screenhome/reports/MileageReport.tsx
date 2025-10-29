@@ -355,7 +355,7 @@ const MileageReport = () => {
     </TouchableOpacity>
   );
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <GradientWrapper

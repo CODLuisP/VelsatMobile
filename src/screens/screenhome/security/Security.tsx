@@ -6,6 +6,7 @@ import {
   ScrollView,
   Image,
   Alert,
+  Platform,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -387,7 +388,7 @@ const Security: React.FC = () => {
     }
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient

@@ -826,7 +826,7 @@ useEffect(() => {
                       disabled={!vehicleData}
                     >
                       <Image
-                        source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761452839/camino_gyy3ip.jpg' }}
+                        source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544460/mapacamino_z9yics.jpg' }}
                         style={styles.streetViewImage}
                         resizeMode="cover"
                       />

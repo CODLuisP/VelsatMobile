@@ -33,14 +33,14 @@ export const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#ffffffff',
-    lineHeight: 15,
+    lineHeight: 16,
     opacity: 0.9,
   },
   scrollContainer: {

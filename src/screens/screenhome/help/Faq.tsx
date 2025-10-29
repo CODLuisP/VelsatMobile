@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -107,7 +108,7 @@ const FAQ = () => {
     }
   ];
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient

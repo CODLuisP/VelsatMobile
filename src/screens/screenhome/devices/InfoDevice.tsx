@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Share,
   Alert,
+  Platform,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -186,7 +187,7 @@ Compartido desde Velsat Mobile
     }
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   const estado = vehiculoData
     ? getEstadoMovimiento(vehiculoData.lastValidSpeed)

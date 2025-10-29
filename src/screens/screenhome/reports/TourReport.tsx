@@ -8,6 +8,9 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -476,8 +479,7 @@ const TourReport = () => {
                       shadowOffset: { width: 0, height: 2 },
                       elevation: 8,
                       marginTop: 10,
-                      borderWidth: focusedPoint === index ? 3 : 0,
-                      borderColor: '#fff',
+                 
                     }}
                   >
                     <Text
@@ -528,234 +530,247 @@ const TourReport = () => {
     }
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
-        <View style={styles.headerTop}>
-          <TouchableOpacity
-            onPress={handleGoBack}
-            style={styles.backButton}
-            activeOpacity={0.7}
-          >
-            <ChevronLeft size={26} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Reporte de Recorrido</Text>
-            <Text style={styles.headerSubtitle}>Unidad: {unit.plate}</Text>
-            <View style={styles.headerDateContainer}>
-              <Calendar size={16} color="#fff" />
-              <Text style={styles.headerDate}>
-                {formatDate(startDate)} - {formatDate(endDate)}
-              </Text>
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+  >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <LinearGradient
+        colors={['#021e4bff', '#183890ff', '#032660ff']}
+        style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      >
+        <View style={[styles.header, { paddingTop: topSpace }]}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              onPress={handleGoBack}
+              style={styles.backButton}
+              activeOpacity={0.7}
+            >
+              <ChevronLeft size={26} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.headerContent}>
+              <Text style={styles.headerTitle}>Reporte de Recorrido</Text>
+              <Text style={styles.headerSubtitle}>Unidad: {unit.plate}</Text>
+              <View style={styles.headerDateContainer}>
+                <Calendar size={16} color="#fff" />
+                <Text style={styles.headerDate}>
+                  {formatDate(startDate)} - {formatDate(endDate)}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.content}>
-        <View style={styles.mapContainer}>{renderMap()}</View>
+        <View style={styles.content}>
+          <View style={styles.mapContainer}>{renderMap()}</View>
 
-        {!sidebarVisible && (
-          <TouchableOpacity
-            style={styles.showSidebarButton}
-            onPress={toggleSidebar}
-          >
-            <ChevronRight size={20} color="#fff" />
-          </TouchableOpacity>
-        )}
-
-        {sidebarVisible && (
-          <View
-            style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}
-          >
-            <View
-              style={[
-                styles.sidebarHeader,
-                sidebarCompact && styles.sidebarCompactHeader,
-              ]}
+          {!sidebarVisible && (
+            <TouchableOpacity
+              style={styles.showSidebarButton}
+              onPress={toggleSidebar}
             >
-              {!sidebarCompact ? (
-                <>
-                  <View style={styles.sidebarHeaderContent}>
-                    <Text style={styles.sidebarTitle}>LEYENDA</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row' }}>
+              <ChevronRight size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
+
+          {sidebarVisible && (
+            <View
+              style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}
+            >
+              <View
+                style={[
+                  styles.sidebarHeader,
+                  sidebarCompact && styles.sidebarCompactHeader,
+                ]}
+              >
+                {!sidebarCompact ? (
+                  <>
+                    <View style={styles.sidebarHeaderContent}>
+                      <Text style={styles.sidebarTitle}>LEYENDA</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                      <TouchableOpacity
+                        style={styles.hideSidebarButton}
+                        onPress={toggleSidebar}
+                      >
+                        <ChevronLeft size={20} color="#fff" />
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity
+                      style={{ flex: 1 }}
+                      onPress={toggleSidebarCompact}
+                    >
+                      <Text style={styles.sidebarCompactTitle}>L</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.hideSidebarButton}
                       onPress={toggleSidebar}
                     >
-                      <ChevronLeft size={20} color="#fff" />
+                      <ChevronLeft size={16} color="#fff" />
                     </TouchableOpacity>
-                  </View>
-                </>
-              ) : (
-                <>
-                  <TouchableOpacity
-                    style={{ flex: 1 }}
-                    onPress={toggleSidebarCompact}
-                  >
-                    <Text style={styles.sidebarCompactTitle}>L</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.hideSidebarButton}
-                    onPress={toggleSidebar}
-                  >
-                    <ChevronLeft size={16} color="#fff" />
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
+                  </>
+                )}
+              </View>
 
-            {!sidebarCompact && (
-              <ScrollView style={styles.sidebarContent}>
-                <View style={styles.sidebarSection}>
-                  <Text style={styles.sidebarSectionTitle}>UNIDAD</Text>
-                  <Text style={styles.sidebarText}>{unit.plate}</Text>
-                </View>
-
-                {/* SECCIÓN: IR A PUNTO */}
-                {routeData.length > 0 && (
+              {!sidebarCompact && (
+                <ScrollView
+                  style={styles.sidebarContent}
+                  keyboardShouldPersistTaps="handled"
+                >
                   <View style={styles.sidebarSection}>
-                    <Text style={styles.sidebarSectionTitle}>IR A PUNTO</Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        marginTop: 8,
-                      }}
-                    >
-                      <TextInput
+                    <Text style={styles.sidebarSectionTitle}>UNIDAD</Text>
+                    <Text style={styles.sidebarText}>{unit.plate}</Text>
+                  </View>
+
+                  {/* SECCIÓN: IR A PUNTO */}
+                  {routeData.length > 0 && (
+                    <View style={styles.sidebarSection}>
+                      <Text style={styles.sidebarSectionTitle}>IR A PUNTO</Text>
+                      <View
                         style={{
-                          flex: 1,
-                          backgroundColor: '#fcefdeff',
-                          borderRadius: 6,
-                          paddingHorizontal: 12,
-                          paddingVertical: 8,
-                          color: '#1e3a8a',
-                          fontSize: 14,
-                          marginRight: 8,
-                          fontWeight: '600',
-                        }}
-                        placeholder={`1-${routeData.length}`}
-                        placeholderTextColor="#94a3b8"
-                        keyboardType="numeric"
-                        value={selectedPoint}
-                        onChangeText={setSelectedPoint}
-                        onSubmitEditing={handlePointInput}
-                        returnKeyType="go"
-                      />
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: '#e36414',
-                          borderRadius: 6,
-                          paddingHorizontal: 16,
-                          paddingVertical: 8,
                           flexDirection: 'row',
                           alignItems: 'center',
+                          marginTop: 8,
                         }}
-                        onPress={handlePointInput}
                       >
-                        <MapPin size={16} color="#fff" />
-                        <Text
+                        <TextInput
                           style={{
-                            color: '#fff',
-                            fontWeight: 'bold',
-                            marginLeft: 4,
+                            flex: 1,
+                            backgroundColor: '#fcefdeff',
+                            borderRadius: 6,
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            color: '#1e3a8a',
+                            fontSize: 14,
+                            marginRight: 8,
+                            fontWeight: '600',
                           }}
+                          placeholder={`1-${routeData.length}`}
+                          keyboardType="numeric"
+                          value={selectedPoint}
+                          onChangeText={setSelectedPoint}
+                          onSubmitEditing={handlePointInput}
+                          
+                        />
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: '#e36414',
+                            borderRadius: 6,
+                            paddingHorizontal: 16,
+                            paddingVertical: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          }}
+                          onPress={handlePointInput}
                         >
-                          IR
-                        </Text>
-                      </TouchableOpacity>
+                          <MapPin size={16} color="#fff" />
+                          <Text
+                            style={{
+                              color: '#fff',
+                              fontWeight: 'bold',
+                              marginLeft: 4,
+                            }}
+                          >
+                            IR
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                      <Text
+                        style={{
+                          color: '#94a3b8',
+                          fontSize: 11,
+                          marginTop: 4,
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        Ingresa un número de punto y presiona IR
+                      </Text>
                     </View>
-                    <Text
-                      style={{
-                        color: '#94a3b8',
-                        fontSize: 11,
-                        marginTop: 4,
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      Ingresa un número de punto y presiona IR
-                    </Text>
-                  </View>
-                )}
+                  )}
 
-                <View style={styles.sidebarSection}>
-                  <Text style={styles.sidebarSectionTitle}>
-                    RANGO VELOCIDAD
-                  </Text>
-                  <View style={styles.sidebarRago}>
-                    <View style={styles.legendItem}>
-                      <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#ef4444' },
-                        ]}
-                      />
-                      <Text style={styles.legendText}>0 km/h</Text>
-                    </View>
-                    <View style={styles.legendItem}>
-                      <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#eab308' },
-                        ]}
-                      />
-                      <Text style={styles.legendText}>1 - 10 km/h</Text>
-                    </View>
-                    <View style={styles.legendItem}>
-                      <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#22c55e' },
-                        ]}
-                      />
-                      <Text style={styles.legendText}>11 - 59 km/h</Text>
-                    </View>
-                    <View style={styles.legendItem}>
-                      <View
-                        style={[
-                          styles.legendDot,
-                          { backgroundColor: '#3b82f6' },
-                        ]}
-                      />
-                      <Text style={styles.legendText}>&gt;= 60 km/h</Text>
-                    </View>
-                  </View>
-                </View>
-
-                {routeData.length > 0 && (
                   <View style={styles.sidebarSection}>
                     <Text style={styles.sidebarSectionTitle}>
-                      PUNTOS DE RUTA
+                      RANGO VELOCIDAD
                     </Text>
-                    <Text style={styles.sidebarText}>
-                      Total: {routeData.length} puntos
-                    </Text>
+                    <View style={styles.sidebarRago}>
+                      <View style={styles.legendItem}>
+                        <View
+                          style={[
+                            styles.legendDot,
+                            { backgroundColor: '#ef4444' },
+                          ]}
+                        />
+                        <Text style={styles.legendText}>0 km/h</Text>
+                      </View>
+                      <View style={styles.legendItem}>
+                        <View
+                          style={[
+                            styles.legendDot,
+                            { backgroundColor: '#eab308' },
+                          ]}
+                        />
+                        <Text style={styles.legendText}>1 - 10 km/h</Text>
+                      </View>
+                      <View style={styles.legendItem}>
+                        <View
+                          style={[
+                            styles.legendDot,
+                            { backgroundColor: '#22c55e' },
+                          ]}
+                        />
+                        <Text style={styles.legendText}>11 - 59 km/h</Text>
+                      </View>
+                      <View style={styles.legendItem}>
+                        <View
+                          style={[
+                            styles.legendDot,
+                            { backgroundColor: '#3b82f6' },
+                          ]}
+                        />
+                        <Text style={styles.legendText}>&gt;= 60 km/h</Text>
+                      </View>
+                    </View>
                   </View>
-                )}
-              </ScrollView>
-            )}
-          </View>
-        )}
-      </View>
 
-      <ModalAlert
-        isVisible={modalAlertVisible}
-        onClose={() => setModalAlertVisible(false)}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        color={alertConfig.color}
-      />
-    </LinearGradient>
-  );
+                  {routeData.length > 0 && (
+                    <View style={styles.sidebarSection}>
+                      <Text style={styles.sidebarSectionTitle}>
+                        PUNTOS DE RUTA
+                      </Text>
+                      <Text style={styles.sidebarText}>
+                        Total: {routeData.length} puntos
+                      </Text>
+                    </View>
+                  )}
+                </ScrollView>
+              )}
+            </View>
+          )}
+        </View>
+
+        <ModalAlert
+          isVisible={modalAlertVisible}
+          onClose={() => setModalAlertVisible(false)}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          color={alertConfig.color}
+        />
+      </LinearGradient>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
+);
+
+
+
 };
 
 export default TourReport;

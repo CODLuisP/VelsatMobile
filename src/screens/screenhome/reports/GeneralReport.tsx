@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   Linking,
+  Platform,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -139,6 +140,8 @@ const GeneralReport = () => {
     navigation.goBack();
   };
 
+  
+
 const handleReportItemPress = async (item: ReportItem) => {
   const { latitude, longitude } = item;
 
@@ -245,7 +248,7 @@ const handleReportItemPress = async (item: ReportItem) => {
     );
   };
 
-  const topSpace = insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <LinearGradient
