@@ -154,7 +154,7 @@ panelContent: {
     color: '#9ca3af',
     position:'absolute',
     top:32,
-    right:-7
+    right:0
 
   },
 
