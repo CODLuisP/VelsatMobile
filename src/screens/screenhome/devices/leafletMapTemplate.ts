@@ -138,6 +138,20 @@ export const generateLeafletHTML = ({
         
         var marker = null;
 
+        // Función para obtener dirección cardinal
+        function obtenerDireccion(heading) {
+            if (heading >= 0 && heading <= 22.5) return 'Norte';
+            if (heading >= 22.51 && heading <= 67.5) return 'Noreste';
+            if (heading >= 67.51 && heading <= 112.5) return 'Este';
+            if (heading >= 112.51 && heading <= 157.5) return 'Sureste';
+            if (heading >= 157.51 && heading <= 202.5) return 'Sur';
+            if (heading >= 202.51 && heading <= 247.5) return 'Suroeste';
+            if (heading >= 247.51 && heading <= 292.5) return 'Oeste';
+            if (heading >= 292.51 && heading <= 337.5) return 'Noroeste';
+            if (heading >= 337.51 && heading <= 360.0) return 'Norte';
+            return 'Desconocido';
+        }
+
         map.on('focus', function() {
             map.scrollWheelZoom.enable();
         });
@@ -211,8 +225,8 @@ export const generateLeafletHTML = ({
                             <span style="color: #6b7280;">\${speed} Km/h</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Rotación:</span>
-                            <span style="color: #6b7280;">\${heading}°</span>
+                            <span style="font-weight: 600; color: #374151;">Dirección:</span>
+                            <span style="color: #6b7280;">\${obtenerDireccion(heading)}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Conexión:</span>
