@@ -192,11 +192,7 @@ backgroundMap: {
   loginButton: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#f97316',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+
     marginBottom: 16,
   },
 
