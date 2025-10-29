@@ -61,10 +61,10 @@ deviceHeaderInfo: {
 
 },
   deviceName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#ffffffff',
-    marginBottom: 4,
+    marginTop: 4,
   },
   deviceStatusRow: {
     flexDirection: 'row',
@@ -78,15 +78,15 @@ deviceHeaderInfo: {
     borderRadius: 4,
   },
   deviceId: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#ffffffff',
     fontWeight: '500',
   },
   onlineStatus: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     marginLeft:0,
-    marginRight:5
+    marginRight:2
   },
 panelContent: {
   flex: 1,
@@ -229,7 +229,7 @@ panelContent: {
   },
   locationButton: {
     position: 'absolute',
-    right: 15,
+    right: 25,
     top: 15,
     transform: [{ translateY: -15 }],
     width: 30,
