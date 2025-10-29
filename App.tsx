@@ -35,6 +35,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import FAQ from './src/screens/screenhome/help/Faq';
 
+// Tipos de datos
 interface Device {
   id: string;
   name: string;
@@ -83,6 +84,7 @@ interface ApiService {
   totalpax: string;
 }
 
+// ✅ RootStackParamList corregido
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
@@ -105,9 +107,11 @@ export type RootStackParamList = {
     };
   };
   Devices: undefined;
-  DetailDevice: {
-    device: Device;
-  };
+
+DetailDevice: {
+  device: string; // 👈 ahora 'device' es un string (la placa)
+};
+
   InfoDevice: {
     deviceName: string;
   };
@@ -168,7 +172,7 @@ export type RootStackParamList = {
     serviceData: Service;
   };
   ServicesDetailPassenger: {
-    serviceData: ApiService
+    serviceData: ApiService;
   };
 };
 
@@ -190,7 +194,7 @@ const App = () => {
       try {
         SystemNavigationBar.setNavigationColor('#00296b');
       } catch (error) {
-        // Error handling silently
+        // Ignorar error en versiones viejas
       }
     };
 
@@ -204,7 +208,6 @@ const App = () => {
   }, []);
 
   return (
-
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: '#00296b' }}>
         <StatusBar barStyle="light-content" backgroundColor="#00296b" />
@@ -247,11 +250,12 @@ const App = () => {
                 <Stack.Screen name="Security" component={Security} />
                 <Stack.Screen name="Help" component={Help} />
                 <Stack.Screen name="Central" component={Central} />
-                <Stack.Screen name="FAQ" component={FAQ} options={{ headerShown: false }}/>
                 <Stack.Screen
-                  name="ServicesDriver"
-                  component={ServicesDriver}
+                  name="FAQ"
+                  component={FAQ}
+                  options={{ headerShown: false }}
                 />
+                <Stack.Screen name="ServicesDriver" component={ServicesDriver} />
                 <Stack.Screen
                   name="ServicesPassenger"
                   component={ServicesPassenger}
@@ -271,9 +275,7 @@ const App = () => {
           </Stack.Navigator>
         </NavigationContainer>
       </View>
-
     </SafeAreaProvider>
-
   );
 };
 
