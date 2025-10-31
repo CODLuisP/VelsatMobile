@@ -23,6 +23,7 @@ interface MarkerData {
   title: string;
   description: string;
   isOrderZero: boolean; // ← Agregar esta propiedad
+  orden: number;
 }
 
 interface ModalRouteServiceProps {
@@ -35,12 +36,14 @@ interface ModalRouteServiceProps {
     wx: string;
     wy: string;
   }>;
+  tipo: string;
 }
 
 const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
   visible,
   onClose,
   passengers: initialPassengers,
+  tipo,
 }) => {
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -57,18 +60,35 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
     if (initialPassengers && initialPassengers.length > 0) {
       const mappedMarkers = initialPassengers
         .filter(p => p.wx && p.wy && p.wx !== '0' && p.wy !== '0')
-        .map((p, index) => ({
-          id: p.codpedido,
-          latitude: parseFloat(p.wy),
-          longitude: parseFloat(p.wx),
-          title: `Pasajero ${index + 1}`,
-          description: p.apellidos,
-          isOrderZero: p.orden === '0', // ← Agregar esta propiedad
-        }));
+        .map(p => {
+          const orden = parseInt(p.orden);
+          let title = '';
+
+          if (orden === 0) {
+            // Para orden 0, depende del tipo
+            const lugarTexto =
+              tipo === 'I' ? 'Destino de viaje' : 'Lugar de recojo';
+            const estadoTexto = tipo === 'I' ? 'FIN' : 'INICIO';
+            title = `${lugarTexto} - ${estadoTexto}`;
+          } else {
+            // Para orden diferente de 0, usar el número de orden
+            title = `Pasajero ${orden}`;
+          }
+
+          return {
+            id: p.codpedido,
+            latitude: parseFloat(p.wy),
+            longitude: parseFloat(p.wx),
+            title: title,
+            description: p.apellidos,
+            isOrderZero: p.orden === '0',
+            orden: orden,
+          };
+        });
 
       setMarkers(mappedMarkers);
     }
-  }, [initialPassengers]);
+  }, [initialPassengers, tipo]); // ← Agregar 'tipo' como dependencia
 
   // Ajustar el mapa para mostrar todos los marcadores (iOS)
   useEffect(() => {
@@ -131,7 +151,10 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
         box-shadow: 0 3px 10px rgba(0,0,0,0.3);
       }
       .marker-pin.order-zero {
-        background: #FF0000; /* ← Color rojo para orden 0 */
+        background: #e41d1dff;
+      }
+      .marker-pin.order-zero-blue {
+        background: #0051ffff;
       }
       .marker-number {
         position: absolute;
@@ -157,14 +180,20 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
       }).addTo(map);
 
       var markers = ${JSON.stringify(markers)};
+      var tipo = "${tipo}";
       var bounds = [];
 
-      markers.forEach(function(marker, index) {
-        var pinClass = marker.isOrderZero ? 'marker-pin order-zero' : 'marker-pin'; // ← Clase condicional
+      markers.forEach(function(marker) {
+        var pinClass = 'marker-pin';
+        if (marker.isOrderZero) {
+          pinClass = tipo === 'I' ? 'marker-pin order-zero' : 'marker-pin order-zero-blue';
+        }
+        
+        var markerNumberHtml = marker.isOrderZero ? '' : '<div class="marker-number">' + marker.orden + '</div>';
         
         var icon = L.divIcon({
           className: 'custom-marker',
-          html: '<div class="' + pinClass + '"></div><div class="marker-number">' + (index + 1) + '</div>',
+          html: '<div class="' + pinClass + '"></div>' + markerNumberHtml,
           iconSize: [32, 40],
           iconAnchor: [16, 40],
           popupAnchor: [0, -40]
@@ -186,7 +215,6 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
   </body>
   </html>
 `;
-
   return (
     <Modal
       visible={visible}
@@ -227,7 +255,7 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
                 showsCompass={true}
                 showsScale={true}
               >
-                {markers.map((marker, index) => (
+                {markers.map(marker => (
                   <Marker
                     key={marker.id}
                     coordinate={{
@@ -241,15 +269,23 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
                       <View
                         style={[
                           styles.markerBadge,
-                          marker.isOrderZero && { backgroundColor: '#FF0000' }, // ← Color rojo para orden 0
+                          marker.isOrderZero && {
+                            backgroundColor:
+                              tipo === 'I' ? '#e41d1dff' : '#0051ffff',
+                          },
                         ]}
                       >
-                        <Text style={styles.markerText}>{index + 1}</Text>
+                        {!marker.isOrderZero && (
+                          <Text style={styles.markerText}>{marker.orden}</Text>
+                        )}
                       </View>
                       <View
                         style={[
                           styles.markerArrow,
-                          marker.isOrderZero && { borderTopColor: '#FF0000' }, // ← Flecha roja para orden 0
+                          marker.isOrderZero && {
+                            borderTopColor:
+                              tipo === 'I' ? '#e41d1dff' : '#0051ffff',
+                          },
                         ]}
                       />
                     </View>

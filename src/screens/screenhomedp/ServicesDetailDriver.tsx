@@ -762,6 +762,7 @@ const ServicesDetailDriver = () => {
         visible={modalRouteServiceVisible}
         onClose={() => setModalRouteServiceVisible(false)}
         passengers={passengersForModal}
+        tipo={serviceData.tipo}
       />
 
       <ModalObservations
