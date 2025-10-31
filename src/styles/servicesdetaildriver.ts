@@ -36,11 +36,12 @@ export const styles = StyleSheet.create({
   // Indicador de pasajero
   passengerIndicator: {
     alignItems: 'center',
-    paddingVertical: 8
+    paddingVertical: 8,
+    marginBottom:0,
 
   },
   passengerIndicatorLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#000000ff',
     fontWeight: '600',
 
@@ -57,7 +58,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginBottom: 10,
-    borderRadius: 20
+    borderRadius: 20,
   },
 
   sectionTitleContainer: {
@@ -95,9 +96,18 @@ export const styles = StyleSheet.create({
   cardslider: {
     marginBottom: 2,
     borderBottomWidth: 1,
-    borderColor:'#e0e0e0'
+    borderColor:'#e0e0e0',
+  
+  },
+
+    cardsliderSin: {
+    marginBottom: 10,
 
   },
+
+
+
+
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',

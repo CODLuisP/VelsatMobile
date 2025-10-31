@@ -35,6 +35,7 @@ import { ActivityIndicator } from 'react-native';
 import PassengerActionBtn from '../../components/PassengerActionBtn';
 import ModalAlert from '../../components/ModalAlert';
 import LinearGradient from 'react-native-linear-gradient';
+import { AnimatedNavButton } from '../../components/AnimatedNavButton';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,
@@ -195,7 +196,7 @@ const ServicesDetailDriver = () => {
     const phoneUrl: string = `tel:${phoneNumber}`;
 
     Linking.openURL(phoneUrl)
-      .then(() => {})
+      .then(() => { })
       .catch(error => {
         handleShowAlert(
           'No se pudo abrir el marcador',
@@ -364,12 +365,11 @@ const ServicesDetailDriver = () => {
             {/* Contenedor del slider (solo las 3 primeras tarjetas) */}
             <View style={styles.sliderWrapper}>
               {/* Botón izquierdo */}
-              <TouchableOpacity
+              <AnimatedNavButton
                 onPress={handlePrevious}
-                style={styles.navButton}
-              >
-                <ChevronLeft size={24} color="#333" />
-              </TouchableOpacity>
+                icon={<ChevronLeft size={24} color="#333" />}
+                direction="left"
+              />
 
               {/* Contenedor de las tarjetas del slider */}
               <View style={styles.sliderCardsContainer}>
@@ -451,9 +451,9 @@ const ServicesDetailDriver = () => {
                             {isEntrada
                               ? currentPassenger.direccion
                               : getLocationData(
-                                  orderZeroPassenger,
-                                  'direccion',
-                                )}
+                                orderZeroPassenger,
+                                'direccion',
+                              )}
                           </Text>
 
                           <Text style={styles.label}>Distrito</Text>
@@ -468,9 +468,9 @@ const ServicesDetailDriver = () => {
                             {isEntrada
                               ? '-'
                               : getLocationData(
-                                  orderZeroPassenger,
-                                  'ubicacion',
-                                )}
+                                orderZeroPassenger,
+                                'ubicacion',
+                              )}
                           </Text>
                         </View>
 
@@ -539,7 +539,7 @@ const ServicesDetailDriver = () => {
                     </View>
 
                     {/* Destino de Viaje */}
-                    <View style={styles.cardslider}>
+                    <View style={styles.cardsliderSin}>
                       <View style={styles.sectionTitleContainer}>
                         <MapPinHouse size={18} color="#000" />
                         <Text style={styles.sectionTitle}>
@@ -629,7 +629,7 @@ const ServicesDetailDriver = () => {
                           {isEntrada
                             ? getLocationData(orderZeroPassenger, 'referencia')
                             : currentPassenger.referencia ||
-                              'No han agregado ninguna referencia'}
+                            'No han agregado ninguna referencia'}
                         </Text>
                       </View>
                     </View>
@@ -638,9 +638,12 @@ const ServicesDetailDriver = () => {
               </View>
 
               {/* Botón derecho */}
-              <TouchableOpacity onPress={handleNext} style={styles.navButton}>
-                <ChevronRight size={24} color="#333" />
-              </TouchableOpacity>
+              <AnimatedNavButton
+                onPress={handleNext}
+                icon={<ChevronRight size={24} color="#333" />}
+                direction="right"
+              />
+
             </View>
 
             {/* Tarjetas fijas (fuera del slider) */}
@@ -656,8 +659,8 @@ const ServicesDetailDriver = () => {
                     {serviceData.tipo === 'I'
                       ? 'Entrada'
                       : serviceData.tipo === 'S'
-                      ? 'Salida'
-                      : '-'}
+                        ? 'Salida'
+                        : '-'}
                   </Text>
                 </View>
 
@@ -666,9 +669,9 @@ const ServicesDetailDriver = () => {
                   <Text style={styles.value}>
                     {serviceData.totalpax
                       ? actualizarPasajeros(
-                          serviceData.codusuario,
-                          serviceData.totalpax,
-                        )
+                        serviceData.codusuario,
+                        serviceData.totalpax,
+                      )
                       : '-'}
                   </Text>
                 </View>
@@ -686,8 +689,8 @@ const ServicesDetailDriver = () => {
                     {serviceData.grupo === 'A'
                       ? 'Aire'
                       : serviceData.grupo === 'T'
-                      ? 'Tierra'
-                      : '-'}
+                        ? 'Tierra'
+                        : '-'}
                   </Text>
                 </View>
               </View>
@@ -700,10 +703,10 @@ const ServicesDetailDriver = () => {
                     {serviceData.codusuario === 'movilbus'
                       ? 'Empresa Movil Bus'
                       : serviceData.codusuario === 'cgacela'
-                      ? 'Gacela Express'
-                      : serviceData.codusuario === 'aremys'
-                      ? 'Empresa Aremys'
-                      : serviceData.codusuario || '-'}
+                        ? 'Gacela Express'
+                        : serviceData.codusuario === 'aremys'
+                          ? 'Empresa Aremys'
+                          : serviceData.codusuario || '-'}
                   </Text>
                 </View>
                 <View style={styles.gridItemRight}>
