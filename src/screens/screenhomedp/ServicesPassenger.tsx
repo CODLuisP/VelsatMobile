@@ -90,9 +90,11 @@ const ServicesPassenger = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
-          if (error.response.data &&
+          if (
+            error.response.data &&
             typeof error.response.data === 'string' &&
-            error.response.data.includes('No se encontraron servicios')) {
+            error.response.data.includes('No se encontraron servicios')
+          ) {
             setApiServices([]);
           }
         }
@@ -179,6 +181,28 @@ const ServicesPassenger = () => {
     };
   };
 
+  const actualizarPasajeros = (usuario: string, pasajeros: string) => {
+    // Convertir el string de pasajeros a número
+    let numeroPasajeros = parseInt(pasajeros) || 0;
+
+    // Definir el valor a restar según el tipo de usuario
+    let valorARestar;
+
+    switch (usuario.toLowerCase()) {
+      case 'movilbus':
+        valorARestar = 1; // Los admin restan de 1 en 1
+        break;
+      default:
+        valorARestar = 0; // Valor por defecto para usuarios normales
+    }
+
+    // Restar y asegurar que no sea negativo
+    numeroPasajeros = Math.max(0, numeroPasajeros - valorARestar);
+
+    // Retornar como string
+    return numeroPasajeros.toString();
+  };
+
   const handleNavigateToServicesDetailDriver = (service: ApiService) => {
     navigation.navigate('ServicesDetailPassenger', {
       serviceData: service,
@@ -245,8 +269,16 @@ const ServicesPassenger = () => {
                       <View style={styles.passengersContainer}>
                         <User size={14} color="#FFFFFF" />
                         <Text style={styles.passengersText}>
-                          {service.totalpax} pasajero
-                          {parseInt(service.totalpax) > 1 ? 's' : ''}
+                          {(() => {
+                            const paxActualizado = actualizarPasajeros(
+                              service.codusuario,
+                              service.totalpax,
+                            );
+                            const numPax = parseInt(paxActualizado);
+                            return `${paxActualizado} pasajero${
+                              numPax > 1 ? 's' : ''
+                            }`;
+                          })()}
                         </Text>
                       </View>
                     </View>
@@ -276,8 +308,11 @@ const ServicesPassenger = () => {
                             <Text style={styles.groupLabel}>Tipo y orden</Text>
                           </View>
                           <Text style={styles.groupValue}>
-                            {getTipoServicio(service.tipo)} - {service.orden} /
-                            {service.totalpax}
+                            {getTipoServicio(service.tipo)} - {service.orden} /{' '}
+                            {actualizarPasajeros(
+                              service.codusuario,
+                              service.totalpax,
+                            )}
                           </Text>
                         </View>
                       </View>

@@ -200,6 +200,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 7,
     borderRadius: 10,
   },
+    buttonD: {
+    backgroundColor: '#c4c4c4ff',
+    paddingVertical: 9,
+    paddingHorizontal: 7,
+    borderRadius: 10,
+  },
   buttonGray: {
     backgroundColor: '#018b3aff',
     paddingVertical: 9,

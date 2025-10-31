@@ -101,12 +101,10 @@ const ServicesDetailPassenger = () => {
     setModalAlertVisible(true);
   };
 
-
   // Función para obtener los datos del conductor
   const fetchDriverData = async () => {
     try {
       setLoadingDriver(true);
-
 
       const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
 
@@ -115,7 +113,6 @@ const ServicesDetailPassenger = () => {
       setDriverData(response.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-
         setDriverError('No se pudieron cargar los datos del conductor');
       } else {
         setDriverError('Error al cargar los datos del conductor');
@@ -143,7 +140,6 @@ const ServicesDetailPassenger = () => {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-
         setDestinoError('No se pudieron cargar los datos del destino');
       } else {
         setDestinoError('Error al cargar los datos del destino');
@@ -263,14 +259,12 @@ const ServicesDetailPassenger = () => {
         tipo: getTipoServicio(serviceData.tipo),
       };
 
-
       const response = await axios.post(url, requestBody);
 
       setCancelModalVisible(false);
       navigation.goBack();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-
         handleShowAlert(
           'Error',
           'No se pudo cancelar el servicio. Intenta nuevamente.',
@@ -315,7 +309,6 @@ const ServicesDetailPassenger = () => {
         },
       });
 
-
       setRatingModalVisible(false);
       handleShowAlert(
         '¡Éxito!',
@@ -324,7 +317,6 @@ const ServicesDetailPassenger = () => {
       );
     } catch (error) {
       if (axios.isAxiosError(error)) {
-
         handleShowAlert(
           'Error',
           'No se pudo enviar la calificación',
@@ -335,6 +327,28 @@ const ServicesDetailPassenger = () => {
     } finally {
       setSendingRating(false);
     }
+  };
+
+  const actualizarPasajeros = (usuario: string, pasajeros: string) => {
+    // Convertir el string de pasajeros a número
+    let numeroPasajeros = parseInt(pasajeros) || 0;
+
+    // Definir el valor a restar según el tipo de usuario
+    let valorARestar;
+
+    switch (usuario.toLowerCase()) {
+      case 'movilbus':
+        valorARestar = 1; // Los admin restan de 1 en 1
+        break;
+      default:
+        valorARestar = 0; // Valor por defecto para usuarios normales
+    }
+
+    // Restar y asegurar que no sea negativo
+    numeroPasajeros = Math.max(0, numeroPasajeros - valorARestar);
+
+    // Retornar como string
+    return numeroPasajeros.toString();
   };
 
   const makePhoneCall = (): void => {
@@ -351,8 +365,7 @@ const ServicesDetailPassenger = () => {
     const phoneUrl: string = `tel:${phoneNumber}`;
 
     Linking.openURL(phoneUrl)
-      .then(() => {
-      })
+      .then(() => {})
       .catch(error => {
         handleShowAlert(
           'No se pudo abrir el marcador',
@@ -487,7 +500,7 @@ const ServicesDetailPassenger = () => {
                       {serviceData.fechapasajero}
                     </Text>
 
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                       style={styles.mapButton}
                       onPress={() =>
                         openGoogleMaps(
@@ -498,7 +511,7 @@ const ServicesDetailPassenger = () => {
                     >
                       <MapPin size={20} color="#ffffffff" />
                     </TouchableOpacity>
-                    <Text style={styles.mapText}>¿Cómo llegar?</Text>
+                    <Text style={styles.mapText}>¿Cómo llegar?</Text> */}
                   </View>
                 </View>
               </View>
@@ -556,7 +569,7 @@ const ServicesDetailPassenger = () => {
                         {serviceData.fechapasajero}
                       </Text>
 
-                      <TouchableOpacity
+                      {/* <TouchableOpacity
                         style={styles.mapButton}
                         onPress={() => {
                           const lat =
@@ -574,7 +587,7 @@ const ServicesDetailPassenger = () => {
                       >
                         <MapPin size={20} color="#ffffffff" />
                       </TouchableOpacity>
-                      <Text style={styles.mapText}>¿Cómo llegar?</Text>
+                      <Text style={styles.mapText}>¿Cómo llegar?</Text> */}
                     </View>
                   </View>
                 </View>
@@ -645,7 +658,7 @@ const ServicesDetailPassenger = () => {
                         {serviceData.fechaservicio}
                       </Text>
 
-                      <TouchableOpacity
+                      {/* <TouchableOpacity
                         style={styles.mapButton}
                         onPress={() => {
                           const lat =
@@ -663,7 +676,7 @@ const ServicesDetailPassenger = () => {
                       >
                         <MapPin size={20} color="#ffffffff" />
                       </TouchableOpacity>
-                      <Text style={styles.mapText}>¿Cómo llegar?</Text>
+                      <Text style={styles.mapText}>¿Cómo llegar?</Text> */}
                     </View>
                   </View>
                 </View>
@@ -704,7 +717,7 @@ const ServicesDetailPassenger = () => {
                       {serviceData.fechaservicio}
                     </Text>
 
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                       style={styles.mapButton}
                       onPress={() =>
                         openGoogleMaps(
@@ -715,7 +728,7 @@ const ServicesDetailPassenger = () => {
                     >
                       <MapPin size={20} color="#ffffffff" />
                     </TouchableOpacity>
-                    <Text style={styles.mapText}>¿Cómo llegar?</Text>
+                    <Text style={styles.mapText}>¿Cómo llegar?</Text> */}
                   </View>
                 </View>
               </View>
@@ -737,7 +750,12 @@ const ServicesDetailPassenger = () => {
               <View style={styles.detailItem}>
                 <Text style={styles.detailLabel}>Cantidad de pasajeros</Text>
                 <Text style={styles.detailValue}>
-                  {serviceData?.totalpax || '-'}
+                  {serviceData?.totalpax
+                    ? actualizarPasajeros(
+                        serviceData.codusuario,
+                        serviceData.totalpax,
+                      )
+                    : '-'}
                 </Text>
               </View>
 

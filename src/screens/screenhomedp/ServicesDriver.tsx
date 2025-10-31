@@ -288,6 +288,34 @@ const ServicesDriver = () => {
     }
   };
 
+  const actualizarPasajeros = (usuario: string, pasajeros: number): string => {
+    // Convertir a número si viene como string
+    let numeroPasajeros =
+      typeof pasajeros === 'string' ? parseInt(pasajeros) : pasajeros;
+
+    // Validar que sea un número válido
+    if (isNaN(numeroPasajeros)) {
+      numeroPasajeros = 0;
+    }
+
+    // Definir el valor a restar según el tipo de usuario
+    let valorARestar;
+
+    switch (usuario.toLowerCase()) {
+      case 'movilbus':
+        valorARestar = 1;
+        break;
+      default:
+        valorARestar = 0; // No resta nada por defecto
+    }
+
+    // Restar y asegurar que no sea negativo
+    numeroPasajeros = Math.max(0, numeroPasajeros - valorARestar);
+
+    // Retornar como string
+    return numeroPasajeros.toString();
+  };
+
   const topSpace = insets.top + 5;
 
   return (
@@ -299,7 +327,11 @@ const ServicesDriver = () => {
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Servicios programados</Text>
@@ -355,8 +387,16 @@ const ServicesDriver = () => {
                           <User size={14} color="#FFFFFF" />
                           <Text style={styles.passengersText}>
                             {service.totalpax !== null
-                              ? `${service.totalpax} pasajero${service.totalpax > 1 ? 's' : ''
-                              }`
+                              ? (() => {
+                                  const paxActualizado = actualizarPasajeros(
+                                    service.codusuario,
+                                    service.totalpax
+                                  );
+                                  const numPax = parseInt(paxActualizado);
+                                  return `${paxActualizado} pasajero${
+                                    numPax > 1 ? 's' : ''
+                                  }`;
+                                })()
                               : 'No especificado'}
                           </Text>
                         </View>
@@ -417,86 +457,78 @@ const ServicesDriver = () => {
 
                           {serviceStates[service.codservicio] !==
                             'finished' && (
-                              <View style={styles.actionButtons}>
-                                <TouchableOpacity
-                                  style={[
-                                    styles.actionButton,
-                                    serviceStates[service.codservicio] === 'idle'
-                                      ? styles.actionButtonActive
-                                      : styles.actionButtonDisabled,
-                                  ]}
-                                  onPress={() =>
-                                    handleStartService(
-                                      service.codservicio,
-                                      service.unidad,
-                                      service.codconductor,
-                                    )
-                                  }
-                                  disabled={
-                                    serviceStates[service.codservicio] !==
+                            <View style={styles.actionButtons}>
+                              <TouchableOpacity
+                                style={[
+                                  styles.actionButton,
+                                  serviceStates[service.codservicio] === 'idle'
+                                    ? styles.actionButtonActive
+                                    : styles.actionButtonDisabled,
+                                ]}
+                                onPress={() =>
+                                  handleStartService(
+                                    service.codservicio,
+                                    service.unidad,
+                                    service.codconductor,
+                                  )
+                                }
+                                disabled={
+                                  serviceStates[service.codservicio] !==
                                     'idle' ||
-                                    loadingStart === service.codservicio
-                                  }
-                                >
-                                  <Text
-                                    style={[
-                                      styles.actionButtonText,
-                                      serviceStates[service.codservicio] !==
-                                      'idle' && styles.actionButtonTextDisabled,
-                                    ]}
-                                  >
-                                    {loadingStart === service.codservicio
-                                      ? 'Iniciando...'
-                                      : 'Iniciar'}
-                                  </Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
+                                  loadingStart === service.codservicio
+                                }
+                              >
+                                <Text
                                   style={[
-                                    styles.actionButton,
-                                    serviceStates[service.codservicio] ===
-                                      'started'
-                                      ? styles.actionButtonEnd
-                                      : styles.actionButtonDisabled,
-                                  ]}
-                                  onPress={() =>
-                                    handleEndService(
-                                      service.codservicio,
-                                      service.unidad,
-                                      service.codconductor,
-                                    )
-                                  }
-                                  disabled={
+                                    styles.actionButtonText,
                                     serviceStates[service.codservicio] !==
-                                    'started' ||
-                                    loadingEnd === service.codservicio
-                                  }
+                                      'idle' && styles.actionButtonTextDisabled,
+                                  ]}
                                 >
-                                  <Text
-                                    style={[
-                                      styles.actionButtonText,
-                                      serviceStates[service.codservicio] !==
+                                  {loadingStart === service.codservicio
+                                    ? 'Iniciando...'
+                                    : 'Iniciar'}
+                                </Text>
+                              </TouchableOpacity>
+
+                              <TouchableOpacity
+                                style={[
+                                  styles.actionButton,
+                                  serviceStates[service.codservicio] ===
+                                  'started'
+                                    ? styles.actionButtonEnd
+                                    : styles.actionButtonDisabled,
+                                ]}
+                                onPress={() =>
+                                  handleEndService(
+                                    service.codservicio,
+                                    service.unidad,
+                                    service.codconductor,
+                                  )
+                                }
+                                disabled={
+                                  serviceStates[service.codservicio] !==
+                                    'started' ||
+                                  loadingEnd === service.codservicio
+                                }
+                              >
+                                <Text
+                                  style={[
+                                    styles.actionButtonText,
+                                    serviceStates[service.codservicio] !==
                                       'started' &&
                                       styles.actionButtonTextDisabled,
-                                    ]}
-                                  >
-                                    {loadingEnd === service.codservicio
-                                      ? 'Finalizando...'
-                                      : 'Finalizar'}
-                                  </Text>
-
-
-
-                                </TouchableOpacity>
-
-
-                              </View>
-                            )}
+                                  ]}
+                                >
+                                  {loadingEnd === service.codservicio
+                                    ? 'Finalizando...'
+                                    : 'Finalizar'}
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
+                          )}
                         </View>
-
-
                       </View>
-
                     </View>
                     <TouchableOpacity
                       style={styles.clickPrompt}
@@ -512,8 +544,6 @@ const ServicesDriver = () => {
                       <ChevronRight size={16} color="#032660ff" />
                     </TouchableOpacity>
                   </View>
-
-
                 </TouchableOpacity>
               );
             })
