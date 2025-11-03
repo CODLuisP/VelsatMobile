@@ -236,7 +236,7 @@ export const styles = StyleSheet.create({
   emptyStateContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
+    marginTop: -40,
     marginBottom: 20,
     paddingHorizontal: 20,
   },
@@ -246,6 +246,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F8F9FA',
+      borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
   },
   emptyStateTitle: {
     color: '#00296b',
