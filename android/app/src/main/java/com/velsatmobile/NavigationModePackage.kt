@@ -1,5 +1,5 @@
-// android/app/src/main/java/com/velsatmobile/NavigationModePackage.kt
-package com.velsatmobile
+// android/app/src/main/java/com/velsat/mobile/NavigationModePackage.kt
+package com.velsat.mobile
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

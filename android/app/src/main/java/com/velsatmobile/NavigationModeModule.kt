@@ -1,10 +1,10 @@
-// android/app/src/main/java/com/velsatmobile/NavigationModeModule.kt
-package com.velsatmobile
+// android/app/src/main/java/com/velsat/mobile/NavigationModeModule.kt
+package com.velsat.mobile
 
 import android.provider.Settings
 import com.facebook.react.bridge.*
 
-class NavigationModeModule(reactContext: ReactApplicationContext) : 
+class NavigationModeModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
     
     companion object {
