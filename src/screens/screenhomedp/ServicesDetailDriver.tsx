@@ -35,6 +35,7 @@ import { ActivityIndicator } from 'react-native';
 import PassengerActionBtn from '../../components/PassengerActionBtn';
 import ModalAlert from '../../components/ModalAlert';
 import LinearGradient from 'react-native-linear-gradient';
+import { AnimatedNavButton } from '../../components/AnimatedNavButton';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,
@@ -75,7 +76,7 @@ const ServicesDetailDriver = () => {
   const [apiPassengers, setApiPassengers] = useState<PassengerAPI[]>([]);
   const [orderZeroPassenger, setOrderZeroPassenger] =
     useState<PassengerAPI | null>(null);
-
+  const [allPassengers, setAllPassengers] = useState<PassengerAPI[]>([]);
   const [modalChangeOrderVisible, setModalChangeOrderVisible] = useState(false);
   const [modalRouteServiceVisible, setModalRouteServiceVisible] =
     useState(false);
@@ -104,6 +105,11 @@ const ServicesDetailDriver = () => {
           `https://velsat.pe:2087/api/Aplicativo/detalleServicioConductor/${serviceData.codservicio}`,
         );
 
+        // Guardar TODOS los pasajeros sin filtrar
+        const allPassengers = response.data.sort(
+          (a, b) => parseInt(a.orden) - parseInt(b.orden),
+        );
+        setAllPassengers(allPassengers); // Nuevo estado para todos los pasajeros
 
         const orderZero = response.data.find(p => p.orden === '0');
         setOrderZeroPassenger(orderZero || null);
@@ -136,7 +142,7 @@ const ServicesDetailDriver = () => {
     }
   }, [serviceData.codservicio, refreshTrigger]);
 
-  const passengersForModal = apiPassengers.map(passenger => ({
+  const passengersForModal = allPassengers.map(passenger => ({
     apellidos: passenger.apellidos,
     codpedido: passenger.codpedido,
     orden: passenger.orden,
@@ -190,8 +196,7 @@ const ServicesDetailDriver = () => {
     const phoneUrl: string = `tel:${phoneNumber}`;
 
     Linking.openURL(phoneUrl)
-      .then(() => {
-      })
+      .then(() => { })
       .catch(error => {
         handleShowAlert(
           'No se pudo abrir el marcador',
@@ -265,6 +270,34 @@ const ServicesDetailDriver = () => {
     }
   };
 
+  const actualizarPasajeros = (usuario: string, pasajeros: number): string => {
+    // Convertir a número si viene como string
+    let numeroPasajeros =
+      typeof pasajeros === 'string' ? parseInt(pasajeros) : pasajeros;
+
+    // Validar que sea un número válido
+    if (isNaN(numeroPasajeros)) {
+      numeroPasajeros = 0;
+    }
+
+    // Definir el valor a restar según el tipo de usuario
+    let valorARestar;
+
+    switch (usuario.toLowerCase()) {
+      case 'movilbus':
+        valorARestar = 1;
+        break;
+      default:
+        valorARestar = 0; // No resta nada por defecto
+    }
+
+    // Restar y asegurar que no sea negativo
+    numeroPasajeros = Math.max(0, numeroPasajeros - valorARestar);
+
+    // Retornar como string
+    return numeroPasajeros.toString();
+  };
+
   const topSpace = insets.top + 5;
 
   return (
@@ -332,12 +365,11 @@ const ServicesDetailDriver = () => {
             {/* Contenedor del slider (solo las 3 primeras tarjetas) */}
             <View style={styles.sliderWrapper}>
               {/* Botón izquierdo */}
-              <TouchableOpacity
+              <AnimatedNavButton
                 onPress={handlePrevious}
-                style={styles.navButton}
-              >
-                <ChevronLeft size={24} color="#333" />
-              </TouchableOpacity>
+                icon={<ChevronLeft size={24} color="#333" />}
+                direction="left"
+              />
 
               {/* Contenedor de las tarjetas del slider */}
               <View style={styles.sliderCardsContainer}>
@@ -419,9 +451,9 @@ const ServicesDetailDriver = () => {
                             {isEntrada
                               ? currentPassenger.direccion
                               : getLocationData(
-                                  orderZeroPassenger,
-                                  'direccion',
-                                )}
+                                orderZeroPassenger,
+                                'direccion',
+                              )}
                           </Text>
 
                           <Text style={styles.label}>Distrito</Text>
@@ -436,9 +468,9 @@ const ServicesDetailDriver = () => {
                             {isEntrada
                               ? '-'
                               : getLocationData(
-                                  orderZeroPassenger,
-                                  'ubicacion',
-                                )}
+                                orderZeroPassenger,
+                                'ubicacion',
+                              )}
                           </Text>
                         </View>
 
@@ -507,7 +539,7 @@ const ServicesDetailDriver = () => {
                     </View>
 
                     {/* Destino de Viaje */}
-                    <View style={styles.cardslider}>
+                    <View style={styles.cardsliderSin}>
                       <View style={styles.sectionTitleContainer}>
                         <MapPinHouse size={18} color="#000" />
                         <Text style={styles.sectionTitle}>
@@ -597,7 +629,7 @@ const ServicesDetailDriver = () => {
                           {isEntrada
                             ? getLocationData(orderZeroPassenger, 'referencia')
                             : currentPassenger.referencia ||
-                              'No han agregado ninguna referencia'}
+                            'No han agregado ninguna referencia'}
                         </Text>
                       </View>
                     </View>
@@ -606,9 +638,12 @@ const ServicesDetailDriver = () => {
               </View>
 
               {/* Botón derecho */}
-              <TouchableOpacity onPress={handleNext} style={styles.navButton}>
-                <ChevronRight size={24} color="#333" />
-              </TouchableOpacity>
+              <AnimatedNavButton
+                onPress={handleNext}
+                icon={<ChevronRight size={24} color="#333" />}
+                direction="right"
+              />
+
             </View>
 
             {/* Tarjetas fijas (fuera del slider) */}
@@ -624,15 +659,20 @@ const ServicesDetailDriver = () => {
                     {serviceData.tipo === 'I'
                       ? 'Entrada'
                       : serviceData.tipo === 'S'
-                      ? 'Salida'
-                      : '-'}
+                        ? 'Salida'
+                        : '-'}
                   </Text>
                 </View>
 
                 <View style={styles.gridItemRight}>
                   <Text style={styles.label}>Cantidad de pasajeros</Text>
                   <Text style={styles.value}>
-                    {serviceData.totalpax ?? '-'}
+                    {serviceData.totalpax
+                      ? actualizarPasajeros(
+                        serviceData.codusuario,
+                        serviceData.totalpax,
+                      )
+                      : '-'}
                   </Text>
                 </View>
               </View>
@@ -649,8 +689,8 @@ const ServicesDetailDriver = () => {
                     {serviceData.grupo === 'A'
                       ? 'Aire'
                       : serviceData.grupo === 'T'
-                      ? 'Tierra'
-                      : '-'}
+                        ? 'Tierra'
+                        : '-'}
                   </Text>
                 </View>
               </View>
@@ -663,10 +703,10 @@ const ServicesDetailDriver = () => {
                     {serviceData.codusuario === 'movilbus'
                       ? 'Empresa Movil Bus'
                       : serviceData.codusuario === 'cgacela'
-                      ? 'Gacela Express'
-                      : serviceData.codusuario === 'aremys'
-                      ? 'Empresa Aremys'
-                      : serviceData.codusuario || '-'}
+                        ? 'Gacela Express'
+                        : serviceData.codusuario === 'aremys'
+                          ? 'Empresa Aremys'
+                          : serviceData.codusuario || '-'}
                   </Text>
                 </View>
                 <View style={styles.gridItemRight}>
@@ -682,8 +722,9 @@ const ServicesDetailDriver = () => {
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={styles.buttonBlue}
+                  style={styles.buttonD}
                   onPress={() => setModalChangeOrderVisible(true)}
+                  disabled
                 >
                   <Text style={styles.buttonText}>Cambiar orden</Text>
                 </TouchableOpacity>
@@ -721,6 +762,7 @@ const ServicesDetailDriver = () => {
         visible={modalRouteServiceVisible}
         onClose={() => setModalRouteServiceVisible(false)}
         passengers={passengersForModal}
+        tipo={serviceData.tipo}
       />
 
       <ModalObservations

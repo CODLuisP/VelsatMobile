@@ -9,7 +9,10 @@ import {
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import {
+  getBottomSpace,
+  useNavigationMode,
+} from '../../../hooks/useNavigationMode';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 
@@ -19,6 +22,8 @@ interface MarkerData {
   longitude: number;
   title: string;
   description: string;
+  isOrderZero: boolean; // ← Agregar esta propiedad
+  orden: number;
 }
 
 interface ModalRouteServiceProps {
@@ -31,9 +36,15 @@ interface ModalRouteServiceProps {
     wx: string;
     wy: string;
   }>;
+  tipo: string;
 }
 
-const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose, passengers: initialPassengers }) => {
+const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
+  visible,
+  onClose,
+  passengers: initialPassengers,
+  tipo,
+}) => {
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
@@ -48,18 +59,36 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
   useEffect(() => {
     if (initialPassengers && initialPassengers.length > 0) {
       const mappedMarkers = initialPassengers
-        .filter(p => p.wx && p.wy && p.wx !== '0' && p.wy !== '0') // Filtrar coordenadas válidas
-        .map((p, index) => ({
-          id: p.codpedido,
-          latitude: parseFloat(p.wy), // wy es latitud
-          longitude: parseFloat(p.wx), // wx es longitud
-          title: `Pasajero ${index + 1}`,
-          description: p.apellidos,
-        }));
-      
+        .filter(p => p.wx && p.wy && p.wx !== '0' && p.wy !== '0')
+        .map(p => {
+          const orden = parseInt(p.orden);
+          let title = '';
+
+          if (orden === 0) {
+            // Para orden 0, depende del tipo
+            const lugarTexto =
+              tipo === 'I' ? 'Destino de viaje' : 'Lugar de recojo';
+            const estadoTexto = tipo === 'I' ? 'FIN' : 'INICIO';
+            title = `${lugarTexto} - ${estadoTexto}`;
+          } else {
+            // Para orden diferente de 0, usar el número de orden
+            title = `Pasajero ${orden}`;
+          }
+
+          return {
+            id: p.codpedido,
+            latitude: parseFloat(p.wy),
+            longitude: parseFloat(p.wx),
+            title: title,
+            description: p.apellidos,
+            isOrderZero: p.orden === '0',
+            orden: orden,
+          };
+        });
+
       setMarkers(mappedMarkers);
     }
-  }, [initialPassengers]);
+  }, [initialPassengers, tipo]); // ← Agregar 'tipo' como dependencia
 
   // Ajustar el mapa para mostrar todos los marcadores (iOS)
   useEffect(() => {
@@ -70,7 +99,7 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
           latitude: marker.latitude,
           longitude: marker.longitude,
         }));
-        
+
         mapRef.current?.fitToCoordinates(coordinates, {
           edgePadding: {
             top: 100,
@@ -86,104 +115,112 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
 
   // HTML para Leaflet en Android
   const leafletHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-      <style>
-        body, html {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-          width: 100%;
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+      .custom-marker {
+        position: relative;
+        width: 32px;
+        height: 40px;
+      }
+      .marker-pin {
+        width: 32px;
+        height: 32px;
+        border-radius: 50% 50% 50% 0;
+        background: #00C853;
+        position: absolute;
+        transform: rotate(-45deg);
+        left: 50%;
+        top: 50%;
+        margin: -16px 0 0 -16px;
+        border: 2px solid white;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      }
+      .marker-pin.order-zero {
+        background: #e41d1dff;
+      }
+      .marker-pin.order-zero-blue {
+        background: #0051ffff;
+      }
+      .marker-number {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-30%);
+        color: white;
+        font-weight: 900;
+        font-size: 18px;
+        z-index: 10;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var map = L.map('map').setView([-7.1639, -78.5126], 13);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      var markers = ${JSON.stringify(markers)};
+      var tipo = "${tipo}";
+      var bounds = [];
+
+      markers.forEach(function(marker) {
+        var pinClass = 'marker-pin';
+        if (marker.isOrderZero) {
+          pinClass = tipo === 'I' ? 'marker-pin order-zero' : 'marker-pin order-zero-blue';
         }
-        #map {
-          height: 100%;
-          width: 100%;
-        }
-        .custom-marker {
-          position: relative;
-          width: 32px;
-          height: 40px;
-        }
-        .marker-pin {
-          width: 32px;
-          height: 32px;
-          border-radius: 50% 50% 50% 0;
-          background: #00C853;
-          position: absolute;
-          transform: rotate(-45deg);
-          left: 50%;
-          top: 50%;
-          margin: -16px 0 0 -16px;
-          border: 2px solid white;
-          box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-        }
-        .marker-number {
-          position: absolute;
-          top: 8px;
-          left: 50%;
-          transform: translateX(-30%);
-          color: white;
-          font-weight: 900;
-          font-size: 18px;
-          z-index: 10;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-        }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        // Inicializar mapa
-        var map = L.map('map').setView([-7.1639, -78.5126], 13);
         
-        // Agregar tiles de OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors',
-          maxZoom: 19
-        }).addTo(map);
-
-        // Marcadores
-        var markers = ${JSON.stringify(markers)};
-        var bounds = [];
-
-        markers.forEach(function(marker, index) {
-          var icon = L.divIcon({
-            className: 'custom-marker',
-            html: '<div class="marker-pin"></div><div class="marker-number">' + (index + 1) + '</div>',
-            iconSize: [32, 40],
-            iconAnchor: [16, 40],
-            popupAnchor: [0, -40]
-          });
-
-          var leafletMarker = L.marker([marker.latitude, marker.longitude], {
-            icon: icon
-          }).addTo(map);
-
-          leafletMarker.bindPopup('<b>' + marker.title + '</b><br>' + marker.description);
-          
-          bounds.push([marker.latitude, marker.longitude]);
+        var markerNumberHtml = marker.isOrderZero ? '' : '<div class="marker-number">' + marker.orden + '</div>';
+        
+        var icon = L.divIcon({
+          className: 'custom-marker',
+          html: '<div class="' + pinClass + '"></div>' + markerNumberHtml,
+          iconSize: [32, 40],
+          iconAnchor: [16, 40],
+          popupAnchor: [0, -40]
         });
 
-        // Ajustar vista para mostrar todos los marcadores
-        if (bounds.length > 0) {
-          map.fitBounds(bounds, { padding: [50, 50] });
-        }
-      </script>
-    </body>
-    </html>
-  `;
+        var leafletMarker = L.marker([marker.latitude, marker.longitude], {
+          icon: icon
+        }).addTo(map);
 
+        leafletMarker.bindPopup('<b>' + marker.title + '</b><br>' + marker.description);
+        
+        bounds.push([marker.latitude, marker.longitude]);
+      });
+
+      if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    </script>
+  </body>
+  </html>
+`;
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
-      
     >
       <View style={styles.modalContainer}>
         <View style={[styles.modalContent, { paddingTop: topSpace - 35 }]}>
@@ -194,10 +231,7 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
                 {markers.length} puntos de parada
               </Text>
             </View>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={onClose}
-            >
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <X size={24} color="#666" />
             </TouchableOpacity>
           </View>
@@ -211,7 +245,8 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
                 style={styles.map}
                 initialRegion={{
                   latitude: markers.length > 0 ? markers[0].latitude : -7.1639,
-                  longitude: markers.length > 0 ? markers[0].longitude : -78.5126,
+                  longitude:
+                    markers.length > 0 ? markers[0].longitude : -78.5126,
                   latitudeDelta: 0.05,
                   longitudeDelta: 0.05,
                 }}
@@ -220,7 +255,7 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
                 showsCompass={true}
                 showsScale={true}
               >
-                {markers.map((marker, index) => (
+                {markers.map(marker => (
                   <Marker
                     key={marker.id}
                     coordinate={{
@@ -231,10 +266,28 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({ visible, onClose,
                     description={marker.description}
                   >
                     <View style={styles.markerContainer}>
-                      <View style={styles.markerBadge}>
-                        <Text style={styles.markerText}>{index + 1}</Text>
+                      <View
+                        style={[
+                          styles.markerBadge,
+                          marker.isOrderZero && {
+                            backgroundColor:
+                              tipo === 'I' ? '#e41d1dff' : '#0051ffff',
+                          },
+                        ]}
+                      >
+                        {!marker.isOrderZero && (
+                          <Text style={styles.markerText}>{marker.orden}</Text>
+                        )}
                       </View>
-                      <View style={styles.markerArrow} />
+                      <View
+                        style={[
+                          styles.markerArrow,
+                          marker.isOrderZero && {
+                            borderTopColor:
+                              tipo === 'I' ? '#e41d1dff' : '#0051ffff',
+                          },
+                        ]}
+                      />
                     </View>
                   </Marker>
                 ))}
@@ -307,7 +360,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f77f00',
     justifyContent: 'center',
     alignItems: 'center',
- 
+
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
