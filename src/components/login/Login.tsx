@@ -561,7 +561,7 @@ const Login = () => {
                 </Animated.View>
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.forgotPassword}
                 onPress={makePhoneCall}
               >
@@ -573,7 +573,7 @@ const Login = () => {
                 <Text style={styles.forgotPasswordText}>
                   Contáctanos por teléfono
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <View style={styles.statusContainer}>
                 <View style={styles.statusDot} />
