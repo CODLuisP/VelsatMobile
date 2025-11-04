@@ -46,6 +46,7 @@ export const openGoogleMaps = (latitude: number, longitude: number) => {
       .catch(err => {
         Linking.openURL(webUrl);
       });
+      
   } else {
     Linking.openURL(webUrl);
   }
