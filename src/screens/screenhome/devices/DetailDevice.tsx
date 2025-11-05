@@ -182,6 +182,9 @@ useEffect(() => {
 }, []);
 
 // 3. useEffect de SignalR CORREGIDO
+
+
+
 useEffect(() => {
   const username = user?.username;
   const placa = device;
@@ -191,34 +194,67 @@ useEffect(() => {
     return;
   }
 
-  const hubUrl = `${server}/dataHubVehicle/${username}/${placa}`;
+let serverUrl = server?.trim() || '';
+
+// Asegurar que tiene protocolo
+if (serverUrl && !serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+  serverUrl = `https://${serverUrl}`;
+}
+
+serverUrl = serverUrl.replace(/\/$/, '');
+
+if (!serverUrl) {
+  console.error('URL del servidor vacía');
+  setConnectionStatus('error');
+  return;
+}
+
+try {
+  new URL(serverUrl);
+} catch (error) {
+  console.error('URL del servidor inválida:', serverUrl);
+  setConnectionStatus('error');
+  return;
+}
+
+const hubUrl = `${serverUrl}/dataHubVehicle/${username}/${placa}`;
+console.log('Conectando a:', hubUrl);
+
+
   setConnectionStatus('connecting');
 
   const newConnection = new signalR.HubConnectionBuilder()
-    .withUrl(hubUrl, {
-      skipNegotiation: false,
-      transport:
-        signalR.HttpTransportType.WebSockets |
-        signalR.HttpTransportType.LongPolling,
-    })
-    .withAutomaticReconnect({
-      nextRetryDelayInMilliseconds: retryContext => {
-        // No reintentar si el componente está desmontado
-        if (!isMountedRef.current) return null;
-        
-        if (retryContext.previousRetryCount === 0) {
-          return 0;
-        }
-        if (retryContext.previousRetryCount < 3) {
-          return 2000;
-        }
-        if (retryContext.previousRetryCount < 6) {
-          return 10000;
-        }
-        return 30000;
-      },
-    })
-    .configureLogging(signalR.LogLevel.Information)
+.withUrl(hubUrl, {
+  skipNegotiation: false,
+  transport:
+    signalR.HttpTransportType.WebSockets |
+    signalR.HttpTransportType.LongPolling,
+  headers: {
+    'User-Agent': 'ReactNativeApp',
+  },
+})
+.withAutomaticReconnect({
+  nextRetryDelayInMilliseconds: retryContext => {
+    if (!isMountedRef.current) return null;
+    
+    if (retryContext.previousRetryCount >= 10) {
+      console.log('Máximo de reintentos alcanzado');
+      return null;
+    }
+    
+    if (retryContext.previousRetryCount === 0) {
+      return 0;
+    }
+    if (retryContext.previousRetryCount < 3) {
+      return 2000;
+    }
+    if (retryContext.previousRetryCount < 6) {
+      return 10000;
+    }
+    return 30000;
+  },
+})
+.configureLogging(__DEV__ ? signalR.LogLevel.Information : signalR.LogLevel.Warning)
     .build();
 
   newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
@@ -304,6 +340,8 @@ useEffect(() => {
     }
   };
 }, [device, user?.username, server]);
+
+
 
 // 4. Agregar cleanup para el componente completo
 useEffect(() => {
