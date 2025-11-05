@@ -228,17 +228,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
     longitude = isEntrada ? orderZeroPassenger?.wx : currentPassenger?.wx;
   }
 
-  // ✅ Imprimir coordenadas en consola
-  console.log('========================================');
-  console.log('📍 COORDENADAS PARA NAVEGACIÓN');
-  console.log('========================================');
-  console.log('Tipo de servicio:', isEntrada ? 'ENTRADA' : 'SALIDA');
-  console.log('Es lugar de recojo:', isPickup);
-  console.log('Latitud (wy):', latitude);
-  console.log('Longitud (wx):', longitude);
-  console.log('Pasajero actual:', currentPassenger?.apellidos);
-  console.log('Orden cero:', orderZeroPassenger?.apellidos);
-  console.log('========================================');
+
 
   if (!latitude || !longitude) {
     handleShowAlert(
@@ -252,11 +242,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
   const lat = parseFloat(latitude);
   const lng = parseFloat(longitude);
 
-  // ✅ Imprimir coordenadas parseadas
-  console.log('✅ Coordenadas parseadas:');
-  console.log('Latitud (número):', lat);
-  console.log('Longitud (número):', lng);
-  console.log('========================================');
+
 
   const result = openGoogleMaps(lat, lng);
 
