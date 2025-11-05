@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Platform,
   Image,
-  ScrollView,
+  AppState,
   ActivityIndicator,
 } from 'react-native';
 import {
@@ -17,7 +17,6 @@ import {
   Clock,
   MapPin,
   Eye,
-  Forward,
   ChevronRight,
 } from 'lucide-react-native';
 import MapView, {
@@ -35,7 +34,6 @@ import {
 } from '@react-navigation/native';
 import { RootStackParamList } from '../../../../App';
 import { styles } from '../../../styles/detaildevice';
-import * as signalR from '@microsoft/signalr';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,7 +43,12 @@ import {
 } from '../../../hooks/useNavigationMode';
 import { useAuthStore } from '../../../store/authStore';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
-import { formatDateTime, formatThreeDecimals, openGoogleMaps, toUpperCaseText } from '../../../utils/textUtils';
+import { 
+  formatDateTime, 
+  formatThreeDecimals, 
+  openGoogleMaps, 
+  toUpperCaseText 
+} from '../../../utils/textUtils';
 import RadarDot from '../../../components/login/RadarDot';
 import {
   DIRECTION_IMAGES,
@@ -55,7 +58,6 @@ import {
 import { generateLeafletHTML } from './leafletMapTemplate';
 import CoordinatesModal from './Coordinatesmodal';
 import { NavigationModal } from '../../../components/NavigationModal';
-
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
 
@@ -77,59 +79,29 @@ interface VehicleData {
   datosGeocercausu: any | null;
 }
 
-interface SignalRData {
-  fechaActual: string;
-  vehiculo: VehicleData;
-}
-
 const DetailDevice = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<DetailDeviceRouteProp>();
   const [isInfoExpanded, setIsInfoExpanded] = useState(true);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(
-    null,
-  );  
-  
 
-const { device } = route.params;
+  const { device } = route.params;
 
-const [modalVisible, setModalVisible] = useState(false);
-const [navigationCoords, setNavigationCoords] = useState<{
-  latitude: number;
-  longitude: number;
-} | null>(null);
-
-const handleOpenMaps = () => {
-  if (!vehicleData) return;
-  
-  const result = openGoogleMaps(latitude, longitude);
-  
-  if (result) {
-    setNavigationCoords({ latitude, longitude });
-    setModalVisible(true);
-  }
-};
+  const [modalVisible, setModalVisible] = useState(false);
+  const [navigationCoords, setNavigationCoords] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const handleOpenCoordinatesModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleCloseCoordinatesModal = () => {
-    setIsModalVisible(false);
-  };
-
-
-
-  const [connectionStatus, setConnectionStatus] = useState<
+const [connectionStatus, setConnectionStatus] = useState<  // ✅ Agregado 
     'connecting' | 'connected' | 'disconnected' | 'error'
   >('connecting');
+
   const [isWebViewReady, setIsWebViewReady] = useState(false);
 
-  const { user, logout, server, tipo, selectedVehiclePin } = useAuthStore();
+  const { user, server, selectedVehiclePin } = useAuthStore();
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -140,19 +112,30 @@ const handleOpenMaps = () => {
   const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('standard');
   const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
-    }, []),
-  );
-
-
   const [radarPulse, setRadarPulse] = useState({
     wave1: 0,
     wave2: 0.25,
     wave3: 0.5,
     wave4: 0.75,
   });
+
+  const isMountedRef = useRef(true);
+const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isPollingRef = useRef(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      NavigationBarColor('#00296b', false);
+    }, []),
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (Platform.OS === 'ios' && vehicleData) {
@@ -169,188 +152,140 @@ const handleOpenMaps = () => {
     }
   }, [vehicleData]);
 
-// 1. Agregar el ref al inicio del componente
-const isMountedRef = useRef(true);
-
-// 2. useEffect del timer (este está bien, pero lo incluyo para contexto)
-useEffect(() => {
-  const timer = setInterval(() => {
-    setCurrentTime(new Date());
-  }, 1000);
-
-  return () => clearInterval(timer);
-}, []);
-
-// 3. useEffect de SignalR CORREGIDO
-
-
-
-useEffect(() => {
-  const username = user?.username;
-  const placa = device;
-
-  if (!username || !placa) {
-    setConnectionStatus('error');
-    return;
-  }
-
-let serverUrl = server?.trim() || '';
-
-// Asegurar que tiene protocolo
-if (serverUrl && !serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
-  serverUrl = `https://${serverUrl}`;
-}
-
-serverUrl = serverUrl.replace(/\/$/, '');
-
-if (!serverUrl) {
-  console.error('URL del servidor vacía');
-  setConnectionStatus('error');
-  return;
-}
-
-try {
-  new URL(serverUrl);
-} catch (error) {
-  console.error('URL del servidor inválida:', serverUrl);
-  setConnectionStatus('error');
-  return;
-}
-
-const hubUrl = `${serverUrl}/dataHubVehicle/${username}/${placa}`;
-console.log('Conectando a:', hubUrl);
-
-
-  setConnectionStatus('connecting');
-
-  const newConnection = new signalR.HubConnectionBuilder()
-.withUrl(hubUrl, {
-  skipNegotiation: false,
-  transport:
-    signalR.HttpTransportType.WebSockets |
-    signalR.HttpTransportType.LongPolling,
-  headers: {
-    'User-Agent': 'ReactNativeApp',
-  },
-})
-.withAutomaticReconnect({
-  nextRetryDelayInMilliseconds: retryContext => {
-    if (!isMountedRef.current) return null;
+  const fetchVehicleData = async () => {
+    if (isPollingRef.current) return;
     
-    if (retryContext.previousRetryCount >= 10) {
-      console.log('Máximo de reintentos alcanzado');
-      return null;
-    }
-    
-    if (retryContext.previousRetryCount === 0) {
-      return 0;
-    }
-    if (retryContext.previousRetryCount < 3) {
-      return 2000;
-    }
-    if (retryContext.previousRetryCount < 6) {
-      return 10000;
-    }
-    return 30000;
-  },
-})
-.configureLogging(__DEV__ ? signalR.LogLevel.Information : signalR.LogLevel.Warning)
-    .build();
+    const username = user?.username;
+    const placa = device;
 
-  newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
-    // Solo actualizar si el componente está montado
-    if (!isMountedRef.current) {
-      return;
-    }
-    
-    if (datos.vehiculo) {
-      setVehicleData(datos.vehiculo);
-      setConnectionStatus('connected');
-    }
-  });
-
-  newConnection.on('ConectadoExitosamente', data => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('connected');
-  });
-
-  newConnection.on('Error', msg => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('error');
-  });
-
-  newConnection.onreconnecting(error => {
-    if (!isMountedRef.current) {
-      // Si el componente está desmontado, detener la reconexión
-      newConnection.stop();
-      return;
-    }
-    setConnectionStatus('connecting');
-  });
-
-  newConnection.onreconnected(connectionId => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('connected');
-  });
-
-  newConnection.onclose(error => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('disconnected');
-  });
-
-  newConnection
-    .start()
-    .then(() => {
-      if (!isMountedRef.current) {
-        newConnection.stop();
-        return;
-      }
-      setConnectionStatus('connected');
-    })
-    .catch(err => {
-      if (!isMountedRef.current) return;
+    if (!username || !placa || !server) {
       setConnectionStatus('error');
-    });
+      return;
+    }
 
-  setConnection(newConnection);
+    isPollingRef.current = true;
 
-  // CLEANUP MEJORADO
-  return () => {
-    isMountedRef.current = false;
-
-    // Remover todos los listeners
-    newConnection.off('ActualizarDatosVehiculo');
-    newConnection.off('ConectadoExitosamente');
-    newConnection.off('Error');
-
-    // Detener la conexión de forma más agresiva
-    if (newConnection) {
-      const currentState = newConnection.state;
+    try {
+      let serverUrl = server?.trim() || '';
       
-      if (currentState === signalR.HubConnectionState.Connected || 
-          currentState === signalR.HubConnectionState.Connecting ||
-          currentState === signalR.HubConnectionState.Reconnecting) {
-        
-        newConnection.stop()
-          .then(() => {
-          })
-          .catch(err => {
-          });
+      if (serverUrl && !serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+        serverUrl = `https://${serverUrl}`;
+      }
+      
+      serverUrl = serverUrl.replace(/\/$/, '');
+
+      const encodedUsername = encodeURIComponent(username);
+      const encodedPlaca = encodeURIComponent(placa);
+      const apiUrl = `${serverUrl}/api/Aplicativo/vehiculo/${encodedUsername}/${encodedPlaca}`;
+      
+      console.log('Fetching vehicle data from:', apiUrl);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'ReactNativeApp',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!isMountedRef.current) return;
+
+      if (data?.vehiculo) {
+        setVehicleData(data.vehiculo);
+        setConnectionStatus('connected');
+      } else {
+        setConnectionStatus('error');
+      }
+
+    } catch (error) {
+      if (!isMountedRef.current) return;
+      
+      console.error('Error fetching vehicle data:', error);
+      setConnectionStatus('error');
+    } finally {
+      isPollingRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    fetchVehicleData();
+    
+    pollingIntervalRef.current = setInterval(() => {
+      if (isMountedRef.current) {
+        fetchVehicleData();
+      }
+    }, 10000);
+
+    return () => {
+      isMountedRef.current = false;
+      
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [device, user?.username, server]);
+
+// ✅ ESTO ESTÁ BIEN
+useEffect(() => {
+  const handleAppStateChange = (nextAppState: string) => {
+    if (nextAppState === 'active') {
+      if (!pollingIntervalRef.current && isMountedRef.current) {
+        fetchVehicleData();
+        pollingIntervalRef.current = setInterval(() => {
+          if (isMountedRef.current) {
+            fetchVehicleData();
+          }
+        }, 10000);
+      }
+    } else {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
       }
     }
   };
-}, [device, user?.username, server]);
 
+  const subscription = AppState.addEventListener('change', handleAppStateChange);
 
-
-// 4. Agregar cleanup para el componente completo
-useEffect(() => {
-  isMountedRef.current = true;
-  
   return () => {
-    isMountedRef.current = false;
+    subscription.remove();
   };
 }, []);
+
+  // ✅ Handlers
+  const handleOpenMaps = () => {
+    if (!vehicleData) return;
+    
+    const result = openGoogleMaps(latitude, longitude);
+    
+    if (result) {
+      setNavigationCoords({ latitude, longitude });
+      setModalVisible(true);
+    }
+  };
+
+  const handleOpenCoordinatesModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCloseCoordinatesModal = () => {
+    setIsModalVisible(false);
+  };
 
   const handleInfiDevice = () => {
     navigation.navigate('InfoDevice', {
@@ -358,6 +293,15 @@ useEffect(() => {
     });
   };
 
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
+  const toggleInfo = () => {
+    setIsInfoExpanded(!isInfoExpanded);
+  };
+
+  // ✅ Variables derivadas
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
   const speed = vehicleData?.lastValidSpeed || 0;
@@ -371,15 +315,6 @@ useEffect(() => {
   };
 
   const status = getStatus();
-
-  const handleGoBack = () => {
-    navigation.goBack();
-  };
-
-  const toggleInfo = () => {
-    setIsInfoExpanded(!isInfoExpanded);
-  };
-
 
   const getLeafletTileLayer = (type: 'standard' | 'satellite' | 'hybrid') => {
     switch (type) {
@@ -403,9 +338,7 @@ useEffect(() => {
   };
 
   const tileConfig = getLeafletTileLayer(mapType);
-
   const pinType = selectedVehiclePin || 's';
-
 
   const iconSizes = pinType === 'c'
     ? {
@@ -418,7 +351,6 @@ useEffect(() => {
     };
 
   const popupOffset = pinType === 'c' ? -50 : -30;
-
 
   const leafletHTML = useMemo(() =>
     generateLeafletHTML({
@@ -435,6 +367,8 @@ useEffect(() => {
   const webViewRef = useRef<WebView>(null);
   const mapRef = useRef<MapView>(null);
   const markerRef = useRef<any>(null);
+
+  // ✅ useEffect para WebView (Android)
   useEffect(() => {
     if (
       Platform.OS === 'android' &&
@@ -458,6 +392,7 @@ useEffect(() => {
     mapType,
   ]);
 
+  // ✅ useEffect para animación de cámara (iOS)
   useEffect(() => {
     if (Platform.OS === 'ios' && mapRef.current && vehicleData) {
       setTimeout(() => {
@@ -469,7 +404,7 @@ useEffect(() => {
     }
   }, [vehicleData, latitude, longitude]);
 
-
+  // ✅ useEffect para mostrar callout inicial (iOS)
   useEffect(() => {
     if (
       Platform.OS === 'ios' &&
@@ -484,8 +419,7 @@ useEffect(() => {
     }
   }, [vehicleData, hasShownInitialCallout]);
 
-
-
+  // ✅ Render del mapa
   const renderMap = () => {
     if (Platform.OS === 'ios') {
       const imageData = getDirectionImageData(heading);
@@ -606,7 +540,6 @@ useEffect(() => {
           </MapView>
 
           <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
-
             <TouchableOpacity
               style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
               onPress={() => setMapType('standard')}
@@ -638,7 +571,6 @@ useEffect(() => {
       return (
         <>
           <WebView
-
             ref={webViewRef}
             source={{ html: leafletHTML }}
             style={styles.map}
@@ -654,6 +586,7 @@ useEffect(() => {
             }}
             onError={syntheticEvent => {
               const { nativeEvent } = syntheticEvent;
+              console.error('WebView error:', nativeEvent);
             }}
           />
 
@@ -814,9 +747,7 @@ useEffect(() => {
 
         {isInfoExpanded && (
           <View style={styles.panelContent}>
-            <View
-              style={styles.scrollContent}
-            >
+            <View style={styles.scrollContent}>
               <View style={styles.statusRow}>
                 <View style={styles.statusItem}>
                   <Navigation
@@ -851,55 +782,31 @@ useEffect(() => {
                   )}
                 </View>
 
-             <View style={styles.dateContainerGPS}>
-      <TouchableOpacity
-        style={[
-          styles.locationButton,
-          { opacity: vehicleData ? 1 : 0.5 },
-        ]}
-        onPress={handleOpenMaps}
-        disabled={!vehicleData}
-      >
-        <MapPin size={15} color="#fff" />
-      </TouchableOpacity>
-      
-      <Text style={styles.lastReportTextGps}>¿Cómo llegar?</Text>
-    </View>
-
-    {/* Modal al final de tu componente, antes del </> de cierre */}
-    {navigationCoords && (
-      <NavigationModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        latitude={navigationCoords.latitude}
-        longitude={navigationCoords.longitude}
-      />
-    )}
-
-              </View>
-
-
-                 <View style={styles.dateContainer}>
-                  <Clock size={14} color="#6b7280" />
-                  <View>
-                    <Text style={styles.dateText}>
-                      {formatDateTime(currentTime)}
-                    </Text>
-                    <Text style={styles.lastReportText}>Último reporte</Text>
-                  </View>
+                <View style={styles.dateContainerGPS}>
+                  <TouchableOpacity
+                    style={[
+                      styles.locationButton,
+                      { opacity: vehicleData ? 1 : 0.5 },
+                    ]}
+                    onPress={handleOpenMaps}
+                    disabled={!vehicleData}
+                  >
+                    <MapPin size={15} color="#fff" />
+                  </TouchableOpacity>
+                  
+                  <Text style={styles.lastReportTextGps}>¿Cómo llegar?</Text>
                 </View>
-
-              {/* <View style={styles.distanceInfo}>
-                <MapPin size={18} color="#6b7280" />
-                <Text style={styles.distanceText}>
-                  {vehicleData?.lastOdometerKM
-                    ? `${vehicleData.lastOdometerKM.toFixed(1)} km recorridos`
-                    : 'Cargando kilometraje...'}
-                </Text>
               </View>
-              <Text style={styles.startTimeText}>
-                Kilometraje total de su unidad
-              </Text> */}
+
+              <View style={styles.dateContainer}>
+                <Clock size={14} color="#6b7280" />
+                <View>
+                  <Text style={styles.dateText}>
+                    {formatDateTime(currentTime)}
+                  </Text>
+                  <Text style={styles.lastReportText}>Último reporte</Text>
+                </View>
+              </View>
 
               <View style={styles.streetViewRow}>
                 <View style={styles.streetViewContainer}>
@@ -937,7 +844,6 @@ useEffect(() => {
                 <View style={styles.locationInfoRight}>
                   <Text style={styles.locationTitle} numberOfLines={3}>{address}</Text>
                   <Text style={styles.locationSubtitle}>Ubicación actual</Text>
-             
                 </View>
               </View>
 
@@ -951,18 +857,24 @@ useEffect(() => {
                 </Text>
               </TouchableOpacity>
             </View>
-
-
           </View>
         )}
       </View>
+
+      {navigationCoords && (
+        <NavigationModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          latitude={navigationCoords.latitude}
+          longitude={navigationCoords.longitude}
+        />
+      )}
 
       <CoordinatesModal
         visible={isModalVisible}
         onClose={handleCloseCoordinatesModal}
         latitude={latitude}
         longitude={longitude}
-
       />
     </View>
   );
