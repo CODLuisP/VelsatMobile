@@ -14,7 +14,7 @@ interface ModalConfirmProps {
   onConfirm: () => void;
   title: string;
   message: string;
-  color?: string;
+  color?: string; // Color solo para el header
   confirmText?: string;
   cancelText?: string;
 }
@@ -25,7 +25,7 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
   onConfirm,
   title,
   message,
-  color = '#FFA726',
+  color = '#FFA726', // color del header (naranja)
   confirmText = 'Aceptar',
   cancelText = 'Cancelar',
 }) => {
@@ -47,20 +47,20 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
             <Text style={styles.message}>{message}</Text>
           </View>
 
-          {/* Botones */}
+          {/* Botones blancos */}
           <View style={styles.footer}>
             <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
+              style={[styles.button, styles.whiteButton]}
               onPress={onClose}
               activeOpacity={0.7}>
-              <Text style={styles.cancelButtonText}>{cancelText}</Text>
+              <Text style={styles.blackText}>{cancelText}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.button, styles.confirmButton, { backgroundColor: color }]}
+              style={[styles.button, styles.whiteButton]}
               onPress={onConfirm}
               activeOpacity={0.7}>
-              <Text style={styles.confirmButtonText}>{confirmText}</Text>
+              <Text style={styles.blackText}>{confirmText}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -121,23 +121,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelButton: {
-    backgroundColor: '#F5F5F5',
+  whiteButton: {
+    backgroundColor: '#fafafaff',
     borderRightWidth: 1,
     borderRightColor: '#E0E0E0',
   },
-  cancelButtonText: {
+  blackText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#757575',
-  },
-  confirmButton: {
-    // El color se aplica dinámicamente desde el prop
-  },
-  confirmButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#5c5c5cff',
   },
 });
 

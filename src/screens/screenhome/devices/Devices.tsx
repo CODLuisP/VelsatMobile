@@ -108,18 +108,21 @@ const handleDetailDevice = (device: Device) => {
         `${server}/api/DeviceList/simplified/${username}`,
       );
 
-      const transformedDevices: Device[] = response.data.map(apiDevice => ({
+      const transformedDevices: Device[] = response.data
+      .map(apiDevice => ({
         id: apiDevice.deviceId,
         name: apiDevice.deviceId,
-        status: apiDevice.lastValidSpeed === 0 ? 'Detenido' : 'Movimiento',
+        status: apiDevice.lastValidSpeed === 0 ? 'Detenido' as const : 'Movimiento' as const,
         speed: Math.round(apiDevice.lastValidSpeed),
         location: apiDevice.direccion,
         isOnline: true,
         latitude: apiDevice.lastValidLatitude,
         longitude: apiDevice.lastValidLongitude,
-      }));
+      }))
+      // ✅ Ordenar solo por el campo "name" (alfabético y numérico)
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
-      setDevices(transformedDevices);
+    setDevices(transformedDevices);
     } catch (err) {
       setError('Error al cargar los dispositivos');
     } finally {

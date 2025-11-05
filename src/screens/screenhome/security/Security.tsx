@@ -179,11 +179,11 @@ useEffect(() => {
               handleShowAlert(
                 'Error',
                 'Hubo un problema al desactivar la biometría.',
-                '#e36414', // Rojo - Error
+                '#c1121f', // Rojo - Error
               );
             }
           },
-          '#e36414', // Rojo - Acción destructiva
+          '#e36414',
           'Desactivar',
           'Cancelar',
         );
@@ -196,7 +196,7 @@ useEffect(() => {
           'Configurar PIN',
           'Tu dispositivo no tiene biometría disponible. Te dirigiremos a configurar un PIN.',
           () => navigateToPin(),
-          '#29B6F6', // Azul - Informativo
+          '#e36414', // Azul - Informativo
           'Configurar',
           'Cancelar',
         );
@@ -218,14 +218,14 @@ useEffect(() => {
         handleShowAlert(
           'Error',
           'No se pudo activar la biometría. Inténtalo de nuevo.',
-          '#FF6B6B', // Rojo - Error
+          '#c1121f', // Rojo - Error
         );
       }
     } catch (error) {
       handleShowAlert(
         'Error',
         'Hubo un problema al configurar la biometría. Verifica que esté configurada en tu dispositivo.',
-        '#FF6B6B', // Rojo - Error
+        '#c1121f', // Rojo - Error
       );
     }
 
@@ -249,14 +249,14 @@ const navigateToPin = async (): Promise<void> => {
       handleShowAlert(
         'Error',
         'No se pudo activar el PIN. Inténtalo de nuevo.',
-        '#FF6B6B',
+        '#c1121f',
       );
     }
   } catch (error) {
     handleShowAlert(
       'Error',
       'Hubo un problema al configurar el PIN.',
-      '#FF6B6B',
+      '#c1121f',
     );
   }
 };
