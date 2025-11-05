@@ -118,34 +118,37 @@ const Security: React.FC = () => {
     }, []),
   );
 
-  const {
-    biometric,
-    checkBiometricAvailability,
-    enableBiometric,
-    disableBiometric,
-    getBiometricDisplayName,
-    canUseBiometricLogin,
-  } = useAuthStore();
+const {
+  biometric,
+  checkBiometricAvailability,
+  enableBiometric,
+  disableBiometric,
+  getBiometricDisplayName,
+  canUseBiometricLogin,
+  enablePinLogin,
+  disablePinLogin,
+  canUsePinLogin,
+} = useAuthStore();
 
   // Estados locales
   const [isActivating, setIsActivating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAlreadyEnabled, setIsAlreadyEnabled] = useState(false);
 
-  useEffect(() => {
-    // Verificar disponibilidad al cargar la pantalla
-    const initBiometric = async () => {
-      await checkBiometricAvailability();
+useEffect(() => {
+  const initBiometric = async () => {
+    await checkBiometricAvailability();
 
-      // Verificar si ya está activada
-      const canUse = canUseBiometricLogin();
-      setIsAlreadyEnabled(canUse);
+    // Verificar si ya está activada (biométrica O PIN)
+    const canUseBio = canUseBiometricLogin();
+    const canUsePin = canUsePinLogin();
+    setIsAlreadyEnabled(canUseBio || canUsePin);
 
-      setIsLoading(false);
-    };
+    setIsLoading(false);
+  };
 
-    initBiometric();
-  }, [checkBiometricAvailability, canUseBiometricLogin]);
+  initBiometric();
+}, [checkBiometricAvailability, canUseBiometricLogin, canUsePinLogin]);
 
   const handleGoBack = (): void => {
     navigation.goBack();
@@ -162,6 +165,7 @@ const Security: React.FC = () => {
           async () => {
             try {
               await disableBiometric();
+              await disablePinLogin();
               setIsAlreadyEnabled(false);
 
               // Mostrar alerta de éxito
@@ -228,9 +232,34 @@ const Security: React.FC = () => {
     setIsActivating(false);
   };
 
-  const navigateToPin = (): void => {
-  };
 
+const navigateToPin = async (): Promise<void> => {
+  try {
+    const success = await enablePinLogin();
+    
+    if (success) {
+      setIsAlreadyEnabled(true);
+      handleShowAlert(
+        '¡PIN Activado!',
+        'El PIN ha sido activado exitosamente. Ahora puedes usar tu PIN para entrar a la aplicación.',
+        '#4CAF50',
+        () => navigation.goBack(),
+      );
+    } else {
+      handleShowAlert(
+        'Error',
+        'No se pudo activar el PIN. Inténtalo de nuevo.',
+        '#FF6B6B',
+      );
+    }
+  } catch (error) {
+    handleShowAlert(
+      'Error',
+      'Hubo un problema al configurar el PIN.',
+      '#FF6B6B',
+    );
+  }
+};
   const getButtonConfig = (): ButtonConfig => {
     if (isLoading) {
       return {

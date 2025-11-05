@@ -12,6 +12,7 @@ import {
   Phone,
   Scan,
   User,
+  KeyRound, // ⭐ NUEVO: Importar icono para PIN
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -100,12 +101,15 @@ const Login = () => {
     biometric,
     checkBiometricAvailability,
     authenticateWithBiometric,
+    authenticateWithPin, // ⭐ NUEVO
     getBiometricDisplayName,
     canUseBiometricLogin,
+    canUsePinLogin, // ⭐ NUEVO
     logout,
   } = useAuthStore();
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
+  const [showPinOption, setShowPinOption] = useState(false); // ⭐ NUEVO
 
   const handleBiometricLogin = async () => {
     try {
@@ -137,6 +141,36 @@ const Login = () => {
         title: 'Error de Autenticación',
         message:
           'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
+      });
+      setModalVisible(true);
+      setIsLoggingIn(false);
+      setLoading(false);
+    }
+  };
+
+  // ⭐ NUEVO: Handler para login con PIN
+  const handlePinLogin = async () => {
+    try {
+      setIsLoggingIn(true);
+      setLoading(true);
+
+      const success = await authenticateWithPin();
+
+      if (success) {
+        // Autenticación exitosa
+      } else {
+        setModalConfig({
+          title: 'Autenticación fallida',
+          message: 'No se pudo autenticar con PIN. Intenta con tu contraseña.',
+        });
+        setModalVisible(true);
+        setIsLoggingIn(false);
+        setLoading(false);
+      }
+    } catch (error: any) {
+      setModalConfig({
+        title: 'Error de Autenticación',
+        message: 'Hubo un problema con el PIN. Intenta con tu usuario y contraseña.',
       });
       setModalVisible(true);
       setIsLoggingIn(false);
@@ -204,7 +238,6 @@ const Login = () => {
         message: 'Por favor ingresa tu usuario',
       });
       setModalVisible(true);
-      return;
       return;
     }
 
@@ -347,14 +380,19 @@ const Login = () => {
       try {
         await checkBiometricAvailability();
 
-        const canUse = canUseBiometricLogin();
+        const canUseBio = canUseBiometricLogin();
+        const canUsePin = canUsePinLogin(); // ⭐ NUEVO
 
-        if (canUse) {
+        if (canUseBio) {
           setShowBiometricOption(true);
 
           setTimeout(() => {
             handleBiometricLogin();
           }, 500);
+        } else if (canUsePin) {
+          setShowPinOption(true);
+
+        
         }
       } catch (error) {
         // Error silencioso
@@ -408,12 +446,12 @@ const Login = () => {
 
   return (
     <>
-     <LinearGradient
-         colors={['#052152ff', '#051d43ff', '#042d6fff']}
-         style={[styles.container]}
-         start={{ x: 0, y: 0 }}
-         end={{ x: 0, y: 1 }}
-       >
+      <LinearGradient
+        colors={['#052152ff', '#051d43ff', '#042d6fff']}
+        style={[styles.container]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      >
         <StatusBar
           barStyle="light-content"
           backgroundColor="transparent"
@@ -439,6 +477,31 @@ const Login = () => {
                 </View>
               </Animated.View>
               <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
+
+              {/* ⭐ NUEVO: Mostrar opción de PIN si no hay biometría */}
+              {showPinOption && !showBiometricOption && (
+                <>
+                  <View style={styles.biometricSection}>
+                    <TouchableOpacity
+                      style={styles.biometricButton}
+                      onPress={handlePinLogin}
+                    >
+                      <View style={styles.biometricButtonContent}>
+                        <KeyRound color="#fff" size={24} />
+                        <Text style={styles.biometricButtonText}>
+                          Acceder con PIN
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.loginSeparator}>
+                    <View style={styles.separatorLine} />
+                    <Text style={styles.separatorText}>o</Text>
+                    <View style={styles.separatorLine} />
+                  </View>
+                </>
+              )}
 
               {showBiometricOption && (
                 <>
@@ -560,20 +623,6 @@ const Login = () => {
                   )}
                 </Animated.View>
               </TouchableOpacity>
-
-              {/* <TouchableOpacity
-                style={styles.forgotPassword}
-                onPress={makePhoneCall}
-              >
-                <Phone
-                  color="rgba(255,255,255,0.8)"
-                  size={16}
-                  style={{ marginRight: 8 }}
-                />
-                <Text style={styles.forgotPasswordText}>
-                  Contáctanos por teléfono
-                </Text>
-              </TouchableOpacity> */}
 
               <View style={styles.statusContainer}>
                 <View style={styles.statusDot} />

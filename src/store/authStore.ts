@@ -21,6 +21,12 @@ export interface BiometricConfig {
   lastConfigured: Date | null;
 }
 
+// Configuración de PIN
+export interface PinConfig {
+  isEnabled: boolean;
+  lastConfigured: Date | null;
+}
+
 interface AuthState {
   // Estados de autenticación existentes
   user: User | null;
@@ -36,6 +42,17 @@ interface AuthState {
   // Estados biométricos
   biometric: BiometricConfig;
   biometricCredentials: {
+    username: string | null;
+    token: string | null;
+    server: string | null;
+    tipo: string | null;
+    description: string | null;
+    codigo: string | null;
+  };
+
+  // Estados de PIN
+  pin: PinConfig;
+  pinCredentials: {
     username: string | null;
     token: string | null;
     server: string | null;
@@ -62,6 +79,14 @@ interface AuthState {
   clearBiometricCredentials: () => void;
   getBiometricDisplayName: () => string;
   canUseBiometricLogin: () => boolean;
+
+  // Actions de PIN
+  enablePinLogin: () => Promise<boolean>;
+  disablePinLogin: () => Promise<void>;
+  savePinCredentials: (username: string, token: string, server: string) => void;
+  clearPinCredentials: () => void;
+  canUsePinLogin: () => boolean;
+  authenticateWithPin: () => Promise<boolean>; // ⭐ AGREGADA
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -93,6 +118,20 @@ export const useAuthStore = create<AuthState>()(
         codigo: null,
       },
 
+      // Estados iniciales de PIN
+      pin: {
+        isEnabled: false,
+        lastConfigured: null,
+      },
+      pinCredentials: {
+        username: null,
+        token: null,
+        server: null,
+        tipo: null,
+        description: null,
+        codigo: null,
+      },
+
       // Actions existentes
       setUser: (user: User) => {
         set({
@@ -104,10 +143,27 @@ export const useAuthStore = create<AuthState>()(
         
         setTimeout(() => {
           const newState = get();
+          
+          // Guardar credenciales biométricas
           if (newState.biometric.isEnabled && newState.token && newState.server && newState.tipo) {
             set((currentState) => ({
               ...currentState,
               biometricCredentials: {
+                username: user.username,
+                token: newState.token!,
+                server: newState.server!,
+                tipo: newState.tipo!,
+                description: user.description || null,
+                codigo: user.codigo || null,
+              },
+            }));
+          }
+          
+          // Guardar credenciales de PIN
+          if (newState.pin.isEnabled && newState.token && newState.server && newState.tipo) {
+            set((currentState) => ({
+              ...currentState,
+              pinCredentials: {
                 username: user.username,
                 token: newState.token!,
                 server: newState.server!,
@@ -150,6 +206,10 @@ export const useAuthStore = create<AuthState>()(
         const currentState = get();
         if (!currentState.biometric.isEnabled) {
           get().clearBiometricCredentials();
+        }
+        
+        if (!currentState.pin.isEnabled) {
+          get().clearPinCredentials();
         }
       },
 
@@ -342,6 +402,134 @@ export const useAuthStore = create<AuthState>()(
         
         return canUse;
       },
+
+      // ACTIONS DE PIN
+
+      enablePinLogin: async (): Promise<boolean> => {
+        try {
+          set((state) => ({
+            pin: {
+              ...state.pin,
+              isEnabled: true,
+              lastConfigured: new Date(),
+            },
+          }));
+          
+          const currentState = get();
+          if (currentState.user && currentState.token && currentState.server && currentState.tipo) {
+            set((state) => ({
+              pinCredentials: {
+                username: currentState.user!.username,
+                token: currentState.token,
+                server: currentState.server,
+                tipo: currentState.tipo,
+                description: currentState.user!.description || null,
+                codigo: currentState.user!.codigo || null,
+              },
+            }));
+          }
+          
+          return true;
+        } catch (error) {
+          return false;
+        }
+      },
+
+      disablePinLogin: async () => {
+        set((state) => ({
+          pin: {
+            ...state.pin,
+            isEnabled: false,
+            lastConfigured: null,
+          },
+        }));
+        
+        get().clearPinCredentials();
+      },
+
+      savePinCredentials: (username: string, token: string, server: string) => {
+        const state = get();
+        
+        if (state.pin.isEnabled && state.tipo) {
+          set((state) => ({
+            pinCredentials: {
+              username,
+              token,
+              server,
+              tipo: state.tipo,
+              description: state.user?.description || null,
+              codigo: state.user?.codigo || null,
+            },
+          }));
+        }
+      },
+
+      clearPinCredentials: () => {
+        set((state) => ({
+          pinCredentials: {
+            username: null,
+            token: null,
+            server: null,
+            tipo: null,
+            description: null,
+            codigo: null,
+          },
+        }));
+      },
+
+      canUsePinLogin: (): boolean => {
+        const state = get();
+        const canUse = (
+          state.pin.isEnabled &&
+          !!state.pinCredentials.username &&
+          !!state.pinCredentials.token &&
+          !!state.pinCredentials.server &&
+          !!state.pinCredentials.tipo
+        );
+        
+        return canUse;
+      },
+
+      // ⭐ NUEVA FUNCIÓN: Autenticar con PIN
+      authenticateWithPin: async (): Promise<boolean> => {
+        const state = get();
+        
+        if (!state.pin.isEnabled) {
+          throw new Error('PIN no está habilitado');
+        }
+
+        if (!state.pinCredentials.username || 
+            !state.pinCredentials.token || 
+            !state.pinCredentials.server ||
+            !state.pinCredentials.tipo) {
+          throw new Error('No hay credenciales guardadas para login con PIN');
+        }
+
+        try {
+          const { username, token, server, tipo, description, codigo } = state.pinCredentials;
+          
+          set({
+            server,
+            token,
+            tipo,
+            user: {
+              id: username!,
+              username: username!,
+              email: `${username}@velsat.com`,
+              name: username!.charAt(0).toUpperCase() + username!.slice(1),
+              description: description || undefined,
+              codigo: codigo || undefined,
+            },
+            isAuthenticated: true,
+            isLoading: false,
+            hasActiveSession: true,
+          });
+          
+          return true;
+        } catch (error: any) {
+          throw error;
+        }
+      },
     }),
     {
       name: 'auth-storage',
@@ -350,6 +538,8 @@ export const useAuthStore = create<AuthState>()(
         selectedVehiclePin: state.selectedVehiclePin,
         biometric: state.biometric,
         biometricCredentials: state.biometricCredentials,
+        pin: state.pin,
+        pinCredentials: state.pinCredentials,
       }),
       version: 1,
       onRehydrateStorage: () => (state: AuthState | undefined) => {
