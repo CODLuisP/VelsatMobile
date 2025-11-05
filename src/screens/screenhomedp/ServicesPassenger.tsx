@@ -4,8 +4,9 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl, // 👈 Agregar esto
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react'; // 👈 Agregar useCallback
 import {
   ChevronLeft,
   Users,
@@ -61,6 +62,7 @@ const ServicesPassenger = () => {
 
   const [apiServices, setApiServices] = useState<ApiService[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // 👈 Estado para pull-to-refresh
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -72,6 +74,7 @@ const ServicesPassenger = () => {
   const fetchServiciosPasajero = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Cargando servicios del pasajero:', codigo);
 
       const url = `https://velsat.pe:2087/api/Aplicativo/serviciosPasajero/${codigo}`;
 
@@ -84,8 +87,10 @@ const ServicesPassenger = () => {
 
       if (response.data && Array.isArray(response.data)) {
         setApiServices(response.data);
+        console.log('✅ Servicios cargados:', response.data.length);
       } else {
         setApiServices([]);
+        console.log('⚠️ No hay servicios disponibles');
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -96,20 +101,36 @@ const ServicesPassenger = () => {
             error.response.data.includes('No se encontraron servicios')
           ) {
             setApiServices([]);
+            console.log('ℹ️ No se encontraron servicios');
           }
         }
       }
       setApiServices([]);
+      console.error('❌ Error al cargar servicios:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false); // 👈 Finalizar el estado de refreshing
     }
   };
 
-  useEffect(() => {
+  // 🔥 RECARGAR AUTOMÁTICAMENTE cuando la pantalla recupera el foco
+  useFocusEffect(
+    useCallback(() => {
+      console.log('📱 Pantalla ServicesPassenger enfocada - Recargando servicios...');
+      if (codigo) {
+        fetchServiciosPasajero();
+      }
+    }, [codigo])
+  );
+
+  // 🔥 Pull-to-refresh manual
+  const onRefresh = useCallback(() => {
+    console.log('🔄 Pull-to-refresh activado');
+    setRefreshing(true);
     if (codigo) {
       fetchServiciosPasajero();
     } else {
-      setLoading(false);
+      setRefreshing(false);
     }
   }, [codigo]);
 
@@ -231,6 +252,17 @@ const ServicesPassenger = () => {
         style={styles.contentList}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
+        // 🔥 Agregar RefreshControl para pull-to-refresh
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#e36414']} // Android
+            tintColor="#e36414" // iOS
+            title="Actualizando servicios..." // iOS
+            titleColor="#fff" // iOS
+          />
+        }
       >
         <View style={styles.formContainer}>
           {loading ? (
