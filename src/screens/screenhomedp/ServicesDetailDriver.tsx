@@ -95,12 +95,11 @@ const ServicesDetailDriver = () => {
     color: '',
   });
 
-const [modalVisible, setModalVisible] = useState(false);
-const [navigationCoords, setNavigationCoords] = useState<{
-  latitude: number;
-  longitude: number;
-} | null>(null);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [navigationCoords, setNavigationCoords] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   // useEffect para consumir la API
   useEffect(() => {
@@ -204,7 +203,7 @@ const [navigationCoords, setNavigationCoords] = useState<{
     const phoneUrl: string = `tel:${phoneNumber}`;
 
     Linking.openURL(phoneUrl)
-      .then(() => { })
+      .then(() => {})
       .catch(error => {
         handleShowAlert(
           'No se pudo abrir el marcador',
@@ -213,6 +212,7 @@ const [navigationCoords, setNavigationCoords] = useState<{
         );
       });
   };
+  
 const openGoogleMapsPassenger = (isPickup: boolean): void => {
   // Determinar qué coordenadas usar según el tipo y si es recojo o destino
   let latitude: string | undefined;
@@ -228,6 +228,18 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
     longitude = isEntrada ? orderZeroPassenger?.wx : currentPassenger?.wx;
   }
 
+  // ✅ Imprimir coordenadas en consola
+  console.log('========================================');
+  console.log('📍 COORDENADAS PARA NAVEGACIÓN');
+  console.log('========================================');
+  console.log('Tipo de servicio:', isEntrada ? 'ENTRADA' : 'SALIDA');
+  console.log('Es lugar de recojo:', isPickup);
+  console.log('Latitud (wy):', latitude);
+  console.log('Longitud (wx):', longitude);
+  console.log('Pasajero actual:', currentPassenger?.apellidos);
+  console.log('Orden cero:', orderZeroPassenger?.apellidos);
+  console.log('========================================');
+
   if (!latitude || !longitude) {
     handleShowAlert(
       'Ubicación no disponible',
@@ -240,8 +252,14 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
   const lat = parseFloat(latitude);
   const lng = parseFloat(longitude);
 
+  // ✅ Imprimir coordenadas parseadas
+  console.log('✅ Coordenadas parseadas:');
+  console.log('Latitud (número):', lat);
+  console.log('Longitud (número):', lng);
+  console.log('========================================');
+
   const result = openGoogleMaps(lat, lng);
-  
+
   if (result) {
     setNavigationCoords({ latitude: lat, longitude: lng });
     setModalVisible(true);
@@ -465,9 +483,9 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                             {isEntrada
                               ? currentPassenger.direccion
                               : getLocationData(
-                                orderZeroPassenger,
-                                'direccion',
-                              )}
+                                  orderZeroPassenger,
+                                  'direccion',
+                                )}
                           </Text>
 
                           <Text style={styles.label}>Distrito</Text>
@@ -482,9 +500,9 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                             {isEntrada
                               ? '-'
                               : getLocationData(
-                                orderZeroPassenger,
-                                'ubicacion',
-                              )}
+                                  orderZeroPassenger,
+                                  'ubicacion',
+                                )}
                           </Text>
                         </View>
 
@@ -496,54 +514,32 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                               : orderZeroPassenger?.fechapasajero || '-'}
                           </Text>
 
-                         <TouchableOpacity
-  style={[
-    styles.iconButtonSmall,
-    {
-      opacity: (
-        isEntrada
-          ? currentPassenger?.wy
-          : orderZeroPassenger?.wy
-      )
-        ? 1
-        : 0.3,
-    },
-  ]}
-  onPress={() => openGoogleMapsPassenger(true)}
-  disabled={
-    !(isEntrada
-      ? currentPassenger?.wy
-      : orderZeroPassenger?.wy)
-  }
->
-  <MapPin size={20} color="#fff" />
-</TouchableOpacity>
+                          <TouchableOpacity
+                            style={[
+                              styles.iconButtonSmall,
+                              {
+                                opacity: (
+                                  isEntrada
+                                    ? currentPassenger?.wy
+                                    : orderZeroPassenger?.wy
+                                )
+                                  ? 1
+                                  : 0.3,
+                              },
+                            ]}
+                            onPress={() => openGoogleMapsPassenger(true)}
+                            disabled={
+                              !(isEntrada
+                                ? currentPassenger?.wy
+                                : orderZeroPassenger?.wy)
+                            }
+                          >
+                            <MapPin size={20} color="#fff" />
+                          </TouchableOpacity>
 
-                          
                           <Text style={styles.linkText}>¿Cómo llegar?</Text>
                         </View>
                       </View>
-
-                      {/* <View style={styles.infoRowWithIcon}>
-                        
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>Distrito</Text>
-                            <Text style={styles.value}>
-                              {isEntrada
-                                ? currentPassenger.distrito
-                                : getLocationData(orderZeroPassenger, 'distrito')}
-                            </Text>
-                          </View>
-                      </View> */}
-                      {/* 
-                      <View style={styles.infoRow}>
-                        <Text style={styles.label}>Ubicación</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? '-'
-                            : getLocationData(orderZeroPassenger, 'ubicacion')}
-                        </Text>
-                      </View> */}
 
                       <View style={styles.infoRow}>
                         <Text style={styles.label}>Referencia</Text>
@@ -594,51 +590,31 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                               : currentPassenger.fechapasajero}
                           </Text>
 
-                   <TouchableOpacity
-  style={[
-    styles.iconButtonSmall,
-    {
-      opacity: (
-        isEntrada
-          ? currentPassenger?.wy
-          : orderZeroPassenger?.wy
-      )
-        ? 1
-        : 0.3,
-    },
-  ]}
-  onPress={() => openGoogleMapsPassenger(true)}
-  disabled={
-    !(isEntrada
-      ? currentPassenger?.wy
-      : orderZeroPassenger?.wy)
-  }
->
-  <MapPin size={20} color="#fff" />
-</TouchableOpacity>
+                          <TouchableOpacity
+                            style={[
+                              styles.iconButtonSmall,
+                              {
+                                opacity: (
+                                  isEntrada
+                                    ? currentPassenger?.wy
+                                    : orderZeroPassenger?.wy
+                                )
+                                  ? 1
+                                  : 0.3,
+                              },
+                            ]}
+                            onPress={() => openGoogleMapsPassenger(false)}
+                            disabled={
+                              !(isEntrada
+                                ? currentPassenger?.wy
+                                : orderZeroPassenger?.wy)
+                            }
+                          >
+                            <MapPin size={20} color="#fff" />
+                          </TouchableOpacity>
                           <Text style={styles.linkText}>¿Cómo llegar?</Text>
                         </View>
                       </View>
-
-                      {/* <View style={styles.infoRowWithIcon}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.label}>Distrito</Text>
-                          <Text style={styles.value}>
-                            {isEntrada
-                              ? getLocationData(orderZeroPassenger, 'distrito')
-                              : currentPassenger.distrito}
-                          </Text>
-                        </View>
-                      </View> */}
-
-                      {/* <View style={styles.infoRow}>
-                        <Text style={styles.label}>Ubicación</Text>
-                        <Text style={styles.value}>
-                          {isEntrada
-                            ? getLocationData(orderZeroPassenger, 'ubicacion')
-                            : '-'}
-                        </Text>
-                      </View> */}
 
                       <View style={styles.infoRow}>
                         <Text style={styles.label}>Referencia</Text>
@@ -646,7 +622,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                           {isEntrada
                             ? getLocationData(orderZeroPassenger, 'referencia')
                             : currentPassenger.referencia ||
-                            'No han agregado ninguna referencia'}
+                              'No han agregado ninguna referencia'}
                         </Text>
                       </View>
                     </View>
@@ -660,7 +636,6 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                 icon={<ChevronRight size={24} color="#333" />}
                 direction="right"
               />
-
             </View>
 
             {/* Tarjetas fijas (fuera del slider) */}
@@ -676,8 +651,8 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                     {serviceData.tipo === 'I'
                       ? 'Entrada'
                       : serviceData.tipo === 'S'
-                        ? 'Salida'
-                        : '-'}
+                      ? 'Salida'
+                      : '-'}
                   </Text>
                 </View>
 
@@ -686,9 +661,9 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                   <Text style={styles.value}>
                     {serviceData.totalpax
                       ? actualizarPasajeros(
-                        serviceData.codusuario,
-                        serviceData.totalpax,
-                      )
+                          serviceData.codusuario,
+                          serviceData.totalpax,
+                        )
                       : '-'}
                   </Text>
                 </View>
@@ -706,8 +681,8 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                     {serviceData.grupo === 'A'
                       ? 'Aire'
                       : serviceData.grupo === 'T'
-                        ? 'Tierra'
-                        : '-'}
+                      ? 'Tierra'
+                      : '-'}
                   </Text>
                 </View>
               </View>
@@ -720,10 +695,10 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
                     {serviceData.codusuario === 'movilbus'
                       ? 'Empresa Movil Bus'
                       : serviceData.codusuario === 'cgacela'
-                        ? 'Gacela Express'
-                        : serviceData.codusuario === 'aremys'
-                          ? 'Empresa Aremys'
-                          : serviceData.codusuario || '-'}
+                      ? 'Gacela Express'
+                      : serviceData.codusuario === 'aremys'
+                      ? 'Empresa Aremys'
+                      : serviceData.codusuario || '-'}
                   </Text>
                 </View>
                 <View style={styles.gridItemRight}>
@@ -798,14 +773,13 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
       />
 
       {navigationCoords && (
-  <NavigationModal
-    visible={modalVisible}
-    onClose={() => setModalVisible(false)}
-    latitude={navigationCoords.latitude}
-    longitude={navigationCoords.longitude}
-  />
-)}
-
+        <NavigationModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          latitude={navigationCoords.latitude}
+          longitude={navigationCoords.longitude}
+        />
+      )}
     </LinearGradient>
   );
 };
