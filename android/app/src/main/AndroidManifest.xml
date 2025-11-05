@@ -46,5 +46,17 @@
   <uses-feature 
     android:name="android.hardware.telephony" 
     android:required="false" />
+  
+  <!-- AGREGAR ESTE BLOQUE PARA WAZE Y GOOGLE MAPS -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <data android:scheme="waze" />
+    </intent>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <data android:scheme="google.navigation" />
+    </intent>
+  </queries>
     
 </manifest>

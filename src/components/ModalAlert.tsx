@@ -8,7 +8,7 @@ interface ModalAlertProps {
   title: string;
   message: string;
   buttonText?: string;
-  color?: string; // <- 🔥 Nueva prop opcional
+  color?: string; 
 }
 
 const ModalAlert: React.FC<ModalAlertProps> = ({
@@ -31,10 +31,10 @@ const ModalAlert: React.FC<ModalAlertProps> = ({
       animationOut="fadeOutDown"
       animationInTiming={300}
       animationOutTiming={400}
-      coverScreen={true} // <- 🔥 esto hace que cubra toda la pantalla, incluso la barra de navegación
-      statusBarTranslucent={true} // <- 🔥 permite ocupar también detrás del StatusBar
+      coverScreen={true} 
+      statusBarTranslucent={true} 
       style={styles.modal}
-      useNativeDriver={true} // más suave en animaciones
+      useNativeDriver={true} 
     >
       <View style={styles.modalContent}>
         <Text style={[styles.modalTitle, { color }]}>{title}</Text>
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
   modal: {
     justifyContent: 'center',
     alignItems: 'center',
-    // NO pongas backgroundColor aquí
   },
   modalContent: {
     backgroundColor: '#fff',

@@ -36,6 +36,7 @@ import PassengerActionBtn from '../../components/PassengerActionBtn';
 import ModalAlert from '../../components/ModalAlert';
 import LinearGradient from 'react-native-linear-gradient';
 import { AnimatedNavButton } from '../../components/AnimatedNavButton';
+import NavigationModal from '../../components/NavigationModal';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,
@@ -93,6 +94,13 @@ const ServicesDetailDriver = () => {
     message: '',
     color: '',
   });
+
+const [modalVisible, setModalVisible] = useState(false);
+const [navigationCoords, setNavigationCoords] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
+
 
   // useEffect para consumir la API
   useEffect(() => {
@@ -205,34 +213,40 @@ const ServicesDetailDriver = () => {
         );
       });
   };
+const openGoogleMapsPassenger = (isPickup: boolean): void => {
+  // Determinar qué coordenadas usar según el tipo y si es recojo o destino
+  let latitude: string | undefined;
+  let longitude: string | undefined;
 
-  const openGoogleMapsPassenger = (isPickup: boolean): void => {
-    // Determinar qué coordenadas usar según el tipo y si es recojo o destino
-    let latitude: string | undefined;
-    let longitude: string | undefined;
+  if (isPickup) {
+    // Para lugar de recojo
+    latitude = isEntrada ? currentPassenger?.wy : orderZeroPassenger?.wy;
+    longitude = isEntrada ? currentPassenger?.wx : orderZeroPassenger?.wx;
+  } else {
+    // Para destino de viaje
+    latitude = isEntrada ? orderZeroPassenger?.wy : currentPassenger?.wy;
+    longitude = isEntrada ? orderZeroPassenger?.wx : currentPassenger?.wx;
+  }
 
-    if (isPickup) {
-      // Para lugar de recojo
-      latitude = isEntrada ? currentPassenger?.wy : orderZeroPassenger?.wy;
-      longitude = isEntrada ? currentPassenger?.wx : orderZeroPassenger?.wx;
-    } else {
-      // Para destino de viaje
-      latitude = isEntrada ? orderZeroPassenger?.wy : currentPassenger?.wy;
-      longitude = isEntrada ? orderZeroPassenger?.wx : currentPassenger?.wx;
-    }
+  if (!latitude || !longitude) {
+    handleShowAlert(
+      'Ubicación no disponible',
+      'No hay coordenadas registradas para esta ubicación.',
+      '#FFA726', // Naranja - Advertencia
+    );
+    return;
+  }
 
-    if (!latitude || !longitude) {
-      handleShowAlert(
-        'Ubicación no disponible',
-        'No hay coordenadas registradas para esta ubicación.',
-        '#FFA726', // Naranja - Advertencia
-      );
-      return;
-    }
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
 
-    openGoogleMaps(parseFloat(latitude), parseFloat(longitude));
-  };
-
+  const result = openGoogleMaps(lat, lng);
+  
+  if (result) {
+    setNavigationCoords({ latitude: lat, longitude: lng });
+    setModalVisible(true);
+  }
+};
   const getLocationData = (
     passenger: PassengerAPI | null,
     field: 'direccion' | 'distrito' | 'ubicacion' | 'referencia',
@@ -481,28 +495,31 @@ const ServicesDetailDriver = () => {
                               ? currentPassenger.fechapasajero
                               : orderZeroPassenger?.fechapasajero || '-'}
                           </Text>
-                          <TouchableOpacity
-                            style={[
-                              styles.iconButtonSmall,
-                              {
-                                opacity: (
-                                  isEntrada
-                                    ? currentPassenger?.wy
-                                    : orderZeroPassenger?.wy
-                                )
-                                  ? 1
-                                  : 0.3,
-                              },
-                            ]}
-                            onPress={() => openGoogleMapsPassenger(true)}
-                            disabled={
-                              !(isEntrada
-                                ? currentPassenger?.wy
-                                : orderZeroPassenger?.wy)
-                            }
-                          >
-                            <MapPin size={20} color="#fff" />
-                          </TouchableOpacity>
+
+                         <TouchableOpacity
+  style={[
+    styles.iconButtonSmall,
+    {
+      opacity: (
+        isEntrada
+          ? currentPassenger?.wy
+          : orderZeroPassenger?.wy
+      )
+        ? 1
+        : 0.3,
+    },
+  ]}
+  onPress={() => openGoogleMapsPassenger(true)}
+  disabled={
+    !(isEntrada
+      ? currentPassenger?.wy
+      : orderZeroPassenger?.wy)
+  }
+>
+  <MapPin size={20} color="#fff" />
+</TouchableOpacity>
+
+                          
                           <Text style={styles.linkText}>¿Cómo llegar?</Text>
                         </View>
                       </View>
@@ -577,28 +594,28 @@ const ServicesDetailDriver = () => {
                               : currentPassenger.fechapasajero}
                           </Text>
 
-                          <TouchableOpacity
-                            style={[
-                              styles.iconButtonSmall,
-                              {
-                                opacity: (
-                                  isEntrada
-                                    ? orderZeroPassenger?.wy
-                                    : currentPassenger?.wy
-                                )
-                                  ? 1
-                                  : 0.3,
-                              },
-                            ]}
-                            onPress={() => openGoogleMapsPassenger(false)}
-                            disabled={
-                              !(isEntrada
-                                ? orderZeroPassenger?.wy
-                                : currentPassenger?.wy)
-                            }
-                          >
-                            <MapPin size={20} color="#fff" />
-                          </TouchableOpacity>
+                   <TouchableOpacity
+  style={[
+    styles.iconButtonSmall,
+    {
+      opacity: (
+        isEntrada
+          ? currentPassenger?.wy
+          : orderZeroPassenger?.wy
+      )
+        ? 1
+        : 0.3,
+    },
+  ]}
+  onPress={() => openGoogleMapsPassenger(true)}
+  disabled={
+    !(isEntrada
+      ? currentPassenger?.wy
+      : orderZeroPassenger?.wy)
+  }
+>
+  <MapPin size={20} color="#fff" />
+</TouchableOpacity>
                           <Text style={styles.linkText}>¿Cómo llegar?</Text>
                         </View>
                       </View>
@@ -779,6 +796,16 @@ const ServicesDetailDriver = () => {
         message={alertConfig.message}
         color={alertConfig.color}
       />
+
+      {navigationCoords && (
+  <NavigationModal
+    visible={modalVisible}
+    onClose={() => setModalVisible(false)}
+    latitude={navigationCoords.latitude}
+    longitude={navigationCoords.longitude}
+  />
+)}
+
     </LinearGradient>
   );
 };

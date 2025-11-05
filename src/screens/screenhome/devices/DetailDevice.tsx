@@ -54,6 +54,7 @@ import {
 } from '../../../styles/directionImages';
 import { generateLeafletHTML } from './leafletMapTemplate';
 import CoordinatesModal from './Coordinatesmodal';
+import { NavigationModal } from '../../../components/NavigationModal';
 
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
@@ -94,7 +95,22 @@ const DetailDevice = () => {
 
 const { device } = route.params;
 
+const [modalVisible, setModalVisible] = useState(false);
+const [navigationCoords, setNavigationCoords] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
 
+const handleOpenMaps = () => {
+  if (!vehicleData) return;
+  
+  const result = openGoogleMaps(latitude, longitude);
+  
+  if (result) {
+    setNavigationCoords({ latitude, longitude });
+    setModalVisible(true);
+  }
+};
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -797,23 +813,30 @@ useEffect(() => {
                   )}
                 </View>
 
-                <View style={styles.dateContainerGPS}>
+             <View style={styles.dateContainerGPS}>
+      <TouchableOpacity
+        style={[
+          styles.locationButton,
+          { opacity: vehicleData ? 1 : 0.5 },
+        ]}
+        onPress={handleOpenMaps}
+        disabled={!vehicleData}
+      >
+        <MapPin size={15} color="#fff" />
+      </TouchableOpacity>
+      
+      <Text style={styles.lastReportTextGps}>¿Cómo llegar?</Text>
+    </View>
 
-                  <TouchableOpacity
-                    style={[
-                      styles.locationButton,
-                      { opacity: vehicleData ? 1 : 0.5 },
-                    ]}
-                    onPress={() => openGoogleMaps(latitude, longitude)}
-                    disabled={!vehicleData}
-                  >
-                    <MapPin size={15} color="#fff" />
-                  </TouchableOpacity>
-                  
-                  <Text style={styles.lastReportTextGps}>¿Cómo llegar?</Text>
-
-                </View>
-
+    {/* Modal al final de tu componente, antes del </> de cierre */}
+    {navigationCoords && (
+      <NavigationModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        latitude={navigationCoords.latitude}
+        longitude={navigationCoords.longitude}
+      />
+    )}
 
               </View>
 
