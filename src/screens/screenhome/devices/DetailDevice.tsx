@@ -240,7 +240,6 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     };
   }, [device, user?.username, server]);
 
-// ✅ ESTO ESTÁ BIEN
 useEffect(() => {
   const handleAppStateChange = (nextAppState: string) => {
     if (nextAppState === 'active') {

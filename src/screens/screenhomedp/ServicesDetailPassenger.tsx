@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, MapPin, Phone, Star } from 'lucide-react-native';
+import { ChevronLeft, Phone, Star } from 'lucide-react-native';
 import {
   NavigationProp,
   useNavigation,
@@ -25,11 +25,10 @@ import {
 } from '../../hooks/useNavigationMode';
 import { styles } from '../../styles/servicesdetailpassenger';
 import { RouteProp } from '@react-navigation/native';
-import { openGoogleMaps } from '../../utils/textUtils';
 import { ImageModal } from './modals/ImageModal';
 import { CancelModal } from './modals/CancelModal';
 import { RatingModal } from './modals/RatingModal';
-import VehicleMap from './VehicleMap'; // 👈 Importar el nuevo componente
+import VehicleMap from './VehicleMap';
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../../components/ModalAlert';
@@ -101,7 +100,6 @@ const ServicesDetailPassenger = () => {
     setModalAlertVisible(true);
   };
 
-  // Función para obtener los datos del conductor
   const fetchDriverData = async () => {
     try {
       setLoadingDriver(true);
@@ -283,6 +281,9 @@ const ServicesDetailPassenger = () => {
   }
 };
 
+
+
+
   const handleRatingPress = () => {
     setRatingModalVisible(true);
     setSelectedRating(0);
@@ -298,7 +299,7 @@ const ServicesDetailPassenger = () => {
       handleShowAlert(
         'Atención',
         'Debe seleccionar una calificación',
-        '#e36414', // Naranja - Advertencia/Validación
+        '#e36414', 
       );
       return;
     }
@@ -319,14 +320,14 @@ const ServicesDetailPassenger = () => {
       handleShowAlert(
         '¡Éxito!',
         'Calificación enviada correctamente',
-        '#4CAF50', // Verde - Éxito
+        '#4CAF50',
       );
     } catch (error) {
       if (axios.isAxiosError(error)) {
         handleShowAlert(
           'Error',
           'No se pudo enviar la calificación',
-          '#e36414', // Rojo - Error
+          '#e36414', 
         );
       } else {
       }
