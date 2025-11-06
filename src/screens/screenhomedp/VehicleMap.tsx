@@ -345,7 +345,7 @@ useEffect(() => {
                         <div style="display: flex; flex-direction: column; gap: 3px; text-align: left; font-size: 11px;">
                             <div style="display: flex; justify-content: left;">
                                 <span style="font-weight: 600; color: #374151;">Velocidad:</span>
-                                <span style="color: #6b7280;">\${spd} Km/h</span>
+                                <span style="color: #6b7280;">\${spd.toFixed(0)} Km/h</span>
                             </div>
                             <div style="display: flex; justify-content: left;">
                                 <span style="font-weight: 600; color: #374151;">Dirección:</span>
@@ -602,7 +602,7 @@ useEffect(() => {
                     {vehicleName}
                   </Text>
                   <Text style={{ color: '#666', fontSize: 11 }}>
-                    Velocidad: {speed} km/h
+                    Velocidad: {speed.toFixed(0)} km/h
                   </Text>
                   <Text style={{ color: '#666', fontSize: 11, lineHeight: 14, flexWrap: 'wrap'}}>
                     Dirección: {vehicleData?.direccion || 'Cargando...'}

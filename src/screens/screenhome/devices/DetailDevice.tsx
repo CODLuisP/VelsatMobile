@@ -776,7 +776,7 @@ useEffect(() => {
                   </Text>
                   {vehicleData && (
                     <Text style={styles.speedText}>
-                      ({formatThreeDecimals(speed)} Km/h)
+                      ({formatThreeDecimals(speed.toFixed(0))} Km/h)
                     </Text>
                   )}
                 </View>

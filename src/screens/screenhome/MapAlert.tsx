@@ -325,7 +325,7 @@ const MapAlert = () => {
                     <h3 style="margin: 5px 0; color: ${alertColor};">${notificationData?.title || 'Alerta'}</h3>
                     <p style="margin: 3px 0;"><strong>Dispositivo:</strong> ${notificationData?.device || 'Sin información'}</p>
                     <p style="margin: 3px 0;"><strong>N° de alerta:</strong> ${notificationData?.id || 'N/A'}</p>
-                    <p style="margin: 3px 0;"><strong>Velocidad:</strong> ${speed} km/h</p>
+                    <p style="margin: 3px 0;"><strong>Velocidad:</strong> ${speed.toFixed(0)} km/h</p>
                     <p style="margin: 3px 0;"><strong>Coordenadas:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
                     <p style="margin: 3px 0;"><strong>Fecha:</strong> ${notificationData?.timestamp || 'Sin fecha'}</p>
                 </div>
@@ -363,7 +363,7 @@ const MapAlert = () => {
                 longitude: longitude,
               }}
               title={notificationData?.title || 'Alerta'}
-              description={`${notificationData?.device || 'Dispositivo'} - Velocidad: ${speed} km/h`}
+              description={`${notificationData?.device || 'Dispositivo'} - Velocidad: ${speed.toFixed(0)} km/h`}
             >
               <CustomMarker color={alertColor} />
             </Marker>

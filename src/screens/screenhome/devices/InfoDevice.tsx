@@ -159,7 +159,7 @@ const InfoDevice = () => {
 
 🚗 *UNIDAD:* ${deviceName}
 📊 *ESTADO:* ${estado}
-💨 *VELOCIDAD:* ${vehiculoData.lastValidSpeed} km/h
+💨 *VELOCIDAD:* ${vehiculoData.lastValidSpeed.toFixed(0)} km/h
 🗓️ *FECHA Y HORA:* ${fechaHora}
 🌍 *UBICACIÓN ACTUAL:* ${vehiculoData.direccion}
 🧭 *DIRECCIÓN:* ${direccion}
@@ -199,7 +199,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
     ? formatFechaHora(vehiculoData.lastGPSTimestamp)
     : 'Cargando...';
   const kilometraje = vehiculoData
-    ? vehiculoData.lastOdometerKM.toFixed(3)
+    ? vehiculoData.lastOdometerKM.toFixed(0)
     : '0.000';
 
   return (
@@ -273,7 +273,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                     </Text>
                     <Text style={styles.speedText}>
                       {' '}
-                      ({vehiculoData?.lastValidSpeed || 0} km/h)
+                      ({vehiculoData?.lastValidSpeed.toFixed(0) || 0} km/h)
                     </Text>
                   </Text>
                   <Text style={styles.infoSubtitle}>Estado y velocidad</Text>
