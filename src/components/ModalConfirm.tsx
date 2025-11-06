@@ -2,11 +2,11 @@ import React from 'react';
 import {
   Modal,
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { Text } from './ScaledComponents';
 
 interface ModalConfirmProps {
   isVisible: boolean;

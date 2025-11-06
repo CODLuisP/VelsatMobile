@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
   Platform,
 } from 'react-native';
 import {
@@ -35,6 +33,7 @@ import NavigationBarColor from 'react-native-navigation-bar-color';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../../../components/ModalAlert';
 import ModalConfirm from '../../../components/ModalConfirm';
+import { Text } from '../../../components/ScaledComponents';
 
 // Configuración del botón
 interface ButtonConfig {

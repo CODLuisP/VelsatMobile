@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   Linking,
@@ -9,11 +8,9 @@ import {
 import React from 'react';
 import {
   Headphones,
-  MessageCircle,
   HelpCircle,
   Play,
   ChevronLeft,
-  ChevronRight,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 
@@ -27,6 +24,7 @@ import {
 } from '../../../hooks/useNavigationMode';
 import { styles } from '../../../styles/help';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../../components/ScaledComponents';
 
 // Interfaz para las opciones de ayuda
 interface HelpOption {

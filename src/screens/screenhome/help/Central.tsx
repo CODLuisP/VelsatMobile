@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   TouchableOpacity,
   Linking,
   ScrollView,
@@ -25,6 +24,7 @@ import {
 } from '../../../hooks/useNavigationMode';
 import { styles } from '../../../styles/central';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../../components/ScaledComponents';
 
 const Central = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

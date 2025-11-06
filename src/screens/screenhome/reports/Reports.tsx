@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
-  TextInput,
   Platform,
   Modal,
   Animated,
@@ -45,6 +43,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import LinearGradient from 'react-native-linear-gradient';
 import ReportSlider, { ReportType } from '../../../components/ReportSlider';
 import ModalAlert from '../../../components/ModalAlert';
+import { Text, TextInput } from '../../../components/ScaledComponents';
 
 interface Unit {
   id: number;

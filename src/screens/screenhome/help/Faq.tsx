@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
@@ -19,6 +18,7 @@ import {
   getBottomSpace,
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
+import { Text } from '../../../components/ScaledComponents';
 
 interface FAQItem {
   id: number;
