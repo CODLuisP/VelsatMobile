@@ -12,13 +12,11 @@ import {
   Phone,
   Scan,
   User,
-  KeyRound, // ⭐ NUEVO: Importar icono para PIN
+  KeyRound, 
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   Dimensions,
   StatusBar,
@@ -48,6 +46,7 @@ import {
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../ModalAlert';
+import { Text, TextInput } from '../ScaledComponents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -473,7 +472,7 @@ const Login = () => {
                     style={styles.logoImage}
                     resizeMode="contain"
                   />
-                  <Text style={styles.logoText}>VELSAT</Text>
+                  <Text  style={styles.logoText}>VELSAT</Text>
                 </View>
               </Animated.View>
               <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>

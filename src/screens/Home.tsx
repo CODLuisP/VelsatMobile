@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StatusBar,
   ScrollView,
   Image,
   PermissionsAndroid,
   Platform,
-  Dimensions,
-  ImageBackground,
-  Alert,
 } from 'react-native';
 import {
   NavigationProp,
@@ -24,7 +20,6 @@ import { RootStackParamList } from '../../App';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 
 import {
-  EdgeInsets,
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
@@ -45,6 +40,7 @@ import { getBottomSpace, useNavigationMode } from '../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalConfirm from '../components/ModalConfirm';
 import ModalAlert from '../components/ModalAlert';
+import { Text } from '../components/ScaledComponents';
 
 // Tipos TypeScript
 interface WeatherState {

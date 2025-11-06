@@ -35,6 +35,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import FAQ from './src/screens/screenhome/help/Faq';
 
+
+
 // Tipos de datos
 interface Device {
   id: string;
@@ -84,7 +86,6 @@ interface ApiService {
   totalpax: string;
 }
 
-// ✅ RootStackParamList corregido
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
@@ -109,7 +110,7 @@ export type RootStackParamList = {
   Devices: undefined;
 
 DetailDevice: {
-  device: string; // 👈 ahora 'device' es un string (la placa)
+  device: string; 
 };
 
   InfoDevice: {
