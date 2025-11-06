@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   TouchableOpacity,
   Platform,
   Image,
@@ -31,6 +30,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { RootStackParamList } from '../../../../App';
 import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
 import { styles } from '../../../styles/mapalert';
+import { Text } from '../../../components/ScaledComponents';
 
 interface MapAlertRouteParams {
   notificationData: {

@@ -1,9 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
-  TextInput,
   Platform,
   ActivityIndicator,
 } from 'react-native';
@@ -13,7 +11,6 @@ import {
   MapPin,
   Eye,
   EyeOff,
-  Check,
   Lock,
   User,
   KeyRound,
@@ -49,6 +46,7 @@ import AlertPro from 'react-native-alert-pro';
 import axios from 'axios';
 
 import ModalAlert from '../../components/ModalAlert';
+import { Text, TextInput } from '../../components/ScaledComponents';
 
 const Setting = () => {
   const { user, logout, server, tipo } = useAuthStore();

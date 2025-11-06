@@ -1,6 +1,6 @@
 import {
   View,
-  Text,
+
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -13,7 +13,6 @@ import {
   Power,
   AlertTriangle,
   ChevronLeft,
-  WifiOff,
   ServerCrash,
 } from 'lucide-react-native';
 import {
@@ -34,6 +33,7 @@ import NavigationBarColor from 'react-native-navigation-bar-color';
 import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../../components/ScaledComponents';
 
 // Interfaz para el tipo de evento de la API
 interface EventAPI {

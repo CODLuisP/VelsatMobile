@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
-  TextInput,
   FlatList,
   Image,
   ActivityIndicator,
-  Modal,
-  ScrollView,
   Platform,
 } from 'react-native';
 import {
@@ -18,9 +14,8 @@ import {
   MapPinned,
   SearchX,
   Filter,
-  X,
-  Check,
 } from 'lucide-react-native';
+
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { styles } from '../../../styles/devices';
 import { RootStackParamList } from '../../../../App';
@@ -34,8 +29,8 @@ import {
 import { useAuthStore } from '../../../store/authStore';
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
-import CoordinatesModal from './Coordinatesmodal';
 import FilterModal from './FilterModal';
+import { Text, TextInput } from '../../../components/ScaledComponents';
 
 interface Device {
   id: string;

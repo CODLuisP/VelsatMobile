@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ActivityIndicator, FlatList } from 'react-native';
+import { View, TouchableOpacity, Image, ActivityIndicator, FlatList } from 'react-native';
 import {
   ChevronLeft,
   Info,
@@ -29,6 +29,7 @@ import {
 import { toUpperCaseText } from '../../utils/textUtils';
 import LinearGradient from 'react-native-linear-gradient';
 import axios from 'axios';
+import { Text } from '../../components/ScaledComponents';
 
 interface UserDetailsResponse {
   accountID: string | null;

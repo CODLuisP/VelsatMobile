@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, BackHandler, Platform } from 'react-native';
+import { View, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, BackHandler, Platform } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Battery,
@@ -7,7 +7,6 @@ import {
   AlertTriangle,
   ChevronLeft,
   Bell,
-  Lightbulb,
   AlertCircle,
 } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -24,6 +23,7 @@ import {
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuthStore } from '../../store/authStore';
+import { Text } from '../../components/ScaledComponents';
 
 interface Notification {
   id: number;

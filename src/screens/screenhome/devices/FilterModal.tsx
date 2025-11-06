@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
@@ -10,12 +9,12 @@ import {
   Animated,
   PanResponder,
   ScrollView,
-  TextInput,
   Platform,
 } from 'react-native';
 import { X, MapPinned, Check, Filter } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
+import { Text, TextInput } from '../../../components/ScaledComponents';
 
 interface FilterModalProps {
   visible: boolean;

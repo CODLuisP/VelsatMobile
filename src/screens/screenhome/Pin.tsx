@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
   ScrollView,
@@ -20,6 +19,7 @@ import {
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuthStore } from '../../store/authStore'; 
+import { Text } from '../../components/ScaledComponents';
 
 const Pin = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

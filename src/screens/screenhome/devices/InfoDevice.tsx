@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
   Image,
   ScrollView,
   ActivityIndicator,
   Share,
-  Alert,
   Platform,
 } from 'react-native';
 import {
@@ -42,6 +40,7 @@ import axios from 'axios';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../../../components/ModalAlert';
+import { Text } from '../../../components/ScaledComponents';
 
 type InfoDeviceRouteProp = RouteProp<RootStackParamList, 'InfoDevice'>;
 

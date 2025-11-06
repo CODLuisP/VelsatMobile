@@ -2,7 +2,6 @@ import 'react-native-url-polyfill/auto';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Platform,
   Image,
@@ -58,6 +57,7 @@ import {
 import { generateLeafletHTML } from './leafletMapTemplate';
 import CoordinatesModal from './Coordinatesmodal';
 import { NavigationModal } from '../../../components/NavigationModal';
+import { Text } from '../../../components/ScaledComponents';
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
 
