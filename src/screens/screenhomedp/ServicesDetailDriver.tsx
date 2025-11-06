@@ -1,9 +1,7 @@
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Linking,
 } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
@@ -37,6 +35,7 @@ import ModalAlert from '../../components/ModalAlert';
 import LinearGradient from 'react-native-linear-gradient';
 import { AnimatedNavButton } from '../../components/AnimatedNavButton';
 import NavigationModal from '../../components/NavigationModal';
+import { Text } from '../../components/ScaledComponents';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,

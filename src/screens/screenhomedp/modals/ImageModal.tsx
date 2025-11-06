@@ -6,13 +6,8 @@ import {
   Image, 
   StyleSheet, 
   Animated,
-  Dimensions,
-  Platform,
   StatusBar
 } from 'react-native';
-import { X } from 'lucide-react-native';
-
-const { width, height } = Dimensions.get('window');
 
 interface ImageModalProps {
   visible: boolean;

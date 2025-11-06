@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
-  Text,
   Modal,
   StyleSheet,
   TouchableOpacity,
@@ -15,6 +14,7 @@ import {
 } from '../../../hooks/useNavigationMode';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
+import { Text } from '../../../components/ScaledComponents';
 
 interface MarkerData {
   id: string;

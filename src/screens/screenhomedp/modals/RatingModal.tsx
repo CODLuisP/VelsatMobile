@@ -1,7 +1,6 @@
 import React from 'react';
 import { 
-  View, 
-  Text, 
+  View,
   Modal, 
   TouchableOpacity, 
   ActivityIndicator,
@@ -11,6 +10,7 @@ import {
   StatusBar
 } from 'react-native';
 import { Star, X } from 'lucide-react-native';
+import { Text } from '../../../components/ScaledComponents';
 
 interface RatingModalProps {
   visible: boolean;

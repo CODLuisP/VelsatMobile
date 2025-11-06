@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -13,7 +12,6 @@ import {
   Calendar,
   User,
   CalendarX2,
-  Clock,
   ChevronRight,
   Eye,
 } from 'lucide-react-native';
@@ -30,6 +28,7 @@ import { styles } from '../../styles/servicesdriver';
 import { useAuthStore } from '../../store/authStore';
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../components/ScaledComponents';
 
 interface ApiService {
   codservicio: string;

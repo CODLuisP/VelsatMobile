@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
   Modal,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +15,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import axios from 'axios';
+import { Text, TextInput } from '../../../components/ScaledComponents';
 
 interface Passenger {
   id: string;
