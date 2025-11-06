@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
   FlatList,
@@ -40,6 +39,7 @@ import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../../components/ScaledComponents';
 
 interface ReportItem {
   id: string;

@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StatusBar,
   ScrollView,
   Image,
   PermissionsAndroid,
   Platform,
-  Dimensions,
-  ImageBackground,
-  Alert,
+  Dimensions
 } from 'react-native';
 import {
   NavigationProp,
@@ -43,6 +40,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../components/ModalAlert';
 import ModalConfirm from '../components/ModalConfirm';
+import { Text } from '../components/ScaledComponents';
 
 // Tipos TypeScript
 interface WeatherState {

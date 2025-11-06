@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   Dimensions,
@@ -12,6 +11,7 @@ import {
   Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from './ScaledComponents';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

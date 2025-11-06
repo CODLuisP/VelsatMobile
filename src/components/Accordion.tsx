@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   LayoutAnimation,
@@ -10,6 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
+import { Text } from './ScaledComponents';
 
 // Habilitar LayoutAnimation en Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
