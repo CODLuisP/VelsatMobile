@@ -244,38 +244,44 @@ const ServicesDetailPassenger = () => {
   };
 
   const handleConfirmCancel = async () => {
-    try {
-      setCancellingService(true);
-      const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
+  try {
+    setCancellingService(true);
+    const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
 
-      const requestBody = {
-        codservicio: serviceData.codservicio,
-        codpedido: serviceData.codpedido,
-        codusuario: serviceData.codusuario,
-        codcliente: serviceData.codcliente,
-        empresa: serviceData.empresa,
-        numero: serviceData.numero,
-        fechaservicio: serviceData.fechaservicio,
-        tipo: getTipoServicio(serviceData.tipo),
-      };
+    const requestBody = {
+      codservicio: serviceData.codservicio,
+      codpedido: serviceData.codpedido,
+      codusuario: serviceData.codusuario,
+      codcliente: serviceData.codcliente,
+      empresa: serviceData.empresa,
+      numero: serviceData.numero,
+      fechaservicio: serviceData.fechaservicio,
+      tipo: serviceData.tipo,
+    };
 
-      const response = await axios.post(url, requestBody);
+    const response = await axios.post(url, requestBody);
+    const { success, message } = response.data;
 
-      setCancelModalVisible(false);
-      navigation.goBack();
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        handleShowAlert(
-          'Error',
-          'No se pudo cancelar el servicio. Intenta nuevamente.',
-          '#e36414', // Rojo - Error
-        );
-      } else {
-      }
-    } finally {
-      setCancellingService(false);
+    setCancelModalVisible(false);
+
+    if (success) {
+      handleShowAlert('¡Éxito!', message || 'Servicio cancelado correctamente', '#4CAF50');
+      setTimeout(() => navigation.goBack(), 1500);
+    } else {
+      handleShowAlert('No se puede cancelar', message || 'Verifique las condiciones', '#FFA726');
     }
-  };
+
+  } catch (error) {
+    setCancelModalVisible(false);
+    handleShowAlert(
+      'Error',
+      'No se pudo cancelar el servicio. Intenta nuevamente.',
+      '#e36414'
+    );
+  } finally {
+    setCancellingService(false);
+  }
+};
 
   const handleRatingPress = () => {
     setRatingModalVisible(true);
