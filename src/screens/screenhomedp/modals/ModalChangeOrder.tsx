@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
   Modal,
   StyleSheet,
   TouchableOpacity,
@@ -20,6 +19,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import axios from 'axios';
+import { Text } from '../../../components/ScaledComponents';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 

@@ -1,12 +1,10 @@
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Image,
   Linking,
-  Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { ChevronLeft, Phone, Star } from 'lucide-react-native';
@@ -32,6 +30,7 @@ import VehicleMap from './VehicleMap';
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../../components/ModalAlert';
+import { Text } from '../../components/ScaledComponents';
 
 type ServicesDetailPassengerRouteProp = RouteProp<
   RootStackParamList,

@@ -1,6 +1,5 @@
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -29,6 +28,7 @@ import { styles } from '../../styles/servicesdriver';
 import axios from 'axios';
 import { useAuthStore } from '../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../components/ScaledComponents';
 
 interface Service {
   codservicio: string;
