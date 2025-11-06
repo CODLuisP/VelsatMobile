@@ -283,6 +283,9 @@ const ServicesDetailPassenger = () => {
   }
 };
 
+
+
+
   const handleRatingPress = () => {
     setRatingModalVisible(true);
     setSelectedRating(0);
