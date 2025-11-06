@@ -222,7 +222,7 @@ export const generateLeafletHTML = ({
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Velocidad:</span>
-                            <span style="color: #6b7280;">\${speed} Km/h</span>
+                            <span style="color: #6b7280;">\${speed.toFixed(0)} Km/h</span>
                         </div>
                         <div style="display: flex; justify-content: space-between;">
                             <span style="font-weight: 600; color: #374151;">Dirección:</span>

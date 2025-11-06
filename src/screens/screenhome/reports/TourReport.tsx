@@ -358,7 +358,7 @@ const TourReport = () => {
             });
             
             var marker = L.marker([p.latitude, p.longitude], { icon: customIcon })
-              .bindPopup('<b>Punto ' + (i+1) + '</b><br>Fecha: ' + p.date + ' ' + p.time + '<br>Velocidad: ' + p.speed + ' km/h')
+              .bindPopup('<b>Punto ' + (i+1) + '</b><br>Fecha: ' + p.date + ' ' + p.time + '<br>Velocidad: ' + p.speed.toFixed(0) + ' km/h')
               .addTo(map);
             
             markers.push(marker);

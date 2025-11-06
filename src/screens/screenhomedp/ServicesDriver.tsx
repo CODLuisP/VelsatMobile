@@ -4,8 +4,9 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChevronLeft,
   Users,
@@ -52,6 +53,7 @@ const ServicesDriver = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStart, setLoadingStart] = useState<string | null>(null);
   const [loadingEnd, setLoadingEnd] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false); // 👈 Estado para pull-to-refresh
 
   const { user, logout, server, tipo } = useAuthStore();
   const codigo = user?.codigo;
@@ -217,6 +219,7 @@ const ServicesDriver = () => {
       }
       setServices([]);
     } finally {
+      setRefreshing(false);
       setIsLoading(false);
     }
   };
@@ -225,6 +228,17 @@ const ServicesDriver = () => {
   useEffect(() => {
     fetchServices();
   }, []);
+
+  // 🔥 Pull-to-refresh manual
+  const onRefresh = useCallback(() => {
+    console.log('🔄 Pull-to-refresh activado');
+    setRefreshing(true);
+    if (codigo) {
+      fetchServices();
+    } else {
+      setRefreshing(false);
+    }
+  }, [codigo]);
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -342,6 +356,17 @@ const ServicesDriver = () => {
         style={styles.contentList}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
+        // 🔥 Agregar RefreshControl para pull-to-refresh
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#e36414']} // Android
+            tintColor="#e36414" // iOS
+            title="Actualizando servicios..." // iOS
+            titleColor="#fff" // iOS
+          />
+        }
       >
         <View style={styles.formContainer}>
           {isLoading ? (
@@ -390,7 +415,7 @@ const ServicesDriver = () => {
                               ? (() => {
                                   const paxActualizado = actualizarPasajeros(
                                     service.codusuario,
-                                    service.totalpax
+                                    service.totalpax,
                                   );
                                   const numPax = parseInt(paxActualizado);
                                   return `${paxActualizado} pasajero${

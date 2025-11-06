@@ -262,7 +262,7 @@ const handleDetailDevice = (device: Device) => {
                 { backgroundColor: getSpeedColor(item.speed, item.status) },
               ]}
             >
-              <Text style={styles.speedText}>{item.speed} Km/h</Text>
+              <Text style={styles.speedText}>{item.speed.toFixed(0)} Km/h</Text>
             </View>
           </View>
 
