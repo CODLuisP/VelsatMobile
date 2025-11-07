@@ -100,15 +100,15 @@ const Login = () => {
     biometric,
     checkBiometricAvailability,
     authenticateWithBiometric,
-    authenticateWithPin, // ⭐ NUEVO
+    authenticateWithPin, 
     getBiometricDisplayName,
     canUseBiometricLogin,
-    canUsePinLogin, // ⭐ NUEVO
+    canUsePinLogin,
     logout,
   } = useAuthStore();
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
-  const [showPinOption, setShowPinOption] = useState(false); // ⭐ NUEVO
+  const [showPinOption, setShowPinOption] = useState(false); 
 
   const handleBiometricLogin = async () => {
     try {
@@ -147,7 +147,6 @@ const Login = () => {
     }
   };
 
-  // ⭐ NUEVO: Handler para login con PIN
   const handlePinLogin = async () => {
     try {
       setIsLoggingIn(true);
@@ -625,7 +624,7 @@ const Login = () => {
 
               <View style={styles.statusContainer}>
                 <View style={styles.statusDot} />
-                <Text style={styles.statusText}>V. 2.2.7</Text>
+                <Text style={styles.statusText}>V. 2.2.8</Text>
               </View>
             </View>
           </Animated.View>
