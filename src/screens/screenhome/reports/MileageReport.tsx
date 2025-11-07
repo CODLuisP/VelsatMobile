@@ -138,7 +138,7 @@ const MileageReport = () => {
     };
   };
 
-  const fetchReportData = async () => {
+const fetchReportData = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -173,11 +173,11 @@ const MileageReport = () => {
 
       if (
         response.data &&
-        response.data.result &&
-        response.data.result.listaKilometros
+        response.data.listaKilometros &&
+        Array.isArray(response.data.listaKilometros)
       ) {
         const transformedData: VehicleReport[] =
-          response.data.result.listaKilometros.map((item: any) => ({
+          response.data.listaKilometros.map((item: any) => ({
             id: item.item.toString(),
             itemNumber: item.item,
             unitName: item.deviceId,
