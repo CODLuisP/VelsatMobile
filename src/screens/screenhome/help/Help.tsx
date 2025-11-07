@@ -6,12 +6,7 @@ import {
   Platform,
 } from 'react-native';
 import React from 'react';
-import {
-  Headphones,
-  HelpCircle,
-  Play,
-  ChevronLeft,
-} from 'lucide-react-native';
+import { Headphones, HelpCircle, Play, ChevronLeft } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import NavigationBarColor from 'react-native-navigation-bar-color';
@@ -25,6 +20,7 @@ import {
 import { styles } from '../../../styles/help';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text } from '../../../components/ScaledComponents';
+import { useAuthStore } from '../../../store/authStore';
 
 // Interfaz para las opciones de ayuda
 interface HelpOption {
@@ -36,12 +32,13 @@ interface HelpOption {
   backgroundColor: string;
   borderColor: string;
   action: string;
-  fullWidth?: boolean; 
+  fullWidth?: boolean;
 }
 
 const Help = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const { user, logout, server, tipo } = useAuthStore();
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
   const bottomSpace = getBottomSpace(
@@ -65,19 +62,23 @@ const Help = () => {
 
   const handleWhatsAppPress = () => {
     const phoneNumber = '51983287180'; // Número con código de país (51 para Perú)
-    const message = 'Hola, somos de Velsat Monitoreo. ¿En qué podemos ayudarte?';
-    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-    
-    Linking.canOpenURL(url)
-      .then((supported) => {
-        if (supported) {
-          return Linking.openURL(url);
-        } else {
-          // Opción alternativa: abrir en el navegador
-          const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-          return Linking.openURL(webUrl);
-        }
-      })
+    const message =
+      'Hola, somos de Velsat Monitoreo. ¿En qué podemos ayudarte?';
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
+      message,
+    )}`;
+
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        return Linking.openURL(url);
+      } else {
+        // Opción alternativa: abrir en el navegador
+        const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+          message,
+        )}`;
+        return Linking.openURL(webUrl);
+      }
+    });
   };
 
   const handleWebsitePress = () => {
@@ -95,7 +96,7 @@ const Help = () => {
         break;
       case 'faq':
         navigation.navigate('FAQ'); // 👈 Navegar a FAQ
-      break;
+        break;
       case 'tutorials':
         // Navegar a video tutoriales
         break;
@@ -148,7 +149,7 @@ const Help = () => {
     },
   ];
 
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
     <LinearGradient
@@ -159,7 +160,11 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Ayuda</Text>
@@ -180,49 +185,57 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
       >
         <View style={styles.formContainer}>
           <View style={styles.gridContainer}>
-            {helpOptions.map((option, index) => {
-              const IconComponent = option.icon;
-              return (
-                <TouchableOpacity
-                  key={option.id}
-                  style={[
-                    styles.optionCard,
-                    {
-                      backgroundColor: option.backgroundColor,
-                      borderColor: option.borderColor,
-                    },
-                  option.fullWidth && styles.optionCardFull,
+            {helpOptions
+              .filter(option => option.id !== 1 || tipo === 'n')
+              .map((option, index) => {
+                const IconComponent = option.icon;
+                const filteredOptions = helpOptions.filter(
+                  option => option.id !== 1 || tipo === 'n',
+                );
+                const isTwoItems = filteredOptions.length === 2;
 
-                  ]}
-                  activeOpacity={0.8}
-                  onPress={() => handleOptionPress(option)}
-                >
-                  <View style={styles.cardContent}>
-                    <View
-                      style={[
-                        styles.iconContainer,
-                        {
-                          backgroundColor: `${option.color}15`, 
-                          borderColor: `${option.color}30`, 
-                        },
-                      ]}
-                    >
-                      <IconComponent size={25} color={option.color} />
+                return (
+                  <TouchableOpacity
+                    key={option.id}
+                    style={[
+                      styles.optionCard,
+                      {
+                        backgroundColor: option.backgroundColor,
+                        borderColor: option.borderColor,
+                      },
+                      option.fullWidth && styles.optionCardFull,
+                      isTwoItems && styles.optionCardHalf, // 👈 Nuevo estilo para 2 items
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() => handleOptionPress(option)}
+                  >
+                    <View style={styles.cardContent}>
+                      <View
+                        style={[
+                          styles.iconContainer,
+                          {
+                            backgroundColor: `${option.color}15`,
+                            borderColor: `${option.color}30`,
+                          },
+                        ]}
+                      >
+                        <IconComponent size={25} color={option.color} />
+                      </View>
+                      <Text style={styles.optionTitle}>{option.title}</Text>
+                      <Text style={styles.optionSubtitle}>
+                        {option.subtitle}
+                      </Text>
+
+                      <View
+                        style={[
+                          styles.decorativeLine,
+                          { backgroundColor: option.color },
+                        ]}
+                      />
                     </View>
-                    <Text style={styles.optionTitle}>{option.title}</Text>
-                    <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
-
-                    {/* Línea decorativa centrada */}
-                    <View
-                      style={[
-                        styles.decorativeLine,
-                        { backgroundColor: option.color },
-                      ]}
-                    />
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+                  </TouchableOpacity>
+                );
+              })}
           </View>
 
           <View style={styles.infoSection}>

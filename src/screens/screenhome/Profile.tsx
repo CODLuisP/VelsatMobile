@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, Image, ActivityIndicator, FlatList } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  FlatList,
+} from 'react-native';
 import {
   ChevronLeft,
   Info,
@@ -50,13 +56,15 @@ interface UserDetailsResponse {
 
 const Profile = () => {
   const { user, logout, server, tipo } = useAuthStore();
-  const [userDetails, setUserDetails] = useState<UserDetailsResponse | null>(null);
+  const [userDetails, setUserDetails] = useState<UserDetailsResponse | null>(
+    null,
+  );
   const [loading, setLoading] = useState<boolean>(false);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const insets = useSafeAreaInsets();
-  
+
   const navigationDetection = useNavigationMode();
 
   const bottomSpace = getBottomSpace(
@@ -76,7 +84,7 @@ const Profile = () => {
         setLoading(true);
         try {
           const response = await axios.get<UserDetailsResponse>(
-            `${server}/api/User/MobileDetailsUser?accountID=${user.username}&tipo=${tipo}`
+            `${server}/api/User/MobileDetailsUser?accountID=${user.username}&tipo=${tipo}`,
           );
           setUserDetails(response.data);
         } catch (error) {
@@ -119,7 +127,10 @@ const Profile = () => {
     return emails[0].trim();
   };
 
-  const getFullName = (apellidos: string | null | undefined, nombres: string | null | undefined): string => {
+  const getFullName = (
+    apellidos: string | null | undefined,
+    nombres: string | null | undefined,
+  ): string => {
     const parts = [];
     if (apellidos) parts.push(apellidos.trim());
     if (nombres) parts.push(nombres.trim());
@@ -128,21 +139,21 @@ const Profile = () => {
 
   const getLast8Digits = (codlan: string | null | undefined): string => {
     if (!codlan) return '-';
-    const digits = codlan.replace(/\D/g, ''); 
+    const digits = codlan.replace(/\D/g, '');
     return digits.length >= 8 ? digits.slice(-8) : digits;
   };
 
   return (
-   <LinearGradient
-       colors={['#021e4bff', '#183890ff', '#032660ff']}
-       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-       start={{ x: 0, y: 0 }}
-       end={{ x: 0, y: 1 }}
-     >
+    <LinearGradient
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <TouchableOpacity
-          style={[styles.backButton, { top: insets.top + 10 }, ]}
+          style={[styles.backButton, { top: insets.top + 10 }]}
           onPress={handleGoBack}
           activeOpacity={0.7}
         >
@@ -186,9 +197,7 @@ const Profile = () => {
                 </View>
                 <View style={styles.infoItem}>
                   <Clipboard size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.ruc || '-'}
-                  </Text>
+                  <Text style={styles.infoText}>{userDetails.ruc || '-'}</Text>
                 </View>
                 <View style={styles.infoItem}>
                   <Mail size={16} color="#1e3a8a" />
@@ -213,9 +222,7 @@ const Profile = () => {
                 </View>
                 <View style={styles.infoItem}>
                   <Clipboard size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.dni || '-'}
-                  </Text>
+                  <Text style={styles.infoText}>{userDetails.dni || '-'}</Text>
                 </View>
                 <View style={styles.infoItem}>
                   <Smartphone size={16} color="#1e3a8a" />
@@ -263,7 +270,7 @@ const Profile = () => {
                   </Text>
                 </View>
               </>
-            ) : (tipo === 'n' || tipo === 'c' || tipo === 'p') ? (
+            ) : tipo === 'n' || tipo === 'c' || tipo === 'p' ? (
               <>
                 <View style={styles.infoItem}>
                   <User size={16} color="#1e3a8a" />
@@ -305,29 +312,39 @@ const Profile = () => {
         ListHeaderComponent={() => (
           <>
             <View style={styles.menuSection}>
-              <Text style={styles.sectionTitle}>GENERAL</Text>
-              
-              <TouchableOpacity 
-                style={styles.menuItem} 
-                onPress={handleSettings}
-                activeOpacity={0.96}
-              >
-                <View style={styles.menuItemLeft}>
-                  <View style={styles.iconContainer}>
-                    <Settings size={22} color="#e36414" />
-                  </View>
-                  <View style={styles.menuTextContainer}>
-                    <Text style={styles.menuText}>Configuración</Text>
-                    <Text style={styles.menuSubtext}>Ajustes de la aplicación</Text>
-                  </View>
-                </View>
-                <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
-              </TouchableOpacity>
+              {tipo != 'c' && (
+                <>
+                  <Text style={styles.sectionTitle}>GENERAL</Text>
+
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={handleSettings}
+                    activeOpacity={0.96}
+                  >
+                    <View style={styles.menuItemLeft}>
+                      <View style={styles.iconContainer}>
+                        <Settings size={22} color="#e36414" />
+                      </View>
+                      <View style={styles.menuTextContainer}>
+                        <Text style={styles.menuText}>Configuración</Text>
+                        <Text style={styles.menuSubtext}>
+                          Ajustes de la aplicación
+                        </Text>
+                      </View>
+                    </View>
+                    <ChevronLeft
+                      size={20}
+                      color="#999"
+                      style={styles.chevronRight}
+                    />
+                  </TouchableOpacity>
+                </>
+              )}
 
               {shouldShowMarkerAndNotifications && (
                 <>
-                  <TouchableOpacity 
-                    style={styles.menuItem} 
+                  <TouchableOpacity
+                    style={styles.menuItem}
                     onPress={handlePin}
                     activeOpacity={0.96}
                   >
@@ -337,10 +354,16 @@ const Profile = () => {
                       </View>
                       <View style={styles.menuTextContainer}>
                         <Text style={styles.menuText}>Marcadores</Text>
-                        <Text style={styles.menuSubtext}>Contenido guardado</Text>
+                        <Text style={styles.menuSubtext}>
+                          Contenido guardado
+                        </Text>
                       </View>
                     </View>
-                    <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
+                    <ChevronLeft
+                      size={20}
+                      color="#999"
+                      style={styles.chevronRight}
+                    />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -357,7 +380,11 @@ const Profile = () => {
                         <Text style={styles.menuSubtext}>Alertas y avisos</Text>
                       </View>
                     </View>
-                    <ChevronLeft size={20} color="#999" style={styles.chevronRight} />
+                    <ChevronLeft
+                      size={20}
+                      color="#999"
+                      style={styles.chevronRight}
+                    />
                   </TouchableOpacity>
                 </>
               )}
@@ -365,19 +392,27 @@ const Profile = () => {
 
             <View style={styles.menuSection}>
               <Text style={styles.sectionTitle}>CUENTA</Text>
-              
-              <TouchableOpacity 
-                style={[styles.menuItemEnd]} 
+
+              <TouchableOpacity
+                style={[styles.menuItemEnd]}
                 onPress={handleLogout}
                 activeOpacity={0.96}
               >
                 <View style={styles.menuItemLeft}>
-                  <View style={[styles.iconContainer, styles.logoutIconContainer]}>
+                  <View
+                    style={[styles.iconContainer, styles.logoutIconContainer]}
+                  >
                     <LogOut size={22} color="#dc2626" />
                   </View>
-                  <Text style={[styles.menuText, styles.logoutText]}>Cerrar sesión</Text>
+                  <Text style={[styles.menuText, styles.logoutText]}>
+                    Cerrar sesión
+                  </Text>
                 </View>
-                <ChevronLeft size={20} color="#dc2626" style={styles.chevronRight} />
+                <ChevronLeft
+                  size={20}
+                  color="#dc2626"
+                  style={styles.chevronRight}
+                />
               </TouchableOpacity>
             </View>
 
@@ -385,30 +420,27 @@ const Profile = () => {
               <View style={styles.companyCard}>
                 <View style={styles.companyHeader}>
                   <View style={styles.companyLogoPlaceholder}>
-                      <Image
-              source={require('../../../assets/logoV.jpeg')}
-              style={styles.avatarImageV}
-            />
+                    <Image
+                      source={require('../../../assets/logoV.jpeg')}
+                      style={styles.avatarImageV}
+                    />
                   </View>
                   <View style={styles.companyDetails}>
                     <Text style={styles.companyName}>VELSAT SAC</Text>
                     <Text style={styles.companyLocation}>Lima - Perú</Text>
-                    <Text style={styles.companyLocation}>RUC - 20202020202202</Text>
-
+                    <Text style={styles.companyLocation}>
+                      RUC - 20202020202202
+                    </Text>
                   </View>
-                  
                 </View>
-                
-              
               </View>
-              
             </View>
           </>
         )}
         style={styles.scrollContent}
         contentContainerStyle={styles.scrollContentContainer}
         showsVerticalScrollIndicator={false}
-          scrollEnabled={false}
+        scrollEnabled={false}
       />
     </LinearGradient>
   );
