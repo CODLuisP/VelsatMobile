@@ -56,6 +56,70 @@ const SimpleMarker = React.memo(
   },
 );
 
+// Función para simplificar la ruta usando el algoritmo Ramer-Douglas-Peucker
+const simplifyRoute = (points: RoutePoint[], tolerance: number = 0.0001): RoutePoint[] => {
+  if (points.length <= 2) return points;
+
+  const getPerpendicularDistance = (
+    point: RoutePoint,
+    lineStart: RoutePoint,
+    lineEnd: RoutePoint
+  ): number => {
+    const dx = lineEnd.longitude - lineStart.longitude;
+    const dy = lineEnd.latitude - lineStart.latitude;
+    const mag = Math.sqrt(dx * dx + dy * dy);
+    if (mag > 0.0) {
+      const u =
+        ((point.longitude - lineStart.longitude) * dx +
+          (point.latitude - lineStart.latitude) * dy) /
+        (mag * mag);
+      const intersectionX = lineStart.longitude + u * dx;
+      const intersectionY = lineStart.latitude + u * dy;
+      const pdx = point.longitude - intersectionX;
+      const pdy = point.latitude - intersectionY;
+      return Math.sqrt(pdx * pdx + pdy * pdy);
+    }
+    const pdx = point.longitude - lineStart.longitude;
+    const pdy = point.latitude - lineStart.latitude;
+    return Math.sqrt(pdx * pdx + pdy * pdy);
+  };
+
+  const simplify = (
+    points: RoutePoint[],
+    first: number,
+    last: number,
+    tolerance: number,
+    simplified: RoutePoint[]
+  ) => {
+    let maxDistance = 0;
+    let index = 0;
+
+    for (let i = first + 1; i < last; i++) {
+      const distance = getPerpendicularDistance(
+        points[i],
+        points[first],
+        points[last]
+      );
+      if (distance > maxDistance) {
+        maxDistance = distance;
+        index = i;
+      }
+    }
+
+    if (maxDistance > tolerance) {
+      simplify(points, first, index, tolerance, simplified);
+      simplified.push(points[index]);
+      simplify(points, index, last, tolerance, simplified);
+    }
+  };
+
+  const simplified: RoutePoint[] = [points[0]];
+  simplify(points, 0, points.length - 1, tolerance, simplified);
+  simplified.push(points[points.length - 1]);
+
+  return simplified;
+};
+
 const TourReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user, server } = useAuthStore();
@@ -127,7 +191,6 @@ const TourReport = () => {
 
       const url = `${server}/api/Reporting/details/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
 
-
       const response = await axios.get(url);
 
       if (response.data && response.data.result) {
@@ -172,7 +235,6 @@ const TourReport = () => {
     const point = routeData[pointIndex];
 
     if (Platform.OS === 'ios') {
-      // Para iOS con MapView
       setTimeout(() => {
         mapRef.current?.animateToRegion(
           {
@@ -185,32 +247,26 @@ const TourReport = () => {
         );
       }, 100);
     } else {
-      // Para Android con WebView/Leaflet
       const jsCode = `
         (function() {
           try {
-            if (typeof map !== 'undefined' && map) {
-              
+            if (typeof map !== 'undefined' && map && typeof markers !== 'undefined') {
+              // Centrar el mapa en el punto
               map.setView([${point.latitude}, ${point.longitude}], 17, {
                 animate: true,
                 duration: 1
               });
               
-              // Buscar el marcador y abrir su popup
-              map.eachLayer(function(layer) {
-                if (layer instanceof L.Marker) {
-                  var popup = layer.getPopup();
-                  if (popup && popup.getContent().includes('Punto ${
-                    pointIndex + 1
-                  }<')) {
-                    layer.openPopup();
-                  }
-                }
-              });
-              
-            } else {
+              // Buscar y abrir el popup del marcador específico
+              var targetMarker = markers[${pointIndex}];
+              if (targetMarker) {
+                setTimeout(function() {
+                  targetMarker.openPopup();
+                }, 500);
+              }
             }
           } catch(e) {
+            console.error('Error focusing point:', e);
           }
         })();
         true;
@@ -228,32 +284,29 @@ const TourReport = () => {
         'Por favor ingrese un número de punto',
         '#e36414',
       );
-
       return;
     }
 
     if (isNaN(pointNum)) {
       handleShowAlert('Error', 'Por favor ingrese un número válido', '#e36414');
-
       return;
     }
 
     if (pointNum < 1 || pointNum > routeData.length) {
       handleShowAlert(
         'Error',
-        'Por favor ingrese un número entre 1 y ${routeData.length}',
+        `Por favor ingrese un número entre 1 y ${routeData.length}`,
         '#e36414',
       );
-
       return;
     }
 
     const arrayIndex = pointNum - 1;
-
     focusOnPoint(arrayIndex);
     setSelectedPoint('');
   };
 
+  // HTML optimizado sin clustering - todos los puntos visibles con mejor rendimiento
   const leafletHTML = `
     <!DOCTYPE html>
     <html>
@@ -264,45 +317,51 @@ const TourReport = () => {
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
       <style>
-        body { margin: 0; padding: 0; overflow: hidden; }
-        #map { height: 100vh; width: 100vw; }
+        body { 
+          margin: 0; 
+          padding: 0; 
+          overflow: hidden;
+          background: #f0f0f0;
+        }
+        #map { 
+          height: 100vh; 
+          width: 100vw; 
+        }
         
-        /* Marcador GPS optimizado sin animaciones */
+        /* Marcador GPS optimizado con forma de pin */
         .gps-marker-container {
           position: relative;
-          width: 70px;
-          height: 80px;
+          width: 50px;
+          height: 60px;
           display: flex;
           align-items: center;
           justify-content: flex-start;
           flex-direction: column;
         }
 
-        /* Círculo principal del marcador GPS */
         .gps-marker-pin {
-          width: 34px;
-          height: 34px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: bold;
-          font-size: 11px;
+          font-size: 10px;
           color: white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-          margin-top: 10px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          margin-top: 8px;
           z-index: 10;
           position: relative;
         }
 
-        /* Punta del marcador GPS */
         .gps-marker-tip {
           width: 0;
           height: 0;
-          border-left: 9px solid transparent;
-          border-right: 9px solid transparent;
-          border-top: 12px solid;
-          margin-top: -3px;
+          border-left: 7px solid transparent;
+          border-right: 7px solid transparent;
+          border-top: 10px solid;
+          margin-top: -2px;
           z-index: 10;
         }
 
@@ -310,6 +369,11 @@ const TourReport = () => {
           left: auto !important;
           right: 5px !important;
           top: 25px !important;
+        }
+        
+        /* Ocultar algunos controles para mejorar rendimiento */
+        .leaflet-control-attribution {
+          display: none;
         }
       </style>
     </head>
@@ -319,53 +383,182 @@ const TourReport = () => {
         var routeData = ${JSON.stringify(routeData)};
         var map;
         var markers = [];
+        var polyline;
         
-        if (routeData.length === 0) {
-          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;">No hay datos de ruta</div>';
-        } else {
-          var firstPoint = routeData[0];
-          map = L.map('map').setView([firstPoint.latitude, firstPoint.longitude], 15);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        // Función para simplificar la ruta (Ramer-Douglas-Peucker) solo para la línea
+        function simplifyRoute(points, tolerance) {
+          if (points.length <= 2) return points;
           
-          function getSpeedColor(speed) {
-            if (speed === 0) return '#ef4444';
-            if (speed > 0 && speed < 11) return '#eab308';
-            if (speed >= 11 && speed < 60) return '#22c55e';
-            return '#3b82f6';
+          function getPerpendicularDistance(point, lineStart, lineEnd) {
+            var dx = lineEnd.longitude - lineStart.longitude;
+            var dy = lineEnd.latitude - lineStart.latitude;
+            var mag = Math.sqrt(dx * dx + dy * dy);
+            if (mag > 0.0) {
+              var u = ((point.longitude - lineStart.longitude) * dx + 
+                       (point.latitude - lineStart.latitude) * dy) / (mag * mag);
+              var intersectionX = lineStart.longitude + u * dx;
+              var intersectionY = lineStart.latitude + u * dy;
+              var pdx = point.longitude - intersectionX;
+              var pdy = point.latitude - intersectionY;
+              return Math.sqrt(pdx * pdx + pdy * pdy);
+            }
+            var pdx = point.longitude - lineStart.longitude;
+            var pdy = point.latitude - lineStart.latitude;
+            return Math.sqrt(pdx * pdx + pdy * pdy);
           }
           
-          var latlngs = routeData.map(p => [p.latitude, p.longitude]);
-          var polyline = L.polyline(latlngs, { color: '#1e3a8a', weight: 4, opacity: 0.7 }).addTo(map);
+          function douglasPeucker(points, first, last, tolerance, simplified) {
+            var maxDistance = 0;
+            var index = 0;
+            
+            for (var i = first + 1; i < last; i++) {
+              var distance = getPerpendicularDistance(points[i], points[first], points[last]);
+              if (distance > maxDistance) {
+                maxDistance = distance;
+                index = i;
+              }
+            }
+            
+            if (maxDistance > tolerance) {
+              douglasPeucker(points, first, index, tolerance, simplified);
+              simplified.push(points[index]);
+              douglasPeucker(points, index, last, tolerance, simplified);
+            }
+          }
           
-          routeData.forEach((p, i) => {
-            var color = getSpeedColor(p.speed);
-            
-            // Crear el HTML del marcador GPS sin radar
-            var markerHTML = 
-              '<div class="gps-marker-container">' +
-                '<div class="gps-marker-pin" style="background-color: ' + color + ';">' +
-                  (i + 1) +
-                '</div>' +
-                '<div class="gps-marker-tip" style="border-top-color: ' + color + ';"></div>' +
-              '</div>';
-            
-            var customIcon = L.divIcon({
-              html: markerHTML,
-              iconSize: [70, 80],
-              iconAnchor: [35, 55],
-              popupAnchor: [0, -50],
-              className: 'custom-gps-icon'
-            });
-            
-            var marker = L.marker([p.latitude, p.longitude], { icon: customIcon })
-              .bindPopup('<b>Punto ' + (i+1) + '</b><br>Fecha: ' + p.date + ' ' + p.time + '<br>Velocidad: ' + p.speed.toFixed(0) + ' km/h')
-              .addTo(map);
-            
-            markers.push(marker);
+          var simplified = [points[0]];
+          douglasPeucker(points, 0, points.length - 1, tolerance, simplified);
+          simplified.push(points[points.length - 1]);
+          return simplified;
+        }
+        
+        function getSpeedColor(speed) {
+          if (speed === 0) return '#ef4444';
+          if (speed > 0 && speed < 11) return '#eab308';
+          if (speed >= 11 && speed < 60) return '#22c55e';
+          return '#3b82f6';
+        }
+        
+        if (routeData.length === 0) {
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;color:#666;">No hay datos de ruta</div>';
+        } else {
+          var firstPoint = routeData[0];
+          
+          // Inicializar mapa con configuración super optimizada para Canvas
+          map = L.map('map', {
+            preferCanvas: true,
+            renderer: L.canvas({ 
+              padding: 0.5,
+              tolerance: 10  // Aumentar tolerancia de click para mejor rendimiento
+            }),
+            zoomControl: true,
+            attributionControl: false,
+            zoomAnimation: true,
+            fadeAnimation: false,
+            markerZoomAnimation: false
+          }).setView([firstPoint.latitude, firstPoint.longitude], 15);
+          
+          // Tiles optimizados
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+            maxZoom: 19,
+            updateWhenIdle: true,
+            updateWhenZooming: false,
+            keepBuffer: 2,
+            minZoom: 3
+          }).addTo(map);
+          
+          // Simplificar la ruta SOLO para la polilínea (visual)
+          var simplifiedRoute = routeData;
+          if (routeData.length > 200) {
+            simplifiedRoute = simplifyRoute(routeData, 0.00008);
+          }
+          
+          // Dibujar polilínea simplificada
+          var latlngs = simplifiedRoute.map(function(p) { 
+            return [p.latitude, p.longitude]; 
           });
           
-          map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+          polyline = L.polyline(latlngs, { 
+            color: '#1e3a8a', 
+            weight: 2.5, 
+            opacity: 0.65,
+            smoothFactor: 3,
+            interactive: false  // No interactivo = mejor rendimiento
+          }).addTo(map);
           
+          // Añadir TODOS los marcadores (no simplificados) con carga optimizada
+          var batchSize = 100;  // Lotes más grandes
+          var currentIndex = 0;
+          var frameDelay = 0;  // Sin delay entre frames para carga más rápida
+          
+          function addMarkersBatch() {
+            var startTime = performance.now();
+            var endIndex = Math.min(currentIndex + batchSize, routeData.length);
+            
+            for (var i = currentIndex; i < endIndex; i++) {
+              var p = routeData[i];
+              var color = getSpeedColor(p.speed);
+              
+              // Marcador GPS con forma de pin optimizado
+              var markerHTML = 
+                '<div class="gps-marker-container">' +
+                  '<div class="gps-marker-pin" style="background-color: ' + color + ';">' +
+                    (i + 1) +
+                  '</div>' +
+                  '<div class="gps-marker-tip" style="border-top-color: ' + color + ';"></div>' +
+                '</div>';
+              
+              var customIcon = L.divIcon({
+                html: markerHTML,
+                iconSize: [50, 60],
+                iconAnchor: [25, 50],
+                popupAnchor: [0, -45],
+                className: ''
+              });
+              
+              var marker = L.marker([p.latitude, p.longitude], { 
+                icon: customIcon,
+                riseOnHover: false,
+                bubblingMouseEvents: false
+              }).bindPopup(
+                '<b>Punto ' + (i + 1) + '</b><br>' +
+                'Fecha: ' + p.date + ' ' + p.time + '<br>' +
+                'Velocidad: ' + p.speed.toFixed(0) + ' km/h',
+                {
+                  autoPan: false,
+                  closeButton: true
+                }
+              );
+              
+              marker.addTo(map);
+              markers.push(marker);
+              
+              // Si el batch toma más de 16ms, pausar para no bloquear UI
+              if (performance.now() - startTime > 16 && i < endIndex - 1) {
+                currentIndex = i + 1;
+                requestAnimationFrame(addMarkersBatch);
+                return;
+              }
+            }
+            
+            currentIndex = endIndex;
+            
+            // Si quedan más marcadores, continuar
+            if (currentIndex < routeData.length) {
+              // Mostrar progreso en consola
+              if (currentIndex % 200 === 0) {
+                console.log('Cargados ' + currentIndex + ' de ' + routeData.length + ' puntos...');
+              }
+              requestAnimationFrame(addMarkersBatch);
+            } else {
+              // Todos los marcadores añadidos
+              console.log('Todos los ' + routeData.length + ' puntos cargados!');
+              map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+            }
+          }
+          
+          // Iniciar carga de marcadores
+          requestAnimationFrame(addMarkersBatch);
         }
       </script>
     </body>
@@ -392,14 +585,13 @@ const TourReport = () => {
       );
     }
 
-    // --- iOS: Marcadores optimizados sin animaciones pesadas ---
+    // iOS: Mantener implementación actual
     if (Platform.OS === 'ios') {
       const coordinates = routeData.map(point => ({
         latitude: point.latitude,
         longitude: point.longitude,
       }));
 
-      // Calcular los límites de todos los puntos para mostrar vista general
       const latitudes = routeData.map(p => p.latitude);
       const longitudes = routeData.map(p => p.longitude);
 
@@ -479,7 +671,6 @@ const TourReport = () => {
                       shadowOffset: { width: 0, height: 2 },
                       elevation: 8,
                       marginTop: 10,
-                 
                     }}
                   >
                     <Text
@@ -515,6 +706,7 @@ const TourReport = () => {
         </MapView>
       );
     } else {
+      // Android: WebView optimizado con clustering
       return (
         <WebView
           ref={webViewRef}
@@ -525,20 +717,19 @@ const TourReport = () => {
           startInLoadingState={true}
           scalesPageToFit={true}
           mixedContentMode="compatibility"
+          androidLayerType="hardware"
         />
       );
     }
   };
 
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
-
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-  >
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <LinearGradient
         colors={['#021e4bff', '#183890ff', '#032660ff']}
         style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
@@ -631,7 +822,6 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                     <Text style={styles.sidebarText}>{unit.plate}</Text>
                   </View>
 
-                  {/* SECCIÓN: IR A PUNTO */}
                   {routeData.length > 0 && (
                     <View style={styles.sidebarSection}>
                       <Text style={styles.sidebarSectionTitle}>IR A PUNTO</Text>
@@ -655,11 +845,11 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                             fontWeight: '600',
                           }}
                           placeholder={`1-${routeData.length}`}
+                          placeholderTextColor="#495057"
                           keyboardType="numeric"
                           value={selectedPoint}
                           onChangeText={setSelectedPoint}
                           onSubmitEditing={handlePointInput}
-                          
                         />
                         <TouchableOpacity
                           style={{
@@ -749,6 +939,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                       <Text style={styles.sidebarText}>
                         Total: {routeData.length} puntos
                       </Text>
+                   
                     </View>
                   )}
                 </ScrollView>
@@ -765,12 +956,8 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           color={alertConfig.color}
         />
       </LinearGradient>
-    </TouchableWithoutFeedback>
-  </KeyboardAvoidingView>
-);
-
-
-
+    </KeyboardAvoidingView>
+  );
 };
 
 export default TourReport;
