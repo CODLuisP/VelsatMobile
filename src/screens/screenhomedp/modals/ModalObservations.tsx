@@ -40,7 +40,7 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
   onClose,
   passengers: initialPassengers,
   onSubmit,
-  onShowAlert
+  onShowAlert,
 }) => {
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -71,31 +71,39 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
   const handleSubmit = async () => {
     if (selectedPassenger && observation.trim()) {
       try {
-
         const response = await axios.post(
           `https://velsat.pe:2087/api/Aplicativo/EnviarObservacion?codpedido=${selectedPassenger.id}`,
           `"${observation.trim()}"`,
           {
             headers: {
               'Content-Type': 'application/json',
-            }
-          }
+            },
+          },
         );
-        
-        onShowAlert('Éxito', 'La observación se envió correctamente', '#0b692eff');
-        
+
+        onShowAlert(
+          'Éxito',
+          'La observación se envió correctamente',
+          '#0b692eff',
+        );
+
         setSelectedPassenger(null);
         setObservation('');
         onClose();
       } catch (error: any) {
         onShowAlert(
-          'Error', 
-          error.response?.data?.message || 'No se pudo enviar la observación. Intenta nuevamente.', '#b10202ff'
+          'Error',
+          error.response?.data?.message ||
+            'No se pudo enviar la observación. Intenta nuevamente.',
+          '#b10202ff',
         );
       }
     } else {
       // 🔥 Mostrar alerta si falta información
-      onShowAlert('Atención', 'Por favor seleccione un pasajero e ingrese una observación');
+      onShowAlert(
+        'Atención',
+        'Por favor seleccione un pasajero e ingrese una observación',
+      );
     }
   };
 
@@ -169,35 +177,37 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
 
               {showDropdown && (
                 <View style={styles.dropdownList}>
-                  {passengers.map(passenger => (
-                    <TouchableOpacity
-                      key={passenger.id}
-                      style={[
-                        styles.dropdownItem,
-                        selectedPassenger?.id === passenger.id &&
-                          styles.dropdownItemSelected,
-                      ]}
-                      onPress={() => selectPassenger(passenger)}
-                    >
-                      <User
-                        size={18}
-                        color={
-                          selectedPassenger?.id === passenger.id
-                            ? '#007AFF'
-                            : '#666'
-                        }
-                      />
-                      <Text
+                  {passengers
+                    .filter(passenger => passenger.orden !== '0')
+                    .map(passenger => (
+                      <TouchableOpacity
+                        key={passenger.id}
                         style={[
-                          styles.dropdownItemText,
+                          styles.dropdownItem,
                           selectedPassenger?.id === passenger.id &&
-                            styles.dropdownItemTextSelected,
+                            styles.dropdownItemSelected,
                         ]}
+                        onPress={() => selectPassenger(passenger)}
                       >
-                        {passenger.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <User
+                          size={18}
+                          color={
+                            selectedPassenger?.id === passenger.id
+                              ? '#007AFF'
+                              : '#666'
+                          }
+                        />
+                        <Text
+                          style={[
+                            styles.dropdownItemText,
+                            selectedPassenger?.id === passenger.id &&
+                              styles.dropdownItemTextSelected,
+                          ]}
+                        >
+                          {passenger.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                 </View>
               )}
             </View>
@@ -386,7 +396,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-
   },
   submitButtonDisabled: {
     backgroundColor: '#E5E5E5',
