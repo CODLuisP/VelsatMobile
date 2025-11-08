@@ -309,7 +309,7 @@ useEffect(() => {
 
   const getStatus = () => {
     if (!vehicleData) return 'Cargando...';
-    if (speed > 0) return 'Movimiento';
+    if (speed >= 1) return 'Movimiento';
     return 'Detenido';
   };
 

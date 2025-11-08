@@ -89,6 +89,8 @@ const InfoDevice = () => {
     message: '',
     color: '',
   });
+  const [fechaHoraActual, setFechaHoraActual] = useState("");
+
 
   const handleShowAlert = (title: string, message: string, color?: string) => {
     setAlertConfig({ title, message, color: color || '' });
@@ -102,6 +104,22 @@ const InfoDevice = () => {
       NavigationBarColor('#00296b', false);
     }, []),
   );
+
+    useEffect(() => {
+    // Obtener la fecha y hora actual de Perú (una sola vez)
+    const ahora = new Date();
+    const formatoPeru = new Intl.DateTimeFormat("es-PE", {
+      timeZone: "America/Lima",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(ahora);
+
+    setFechaHoraActual(formatoPeru);
+  }, []);
 
   const getEstadoMovimiento = useCallback((speed: number) => {
     return speed === 0 ? 'Detenido' : 'Movimiento';
@@ -291,7 +309,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                 <ActivityIndicator size="small" color="#666" />
               ) : (
                 <>
-                  <Text style={styles.infoValue}>{fechaHora}</Text>
+                  <Text style={styles.infoValue}>{fechaHoraActual}</Text>
                   <Text style={styles.infoSubtitle}>Fecha y hora</Text>
                 </>
               )}
@@ -355,7 +373,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           </View>
 
           {/* Odometer Item */}
-          <View style={styles.infoItem}>
+          {/* <View style={styles.infoItem}>
             <View style={styles.iconContainer}>
               <Gauge size={20} color="#666" />
             </View>
@@ -369,7 +387,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                 </>
               )}
             </View>
-          </View>
+          </View> */}
 
           {/* Daily Distance Item */}
           <View style={styles.infoItem}>

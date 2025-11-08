@@ -9,7 +9,6 @@ import {
   Platform,
   StatusBar
 } from 'react-native';
-import { X } from 'lucide-react-native';
 import { Text } from '../../../components/ScaledComponents';
 
 interface CancelModalProps {

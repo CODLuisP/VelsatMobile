@@ -241,47 +241,51 @@ const ServicesDetailPassenger = () => {
   };
 
   const handleConfirmCancel = async () => {
-  try {
-    setCancellingService(true);
-    const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
+    try {
+      setCancellingService(true);
+      const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
 
-    const requestBody = {
-      codservicio: serviceData.codservicio,
-      codpedido: serviceData.codpedido,
-      codusuario: serviceData.codusuario,
-      codcliente: serviceData.codcliente,
-      empresa: serviceData.empresa,
-      numero: serviceData.numero,
-      fechaservicio: serviceData.fechaservicio,
-      tipo: serviceData.tipo,
-    };
+      const requestBody = {
+        codservicio: serviceData.codservicio,
+        codpedido: serviceData.codpedido,
+        codusuario: serviceData.codusuario,
+        codcliente: serviceData.codcliente,
+        empresa: serviceData.empresa,
+        numero: serviceData.numero,
+        fechaservicio: serviceData.fechaservicio,
+        tipo: serviceData.tipo,
+      };
 
-    const response = await axios.post(url, requestBody);
-    const { success, message } = response.data;
+      const response = await axios.post(url, requestBody);
+      const { success, message } = response.data;
 
-    setCancelModalVisible(false);
+      setCancelModalVisible(false);
 
-    if (success) {
-      handleShowAlert('¡Éxito!', message || 'Servicio cancelado correctamente', '#4CAF50');
-      setTimeout(() => navigation.goBack(), 1500);
-    } else {
-      handleShowAlert('No se puede cancelar', message || 'Verifique las condiciones', '#FFA726');
+      if (success) {
+        handleShowAlert(
+          '¡Éxito!',
+          message || 'Servicio cancelado correctamente',
+          '#4CAF50',
+        );
+        setTimeout(() => navigation.goBack(), 1500);
+      } else {
+        handleShowAlert(
+          'No se puede cancelar',
+          message || 'Verifique las condiciones',
+          '#FFA726',
+        );
+      }
+    } catch (error) {
+      setCancelModalVisible(false);
+      handleShowAlert(
+        'Error',
+        'No se pudo cancelar el servicio. Intenta nuevamente.',
+        '#e36414',
+      );
+    } finally {
+      setCancellingService(false);
     }
-
-  } catch (error) {
-    setCancelModalVisible(false);
-    handleShowAlert(
-      'Error',
-      'No se pudo cancelar el servicio. Intenta nuevamente.',
-      '#e36414'
-    );
-  } finally {
-    setCancellingService(false);
-  }
-};
-
-
-
+  };
 
   const handleRatingPress = () => {
     setRatingModalVisible(true);
@@ -298,7 +302,7 @@ const ServicesDetailPassenger = () => {
       handleShowAlert(
         'Atención',
         'Debe seleccionar una calificación',
-        '#e36414', 
+        '#e36414',
       );
       return;
     }
@@ -326,7 +330,7 @@ const ServicesDetailPassenger = () => {
         handleShowAlert(
           'Error',
           'No se pudo enviar la calificación',
-          '#e36414', 
+          '#e36414',
         );
       } else {
       }
@@ -572,7 +576,7 @@ const ServicesDetailPassenger = () => {
                     <View style={styles.locationRight}>
                       <Text style={styles.dateLabel}>Fecha y hora</Text>
                       <Text style={styles.dateValue}>
-                        {serviceData.fechapasajero}
+                        {serviceData.fechaservicio}
                       </Text>
 
                       {/* <TouchableOpacity
@@ -720,7 +724,7 @@ const ServicesDetailPassenger = () => {
                   <View style={styles.locationRight}>
                     <Text style={styles.dateLabel}>Fecha y hora</Text>
                     <Text style={styles.dateValue}>
-                      {serviceData.fechaservicio}
+                      {serviceData.fechapasajero}
                     </Text>
 
                     {/* <TouchableOpacity

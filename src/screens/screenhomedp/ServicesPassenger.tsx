@@ -147,6 +147,10 @@ const ServicesPassenger = () => {
     return tipo === 'I' ? 'Entrada' : 'Salida';
   };
 
+const getFechaInicio = (tipo: string, fechapasajero: string, fechaservicio: string) => {
+  return tipo === 'I' ? fechapasajero : fechaservicio;
+};
+
   const getFechaFin = (tipo: string, fechaservicio: string) => {
     return tipo === 'S' ? '-' : fechaservicio;
   };
@@ -329,7 +333,7 @@ const ServicesPassenger = () => {
                             </Text>
                           </View>
                           <Text style={styles.dateValue}>
-                            {service.fechapasajero || service.fechaservicio}
+                            {getFechaInicio(service.tipo, service.fechapasajero, service.fechaservicio)}
                           </Text>
                         </View>
 

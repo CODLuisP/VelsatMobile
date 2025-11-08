@@ -107,7 +107,7 @@ const handleDetailDevice = (device: Device) => {
       .map(apiDevice => ({
         id: apiDevice.deviceId,
         name: apiDevice.deviceId,
-        status: apiDevice.lastValidSpeed === 0 ? 'Detenido' as const : 'Movimiento' as const,
+        status: apiDevice.lastValidSpeed <= 1 ? 'Detenido' as const : 'Movimiento' as const,
         speed: Math.round(apiDevice.lastValidSpeed),
         location: apiDevice.direccion,
         isOnline: true,
