@@ -50,6 +50,7 @@ interface ApiService {
   fechaservicio: string;
   tipo: string;
   totalpax: string;
+  status: string;
 }
 
 const ServicesPassenger = () => {
@@ -155,55 +156,82 @@ const getFechaInicio = (tipo: string, fechapasajero: string, fechaservicio: stri
     return tipo === 'S' ? '-' : fechaservicio;
   };
 
-  const getServiceStatus = (fechaservicio: string) => {
-    const [fecha, hora] = fechaservicio.split(' ');
-    const [dia, mes, año] = fecha.split('/');
-    const [horas, minutos] = hora.split(':');
+const getServiceStatus = (fechaservicio: string, status: string) => {
+  // Si el status es '2', siempre mostrar "En progreso"
+  if (status === '2') {
+    return {
+      text: 'En progreso',
+      color: '#4CAF50',
+    };
+  }
 
-    const fechaServicio = new Date(
-      parseInt(año),
-      parseInt(mes) - 1,
-      parseInt(dia),
-      parseInt(horas),
-      parseInt(minutos),
-    );
+  // Si el status es '3', siempre mostrar "Finalizado"
+  if (status === '3') {
+    return {
+      text: 'Finalizado',
+      color: '#CF1B1B',
+    };
+  }
 
-    const ahora = new Date();
-    const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
-    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
+  // Para status '1', aplicar la lógica original con una modificación:
+  // Si pasó más de 1 hora desde fechaservicio, mostrar "Finalizado"
+  const [fecha, hora] = fechaservicio.split(' ');
+  const [dia, mes, año] = fecha.split('/');
+  const [horas, minutos] = hora.split(':');
 
-    const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
-    const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
-    const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
+  const fechaServicio = new Date(
+    parseInt(año),
+    parseInt(mes) - 1,
+    parseInt(dia),
+    parseInt(horas),
+    parseInt(minutos),
+  );
 
-    if (diferenciaMs < 0) {
-      const minutosTranscurridos = Math.abs(diferenciaMinutos);
+  const ahora = new Date();
+  const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
+  const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
 
-      if (minutosTranscurridos > 30) {
-        return {
-          text: 'Finalizado',
-          color: '#CF1B1B',
-        };
-      }
+  const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
+  const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
+  const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
 
+  if (diferenciaMs < 0) {
+    const minutosTranscurridos = Math.abs(diferenciaMinutos);
+
+    // Si pasó más de 1 hora (60 minutos), mostrar "Finalizado"
+    if (minutosTranscurridos > 60) {
+      return {
+        text: 'Finalizado',
+        color: '#CF1B1B',
+      };
+    }
+
+    // Si pasó más de 30 minutos pero menos de 1 hora, mostrar "En progreso"
+    if (minutosTranscurridos > 30) {
       return {
         text: 'En progreso',
         color: '#4CAF50',
       };
     }
 
-    if (diferenciaMinutos < 60) {
-      return {
-        text: `Faltan ${diferenciaMinutos} min`,
-        color: '#FFA726',
-      };
-    }
-
     return {
-      text: `Faltan ${diferenciaHoras} hrs`,
+      text: 'En progreso',
+      color: '#4CAF50',
+    };
+  }
+
+  if (diferenciaMinutos < 60) {
+    return {
+      text: `Faltan ${diferenciaMinutos} min`,
       color: '#FFA726',
     };
+  }
+
+  return {
+    text: `Faltan ${diferenciaHoras} hrs`,
+    color: '#FFA726',
   };
+};
 
   const actualizarPasajeros = (usuario: string, pasajeros: string) => {
     // Convertir el string de pasajeros a número
@@ -372,12 +400,13 @@ const getFechaInicio = (tipo: string, fechapasajero: string, fechaservicio: stri
                               {
                                 backgroundColor: getServiceStatus(
                                   service.fechaservicio,
+                                  service.status
                                 ).color,
                               },
                             ]}
                           >
                             <Text style={styles.statusText}>
-                              {getServiceStatus(service.fechaservicio).text}
+                              {getServiceStatus(service.fechaservicio, service.status).text}
                             </Text>
                           </View>
                         </View>

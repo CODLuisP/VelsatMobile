@@ -73,75 +73,92 @@ const ServicesDriver = () => {
     }, []),
   );
 
-  const getServiceStatus = (service: Service) => {
-    const fechaInicio = service.fechapasajero || service.fechaservicio;
-    const [fecha, hora] = fechaInicio.split(' ');
-    const [dia, mes, año] = fecha.split('/');
-    const [horas, minutos] = hora.split(':');
+const getServiceStatus = (service: Service) => {
+  // Si el status es '2', siempre mostrar "En progreso"
+  if (service.status === '2') {
+    return {
+      text: 'En progreso',
+      color: '#4CAF50',
+    };
+  }
 
-    const fechaServicio = new Date(
-      parseInt(año),
-      parseInt(mes) - 1,
-      parseInt(dia),
-      parseInt(horas),
-      parseInt(minutos),
+  // Si el status es '3', siempre mostrar "Finalizado"
+  if (service.status === '3') {
+    return {
+      text: 'Finalizado',
+      color: '#f17b7bff',
+    };
+  }
+
+  // Para status '1', aplicar la lógica original
+  const fechaInicio = service.fechapasajero || service.fechaservicio;
+  const [fecha, hora] = fechaInicio.split(' ');
+  const [dia, mes, año] = fecha.split('/');
+  const [horas, minutos] = hora.split(':');
+
+  const fechaServicio = new Date(
+    parseInt(año),
+    parseInt(mes) - 1,
+    parseInt(dia),
+    parseInt(horas),
+    parseInt(minutos),
+  );
+
+  const ahora = new Date();
+  const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
+  const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
+
+  const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
+  const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
+  const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
+
+  // Si ya pasó la hora de inicio
+  if (diferenciaMs <= 0) {
+    // Calcular fecha de fin (fechaservicio + 1 hora)
+    const [fechaFin, horaFin] = service.fechaservicio.split(' ');
+    const [diaFin, mesFin, añoFin] = fechaFin.split('/');
+    const [horasFin, minutosFin] = horaFin.split(':');
+
+    const fechaFinServicio = new Date(
+      parseInt(añoFin),
+      parseInt(mesFin) - 1,
+      parseInt(diaFin),
+      parseInt(horasFin),
+      parseInt(minutosFin),
     );
 
-    const ahora = new Date();
-    const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
-    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
+    // Agregar 1 hora a fechaservicio
+    fechaFinServicio.setHours(fechaFinServicio.getHours() + 1);
 
-    const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
-    const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
-    const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
-
-    // Si ya pasó la hora de inicio
-    if (diferenciaMs <= 0) {
-      // Calcular fecha de fin (fechaservicio + 30 minutos)
-      const [fechaFin, horaFin] = service.fechaservicio.split(' ');
-      const [diaFin, mesFin, añoFin] = fechaFin.split('/');
-      const [horasFin, minutosFin] = horaFin.split(':');
-
-      const fechaFinServicio = new Date(
-        parseInt(añoFin),
-        parseInt(mesFin) - 1,
-        parseInt(diaFin),
-        parseInt(horasFin),
-        parseInt(minutosFin),
-      );
-
-      // Agregar 30 minutos a fechaservicio
-      fechaFinServicio.setMinutes(fechaFinServicio.getMinutes() + 30);
-
-      // Si ya pasó fechaservicio + 30 min, está finalizado
-      if (ahoraPeru.getTime() > fechaFinServicio.getTime()) {
-        return {
-          text: 'Finalizado',
-          color: '#f17b7bff',
-        };
-      }
-
-      // Si está entre fechapasajero y fechaservicio + 30 min, está en progreso
+    // Si ya pasó fechaservicio + 1 hora, está finalizado
+    if (ahoraPeru.getTime() > fechaFinServicio.getTime()) {
       return {
-        text: 'En progreso',
-        color: '#4CAF50',
+        text: 'Finalizado',
+        color: '#f17b7bff',
       };
     }
 
-    // Si falta menos de 60 minutos
-    if (diferenciaMinutos < 60) {
-      return {
-        text: `Faltan ${diferenciaMinutos} min`,
-        color: '#FFA726',
-      };
-    }
-
-    // Si faltan más de 60 minutos
+    // Si está entre fechapasajero y fechaservicio + 1 hora, está en progreso
     return {
-      text: `Faltan ${diferenciaHoras} hrs`,
+      text: 'En progreso',
+      color: '#4CAF50',
+    };
+  }
+
+  // Si falta menos de 60 minutos
+  if (diferenciaMinutos < 60) {
+    return {
+      text: `Faltan ${diferenciaMinutos} min`,
       color: '#FFA726',
     };
+  }
+
+  // Si faltan más de 60 minutos
+  return {
+    text: `Faltan ${diferenciaHoras} hrs`,
+    color: '#FFA726',
   };
+};
 
   // Función para obtener inicio de servicio
   const getInicioServicio = (service: Service): string => {

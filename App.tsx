@@ -84,6 +84,7 @@ interface ApiService {
   fechaservicio: string;
   tipo: string;
   totalpax: string;
+  status: string;
 }
 
 export type RootStackParamList = {
