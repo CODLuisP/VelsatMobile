@@ -624,7 +624,7 @@ const Login = () => {
 
               <View style={styles.statusContainer}>
                 <View style={styles.statusDot} />
-                <Text style={styles.statusText}>V. 2.3.3</Text>
+                <Text style={styles.statusText}>V. 2.3.4</Text>
               </View>
             </View>
           </Animated.View>
