@@ -62,6 +62,7 @@ interface Service {
   totalpax: number | null;
   unidad: string;
   codusuario: string;
+  pasajerosDisponibles?: number;
 }
 
 interface ApiService {

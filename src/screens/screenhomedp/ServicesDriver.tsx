@@ -45,6 +45,7 @@ interface Service {
   totalpax: number | null;
   unidad: string;
   codusuario: string;
+  pasajerosDisponibles?: number;
 }
 
 const ServicesDriver = () => {
@@ -73,92 +74,118 @@ const ServicesDriver = () => {
     }, []),
   );
 
-const getServiceStatus = (service: Service) => {
-  // Si el status es '2', siempre mostrar "En progreso"
-  if (service.status === '2') {
-    return {
-      text: 'En progreso',
-      color: '#4CAF50',
-    };
-  }
+  // Agregar después de la función fetchServices
+  const fetchPasajerosDisponibles = async (
+    codservicio: string,
+  ): Promise<number> => {
+    try {
+      const url = `https://velsat.pe:2087/api/Aplicativo/PasajerosDisponibles/${codservicio}`;
+      const response = await axios.get(url, {
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-  // Si el status es '3', siempre mostrar "Finalizado"
-  if (service.status === '3') {
-    return {
-      text: 'Finalizado',
-      color: '#f17b7bff',
-    };
-  }
+      if (response.data && response.data.pasajerosDisponibles !== undefined) {
+        return response.data.pasajerosDisponibles;
+      }
+      return 0; // Si no hay datos, retornar 0
+    } catch (error) {
+      console.error(
+        `Error al obtener pasajeros disponibles para ${codservicio}:`,
+        error,
+      );
+      return 0; // En caso de error, retornar 0
+    }
+  };
 
-  // Para status '1', aplicar la lógica original
-  const fechaInicio = service.fechapasajero || service.fechaservicio;
-  const [fecha, hora] = fechaInicio.split(' ');
-  const [dia, mes, año] = fecha.split('/');
-  const [horas, minutos] = hora.split(':');
+  const getServiceStatus = (service: Service) => {
+    // Si el status es '2', siempre mostrar "En progreso"
+    if (service.status === '2') {
+      return {
+        text: 'En progreso',
+        color: '#4CAF50',
+      };
+    }
 
-  const fechaServicio = new Date(
-    parseInt(año),
-    parseInt(mes) - 1,
-    parseInt(dia),
-    parseInt(horas),
-    parseInt(minutos),
-  );
-
-  const ahora = new Date();
-  const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
-  const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
-
-  const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
-  const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
-  const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
-
-  // Si ya pasó la hora de inicio
-  if (diferenciaMs <= 0) {
-    // Calcular fecha de fin (fechaservicio + 1 hora)
-    const [fechaFin, horaFin] = service.fechaservicio.split(' ');
-    const [diaFin, mesFin, añoFin] = fechaFin.split('/');
-    const [horasFin, minutosFin] = horaFin.split(':');
-
-    const fechaFinServicio = new Date(
-      parseInt(añoFin),
-      parseInt(mesFin) - 1,
-      parseInt(diaFin),
-      parseInt(horasFin),
-      parseInt(minutosFin),
-    );
-
-    // Agregar 1 hora a fechaservicio
-    fechaFinServicio.setHours(fechaFinServicio.getHours() + 1);
-
-    // Si ya pasó fechaservicio + 1 hora, está finalizado
-    if (ahoraPeru.getTime() > fechaFinServicio.getTime()) {
+    // Si el status es '3', siempre mostrar "Finalizado"
+    if (service.status === '3') {
       return {
         text: 'Finalizado',
         color: '#f17b7bff',
       };
     }
 
-    // Si está entre fechapasajero y fechaservicio + 1 hora, está en progreso
-    return {
-      text: 'En progreso',
-      color: '#4CAF50',
-    };
-  }
+    // Para status '1', aplicar la lógica original
+    const fechaInicio = service.fechapasajero || service.fechaservicio;
+    const [fecha, hora] = fechaInicio.split(' ');
+    const [dia, mes, año] = fecha.split('/');
+    const [horas, minutos] = hora.split(':');
 
-  // Si falta menos de 60 minutos
-  if (diferenciaMinutos < 60) {
+    const fechaServicio = new Date(
+      parseInt(año),
+      parseInt(mes) - 1,
+      parseInt(dia),
+      parseInt(horas),
+      parseInt(minutos),
+    );
+
+    const ahora = new Date();
+    const ahoraUTC = ahora.getTime() + ahora.getTimezoneOffset() * 60000;
+    const ahoraPeru = new Date(ahoraUTC + 3600000 * -5);
+
+    const diferenciaMs = fechaServicio.getTime() - ahoraPeru.getTime();
+    const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
+    const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
+
+    // Si ya pasó la hora de inicio
+    if (diferenciaMs <= 0) {
+      // Calcular fecha de fin (fechaservicio + 1 hora)
+      const [fechaFin, horaFin] = service.fechaservicio.split(' ');
+      const [diaFin, mesFin, añoFin] = fechaFin.split('/');
+      const [horasFin, minutosFin] = horaFin.split(':');
+
+      const fechaFinServicio = new Date(
+        parseInt(añoFin),
+        parseInt(mesFin) - 1,
+        parseInt(diaFin),
+        parseInt(horasFin),
+        parseInt(minutosFin),
+      );
+
+      // Agregar 1 hora a fechaservicio
+      fechaFinServicio.setHours(fechaFinServicio.getHours() + 1);
+
+      // Si ya pasó fechaservicio + 1 hora, está finalizado
+      if (ahoraPeru.getTime() > fechaFinServicio.getTime()) {
+        return {
+          text: 'Finalizado',
+          color: '#f17b7bff',
+        };
+      }
+
+      // Si está entre fechapasajero y fechaservicio + 1 hora, está en progreso
+      return {
+        text: 'En progreso',
+        color: '#4CAF50',
+      };
+    }
+
+    // Si falta menos de 60 minutos
+    if (diferenciaMinutos < 60) {
+      return {
+        text: `Faltan ${diferenciaMinutos} min`,
+        color: '#FFA726',
+      };
+    }
+
+    // Si faltan más de 60 minutos
     return {
-      text: `Faltan ${diferenciaMinutos} min`,
+      text: `Faltan ${diferenciaHoras} hrs`,
       color: '#FFA726',
     };
-  }
-
-  // Si faltan más de 60 minutos
-  return {
-    text: `Faltan ${diferenciaHoras} hrs`,
-    color: '#FFA726',
   };
-};
 
   // Función para obtener inicio de servicio
   const getInicioServicio = (service: Service): string => {
@@ -206,13 +233,32 @@ const getServiceStatus = (service: Service) => {
       });
 
       if (response.data && Array.isArray(response.data)) {
-        setServices(response.data);
+        // 🔥 Obtener pasajeros disponibles para cada servicio
+        const serviciosConPasajeros = await Promise.all(
+          response.data.map(async (srv: Service) => {
+            const pasajerosDisponibles = await fetchPasajerosDisponibles(
+              srv.codservicio,
+            );
+            return {
+              ...srv,
+              pasajerosDisponibles,
+            };
+          }),
+        );
+
+        // 🔥 Filtrar servicios donde (pasajerosDisponibles - 1) NO sea 0
+        const serviciosFiltrados = serviciosConPasajeros.filter(srv => {
+          const resultado = srv.pasajerosDisponibles! - 1;
+          return resultado !== 0; // Mantener solo si el resultado NO es 0
+        });
+
+        setServices(serviciosFiltrados);
 
         // Inicializar estado de botones según el status
         const initialStates: {
           [key: string]: 'idle' | 'started' | 'finished';
         } = {};
-        response.data.forEach((srv: Service) => {
+        serviciosFiltrados.forEach((srv: Service) => {
           if (srv.status === '3') initialStates[srv.codservicio] = 'finished';
           else if (srv.status === '2')
             initialStates[srv.codservicio] = 'started';
