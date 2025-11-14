@@ -7,7 +7,7 @@ import {
   Linking,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Phone, Star } from 'lucide-react-native';
+import { ChevronLeft, Eye, Phone, Star } from 'lucide-react-native';
 import {
   NavigationProp,
   useNavigation,
@@ -31,6 +31,7 @@ import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../../components/ModalAlert';
 import { Text } from '../../components/ScaledComponents';
+import ModalRouteService from './modals/ModalRouteService';
 
 type ServicesDetailPassengerRouteProp = RouteProp<
   RootStackParamList,
@@ -56,6 +57,20 @@ interface DestinoData {
   wx: string;
 }
 
+interface UbiPasajero {
+  codpedido: string;
+  codubicli: string;
+  codcliente: string;
+  estado: string;
+  orden: number;
+  apellidos: string;
+  codlugar: string;
+  direccion: string;
+  distrito: string;
+  wy: string;
+  wx: string;
+}
+
 const ServicesDetailPassenger = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<ServicesDetailPassengerRouteProp>();
@@ -71,12 +86,19 @@ const ServicesDetailPassenger = () => {
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
   const [sendingRating, setSendingRating] = useState(false);
-  const [vehicleLocation, setVehicleLocation] = useState({
-    latitude: -12.0464,
-    longitude: -77.0428,
-    heading: 0,
-    speed: 0,
-  });
+  const [pasajeros, setPasajeros] = useState<UbiPasajero[]>([]);
+  const [loadingPasajeros, setLoadingPasajeros] = useState(false);
+  const [modalRouteServiceVisible, setModalRouteServiceVisible] =
+    useState(false);
+  const [passengersForModal, setPassengersForModal] = useState<
+    Array<{
+      apellidos: string;
+      codpedido: string;
+      orden: string;
+      wx: string;
+      wy: string;
+    }>
+  >([]);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -93,6 +115,71 @@ const ServicesDetailPassenger = () => {
     message: '',
     color: '',
   });
+  const [showOrderWarning, setShowOrderWarning] = useState(false);
+
+  const fetchPasajeros = async () => {
+    try {
+      setLoadingPasajeros(true);
+
+      const url = `https://velsat.pe:2087/api/Aplicativo/UbiPasajeros/${serviceData.codservicio}`;
+
+      const response = await axios.get(url);
+
+      console.log('Datos de pasajeros:', response.data);
+      console.log(
+        'Cantidad de pasajeros:',
+        response.data.pasajeros?.length || 0,
+      );
+
+      // Guardar los datos en el estado
+      if (response.data.pasajeros && Array.isArray(response.data.pasajeros)) {
+        setPasajeros(response.data.pasajeros);
+
+        // Verificar si hay pasajeros sin orden
+        const hasPassengersWithoutOrder = response.data.pasajeros.some(
+          (p: UbiPasajero) => p.orden === null || p.orden === undefined,
+        );
+
+        // Mostrar warning si hay pasajeros sin orden
+        setShowOrderWarning(hasPassengersWithoutOrder);
+
+        // Preparar los datos para el modal con validación de null
+        const formattedPassengers = response.data.pasajeros.map(
+          (p: UbiPasajero, index: number) => ({
+            apellidos: p.apellidos || 'Sin nombre',
+            codpedido: p.codpedido || `pasajero-${index}`,
+            orden:
+              p.orden !== null && p.orden !== undefined
+                ? p.orden.toString()
+                : (index + 1).toString(),
+            wx: p.wx || '0',
+            wy: p.wy || '0',
+          }),
+        );
+
+        setPassengersForModal(formattedPassengers);
+
+        // Abrir el modal
+        setModalRouteServiceVisible(true);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          'Error al cargar pasajeros:',
+          error.response?.data || error.message,
+        );
+        handleShowAlert(
+          'Error',
+          'No se pudieron cargar los pasajeros',
+          '#e36414',
+        );
+      } else {
+        console.error('Error inesperado:', error);
+      }
+    } finally {
+      setLoadingPasajeros(false);
+    }
+  };
 
   const handleShowAlert = (title: string, message: string, color?: string) => {
     setAlertConfig({ title, message, color: color || '' });
@@ -829,10 +916,12 @@ const ServicesDetailPassenger = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.buttonRed}
-                onPress={handleCancelPress}
+                style={styles.buttonGreen}
+                onPress={fetchPasajeros}
+                disabled={loadingPasajeros}
               >
-                <Text style={styles.buttonRedText}>Cancelar Servicio</Text>
+                <Eye size={16} color="#fff" style={styles.buttonIcon} />
+                <Text style={styles.buttonGreenText}>Ver Pasajeros</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -845,6 +934,13 @@ const ServicesDetailPassenger = () => {
               >
                 <Star size={16} color="#fff" style={styles.buttonIcon} />
                 <Text style={styles.buttonOrangeText}>Calificar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.buttonRed}
+                onPress={handleCancelPress}
+              >
+                <Text style={styles.buttonRedText}>Cancelar Servicio</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -879,6 +975,17 @@ const ServicesDetailPassenger = () => {
         title={alertConfig.title}
         message={alertConfig.message}
         color={alertConfig.color}
+      />
+
+      <ModalRouteService
+        visible={modalRouteServiceVisible}
+        onClose={() => {
+          setModalRouteServiceVisible(false);
+          setShowOrderWarning(false); // Limpiar el warning al cerrar
+        }}
+        passengers={passengersForModal}
+        tipo={serviceData.tipo}
+        showOrderWarning={showOrderWarning} // ← Nueva prop
       />
     </LinearGradient>
   );
