@@ -392,7 +392,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
               {/* Botón izquierdo */}
               <AnimatedNavButton
                 onPress={handlePrevious}
-                icon={<ChevronLeft size={24} color="#333" />}
+                icon={<ChevronLeft size={24} color="#fff" />}
                 direction="left"
               />
 
@@ -626,7 +626,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
               {/* Botón derecho */}
               <AnimatedNavButton
                 onPress={handleNext}
-                icon={<ChevronRight size={24} color="#333" />}
+                icon={<ChevronRight size={24} color="#fff" />}
                 direction="right"
               />
             </View>
@@ -634,7 +634,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
             {/* Tarjetas fijas (fuera del slider) */}
             {/* Detalles de Servicio */}
             <View style={styles.card}>
-              <Text style={styles.centerLabel}>Detalles de servicio</Text>
+              <Text style={styles.centerLabel}>Detalles de Servicio</Text>
 
               {/* Tipo y Cantidad de pasajeros */}
               <View style={styles.gridRow}>

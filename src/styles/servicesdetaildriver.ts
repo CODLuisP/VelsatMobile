@@ -41,7 +41,7 @@ export const styles = StyleSheet.create({
 
   },
   passengerIndicatorLabel: {
-    fontSize: 13,
+    fontSize: 15,
     color: '#000000ff',
     fontWeight: '600',
 
@@ -88,7 +88,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 10,
     paddingBottom: 10,
-    backgroundColor:'#f2f8feff',
+    backgroundColor:'#e9ecef',
     marginHorizontal:20
     
   },
