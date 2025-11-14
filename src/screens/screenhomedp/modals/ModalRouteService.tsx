@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import { X } from 'lucide-react-native';
+import { AlertTriangle, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   getBottomSpace,
@@ -37,6 +37,7 @@ interface ModalRouteServiceProps {
     wy: string;
   }>;
   tipo: string;
+  showOrderWarning?: boolean; // ← Nueva prop
 }
 
 const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
@@ -44,6 +45,7 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
   onClose,
   passengers: initialPassengers,
   tipo,
+  showOrderWarning = false, // ← Default false
 }) => {
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -60,8 +62,9 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
     if (initialPassengers && initialPassengers.length > 0) {
       const mappedMarkers = initialPassengers
         .filter(p => p.wx && p.wy && p.wx !== '0' && p.wy !== '0')
-        .map(p => {
-          const orden = parseInt(p.orden);
+        .map((p, index) => {
+          // Si no tiene orden, usar el índice + 1
+          const orden = p.orden ? parseInt(p.orden) : index + 1;
           let title = '';
 
           if (orden === 0) {
@@ -76,19 +79,19 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
           }
 
           return {
-            id: p.codpedido,
+            id: p.codpedido || `marker-${index}`, // Fallback para ID
             latitude: parseFloat(p.wy),
             longitude: parseFloat(p.wx),
             title: title,
-            description: p.apellidos,
-            isOrderZero: p.orden === '0',
+            description: p.apellidos || 'Sin nombre', // Fallback para apellidos
+            isOrderZero: p.orden === '0' || orden === 0,
             orden: orden,
           };
         });
 
       setMarkers(mappedMarkers);
     }
-  }, [initialPassengers, tipo]); // ← Agregar 'tipo' como dependencia
+  }, [initialPassengers, tipo]);
 
   // Ajustar el mapa para mostrar todos los marcadores (iOS)
   useEffect(() => {
@@ -231,6 +234,20 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
                 {markers.length} puntos de parada
               </Text>
             </View>
+
+            {showOrderWarning && (
+              <View style={styles.warningContainer}>
+                <AlertTriangle
+                  size={14}
+                  color="#FFA726"
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={styles.warningText}>
+                  Sin orden definido, asumiendo
+                </Text>
+              </View>
+            )}
+
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <X size={24} color="#666" />
             </TouchableOpacity>
@@ -320,11 +337,14 @@ const styles = StyleSheet.create({
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
     backgroundColor: '#FFFFFF',
+  },
+  headerLeft: {
+    flex: 1, // ← Agregar para que tome el espacio necesario
   },
   modalTitle: {
     fontSize: 16,
@@ -387,6 +407,17 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderTopColor: '#f77f00',
     marginTop: -3,
+  },
+  warningContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  warningText: {
+    color: '#FFA726',
+    fontSize: 13,
+    fontWeight: '600',
+    marginRight: 10, // ← Espacio antes del botón X
   },
 });
 

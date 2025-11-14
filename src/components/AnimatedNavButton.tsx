@@ -138,7 +138,7 @@ export const AnimatedNavButton: React.FC<AnimatedNavButtonProps> = ({
     <TouchableOpacity 
       onPress={onPress} 
       style={[styles.navButton, style]}
-      activeOpacity={0.8}
+      activeOpacity={1}
     >
       {/* Glow effect background */}
       <Animated.View 
@@ -147,7 +147,7 @@ export const AnimatedNavButton: React.FC<AnimatedNavButtonProps> = ({
           {
             opacity: opacityAnim.interpolate({
               inputRange: [0.4, 1],
-              outputRange: [0.2, 0.5],
+              outputRange: [0.2, 0],
             }),
           },
         ]} 
@@ -157,7 +157,6 @@ export const AnimatedNavButton: React.FC<AnimatedNavButtonProps> = ({
       <Animated.View
         style={{
           transform: getTransform(),
-          opacity: opacityAnim,
         }}
       >
         {icon}
@@ -170,18 +169,10 @@ const styles = StyleSheet.create({
   navButton: {
     width: 40,
     height: 40,
-    backgroundColor: '#dee2e6',
+    backgroundColor: '#f26513ff',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#adb5bd',
-    shadowOffset: { 
-      width: 0, 
-      height: 4 
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
     overflow: 'hidden',
   },
   glowEffect: {

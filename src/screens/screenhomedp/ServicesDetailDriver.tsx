@@ -99,6 +99,7 @@ const ServicesDetailDriver = () => {
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [showOrderWarning, setShowOrderWarning] = useState(false);
 
   // useEffect para consumir la API
   useEffect(() => {
@@ -116,6 +117,12 @@ const ServicesDetailDriver = () => {
           (a, b) => parseInt(a.orden) - parseInt(b.orden),
         );
         setAllPassengers(allPassengers); // Nuevo estado para todos los pasajeros
+
+        // ✅ DETECTAR SI HAY PASAJEROS SIN ORDEN
+      const hasPassengersWithoutOrder = response.data.some(
+        (p) => p.orden === null || p.orden === undefined || p.orden === ''
+      );
+      setShowOrderWarning(hasPassengersWithoutOrder);
 
         const orderZero = response.data.find(p => p.orden === '0');
         setOrderZeroPassenger(orderZero || null);
@@ -385,7 +392,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
               {/* Botón izquierdo */}
               <AnimatedNavButton
                 onPress={handlePrevious}
-                icon={<ChevronLeft size={24} color="#333" />}
+                icon={<ChevronLeft size={24} color="#fff" />}
                 direction="left"
               />
 
@@ -619,7 +626,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
               {/* Botón derecho */}
               <AnimatedNavButton
                 onPress={handleNext}
-                icon={<ChevronRight size={24} color="#333" />}
+                icon={<ChevronRight size={24} color="#fff" />}
                 direction="right"
               />
             </View>
@@ -627,7 +634,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
             {/* Tarjetas fijas (fuera del slider) */}
             {/* Detalles de Servicio */}
             <View style={styles.card}>
-              <Text style={styles.centerLabel}>Detalles de servicio</Text>
+              <Text style={styles.centerLabel}>Detalles de Servicio</Text>
 
               {/* Tipo y Cantidad de pasajeros */}
               <View style={styles.gridRow}>
@@ -737,11 +744,15 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
       />
 
       <ModalRouteService
-        visible={modalRouteServiceVisible}
-        onClose={() => setModalRouteServiceVisible(false)}
-        passengers={passengersForModal}
-        tipo={serviceData.tipo}
-      />
+  visible={modalRouteServiceVisible}
+  onClose={() => {
+    setModalRouteServiceVisible(false);
+    setShowOrderWarning(false); // Limpiar el warning al cerrar
+  }}
+  passengers={passengersForModal}
+  tipo={serviceData.tipo}
+  showOrderWarning={showOrderWarning} // ← Agregar esta prop
+/>
 
       <ModalObservations
         visible={modalObservationsVisible}

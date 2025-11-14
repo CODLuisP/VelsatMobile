@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>VelsatMobile</string>
+	<string>Velsat</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -39,9 +39,9 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Esta app usa Face ID para autenticación segura</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Esta app necesita tu ubicación para funcionar correctamente</string>
+	<string>Velsat usa tu ubicación para mostrarte eventos cercanos, personalizar tu experiencia, y mostrar la temperatura y tu ubicación actual en la app</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Esta app necesita tu ubicación para funcionar correctamente</string>
+	<string>Velsat usa tu ubicación para mostrarte eventos y lugares cercanos a ti, personalizar tu experiencia según tu zona, y mostrar la temperatura y tu ubicación actual en la app</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Necesitamos acceso a tus fotos para que puedas compartir imágenes</string>
 	<key>RCTNewArchEnabled</key>
