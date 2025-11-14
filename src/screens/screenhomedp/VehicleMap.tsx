@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Image, Platform, Animated, ActivityIndicator, Text, Modal, TouchableOpacity } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT, Circle, Callout } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
-import * as signalR from '@microsoft/signalr';
 import {
   DIRECTION_IMAGES,
   getDirectionImage,
@@ -35,7 +34,7 @@ interface VehicleData {
   datosGeocercausu: any | null;
 }
 
-interface SignalRData {
+interface ApiResponse {
   fechaActual: string;
   vehiculo: VehicleData;
 }
@@ -46,7 +45,6 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
   vehicleName = 'No asignada',
 }) => {
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('connecting');
   const [isWebViewReady, setIsWebViewReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -66,130 +64,75 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
   // Validación de usuario y placa
   const hasValidCredentials = username && placa;
 
-  // 1. Agregar un ref para rastrear si el componente está montado
-const isMountedRef = useRef(true);
+  // Ref para rastrear si el componente está montado
+  const isMountedRef = useRef(true);
+  const pollingIntervalRef = useRef<number | null>(null);
 
-// 2. Mejorar el useEffect de SignalR con mejor cleanup
-useEffect(() => {
-  if (!hasValidCredentials) {
-    setConnectionStatus('error');
-    return;
-  }
-
-  const hubUrl = `https://velsat.pe:2087/dataHubVehicle/${username}/${placa}`;
-  setConnectionStatus('connecting');
-
-  const newConnection = new signalR.HubConnectionBuilder()
-    .withUrl(hubUrl, {
-      skipNegotiation: false,
-      transport:
-        signalR.HttpTransportType.WebSockets |
-        signalR.HttpTransportType.LongPolling,
-    })
-    .withAutomaticReconnect({
-      nextRetryDelayInMilliseconds: retryContext => {
-        // No reintentar si el componente está desmontado
-        if (!isMountedRef.current) return null;
-        
-        if (retryContext.previousRetryCount === 0) return 0;
-        if (retryContext.previousRetryCount < 3) return 2000;
-        if (retryContext.previousRetryCount < 6) return 10000;
-        return 30000;
-      },
-    })
-    .configureLogging(signalR.LogLevel.Information)
-    .build();
-
-  newConnection.on('ActualizarDatosVehiculo', (datos: SignalRData) => {
-    // Solo actualizar si el componente está montado
-    if (!isMountedRef.current) {
+  // Función para hacer fetch de los datos del vehículo
+  const fetchVehicleData = async () => {
+    if (!hasValidCredentials || !isMountedRef.current) {
       return;
     }
-    
-    if (datos.vehiculo) {
-      setVehicleData(datos.vehiculo);
-      setConnectionStatus('connected');
-    }
-  });
 
-  newConnection.on('ConectadoExitosamente', data => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('connected');
-  });
+    try {
+      const apiUrl = `https://velsat.pe:2087/api/Aplicativo/vehiculo/${username}/${placa}`;
+      console.log('Fetching from:', apiUrl);
+      const response = await fetch(apiUrl);
 
-  newConnection.on('Error', msg => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('error');
-  });
-
-  newConnection.onreconnecting(() => {
-    if (!isMountedRef.current) {
-      // Si el componente está desmontado, detener la reconexión
-      newConnection.stop();
-      return;
-    }
-    setConnectionStatus('connecting');
-  });
-
-  newConnection.onreconnected(() => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('connected');
-  });
-
-  newConnection.onclose(error => {
-    if (!isMountedRef.current) return;
-    setConnectionStatus('disconnected');
-  });
-
-  newConnection
-    .start()
-    .then(() => {
-      if (!isMountedRef.current) {
-        newConnection.stop();
-        return;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      setConnectionStatus('connected');
-    })
-    .catch(err => {
-      if (!isMountedRef.current) return;
+
+      const data: ApiResponse = await response.json();
+      console.log('Respuesta completa de la API:', data);
+      console.log('Datos del vehículo - Lat:', data.vehiculo.lastValidLatitude, 'Lng:', data.vehiculo.lastValidLongitude, 'Heading:', data.vehiculo.lastValidHeading, 'Speed:', data.vehiculo.lastValidSpeed);
+
+      // Solo actualizar si el componente está montado
+      // Importante: extraer el objeto vehiculo de la respuesta
+      if (isMountedRef.current) {
+        setVehicleData(data.vehiculo);
+        setConnectionStatus('connected');
+      }
+    } catch (error) {
+      console.error('Error fetching vehicle data:', error);
+      if (isMountedRef.current) {
+        setConnectionStatus('error');
+      }
+    }
+  };
+
+  // Efecto para configurar el polling
+  useEffect(() => {
+    if (!hasValidCredentials) {
       setConnectionStatus('error');
-    });
-
-  setConnection(newConnection);
-
-  // CLEANUP MEJORADO
-  return () => {
-    isMountedRef.current = false;
-
-    // Remover todos los listeners
-    newConnection.off('ActualizarDatosVehiculo');
-    newConnection.off('ConectadoExitosamente');
-    newConnection.off('Error');
-
-    // Detener la conexión de forma más agresiva
-    if (newConnection) {
-      const currentState = newConnection.state;
-      
-      if (currentState === signalR.HubConnectionState.Connected || 
-          currentState === signalR.HubConnectionState.Connecting ||
-          currentState === signalR.HubConnectionState.Reconnecting) {
-        
-        newConnection.stop()
-          .then(() => {
-          })
-          .catch(err => {
-          });
-      }
+      return;
     }
-  };
-}, [username, placa, hasValidCredentials]);
 
-// 3. Agregar cleanup para el componente completo
-useEffect(() => {
-  return () => {
-    isMountedRef.current = false;
-  };
-}, []);
+    // Hacer fetch inicial inmediatamente
+    setConnectionStatus('connecting');
+    fetchVehicleData();
+
+    // Configurar polling cada 10 segundos
+    pollingIntervalRef.current = setInterval(() => {
+      fetchVehicleData();
+    }, 10000);
+
+    // Cleanup
+    return () => {
+      isMountedRef.current = false;
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [username, placa, hasValidCredentials]);
+
+  // Cleanup para el componente completo
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Animación del radar para iOS
   useEffect(() => {
@@ -272,7 +215,7 @@ useEffect(() => {
     <body>
         <div id="${viewId}"></div>
         <script>
-            var map = L.map('${viewId}').setView([${latitude}, ${longitude}], ${isFullscreenView ? 27 : 25});
+            var map = L.map('${viewId}').setView([-12.0464, -77.0428], 15);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -304,6 +247,8 @@ useEffect(() => {
             }
 
             window.updateMarkerPosition = function(lat, lng, heading, spd, radarCol, direccion) {
+                console.log('updateMarkerPosition llamado con:', lat, lng, heading, spd);
+                
                 // Determinar qué imagen y tamaño usar según el ángulo
                 var imageUrl = '';
                 var iconSize = [55, 35];
@@ -356,6 +301,7 @@ useEffect(() => {
                 \`;
 
                 if (marker === null) {
+                    console.log('Creando marcador inicial');
                     // PRIMERO: Crear el marcador
                     var vehicleIcon = L.divIcon({
                         html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
@@ -435,6 +381,7 @@ useEffect(() => {
                     }, 150);
                     
                 } else {
+                    console.log('Actualizando marcador existente a nueva posición:', lat, lng);
                     // Actualizar imagen si cambió la dirección
                     if (!marker.lastHeading || Math.abs(marker.lastHeading - heading) > 22.5) {
                         var vehicleIcon = L.divIcon({
@@ -478,6 +425,9 @@ useEffect(() => {
     if (Platform.OS === 'android' && webViewRef.current && vehicleData && isWebViewReady) {
       const radarColor = getRadarColor();
       const direccion = vehicleData.direccion || 'Sin dirección';
+      
+      console.log('🔄 Actualizando WebView - Lat:', latitude, 'Lng:', longitude, 'Heading:', heading, 'Speed:', speed);
+      
       setTimeout(() => {
         const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}', '${direccion.replace(/'/g, "\\'")}'); true;`;
         webViewRef.current?.injectJavaScript(script);
@@ -490,6 +440,9 @@ useEffect(() => {
     if (Platform.OS === 'android' && fullscreenWebViewRef.current && vehicleData && isFullscreen) {
       const radarColor = getRadarColor();
       const direccion = vehicleData.direccion || 'Sin dirección';
+      
+      console.log('🔄 Actualizando WebView fullscreen - Lat:', latitude, 'Lng:', longitude);
+      
       setTimeout(() => {
         const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}', '${direccion.replace(/'/g, "\\'")}'); true;`;
         fullscreenWebViewRef.current?.injectJavaScript(script);
