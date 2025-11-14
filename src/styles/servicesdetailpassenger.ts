@@ -211,4 +211,19 @@ buttonRed: {
     fontSize: 12,
     fontWeight: '600',
   },
+  buttonGreen: {
+  backgroundColor: '#14aa00ff',
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 20,
+  alignItems: 'center',
+  marginTop: 10,
+  flexDirection: 'row', // Esta es la clave para que esté en línea
+  justifyContent: 'center', // Opcional: centra el contenido
+},
+  buttonGreenText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });
