@@ -491,7 +491,7 @@ const Login = () => {
               resizeMode="cover"
             />
 <LinearGradient
-  colors={['rgba(0, 31, 84, 0.90)', 'rgba(0, 15, 40, 0.8)', 'rgba(1, 7, 35, 0.36)']}
+  colors={['rgba(0, 31, 84, 0.9)', 'rgba(0, 15, 40, 0.6)', 'rgba(1, 7, 35, 0.2)']}
   style={styles.backgroundOverlay}
 />            
             {/* Welcome Header */}
