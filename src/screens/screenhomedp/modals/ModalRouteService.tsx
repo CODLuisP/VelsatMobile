@@ -24,6 +24,8 @@ interface MarkerData {
   description: string;
   isOrderZero: boolean; // ← Agregar esta propiedad
   orden: number;
+  ordenReal: number; // Orden real original
+  ordenVisual?: number; // Orden visual para mostrar
 }
 
 interface ModalRouteServiceProps {
@@ -59,39 +61,49 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
   const [markers, setMarkers] = useState<MarkerData[]>([]);
 
   useEffect(() => {
-    if (initialPassengers && initialPassengers.length > 0) {
-      const mappedMarkers = initialPassengers
-        .filter(p => p.wx && p.wy && p.wx !== '0' && p.wy !== '0')
-        .map((p, index) => {
-          // Si no tiene orden, usar el índice + 1
-          const orden = p.orden ? parseInt(p.orden) : index + 1;
-          let title = '';
+  if (initialPassengers && initialPassengers.length > 0) {
+    const mappedMarkers = initialPassengers
+      .filter(p => p.wx && p.wy && p.wx !== '0' && p.wy !== '0')
+      .map((p, index) => {
+        const orden = p.orden ? parseInt(p.orden) : index + 1;
+        let title = '';
 
-          if (orden === 0) {
-            // Para orden 0, depende del tipo
-            const lugarTexto =
-              tipo === 'I' ? 'Destino de viaje' : 'Lugar de recojo';
-            const estadoTexto = tipo === 'I' ? 'FIN' : 'INICIO';
-            title = `${lugarTexto} - ${estadoTexto}`;
-          } else {
-            // Para orden diferente de 0, usar el número de orden
-            title = `Pasajero ${orden}`;
-          }
+        if (orden === 0) {
+          const lugarTexto =
+            tipo === 'I' ? 'Destino de viaje' : 'Lugar de recojo';
+          const estadoTexto = tipo === 'I' ? 'FIN' : 'INICIO';
+          title = `${lugarTexto} - ${estadoTexto}`;
+        } else {
+          title = `Pasajero ${orden}`;
+        }
 
-          return {
-            id: p.codpedido || `marker-${index}`, // Fallback para ID
-            latitude: parseFloat(p.wy),
-            longitude: parseFloat(p.wx),
-            title: title,
-            description: p.apellidos || 'Sin nombre', // Fallback para apellidos
-            isOrderZero: p.orden === '0' || orden === 0,
-            orden: orden,
-          };
-        });
+        return {
+          id: p.codpedido || `marker-${index}`,
+          latitude: parseFloat(p.wy),
+          longitude: parseFloat(p.wx),
+          title: title,
+          description: p.apellidos || 'Sin nombre',
+          isOrderZero: p.orden === '0' || orden === 0,
+          orden: orden,
+          ordenReal: orden, // ← Guardamos el orden real
+        };
+      });
 
-      setMarkers(mappedMarkers);
-    }
-  }, [initialPassengers, tipo]);
+    // Separar marcadores de orden 0 y los demás
+    const orderZeroMarkers = mappedMarkers.filter(m => m.isOrderZero);
+    const regularMarkers = mappedMarkers.filter(m => !m.isOrderZero);
+
+    // Renumerar visualmente los marcadores regulares desde 1
+    const renumberedMarkers = regularMarkers.map((marker, index) => ({
+      ...marker,
+      ordenVisual: index + 1, // ← Orden visual continuo
+      title: `Pasajero ${index + 1}`, // ← Actualizar título con orden visual
+    }));
+
+    // Combinar ambos arrays: primero los de orden 0, luego los renumerados
+    setMarkers([...orderZeroMarkers, ...renumberedMarkers]);
+  }
+}, [initialPassengers, tipo]);
 
   // Ajustar el mapa para mostrar todos los marcadores (iOS)
   useEffect(() => {
@@ -192,7 +204,9 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
           pinClass = tipo === 'I' ? 'marker-pin order-zero' : 'marker-pin order-zero-blue';
         }
         
-        var markerNumberHtml = marker.isOrderZero ? '' : '<div class="marker-number">' + marker.orden + '</div>';
+        // Usar ordenVisual si existe, sino usar orden
+        var displayOrder = marker.ordenVisual || marker.orden;
+        var markerNumberHtml = marker.isOrderZero ? '' : '<div class="marker-number">' + displayOrder + '</div>';
         
         var icon = L.divIcon({
           className: 'custom-marker',
@@ -274,39 +288,33 @@ const ModalRouteService: React.FC<ModalRouteServiceProps> = ({
               >
                 {markers.map(marker => (
                   <Marker
-                    key={marker.id}
-                    coordinate={{
-                      latitude: marker.latitude,
-                      longitude: marker.longitude,
-                    }}
-                    title={marker.title}
-                    description={marker.description}
-                  >
-                    <View style={styles.markerContainer}>
-                      <View
-                        style={[
-                          styles.markerBadge,
-                          marker.isOrderZero && {
-                            backgroundColor:
-                              tipo === 'I' ? '#e41d1dff' : '#0051ffff',
-                          },
-                        ]}
-                      >
-                        {!marker.isOrderZero && (
-                          <Text style={styles.markerText}>{marker.orden}</Text>
-                        )}
-                      </View>
-                      <View
-                        style={[
-                          styles.markerArrow,
-                          marker.isOrderZero && {
-                            borderTopColor:
-                              tipo === 'I' ? '#e41d1dff' : '#0051ffff',
-                          },
-                        ]}
-                      />
-                    </View>
-                  </Marker>
+  key={marker.id}
+  coordinate={{
+    latitude: marker.latitude,
+    longitude: marker.longitude,
+  }}
+  title={marker.title}
+  description={marker.description}
+>
+  <View style={styles.markerContainer}>
+    <View
+      style={[
+        styles.markerBadge,
+        marker.isOrderZero && {
+          backgroundColor:
+            tipo === 'I' ? '#e41d1dff' : '#0051ffff',
+        },
+      ]}
+    >
+      {!marker.isOrderZero && (
+        <Text style={styles.markerText}>
+          {marker.ordenVisual || marker.orden}
+        </Text>
+      )}
+    </View>
+    {/* ... resto del código ... */}
+  </View>
+</Marker>
                 ))}
               </MapView>
             ) : (
