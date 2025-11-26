@@ -565,6 +565,8 @@ const Login = () => {
             )}
 
             {/* Input Fields */}
+
+            <View style={styles.mainContentInputs}>
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabel}>Usuario</Text>
               <View style={styles.inputContainer}>
@@ -595,13 +597,15 @@ const Login = () => {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff color="rgba(255,255,255,0.5)" size={20} />
+                    <EyeOff color="rgba(0, 0, 0, 0.5)" size={20} />
                   ) : (
-                    <Eye color="rgba(255,255,255,0.5)" size={20} />
+                    <Eye color="rgba(0, 0, 0, 0.5)" size={20} />
                   )}
                 </TouchableOpacity>
               </View>
             </View>
+</View>
+
 
             {/* Sign In Button */}
      <TouchableOpacity

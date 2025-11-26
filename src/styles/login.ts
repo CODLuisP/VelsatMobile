@@ -9,15 +9,14 @@ export const styles = StyleSheet.create({
 
   mainContent: {
     flex: 1,
-    paddingHorizontal: 24,
   },
 
   // Top Background Section with GPS image
   topBackgroundSection: {
     position: 'relative',
     marginHorizontal: -24,
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 48,
+    paddingBottom: 25,
     overflow: 'hidden',
   },
 
@@ -26,7 +25,7 @@ export const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 300,
+    height: 310,
     opacity: 0.3,
   },
 logoImage: {
@@ -125,6 +124,11 @@ logoImage: {
   // Form Container
   formContainer: {
     flex: 1,
+    backgroundColor: '#edf2fb',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+
   },
 
   // Biometric Button
@@ -168,7 +172,7 @@ logoImage: {
   },
 
   orText: {
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: 'rgba(0, 0, 0, 0.5)',
     fontSize: 14,
     paddingHorizontal: 16,
     fontWeight: '500',
@@ -179,10 +183,13 @@ logoImage: {
     marginBottom:15,
     marginTop: 10,
   },
+  mainContentInputs: {
+    marginTop: 10,
+  },
 
   inputLabel: {
     fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: '#001233',
     marginBottom: 5,
     fontWeight: '500',
   },
@@ -191,7 +198,7 @@ logoImage: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    borderBottomColor: 'rgba(0, 0, 0, 0.2)',
     paddingHorizontal: 0,
     height: 30,
   },
@@ -203,7 +210,7 @@ logoImage: {
     height: 48,
     paddingHorizontal: 0,
     fontSize: 15,
-    color: '#FFFFFF',
+    color: '#232222ff',
     backgroundColor: 'transparent',
   },
 
@@ -222,7 +229,7 @@ logoImage: {
   },
   infoDescription: {
     fontSize: 15,
-    color: '#FFFFFF', // Blanco
+    color: '#000000ff', // Blanco
     textAlign: 'center',
     lineHeight: 22,
     opacity: 0.95,
@@ -311,7 +318,7 @@ signInGradient: {
   },
 
   linkText: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(0, 0, 0, 0.7)',
     fontSize: 13,
     fontWeight: '500',
   },
@@ -334,7 +341,7 @@ footerContainer: {
   },
 
   socialText: {
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: '#012a4a',
     fontSize: 12,
     fontWeight: '500',
   },
@@ -381,7 +388,7 @@ footerContainer: {
   },
 
   versionText: {
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: '#012a4a',
     fontSize: 12,
     fontWeight: '600',
   },
