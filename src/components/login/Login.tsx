@@ -14,6 +14,7 @@ import {
   User,
   KeyRound,
   Navigation,
+  Loader2,
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -25,6 +26,7 @@ import {
   Linking,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -602,32 +604,32 @@ const Login = () => {
             </View>
 
             {/* Sign In Button */}
-            <TouchableOpacity
-              style={styles.signInButton}
-              onPress={handleLogin}
-              disabled={isLoggingIn}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={isLoggingIn ? ['#22c55e', '#16a34a'] : ['#ff9100', '#FF6B00']}  
-                style={styles.signInGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                {isLoggingIn ? (
-                  <>
-                    <Animated.View
-                      style={[styles.loadingSpinnerContainer, loadingIconStyle]}
-                    >
-                      <View style={styles.loadingSpinnerCircle} />
-                    </Animated.View>
-                    <Text style={styles.signInText}>Cargando...</Text>
-                  </>
-                ) : (
-                  <Text style={styles.signInText}>Iniciar Sesión</Text>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
+     <TouchableOpacity
+  style={styles.signInButton}
+  onPress={handleLogin}
+  disabled={isLoggingIn}
+  activeOpacity={0.8}
+>
+
+
+<LinearGradient
+  colors={isLoggingIn ? ['#22c55e', '#16a34a'] : ['#e85d04', '#FF6B00']}  
+  style={styles.signInGradient}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 1, y: 0 }}
+>
+  {isLoggingIn ? (
+    <ActivityIndicator size="small" color="#ffffff" />
+  ) : (
+    <>
+      <Text style={styles.signInText}>Iniciar Sesión</Text>
+      <LogIn color="#ffffff" size={20} style={{ marginLeft: 8 }} />
+    </>
+  )}
+</LinearGradient>
+
+
+</TouchableOpacity>
 
             {/* Bottom Links */}
             <View style={styles.bottomLinks}>
@@ -641,18 +643,14 @@ const Login = () => {
                 <Text style={styles.linkText}>Recordar usuario</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity>
-                <Text style={styles.linkTextRight}>Sign up</Text>
-              </TouchableOpacity>
+            
             </View>
 
       <View style={styles.footerContainer}>
       {/* Social Login Section */}
       <View style={styles.socialSection}>
-        <Text style={styles.socialText}>or sign up with</Text>
-        <View style={styles.socialButtons}>
-          {/* ... tus botones sociales ... */}
-        </View>
+        <Text style={styles.socialText}>Aplicación de control logístico</Text>
+  
       </View>
 
       {/* Version */}

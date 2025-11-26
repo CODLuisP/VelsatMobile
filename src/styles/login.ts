@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,8 +30,8 @@ export const styles = StyleSheet.create({
     opacity: 0.3,
   },
 logoImage: {
-  width:60,  
-  height: 60,
+  width:55,  
+  height:55,
 },
   backgroundOverlay: {
     position: 'absolute',
@@ -44,12 +44,12 @@ logoImage: {
 
   // Header Section
   headerSection: {
-    marginTop: 30,
+    marginTop: Platform.OS === 'ios' ? 70 : 50,
     zIndex: 1,
   },
 
   welcomeTitle: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 0,
@@ -63,7 +63,7 @@ logoImage: {
 
 
   welcomeSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '400',
   },
@@ -73,6 +73,7 @@ logoImage: {
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
+    marginTop: 10,
   },
 
   gpsCircleContainer: {
@@ -156,8 +157,8 @@ logoImage: {
   orDivider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 25,
-    marginTop: 20,
+    justifyContent: 'center',
+    marginTop: 15,
   },
 
   dividerLine: {
@@ -175,8 +176,8 @@ logoImage: {
 
   // Input Fields
   inputWrapper: {
-    marginBottom: 5,
-    marginTop: 20,
+    marginBottom:15,
+    marginTop: 10,
   },
 
   inputLabel: {
@@ -194,6 +195,8 @@ logoImage: {
     paddingHorizontal: 0,
     height: 30,
   },
+
+
 
   input: {
     flex: 1,
@@ -232,25 +235,20 @@ logoImage: {
     justifyContent: 'center',
   },
 
-  // Sign In Button
-  signInButton: {
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginTop: 10,
-    marginBottom: 20,
-    shadowColor: '#00BFFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
+signInButton: {
+  width: '100%',
+  height: 48,
+  borderRadius: 12, 
+  overflow: 'hidden', 
 
-  signInGradient: {
-    paddingVertical: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
+  elevation: 5,
+},
+signInGradient: {
+  flex: 1,
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
 
   signInText: {
     color: '#FFFFFF',
@@ -281,7 +279,7 @@ logoImage: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 30,
+    marginTop: 16,
   },
 
   rememberContainer: {
@@ -302,8 +300,8 @@ logoImage: {
   },
 
   checkboxChecked: {
-    backgroundColor: '#00BFFF',
-    borderColor: '#00BFFF',
+    backgroundColor: '#f77f00',
+    borderColor: '#f77f00',
   },
 
   checkmark: {
@@ -337,8 +335,7 @@ footerContainer: {
 
   socialText: {
     color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 13,
-    marginBottom: 20,
+    fontSize: 12,
     fontWeight: '500',
   },
 
@@ -371,7 +368,7 @@ footerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 10,
     marginBottom: 30,
   },
 
