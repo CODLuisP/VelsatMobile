@@ -38,7 +38,6 @@ logoImage: {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 31, 84, 0.6)',
   },
 
   // Header Section
@@ -188,8 +187,8 @@ logoImage: {
   },
 
   inputLabel: {
-    fontSize: 13,
-    color: '#001233',
+    fontSize: 14,
+    color: '#00296b',
     marginBottom: 5,
     fontWeight: '500',
   },
@@ -299,7 +298,7 @@ signInGradient: {
     height: 18,
     borderRadius: 3,
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: '#ff6b35',
     marginRight: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -388,7 +387,7 @@ footerContainer: {
   },
 
   versionText: {
-    color: '#012a4a',
+    color: '#0e293dd2',
     fontSize: 12,
     fontWeight: '600',
   },

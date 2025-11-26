@@ -495,8 +495,10 @@ const Login = () => {
               style={styles.gpsBackgroundImage}
               resizeMode="cover"
             />
-            <View style={styles.backgroundOverlay} />
-            
+<LinearGradient
+  colors={['rgba(0, 31, 84, 0.2)', 'rgba(0, 15, 40, 0.4)', 'rgba(0, 0, 0, 0.6)']}
+  style={styles.backgroundOverlay}
+/>            
             {/* Welcome Header */}
             <View style={styles.headerSection}>
               <Text style={styles.welcomeTitles}>Bienvenido</Text>
@@ -617,7 +619,7 @@ const Login = () => {
 
 
 <LinearGradient
-  colors={isLoggingIn ? ['#22c55e', '#16a34a'] : ['#e85d04', '#FF6B00']}  
+  colors={isLoggingIn ? ['#22c55e', '#16a34a'] : ['#e85d04', '#dc2f02']}  
   style={styles.signInGradient}
   start={{ x: 0, y: 0 }}
   end={{ x: 1, y: 0 }}
