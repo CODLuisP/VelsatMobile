@@ -323,7 +323,12 @@ logoImage: {
     fontSize: 13,
     fontWeight: '500',
   },
-
+footerContainer: {
+  marginTop: 'auto', // Esto empuja el footer al final
+  paddingBottom:  20, // Ajusta según tu bottomSpace
+  width: '100%',
+  alignItems: 'center',
+},
   // Social Section
   socialSection: {
     alignItems: 'center',

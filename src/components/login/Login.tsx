@@ -646,48 +646,24 @@ const Login = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Social Login Section */}
-            <View style={styles.socialSection}>
-              <Text style={styles.socialText}>or sign up with</Text>
-              <View style={styles.socialButtons}>
-                <TouchableOpacity style={styles.socialButton}>
-                  <Image
-                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/facebook.svg' }}
-                    style={styles.socialIcon}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  <Image
-                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/google.svg' }}
-                    style={styles.socialIcon}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  <Image
-                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/apple.svg' }}
-                    style={styles.socialIcon}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  <Image
-                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/vk.svg' }}
-                    style={styles.socialIcon}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  <Image
-                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/yandex.svg' }}
-                    style={styles.socialIcon}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+      <View style={styles.footerContainer}>
+      {/* Social Login Section */}
+      <View style={styles.socialSection}>
+        <Text style={styles.socialText}>or sign up with</Text>
+        <View style={styles.socialButtons}>
+          {/* ... tus botones sociales ... */}
+        </View>
+      </View>
 
-            {/* Version */}
-            <View style={styles.versionContainer}>
-              <View style={styles.statusDot} />
-              <Text style={styles.versionText}>V. 2.3.6</Text>
-            </View>
+      {/* Version */}
+      <View style={styles.versionContainer}>
+        <View style={styles.statusDot} />
+        <Text style={styles.versionText}>V. 2.3.6</Text>
+      </View>
+    </View>
+
+
+
           </Animated.View>
 
 
