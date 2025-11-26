@@ -5,6 +5,7 @@ const { width, height } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
+    
   },
 
   mainContent: {
@@ -18,6 +19,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 48,
     paddingBottom: 25,
     overflow: 'hidden',
+    
   },
 
   gpsBackgroundImage: {
@@ -25,7 +27,7 @@ export const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 310,
+    height: 320,
     opacity: 0.3,
   },
 logoImage: {
@@ -38,6 +40,7 @@ logoImage: {
     left: 0,
     right: 0,
     bottom: 0,
+    
   },
 
   // Header Section
@@ -72,6 +75,7 @@ logoImage: {
     justifyContent: 'center',
     zIndex: 1,
     marginTop: 10,
+    marginBottom: 10,
   },
 
   gpsCircleContainer: {
@@ -127,6 +131,7 @@ logoImage: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 24,
+    marginTop: -20,
 
   },
 
@@ -134,7 +139,7 @@ logoImage: {
   biometricButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: 12,
     marginBottom: 0,
     marginHorizontal: 0,
     borderWidth: 1,

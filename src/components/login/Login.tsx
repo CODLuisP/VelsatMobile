@@ -474,12 +474,7 @@ const Login = () => {
 
   return (
     <>
-      <LinearGradient
-        colors={['#031838ff', '#073260ff', '#003E8F']}
-        style={[styles.container]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      >
+ 
         <StatusBar
           barStyle="light-content"
           backgroundColor="transparent"
@@ -496,7 +491,7 @@ const Login = () => {
               resizeMode="cover"
             />
 <LinearGradient
-  colors={['rgba(0, 31, 84, 0.2)', 'rgba(0, 15, 40, 0.4)', 'rgba(0, 0, 0, 0.6)']}
+  colors={['rgba(0, 31, 84, 0.90)', 'rgba(0, 15, 40, 0.8)', 'rgba(1, 7, 35, 0.36)']}
   style={styles.backgroundOverlay}
 />            
             {/* Welcome Header */}
@@ -522,17 +517,19 @@ const Login = () => {
 
             {/* Biometric/PIN buttons inside background section */}
             {showPinOption && !showBiometricOption && (
-              <TouchableOpacity
-                style={styles.biometricButton}
-                onPress={handlePinLogin}
-              >
-                <View style={styles.biometricButtonContent}>
-                  <KeyRound color="#fff" size={24} />
-                  <Text style={styles.biometricButtonText}>
-                    Acceder con PIN
-                  </Text>
-                </View>
-              </TouchableOpacity>
+             <View style={{ marginBottom: 20 }}>
+  <TouchableOpacity
+    style={styles.biometricButton}
+    onPress={handlePinLogin}
+  >
+    <View style={styles.biometricButtonContent}>
+      <KeyRound color="#fff" size={24} />
+      <Text style={styles.biometricButtonText}>
+        Acceder con PIN
+      </Text>
+    </View>
+  </TouchableOpacity>
+</View>
             )}
 
             {showBiometricOption && (
@@ -672,7 +669,6 @@ const Login = () => {
 
 
         </View>
-      </LinearGradient>
 
       <ModalAlert
         isVisible={modalVisible}
