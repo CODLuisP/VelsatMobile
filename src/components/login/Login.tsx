@@ -12,7 +12,8 @@ import {
   Phone,
   Scan,
   User,
-  KeyRound, 
+  KeyRound,
+  Navigation,
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -72,10 +73,10 @@ const Login = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      SystemNavigationBar.setNavigationColor('#00296b');
+      SystemNavigationBar.setNavigationColor('#003E8F');
 
       return () => {
-        SystemNavigationBar.setNavigationColor('#00296b');
+        SystemNavigationBar.setNavigationColor('#003E8F');
       };
     }, []),
   );
@@ -90,6 +91,10 @@ const Login = () => {
   const carPosition = useSharedValue(-100);
   const roadOffset = useSharedValue(0);
 
+  // Animación del GPS (pulso)
+  const gpsScale = useSharedValue(1);
+  const gpsRotation = useSharedValue(0);
+
   // Usar authStore extendido
   const {
     setUser,
@@ -100,7 +105,7 @@ const Login = () => {
     biometric,
     checkBiometricAvailability,
     authenticateWithBiometric,
-    authenticateWithPin, 
+    authenticateWithPin,
     getBiometricDisplayName,
     canUseBiometricLogin,
     canUsePinLogin,
@@ -108,7 +113,7 @@ const Login = () => {
   } = useAuthStore();
 
   const [showBiometricOption, setShowBiometricOption] = useState(false);
-  const [showPinOption, setShowPinOption] = useState(false); 
+  const [showPinOption, setShowPinOption] = useState(false);
 
   const handleBiometricLogin = async () => {
     try {
@@ -168,7 +173,8 @@ const Login = () => {
     } catch (error: any) {
       setModalConfig({
         title: 'Error de Autenticación',
-        message: 'Hubo un problema con el PIN. Intenta con tu usuario y contraseña.',
+        message:
+          'Hubo un problema con el PIN. Intenta con tu usuario y contraseña.',
       });
       setModalVisible(true);
       setIsLoggingIn(false);
@@ -371,6 +377,13 @@ const Login = () => {
     transform: [{ rotate: `${loadingRotation.value}deg` }],
   }));
 
+  const gpsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: gpsScale.value },
+      { rotate: `${gpsRotation.value}deg` },
+    ],
+  }));
+
   useEffect(() => {
     loadSavedCredentials();
 
@@ -379,7 +392,7 @@ const Login = () => {
         await checkBiometricAvailability();
 
         const canUseBio = canUseBiometricLogin();
-        const canUsePin = canUsePinLogin(); // ⭐ NUEVO
+        const canUsePin = canUsePinLogin();
 
         if (canUseBio) {
           setShowBiometricOption(true);
@@ -389,8 +402,6 @@ const Login = () => {
           }, 500);
         } else if (canUsePin) {
           setShowPinOption(true);
-
-        
         }
       } catch (error) {
         // Error silencioso
@@ -403,6 +414,23 @@ const Login = () => {
       withTiming(1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
+    );
+
+    // Animación del GPS (pulso suave)
+    gpsScale.value = withRepeat(
+      withSequence(
+        withTiming(1.05, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      false,
+    );
+
+    // Rotación suave del GPS
+    gpsRotation.value = withRepeat(
+      withTiming(360, { duration: 20000, easing: Easing.linear }),
+      -1,
+      false,
     );
 
     const startCarAnimation = (): void => {
@@ -445,7 +473,7 @@ const Login = () => {
   return (
     <>
       <LinearGradient
-        colors={['#052152ff', '#051d43ff', '#042d6fff']}
+        colors={['#001F54', '#023e7d', '#003E8F']}
         style={[styles.container]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -455,179 +483,214 @@ const Login = () => {
           backgroundColor="transparent"
           translucent
         />
-        <Image
-          source={require('../../../assets/mapa.png')}
-          style={styles.backgroundMap}
-          resizeMode="cover"
-        />
 
         <View style={styles.mainContent}>
-          <Animated.View style={[styles.formContainer, formStyle]}>
-            <View style={styles.formCard}>
+          {/* Background Section with GPS image */}
+          <View style={styles.topBackgroundSection}>
+            {/* GPS Background Image */}
+            <Image
+              source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764132427/fondovel_gtsqvo.jpg' }}
+              style={styles.gpsBackgroundImage}
+              resizeMode="cover"
+            />
+            <View style={styles.backgroundOverlay} />
+            
+            {/* Welcome Header */}
+            <View style={styles.headerSection}>
+              <Text style={styles.welcomeTitles}>Bienvenido</Text>
+
+              <Text style={styles.welcomeSubtitle}>Inicia sesión para continuar</Text>
+            </View>
+
+            {/* Logo GPS centrado */}
               <Animated.View style={[styles.logoContainer, logoStyle]}>
-                <View style={styles.logoMain}>
-                  <Image
-                    source={require('../../../assets/logob.png')}
-                    style={styles.logoImage}
-                    resizeMode="contain"
-                  />
-                  <Text  style={styles.logoText}>VELSAT</Text>
-                </View>
+                <Image 
+                  source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764131055/logomini_h3n8jb.png' }}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+              <Text style={styles.welcomeTitle}>VELSAT</Text>
+
               </Animated.View>
-              <Text style={styles.welcomeText}>BIENVENIDO DE VUELTA</Text>
 
-              {/* ⭐ NUEVO: Mostrar opción de PIN si no hay biometría */}
-              {showPinOption && !showBiometricOption && (
-                <>
-                  <View style={styles.biometricSection}>
-                    <TouchableOpacity
-                      style={styles.biometricButton}
-                      onPress={handlePinLogin}
-                    >
-                      <View style={styles.biometricButtonContent}>
-                        <KeyRound color="#fff" size={24} />
-                        <Text style={styles.biometricButtonText}>
-                          Acceder con PIN
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
 
-                  <View style={styles.loginSeparator}>
-                    <View style={styles.separatorLine} />
-                    <Text style={styles.separatorText}>o</Text>
-                    <View style={styles.separatorLine} />
-                  </View>
-                </>
-              )}
+            
 
-              {showBiometricOption && (
-                <>
-                  <View style={styles.biometricSection}>
-                    <TouchableOpacity
-                      style={styles.biometricButton}
-                      onPress={handleBiometricLogin}
-                    >
-                      <View style={styles.biometricButtonContent}>
-                        {biometric.type === 'FaceID' && (
-                          <Scan color="#fff" size={24} />
-                        )}
-                        {(biometric.type === 'TouchID' ||
-                          biometric.type === 'Biometrics') && (
-                          <Fingerprint color="#fff" size={24} />
-                        )}
-                        <Text style={styles.biometricButtonText}>
-                          Acceder con {getBiometricDisplayName()}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.loginSeparator}>
-                    <View style={styles.separatorLine} />
-                    <Text style={styles.separatorText}>o</Text>
-                    <View style={styles.separatorLine} />
-                  </View>
-                </>
-              )}
-
-              <View style={styles.inputGroup}>
-                <View style={styles.inputContainer}>
-                  <View style={styles.inputIconContainer}>
-                    <User color="white" size={24} />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Usuario"
-                    placeholderTextColor="rgba(255,255,255,0.7)"
-                    value={usuario}
-                    onChangeText={setUsuario}
-                    autoCapitalize="none"
-                  />
+            {/* Biometric/PIN buttons inside background section */}
+            {showPinOption && !showBiometricOption && (
+              <TouchableOpacity
+                style={styles.biometricButton}
+                onPress={handlePinLogin}
+              >
+                <View style={styles.biometricButtonContent}>
+                  <KeyRound color="#fff" size={24} />
+                  <Text style={styles.biometricButtonText}>
+                    Acceder con PIN
+                  </Text>
                 </View>
+              </TouchableOpacity>
+            )}
 
-                <View style={styles.inputContainer}>
-                  <View style={styles.inputIconContainer}>
-                    <Lock color="white" size={24} />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Contraseña"
-                    placeholderTextColor="rgba(255,255,255,0.7)"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                  />
-                  <TouchableOpacity
-                    style={styles.eyeIconContainer}
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff color="rgba(255,255,255,0.7)" size={20} />
-                    ) : (
-                      <Eye color="rgba(255,255,255,0.7)" size={20} />
-                    )}
-                  </TouchableOpacity>
+            {showBiometricOption && (
+              <TouchableOpacity
+                style={styles.biometricButton}
+                onPress={handleBiometricLogin}
+              >
+                <View style={styles.biometricButtonContent}>
+                  {biometric.type === 'FaceID' && (
+                    <Scan color="#fff" size={24} />
+                  )}
+                  {(biometric.type === 'TouchID' ||
+                    biometric.type === 'Biometrics') && (
+                    <Fingerprint color="#fff" size={24} />
+                  )}
+                  <Text style={styles.biometricButtonText}>
+                    Acceder con {getBiometricDisplayName()}
+                  </Text>
                 </View>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Form Section */}
+          
+          <Animated.View style={[styles.formContainer, formStyle]}>
+            {/* Or Divider - only show if biometric/pin is available */}
+            {(showPinOption || showBiometricOption) && (
+              <View style={styles.orDivider}>
+                <Text style={styles.orText}>o</Text>
               </View>
+            )}
 
+            {/* Input Fields */}
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Usuario</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder=""
+                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  value={usuario}
+                  onChangeText={setUsuario}
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Contraseña</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder=""
+                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeIconContainer}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff color="rgba(255,255,255,0.5)" size={20} />
+                  ) : (
+                    <Eye color="rgba(255,255,255,0.5)" size={20} />
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Sign In Button */}
+            <TouchableOpacity
+              style={styles.signInButton}
+              onPress={handleLogin}
+              disabled={isLoggingIn}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={isLoggingIn ? ['#22c55e', '#16a34a'] : ['#ff9100', '#FF6B00']}  
+                style={styles.signInGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                {isLoggingIn ? (
+                  <>
+                    <Animated.View
+                      style={[styles.loadingSpinnerContainer, loadingIconStyle]}
+                    >
+                      <View style={styles.loadingSpinnerCircle} />
+                    </Animated.View>
+                    <Text style={styles.signInText}>Cargando...</Text>
+                  </>
+                ) : (
+                  <Text style={styles.signInText}>Iniciar Sesión</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Bottom Links */}
+            <View style={styles.bottomLinks}>
               <TouchableOpacity
                 style={styles.rememberContainer}
                 onPress={() => setRememberMe(!rememberMe)}
               >
-                <View
-                  style={[
-                    styles.checkbox,
-                    rememberMe && styles.checkboxChecked,
-                  ]}
-                >
+                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
                   {rememberMe && <Text style={styles.checkmark}>✓</Text>}
                 </View>
-                <Text style={styles.rememberText}>Recordar mi usuario</Text>
+                <Text style={styles.linkText}>Recordar usuario</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.loginButton}
-                onPress={handleLogin}
-                disabled={isLoggingIn}
-                activeOpacity={0.8}
-              >
-                <Animated.View
-                  style={[
-                    styles.loginButtonGradient,
-                    buttonAnimatedStyle,
-                    { borderRadius: 16 },
-                  ]}
-                >
-                  {isLoggingIn ? (
-                    <>
-                      <Animated.View
-                        style={[
-                          styles.loadingSpinnerContainer,
-                          loadingIconStyle,
-                        ]}
-                      >
-                        <View style={styles.loadingSpinnerCircle} />
-                      </Animated.View>
-                      <Text style={styles.loginButtonText}>CARGANDO...</Text>
-                    </>
-                  ) : (
-                    <>
-                      <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
-                      <View style={styles.loginArrow}>
-                        <LogIn color="white" size={16} />
-                      </View>
-                    </>
-                  )}
-                </Animated.View>
+              
+              <TouchableOpacity>
+                <Text style={styles.linkTextRight}>Sign up</Text>
               </TouchableOpacity>
+            </View>
 
-              <View style={styles.statusContainer}>
-                <View style={styles.statusDot} />
-                <Text style={styles.statusText}>V. 2.3.6</Text>
+            {/* Social Login Section */}
+            <View style={styles.socialSection}>
+              <Text style={styles.socialText}>or sign up with</Text>
+              <View style={styles.socialButtons}>
+                <TouchableOpacity style={styles.socialButton}>
+                  <Image
+                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/facebook.svg' }}
+                    style={styles.socialIcon}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <Image
+                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/google.svg' }}
+                    style={styles.socialIcon}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <Image
+                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/apple.svg' }}
+                    style={styles.socialIcon}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <Image
+                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/vk.svg' }}
+                    style={styles.socialIcon}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  <Image
+                    source={{ uri: 'https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/yandex.svg' }}
+                    style={styles.socialIcon}
+                  />
+                </TouchableOpacity>
               </View>
             </View>
+
+            {/* Version */}
+            <View style={styles.versionContainer}>
+              <View style={styles.statusDot} />
+              <Text style={styles.versionText}>V. 2.3.6</Text>
+            </View>
           </Animated.View>
+
+
         </View>
       </LinearGradient>
 
