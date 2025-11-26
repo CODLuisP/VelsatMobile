@@ -75,10 +75,10 @@ const Login = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      SystemNavigationBar.setNavigationColor('#003E8F');
+      SystemNavigationBar.setNavigationColor('#edf2fb');
 
       return () => {
-        SystemNavigationBar.setNavigationColor('#003E8F');
+        SystemNavigationBar.setNavigationColor('#edf2fb');
       };
     }, []),
   );
