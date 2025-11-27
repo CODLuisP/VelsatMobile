@@ -805,7 +805,6 @@ colors={['#0f3963ff', '#052b5dff']}
     icon={Headphones}
     activeOpacity={0.95}
     fullWidth={true} // ← Agrega esta prop
-        imageWidth={400} // ← Agrega esta prop
 
   />
 </View>
