@@ -104,7 +104,7 @@ const Home: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', false);
     }, []),
   );
 
@@ -746,7 +746,7 @@ const Home: React.FC = () => {
         style={homeStyles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
+        <Text style={homeStyles.sectionTitle}>Servicios disponibles</Text>
 
         <View style={homeStyles.optionsGrid}>
 

@@ -144,9 +144,9 @@ export const homeStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#00296b',
-    marginVertical: 10,
-    marginBottom:20
+    color: '#0d1b2a',
+    marginBottom:15,
+    marginTop:15,
   },
   optionsGrid: {
     flexDirection: 'row',
