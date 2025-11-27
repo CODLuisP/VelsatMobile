@@ -1,6 +1,6 @@
 // src/components/OptionCard.tsx
 import React from 'react';
-import { TouchableOpacity, View, Image } from 'react-native';
+import { TouchableOpacity, View, Image, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { LucideIcon } from 'lucide-react-native';
 import { Text } from './ScaledComponents';
@@ -16,7 +16,6 @@ interface OptionCardProps {
   icon: LucideIcon;
   activeOpacity?: number;
   fullWidth?: boolean;
-  imageWidth?: number; // ← Nueva prop
 }
 
 const OptionCard: React.FC<OptionCardProps> = ({
@@ -29,7 +28,6 @@ const OptionCard: React.FC<OptionCardProps> = ({
   icon: Icon,
   activeOpacity = 0.7,
   fullWidth = false,
-  imageWidth = 200, // ← Valor por defecto
 }) => {
   return (
     <TouchableOpacity
@@ -44,15 +42,7 @@ const OptionCard: React.FC<OptionCardProps> = ({
       {/* Imagen de textura de fondo */}
       <Image
         source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764275173/2287041_ymbx7c.jpg' }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: imageWidth, // ← Usa la prop
-          height: 300,
-        }}
+        style={StyleSheet.absoluteFillObject}
         resizeMode="cover"
       />
 
