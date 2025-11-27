@@ -762,7 +762,7 @@ icon={User}
 
    <OptionCard
     onPress={handleNavigateToDevice}
-colors={['#055aafff', '#052b5dff']}    
+colors={['#0d67c2ff', '#052b5dff']}    
 badge="UNIDADES"
     category="Rastreo"
     title="Unidades"
@@ -773,7 +773,7 @@ badge="UNIDADES"
 
       <OptionCard
     onPress={handleNavigateToReports}
-colors={['#055aafff', '#052b5dff']}    
+colors={['#0d67c2ff', '#052b5dff']}    
     badge="REPORTES"
     category="Análisis"
     title="Reportes"
@@ -805,6 +805,8 @@ colors={['#0f3963ff', '#052b5dff']}
     icon={Headphones}
     activeOpacity={0.95}
     fullWidth={true} // ← Agrega esta prop
+        imageWidth={400} // ← Agrega esta prop
+
   />
 </View>
 

@@ -1,6 +1,6 @@
 // src/components/OptionCard.tsx
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { LucideIcon } from 'lucide-react-native';
 import { Text } from './ScaledComponents';
@@ -15,7 +15,8 @@ interface OptionCardProps {
   description: string;
   icon: LucideIcon;
   activeOpacity?: number;
-  fullWidth?: boolean; // ← Nueva prop
+  fullWidth?: boolean;
+  imageWidth?: number; // ← Nueva prop
 }
 
 const OptionCard: React.FC<OptionCardProps> = ({
@@ -27,18 +28,35 @@ const OptionCard: React.FC<OptionCardProps> = ({
   description,
   icon: Icon,
   activeOpacity = 0.7,
-  fullWidth = false, // ← Por defecto false
+  fullWidth = false,
+  imageWidth = 200, // ← Valor por defecto
 }) => {
   return (
     <TouchableOpacity
       style={[
         homeStyles.optionCard,
-        fullWidth && { width: '100%' } // ← Aplica ancho completo si fullWidth es true
+        fullWidth && { width: '100%' },
+        { overflow: 'hidden' }
       ]}
       onPress={onPress}
       activeOpacity={activeOpacity}
     >
-      {/* Fondo degradado */}
+      {/* Imagen de textura de fondo */}
+      <Image
+        source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764275173/2287041_ymbx7c.jpg' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: imageWidth, // ← Usa la prop
+          height: 300,
+        }}
+        resizeMode="cover"
+      />
+
+      {/* Gradiente sobre la textura */}
       <LinearGradient
         colors={colors}
         style={{
@@ -47,13 +65,12 @@ const OptionCard: React.FC<OptionCardProps> = ({
           right: 0,
           top: 0,
           bottom: 0,
+          opacity: 0.85,
         }}
       />
 
-    
-
       {/* Contenido principal */}
-      <View style={{ marginTop: 0 }}>
+      <View style={{ marginTop: 0, zIndex: 1 }}>
         <Text
           style={{
             color: 'rgba(255, 255, 255, 0.8)',
@@ -96,6 +113,7 @@ const OptionCard: React.FC<OptionCardProps> = ({
           backgroundColor: '#e85b04ff',
           padding: 8,
           borderRadius: 20,
+          zIndex: 1,
         }}
       >
         <Icon size={20} color="#fff" />
