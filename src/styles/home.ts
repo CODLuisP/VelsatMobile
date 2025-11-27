@@ -3,9 +3,10 @@ import { Platform, StatusBar, StyleSheet } from 'react-native';
 export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffffff',
   },
   header: {
-    height: Platform.OS==='ios'? 200:190,
+    height: Platform.OS==='ios'? 230:190,
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
@@ -17,7 +18,7 @@ export const homeStyles = StyleSheet.create({
     right: 0,
     bottom: 0,
     width: '100%',
-    height: 200,
+    height: 230,
     resizeMode: 'cover',
   },
   backgroundOverlay: {
@@ -133,13 +134,17 @@ export const homeStyles = StyleSheet.create({
     fontWeight: '500',
   },
   content: {
+    backgroundColor: '#fff',
     flex: 1,
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
     paddingHorizontal: 20,
+    top: -20,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: '#00296b',
     marginVertical: 10,
     marginBottom:20
   },
@@ -148,17 +153,12 @@ export const homeStyles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  optionCard: {
-    backgroundColor: 'white',
+optionCard: {
+    backgroundColor: '#FFF4ED', // Fondo naranja suave
     width: '48%',
     padding: 20,
     borderRadius: 12,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -210,13 +210,13 @@ export const homeStyles = StyleSheet.create({
   optionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#e36414',
+    color: '#777a7dff',
     marginBottom: 8,
     textAlign: 'center',
   },
   optionSubtitle: {
     fontSize: 11,
-    color: '#666',
+    color: '#212529',
     textAlign: 'center',
     lineHeight: 16,
   },
@@ -263,7 +263,7 @@ export const homeStyles = StyleSheet.create({
   },
   customerCareSubtitle: {
     fontSize: 11,
-    color: '#666',
+    color: '#ffffffff',
     textAlign: 'center',
     lineHeight: 16,
   },

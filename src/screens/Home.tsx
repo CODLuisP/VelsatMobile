@@ -41,6 +41,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import ModalConfirm from '../components/ModalConfirm';
 import ModalAlert from '../components/ModalAlert';
 import { Text } from '../components/ScaledComponents';
+import OptionCard from '../components/OptionCard';
 
 // Tipos TypeScript
 interface WeatherState {
@@ -96,7 +97,7 @@ const Home: React.FC = () => {
     title: '',
     message: '',
     color: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
     confirmText: '',
     cancelText: '',
   });
@@ -587,11 +588,11 @@ const Home: React.FC = () => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) {}
+                      } catch (error) { }
                     }
-                  } catch (error) {}
+                  } catch (error) { }
                 },
-                error => {},
+                error => { },
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -650,309 +651,187 @@ const Home: React.FC = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#031838ff', '#00296b', '#00296b']}
-      style={[homeStyles.container]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <SafeAreaView style={homeStyles.container}>
-        <StatusBar translucent backgroundColor="transparent" />
-        <View
-          style={[
-            homeStyles.header,
-            { marginTop: -insets.top },
-            { paddingTop: insets.top - 10 },
-          ]}
-        >
-          <Image
-            source={require('../../assets/fondo3.png')}
-            style={homeStyles.backgroundImage}
-          />
-          <View style={homeStyles.backgroundOverlay} />
-          <View style={homeStyles.headerContent}>
-            <View style={homeStyles.topRow}>
-              <View>
-                <Text style={homeStyles.greeting}>{obtenerSaludo()}</Text>
-                <View style={homeStyles.weatherContainer}>
-                  {weather.loading ? (
-                    <>
-                      <Sun size={20} color="#FFD700" />
-                      <Text style={homeStyles.temperature}>--°</Text>
-                    </>
-                  ) : location.error && location.error.includes('GPS') ? (
-                    <>
-                      <Sun size={20} color="#FFD700" />
-                      <Text style={[homeStyles.temperature, { fontSize: 10 }]}>
-                        Active GPS
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      {obtenerIconoClima(
-                        weather.weatherCode,
-                        weather.isDay,
-                        weather.temperature,
-                      )}
-                      <Text style={homeStyles.temperature}>
-                        {weather.temperature || '--'}°
-                      </Text>
-                    </>
-                  )}
-                </View>
-              </View>
-              <View style={homeStyles.profileContainer}>
-                <TouchableOpacity
-                  style={homeStyles.profileImage}
-                  onPress={toggleDropdown}
-                >
-                  <Image
-                    source={require('../../assets/usuario.jpeg')}
-                    style={homeStyles.logoImage}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
 
-                {showDropdown && (
-                  <View style={homeStyles.dropdown}>
-                    <TouchableOpacity
-                      style={homeStyles.dropdownItem}
-                      onPress={handleDropdownLogout}
-                    >
-                      <Text style={homeStyles.dropdownText}>Cerrar Sesión</Text>
-                    </TouchableOpacity>
-                  </View>
+    <SafeAreaView style={homeStyles.container}>
+      <View
+        style={[
+          homeStyles.header,
+          { marginTop: -insets.top },
+          { paddingTop: insets.top - 10 },
+        ]}
+      >
+        <Image
+          source={require('../../assets/fondo3.png')}
+          style={homeStyles.backgroundImage}
+        />
+        <View style={homeStyles.backgroundOverlay} />
+        <View style={homeStyles.headerContent}>
+          <View style={homeStyles.topRow}>
+            <View>
+              <Text style={homeStyles.greeting}>{obtenerSaludo()}</Text>
+              <View style={homeStyles.weatherContainer}>
+                {weather.loading ? (
+                  <>
+                    <Sun size={20} color="#FFD700" />
+                    <Text style={homeStyles.temperature}>--°</Text>
+                  </>
+                ) : location.error && location.error.includes('GPS') ? (
+                  <>
+                    <Sun size={20} color="#FFD700" />
+                    <Text style={[homeStyles.temperature, { fontSize: 10 }]}>
+                      Active GPS
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    {obtenerIconoClima(
+                      weather.weatherCode,
+                      weather.isDay,
+                      weather.temperature,
+                    )}
+                    <Text style={homeStyles.temperature}>
+                      {weather.temperature || '--'}°
+                    </Text>
+                  </>
                 )}
               </View>
             </View>
+            <View style={homeStyles.profileContainer}>
+              <TouchableOpacity
+                style={homeStyles.profileImage}
+                onPress={toggleDropdown}
+              >
+                <Image
+                  source={require('../../assets/usuario.jpeg')}
+                  style={homeStyles.logoImage}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
 
-            <Text style={homeStyles.companyName}>
-              {user?.description || (user?.username && `${user.username}`)}
-            </Text>
+              {showDropdown && (
+                <View style={homeStyles.dropdown}>
+                  <TouchableOpacity
+                    style={homeStyles.dropdownItem}
+                    onPress={handleDropdownLogout}
+                  >
+                    <Text style={homeStyles.dropdownText}>Cerrar Sesión</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
 
-            <View style={homeStyles.locationContainer}>
-              <MapPin size={25} color="#FFF" />
-              <View>
-                <Text style={homeStyles.locationLabel}>
-                  Tu ubicación actual es:
-                </Text>
+          <Text style={homeStyles.companyName}>
+            {user?.description || (user?.username && `${user.username}`)}
+          </Text>
 
-                <Text style={homeStyles.locationLabel}>
-                  {location.error && location.error.includes('GPS')
-                    ? 'Active su GPS para obtener su dirección exacta'
-                    : direccionCoordenadas}
-                </Text>
-              </View>
+          <View style={homeStyles.locationContainer}>
+            <MapPin size={25} color="#FFF" />
+            <View>
+              <Text style={homeStyles.locationLabel}>
+                Tu ubicación actual es:
+              </Text>
+
+              <Text style={homeStyles.locationLabel}>
+                {location.error && location.error.includes('GPS')
+                  ? 'Active su GPS para obtener su dirección exacta'
+                  : direccionCoordenadas}
+              </Text>
             </View>
           </View>
         </View>
+      </View>
 
-        <ScrollView
-          style={[homeStyles.content, { paddingBottom: bottomSpace }]}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
+      <ScrollView
+        style={homeStyles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
 
-          <View style={homeStyles.optionsGrid}>
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={handleNavigateToProfile}
-              activeOpacity={0.7}
-            >
-              {/* Fondo degradado */}
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
+        <View style={homeStyles.optionsGrid}>
 
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <User size={24} color="#e36414" />
-              </View>
+ <OptionCard
+    onPress={handleNavigateToProfile}
+colors={['#0f3963ff', '#052b5dff']}    
+    badge="PERFIL"
+    category="Información"
+    title="Mi Perfil"
+description="Revisa y actualiza tus datos personales fácilmente."
+icon={User}
+  />
 
-              <Text style={homeStyles.optionTitle}>Perfil</Text>
+   <OptionCard
+    onPress={handleNavigateToDevice}
+colors={['#055aafff', '#052b5dff']}    
+badge="UNIDADES"
+    category="Rastreo"
+    title="Unidades"
+    description="Rastrea tus unidades, conoce su última ubicación."
+    icon={Car}
+    activeOpacity={0.95}
+  />
 
-              <Text style={homeStyles.optionSubtitle}>
-                Revisa tu información personal, actualiza tus datos y
-                credenciales y personaliza tus marcadores.
-              </Text>
-            </TouchableOpacity>
+      <OptionCard
+    onPress={handleNavigateToReports}
+colors={['#055aafff', '#052b5dff']}    
+    badge="REPORTES"
+    category="Análisis"
+    title="Reportes"
+    description="Genera reportes de tus unidades, general, velocidad."
+    icon={BarChart3}
+    activeOpacity={0.95}
+  />
 
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={handleNavigateToDevice}
-              activeOpacity={0.95}
-            >
-              {/* Fondo degradado */}
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
+  <OptionCard
+    onPress={handleNavigateToSecurity}
+colors={['#0f3963ff', '#052b5dff']}    
+    badge="SEGURIDAD"
+    category="Protección"
+    title="Seguridad"
+    description="Activa la autenticación con datos biométricos."
+    icon={Shield}
+    activeOpacity={0.95}
+  />
+        </View>
 
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <Car size={24} color="#e36414" />
-              </View>
+     <View style={homeStyles.customerCareContainer}>
+  <OptionCard
+    onPress={handleNavigateToHelp}
+colors={['#0f3963ff', '#052b5dff']}    
+    badge="AYUDA"
+    category="Soporte"
+    title="Ayuda"
+    description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
+    icon={Headphones}
+    activeOpacity={0.95}
+    fullWidth={true} // ← Agrega esta prop
+  />
+</View>
 
-              <Text style={homeStyles.optionTitle}>Unidades</Text>
+        <ModalAlert
+          isVisible={modalAlertVisible}
+          onClose={() => setModalAlertVisible(false)}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          color={alertConfig.color}
+        />
 
-              <Text style={homeStyles.optionSubtitle}>
-                Rastrea tus unidades, conoce su última ubicación, velocidad,
-                dirección y estado.
-              </Text>
-            </TouchableOpacity>
+        <ModalConfirm
+          isVisible={modalConfirmVisible}
+          onClose={() => setModalConfirmVisible(false)}
+          onConfirm={() => {
+            confirmConfig.onConfirm();
+            setModalConfirmVisible(false);
+          }}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          color={confirmConfig.color}
+          confirmText={confirmConfig.confirmText}
+          cancelText={confirmConfig.cancelText}
+        />
+      </ScrollView>
+    </SafeAreaView>
 
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={handleNavigateToReports}
-              activeOpacity={0.95}
-            >
-              {/* Fondo degradado */}
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
-
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <BarChart3 size={24} color="#e36414" />
-              </View>
-
-              <Text style={homeStyles.optionTitle}>Reportes</Text>
-
-              <Text style={homeStyles.optionSubtitle}>
-                Genera reportes de tus unidades, general, velocidad,
-                kilometraje, paradas y detalle de recorrido.
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={handleNavigateToSecurity}
-              activeOpacity={0.95}
-            >
-              {/* Fondo degradado */}
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
-
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <Shield size={24} color="#e36414" />
-              </View>
-
-              <Text style={homeStyles.optionTitle}>Seguridad</Text>
-
-              <Text style={homeStyles.optionSubtitle}>
-                Activa la autenticación con datos biométricos y habilita o
-                deshabilita las notificaciones.
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={homeStyles.customerCareContainer}>
-            <TouchableOpacity
-              style={[homeStyles.customerCareCard]}
-              onPress={handleNavigateToHelp}
-              activeOpacity={0.95}
-            >
-              {/* Fondo degradado */}
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  borderRadius: 15,
-                }}
-              />
-
-              <View
-                style={[
-                  homeStyles.customerCareIcon,
-                  homeStyles.optionContentAbove,
-                ]}
-              >
-                <Headphones size={24} color="#e36414" />
-              </View>
-
-              <Text
-                style={[
-                  homeStyles.customerCareTitle,
-                  homeStyles.optionContentAbove,
-                ]}
-              >
-                Ayuda
-              </Text>
-
-              <Text
-                style={[
-                  homeStyles.customerCareSubtitle,
-                  homeStyles.optionContentAbove,
-                ]}
-              >
-                Conoce nuestros números telefónicos, llámanos a la central de
-                monitoreo, escríbenos al Whatsapp, revisa las preguntas
-                frecuentes y visualiza tutoriales útiles.
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <ModalAlert
-            isVisible={modalAlertVisible}
-            onClose={() => setModalAlertVisible(false)}
-            title={alertConfig.title}
-            message={alertConfig.message}
-            color={alertConfig.color}
-          />
-
-          <ModalConfirm
-            isVisible={modalConfirmVisible}
-            onClose={() => setModalConfirmVisible(false)}
-            onConfirm={() => {
-              confirmConfig.onConfirm();
-              setModalConfirmVisible(false);
-            }}
-            title={confirmConfig.title}
-            message={confirmConfig.message}
-            color={confirmConfig.color}
-            confirmText={confirmConfig.confirmText}
-            cancelText={confirmConfig.cancelText}
-          />
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
   );
 };
 
