@@ -218,7 +218,7 @@ const App = () => {
           <Stack.Navigator
             screenOptions={{
               headerShown: false,
-              contentStyle: { backgroundColor: '#00296b' },
+              contentStyle: { backgroundColor: '#06285fff' },
               animation: 'slide_from_right',
             }}
           >
