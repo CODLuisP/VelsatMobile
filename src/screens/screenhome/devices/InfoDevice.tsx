@@ -177,7 +177,7 @@ const InfoDevice = () => {
 🚗 *UNIDAD:* ${deviceName}
 📊 *ESTADO:* ${estado}
 💨 *VELOCIDAD:* ${vehiculoData.lastValidSpeed.toFixed(0)} km/h
-🗓️ *FECHA Y HORA:* ${fechaHora}
+🗓️ *FECHA Y HORA:* ${fechaHoraActual}
 🌍 *UBICACIÓN ACTUAL:* ${vehiculoData.direccion}
 🧭 *DIRECCIÓN:* ${direccion}
 ⏲️ *KILOMETRAJE:* ${kilometraje} Km

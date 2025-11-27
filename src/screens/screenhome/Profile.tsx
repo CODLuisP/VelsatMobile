@@ -312,7 +312,7 @@ const Profile = () => {
         ListHeaderComponent={() => (
           <>
             <View style={styles.menuSection}>
-              {tipo != 'c' && (
+              {tipo != 'c' && tipo != 'p' &&(
                 <>
                   <Text style={styles.sectionTitle}>GENERAL</Text>
 
