@@ -533,6 +533,8 @@ const Login = () => {
             )}
 
             {showBiometricOption && (
+                           <View style={{ marginBottom: 20 }}>
+
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handleBiometricLogin}
@@ -550,6 +552,7 @@ const Login = () => {
                   </Text>
                 </View>
               </TouchableOpacity>
+              </View>
             )}
           </View>
 
@@ -658,8 +661,7 @@ const Login = () => {
 
       {/* Version */}
       <View style={styles.versionContainer}>
-        <View style={styles.statusDot} />
-        <Text style={styles.versionText}>V. 2.3.6</Text>
+        <Text style={styles.versionText}>V. 2.3.8</Text>
       </View>
     </View>
 

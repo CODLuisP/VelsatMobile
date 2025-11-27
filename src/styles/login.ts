@@ -303,7 +303,7 @@ signInGradient: {
     height: 18,
     borderRadius: 3,
     borderWidth: 2,
-    borderColor: '#ff6b35',
+    borderColor: '#fb5607',
     marginRight: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -311,8 +311,8 @@ signInGradient: {
   },
 
   checkboxChecked: {
-    backgroundColor: '#f77f00',
-    borderColor: '#f77f00',
+    backgroundColor: '#fb5607',
+    borderColor: '#fb5607',
   },
 
   checkmark: {
