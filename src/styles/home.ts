@@ -3,10 +3,10 @@ import { Platform, StatusBar, StyleSheet } from 'react-native';
 export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#002855',
+    backgroundColor: Platform.OS === 'ios' ? '#FFFFFF' : '#002855',
   },
   header: {
-    height: Platform.OS==='ios'? 230:210,
+    height: Platform.OS==='ios'? 240:210,
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
@@ -129,8 +129,8 @@ export const homeStyles = StyleSheet.create({
   content: {
     backgroundColor: '#fff',
     flex: 1,
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
+    borderTopRightRadius: 25,
+    borderTopLeftRadius: 25,
     paddingHorizontal: 20,
     top: -20,
   },
