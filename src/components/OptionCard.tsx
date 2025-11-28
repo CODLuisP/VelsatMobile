@@ -55,7 +55,7 @@ const OptionCard: React.FC<OptionCardProps> = ({
           right: 0,
           top: 0,
           bottom: 0,
-          opacity: 0.85,
+          opacity: 0.75,
         }}
       />
 
@@ -98,8 +98,8 @@ const OptionCard: React.FC<OptionCardProps> = ({
       <View
         style={{
           position: 'absolute',
-          top: 8,
-          right: 12,
+          top: 10,
+          right: 15,
           backgroundColor: '#e85b04ff',
           padding: 8,
           borderRadius: 20,
