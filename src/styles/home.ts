@@ -3,10 +3,10 @@ import { Platform, StatusBar, StyleSheet } from 'react-native';
 export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: '#002855',
   },
   header: {
-    height: Platform.OS==='ios'? 230:190,
+    height: Platform.OS==='ios'? 230:210,
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
@@ -29,14 +29,7 @@ export const homeStyles = StyleSheet.create({
     bottom: 0,
     backgroundColor: '#051f48ed'
   },
-  satelliteContainer: {
-    position: 'absolute',
-    top: -50,
-    right: -50,
-    width: 200,
-    height: 200,
-    zIndex: 1,
-  },
+
 
   headerContent: {
     zIndex: 2,
@@ -144,9 +137,9 @@ export const homeStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#00296b',
-    marginVertical: 10,
-    marginBottom:20
+    color: '#0d1b2a',
+    marginBottom:15,
+    marginTop:15,
   },
   optionsGrid: {
     flexDirection: 'row',
