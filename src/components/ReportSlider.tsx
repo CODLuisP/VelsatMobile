@@ -70,7 +70,7 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
             colors={item.gradient}
             style={styles.cardGradient}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: 1, y: 0 }}
           >
             <View style={styles.cardContent}>
               {/* Contenido de Texto a la Izquierda */}
@@ -78,7 +78,7 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
                 <View style={styles.iconTitleRow}>
                   <IconComponent
                     size={28}
-                    color="#161616ff"
+                    color="#ffffffff"
                     strokeWidth={2.5}
                   />
                   <Text style={styles.cardTitle}>{item.name}</Text>
@@ -222,13 +222,13 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#1a1818ff',
+    color: '#ffffffff',
     letterSpacing: 0.5,
     flex: 1,
   },
   cardDescription: {
     fontSize: 12,
-    color: '#3b3939ff',
+    color: '#ffffffff',
     fontWeight: '500',
     lineHeight: 14,
     marginTop: 0,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
   },
   selectedBadgeText: {
-    color: '#000000ff',
+    color: '#ffffffff',
     fontSize: 12,
     fontWeight: '700',
   },

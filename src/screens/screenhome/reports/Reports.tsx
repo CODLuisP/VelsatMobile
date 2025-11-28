@@ -109,7 +109,7 @@ const Reports: React.FC = () => {
       name: 'Reporte General',
       icon: BarChart3,
       description: 'Análisis completo de la actividad',
-      gradient: ['#c1d3fe', '#7f94c5ff'],
+      gradient: ['#2153d2ff', '#052469ff'],
     },
     {
       id: 1,
