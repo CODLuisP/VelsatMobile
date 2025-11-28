@@ -140,11 +140,11 @@ const Home: React.FC = () => {
     const hora = new Date().getHours();
 
     if (hora >= 5 && hora < 12) {
-      return 'Buenos días';
+      return 'Buenos Días';
     } else if (hora >= 12 && hora < 18) {
-      return 'Buenas tardes';
+      return 'Buenas Tardes';
     } else {
-      return 'Buenas noches';
+      return 'Buenas Noches';
     }
   };
 
@@ -652,7 +652,7 @@ const Home: React.FC = () => {
 
   return (
 
-    <SafeAreaView       style={[homeStyles.container, { paddingBottom: bottomSpace - 70 }]}
+    <SafeAreaView style={[homeStyles.container, { paddingBottom: bottomSpace - 70 }]}
     >
       <View
         style={[
@@ -747,7 +747,7 @@ const Home: React.FC = () => {
         style={homeStyles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={homeStyles.sectionTitle}>Servicios disponibles</Text>
+        <Text style={homeStyles.sectionTitle}>Servicios Disponibles</Text>
 
         <View style={homeStyles.optionsGrid}>
 

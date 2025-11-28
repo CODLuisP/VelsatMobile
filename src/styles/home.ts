@@ -135,7 +135,7 @@ export const homeStyles = StyleSheet.create({
     top: -20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#0d1b2a',
     marginBottom:15,
