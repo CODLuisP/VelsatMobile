@@ -104,7 +104,7 @@ const Home: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#ffffff', false);
+      NavigationBarColor('#002855', false);
     }, []),
   );
 
@@ -652,7 +652,8 @@ const Home: React.FC = () => {
 
   return (
 
-    <SafeAreaView style={homeStyles.container}>
+    <SafeAreaView       style={[homeStyles.container, { paddingBottom: bottomSpace - 70 }]}
+    >
       <View
         style={[
           homeStyles.header,
