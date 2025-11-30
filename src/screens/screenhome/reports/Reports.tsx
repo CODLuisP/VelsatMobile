@@ -109,14 +109,14 @@ const Reports: React.FC = () => {
       name: 'Reporte General',
       icon: BarChart3,
       description: 'Análisis completo de la actividad',
-      gradient: ['#2153d2ff', '#052469ff'],
+      gradient: ['#ffffffff', '#ffffffff'],
     },
     {
       id: 1,
       name: 'Reporte Paradas',
       icon: Hand,
       description: 'Detalle de paradas realizadas',
-      gradient: ['#c1d3fe', '#7f94c5ff'],
+      gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761576820/rpardas_jjwfx3.jpg',
 
     },
@@ -125,7 +125,7 @@ const Reports: React.FC = () => {
       name: 'Reporte Velocidad',
       icon: Gauge,
       description: 'Control de excesos de velocidad',
-      gradient: ['#c1d3fe', '#7f94c5ff'],
+      gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544459/rspeed_fxgibm.jpg',
 
     },
@@ -134,7 +134,7 @@ const Reports: React.FC = () => {
       name: 'Reporte Kilometraje',
       icon: Route,
       description: 'Distancias recorridas por unidad(es)',
-      gradient: ['#c1d3fe', '#7f94c5ff'],
+      gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761545353/kilometraje_gpkdde.jpg',
 
     },
@@ -143,7 +143,7 @@ const Reports: React.FC = () => {
       name: 'Reporte Recorrido',
       icon: FileText,
       description: 'Rutas y trayectos completos',
-      gradient: ['#c1d3fe', '#7f94c5ff'],
+      gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544460/rrecorrido_tivil8.jpg',
 
     },

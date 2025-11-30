@@ -78,7 +78,7 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
                 <View style={styles.iconTitleRow}>
                   <IconComponent
                     size={28}
-                    color="#ffffffff"
+                    color="#fb5607"
                     strokeWidth={2.5}
                   />
                   <Text style={styles.cardTitle}>{item.name}</Text>
@@ -88,14 +88,18 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
                 </Text>
               </View>
 
-              {/* Imagen Ovalada a la Derecha */}
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: imageUrl }}
-                  style={styles.cardImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.imageOverlay} />
+              {/* Imagen Ovalada a la Derecha con Borde Brillante */}
+              <View style={styles.imageOuterContainer}>
+                <View style={[styles.imageBorder]}>
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: imageUrl }}
+                      style={styles.cardImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.imageOverlay} />
+                  </View>
+                </View>
               </View>
             </View>
 
@@ -184,10 +188,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 0,
   },
-
+  // Contenedor exterior para el borde
+  imageOuterContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Borde brillante siempre visible, más intenso cuando está seleccionado
+  imageBorder: {
+    padding: 2.5,
+      borderTopLeftRadius: 70,
+    borderBottomLeftRadius: 70,
+    backgroundColor: '#ff6d00',
+    shadowColor: '#FF6B35',
+   
+  },
+ 
   imageContainer: {
     width: 140,
-    height: '100%',
+    height: 140,
     borderTopLeftRadius: 70,
     borderBottomLeftRadius: 70,
     overflow: 'hidden',
@@ -203,7 +221,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#003f8838',
   },
   cardTextContainer: {
     flex: 1,
@@ -221,14 +238,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#ffffffff',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    color: '#ec4205ff',
     flex: 1,
   },
   cardDescription: {
     fontSize: 12,
-    color: '#ffffffff',
+    color: '#001d3d',
     fontWeight: '500',
     lineHeight: 14,
     marginTop: 0,
@@ -242,7 +258,7 @@ const styles = StyleSheet.create({
     borderRadius: 13,
   },
   selectedBadgeText: {
-    color: '#ffffffff',
+    color: '#e85d04',
     fontSize: 12,
     fontWeight: '700',
   },
