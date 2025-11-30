@@ -751,64 +751,70 @@ const Home: React.FC = () => {
 
         <View style={homeStyles.optionsGrid}>
 
- <OptionCard
-    onPress={handleNavigateToProfile}
-colors={['#0f3963ff', '#052b5dff']}    
-    badge="PERFIL"
-    category="Información"
-    title="Mi Perfil"
-description="Revisa y actualiza tus datos personales fácilmente."
-icon={User}
-  />
+          <OptionCard
+            onPress={handleNavigateToProfile}
+            colors={['#0f396363', '#052b5dff']}
+            badge="PERFIL"
+            category="Información"
+            title="Mi Perfil"
+            description="Revisa y actualiza tus datos personales fácilmente."
+            icon={User}
+            activeOpacity={0.90}
 
-   <OptionCard
-    onPress={handleNavigateToDevice}
-colors={['#0d67c2ff', '#052b5dff']}    
-badge="UNIDADES"
-    category="Rastreo"
-    title="Unidades"
-    description="Rastrea tus unidades, conoce su última ubicación."
-    icon={Car}
-    activeOpacity={0.95}
-  />
+          />
 
-      <OptionCard
-    onPress={handleNavigateToReports}
-colors={['#0d67c2ff', '#052b5dff']}    
-    badge="REPORTES"
-    category="Análisis"
-    title="Reportes"
-    description="Genera reportes de tus unidades, general, velocidad."
-    icon={BarChart3}
-    activeOpacity={0.95}
-  />
+          <OptionCard
+            onPress={handleNavigateToDevice}
+            colors={['#0d68c288', '#052b5dff']}
+            badge="UNIDADES"
+            category="Rastreo"
+            title="Unidades"
+            description="Rastrea tus unidades, conoce su última ubicación."
+            icon={Car}
+            activeOpacity={0.90}
+          />
 
-  <OptionCard
-    onPress={handleNavigateToSecurity}
-colors={['#0f3963ff', '#052b5dff']}    
-    badge="SEGURIDAD"
-    category="Protección"
-    title="Seguridad"
-    description="Activa la autenticación con datos biométricos."
-    icon={Shield}
-    activeOpacity={0.95}
-  />
+          <OptionCard
+            onPress={handleNavigateToReports}
+            colors={['#0d67c2ff', '#052b5dff']}
+            badge="REPORTES"
+            category="Análisis"
+            title="Reportes"
+            description="Genera reportes de tus unidades, general, velocidad."
+            icon={BarChart3}
+            activeOpacity={0.90}
+          />
+
+          <OptionCard
+            onPress={handleNavigateToSecurity}
+            colors={['#0f3963ff', '#052b5dff']}
+            badge="SEGURIDAD"
+            category="Protección"
+            title="Seguridad"
+            description="Activa la autenticación con datos biométricos."
+            icon={Shield}
+            activeOpacity={0.90}
+          />
         </View>
 
-     <View style={homeStyles.customerCareContainer}>
-  <OptionCard
-    onPress={handleNavigateToHelp}
-colors={['#0f3963ff', '#052b5dff']}    
-    badge="AYUDA"
-    category="Soporte"
-    title="Ayuda"
-    description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
-    icon={Headphones}
-    activeOpacity={0.95}
-    fullWidth={true} // ← Agrega esta prop
 
-  />
-</View>
+
+
+
+        <View style={homeStyles.customerCareContainer}>
+          <OptionCard
+            onPress={handleNavigateToHelp}
+            colors={['#0f3963ff', '#052b5dff']}
+            badge="AYUDA"
+            category="Soporte"
+            title="Ayuda"
+            description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
+            icon={Headphones}
+            activeOpacity={0.90}
+            fullWidth={true} // ← Agrega esta prop
+
+          />
+        </View>
 
         <ModalAlert
           isVisible={modalAlertVisible}
