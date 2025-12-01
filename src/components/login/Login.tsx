@@ -635,7 +635,7 @@ const Login = () => {
 
             {/* Version */}
             <View style={styles.versionContainer}>
-              <Text style={styles.versionText}>V. 2.3.8</Text>
+              <Text style={styles.versionText}>V. 2.3.9</Text>
             </View>
           </View>
         </Animated.View>
