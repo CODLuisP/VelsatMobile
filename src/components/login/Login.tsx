@@ -36,6 +36,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { styles } from '../../styles/login';
 import { useFocusEffect } from '@react-navigation/native';
+import NavigationBarColor from 'react-native-navigation-bar-color';
 
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import {
@@ -70,11 +71,7 @@ const Login = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      SystemNavigationBar.setNavigationColor('#ffffff');
-
-      return () => {
-        SystemNavigationBar.setNavigationColor('#ffffff');
-      };
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
