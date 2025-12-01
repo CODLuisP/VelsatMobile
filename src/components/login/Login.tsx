@@ -453,7 +453,12 @@ const Login = () => {
     <>
       <View style={styles.mainContent}>
         {/* Background Section with GPS image */}
-        <View style={styles.topBackgroundSection}>
+        <LinearGradient       
+        
+        colors={['#01112aff', '#081f5fff', '#083a8aff']}
+              start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+       style={styles.topBackgroundSection}>
           {/* GPS Background Image */}
           <Image
             source={{
@@ -462,14 +467,7 @@ const Login = () => {
             style={styles.gpsBackgroundImage}
             resizeMode="cover"
           />
-          <LinearGradient
-            colors={[
-              'rgba(0, 31, 84, 0.9)',
-              'rgba(0, 15, 40, 0.6)',
-              'rgba(1, 7, 35, 0.2)',
-            ]}
-            style={styles.backgroundOverlay}
-          />
+        
           {/* Welcome Header */}
           <View style={styles.headerSection}>
             <Text style={styles.welcomeTitles}>Bienvenido</Text>
@@ -493,7 +491,7 @@ const Login = () => {
 
           {/* Biometric/PIN buttons inside background section */}
           {showPinOption && !showBiometricOption && (
-            <View style={{ marginBottom: 20 }}>
+            <View style={{ marginBottom: 20 , paddingHorizontal: 48 }}>
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handlePinLogin}
@@ -509,7 +507,7 @@ const Login = () => {
           )}
 
           {showBiometricOption && (
-            <View style={{ marginBottom: 20 }}>
+            <View style={{ marginBottom: 20 , paddingHorizontal: 48 }}>
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handleBiometricLogin}
@@ -529,7 +527,7 @@ const Login = () => {
               </TouchableOpacity>
             </View>
           )}
-        </View>
+        </LinearGradient>
 
         {/* Form Section */}
 
