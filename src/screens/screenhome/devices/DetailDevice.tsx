@@ -125,7 +125,7 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
