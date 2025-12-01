@@ -752,7 +752,7 @@ const Home: React.FC = () => {
 
           <OptionCard
             onPress={handleNavigateToProfile}
-            colors={['#0f396363', '#052b5dff']}
+            colors={['#05255dff', '#093f86ff']}
             badge="PERFIL"
             category="Información"
             title="Mi Perfil"
@@ -763,7 +763,7 @@ description="Revisa y actualiza tus datos personales fácilmente en cualquier mo
 
           <OptionCard
             onPress={handleNavigateToDevice}
-            colors={['#0d68c288', '#052b5dff']}
+            colors={['#05255dff', '#093f86ff']}
             badge="UNIDADES"
             category="Rastreo"
             title="Unidades"
@@ -774,7 +774,7 @@ icon={Car}
 
           <OptionCard
             onPress={handleNavigateToReports}
-            colors={['#0d67c2ff', '#052b5dff']}
+            colors={['#05255dff', '#093f86ff']}
             badge="REPORTES"
             category="Análisis"
             title="Reportes"
@@ -785,7 +785,7 @@ icon={Car}
 
           <OptionCard
             onPress={handleNavigateToSecurity}
-            colors={['#0f3963ff', '#052b5dff']}
+            colors={['#05255dff', '#093f86ff']}
             badge="SEGURIDAD"
             category="Protección"
             title="Seguridad"
@@ -802,7 +802,7 @@ icon={Car}
         <View style={homeStyles.customerCareContainer}>
           <OptionCard
             onPress={handleNavigateToHelp}
-            colors={['#0f3963ff', '#052b5dff']}
+            colors={['#05255dff', '#093f86ff']}
             badge="AYUDA"
             category="Soporte"
             title="Ayuda"
