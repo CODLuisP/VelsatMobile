@@ -455,7 +455,7 @@ const Login = () => {
         {/* Background Section with GPS image */}
         <LinearGradient       
         
-        colors={['#01112aff', '#081f5fff', '#083a8aff']}
+        colors={['#010b1aff', '#041239ff', '#042c6dff']}
               start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
        style={styles.topBackgroundSection}>
@@ -495,6 +495,7 @@ const Login = () => {
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handlePinLogin}
+                activeOpacity={0.7}
               >
                 <View style={styles.biometricButtonContent}>
                   <KeyRound color="#fff" size={24} />
@@ -511,6 +512,8 @@ const Login = () => {
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handleBiometricLogin}
+                                activeOpacity={0.7}
+
               >
                 <View style={styles.biometricButtonContent}>
                   {biometric.type === 'FaceID' && (
