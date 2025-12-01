@@ -7,7 +7,8 @@ export const styles = StyleSheet.create({
 
   // Header styles
   header: {
-    paddingBottom: 50,
+    marginTop: -60,
+    height: Platform.OS === 'ios' ? 270 : 250,
  
   },
   headerTop: {
@@ -110,10 +111,10 @@ export const styles = StyleSheet.create({
   // Device list styles
   devicesList: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'red',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    marginTop: -30,
+    marginTop: -20,
   },
   devicesListContent: {
     paddingVertical: 10,
