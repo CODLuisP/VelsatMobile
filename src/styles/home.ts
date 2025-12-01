@@ -3,7 +3,7 @@ import { Platform, StatusBar, StyleSheet } from 'react-native';
 export const homeStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Platform.OS === 'ios' ? '#FFFFFF' : '#002855',
+    backgroundColor: Platform.OS === 'ios' ? '#FFFFFF' : '#FFFFFF',
   },
   header: {
     height: Platform.OS==='ios'? 240:210,

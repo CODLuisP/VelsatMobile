@@ -73,10 +73,9 @@ const Devices = () => {
   });
   const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
 
-const handleDetailDevice = (device: Device) => {
-  navigation.navigate('DetailDevice', { device: device.name });
-};
-
+  const handleDetailDevice = (device: Device) => {
+    navigation.navigate('DetailDevice', { device: device.name });
+  };
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -87,7 +86,7 @@ const handleDetailDevice = (device: Device) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -104,20 +103,25 @@ const handleDetailDevice = (device: Device) => {
       );
 
       const transformedDevices: Device[] = response.data
-      .map(apiDevice => ({
-        id: apiDevice.deviceId,
-        name: apiDevice.deviceId,
-        status: apiDevice.lastValidSpeed <= 1 ? 'Detenido' as const : 'Movimiento' as const,
-        speed: Math.round(apiDevice.lastValidSpeed),
-        location: apiDevice.direccion,
-        isOnline: true,
-        latitude: apiDevice.lastValidLatitude,
-        longitude: apiDevice.lastValidLongitude,
-      }))
-      // ✅ Ordenar solo por el campo "name" (alfabético y numérico)
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+        .map(apiDevice => ({
+          id: apiDevice.deviceId,
+          name: apiDevice.deviceId,
+          status:
+            apiDevice.lastValidSpeed <= 1
+              ? ('Detenido' as const)
+              : ('Movimiento' as const),
+          speed: Math.round(apiDevice.lastValidSpeed),
+          location: apiDevice.direccion,
+          isOnline: true,
+          latitude: apiDevice.lastValidLatitude,
+          longitude: apiDevice.lastValidLongitude,
+        }))
+        // ✅ Ordenar solo por el campo "name" (alfabético y numérico)
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { numeric: true }),
+        );
 
-    setDevices(transformedDevices);
+      setDevices(transformedDevices);
     } catch (err) {
       setError('Error al cargar los dispositivos');
     } finally {
@@ -214,7 +218,6 @@ const handleDetailDevice = (device: Device) => {
     return count;
   };
 
-
   const renderDeviceItem = ({
     item,
     index,
@@ -245,8 +248,8 @@ const handleDetailDevice = (device: Device) => {
                     selectedVehiclePin === 's'
                       ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png'
                       : selectedVehiclePin === 'p'
-                        ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407171/base_ahivtq.png'
-                        : 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/base_yhxknp.png',
+                      ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407171/base_ahivtq.png'
+                      : 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/base_yhxknp.png',
                 }}
                 style={styles.carImage}
               />
@@ -364,20 +367,24 @@ const handleDetailDevice = (device: Device) => {
     );
   };
 
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+      {/* Header */}
+      <LinearGradient
+        colors={['#021e4bff', '#183890ff', '#183890ff']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-    >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+        style={[styles.header, { paddingTop: topSpace }]}
+      >
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -408,7 +415,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           {devices.length > 1 && (
             <TouchableOpacity
               style={styles.filterButton}
-              onPress={() => setShowFilterModal(true)} 
+              onPress={() => setShowFilterModal(true)}
               activeOpacity={0.7}
             >
               <Filter size={20} color="#1e3a8a" />
@@ -421,9 +428,8 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
               )}
             </TouchableOpacity>
           )}
-
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Lista de dispositivos */}
       <FlatList
@@ -442,9 +448,9 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
         visible={showFilterModal}
         onClose={() => setShowFilterModal(false)}
         filters={filters}
-        onApplyFilters={(newFilters) => setFilters(newFilters)}
+        onApplyFilters={newFilters => setFilters(newFilters)}
       />
-    </LinearGradient>
+    </View>
   );
 };
 

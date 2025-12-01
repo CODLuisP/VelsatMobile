@@ -127,7 +127,7 @@ logoImage: {
   // Form Container
   formContainer: {
     flex: 1,
-    backgroundColor: '#edf2fb',
+    backgroundColor: '#ffffff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 24,

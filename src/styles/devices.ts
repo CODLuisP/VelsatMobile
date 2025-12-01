@@ -7,9 +7,8 @@ export const styles = StyleSheet.create({
 
   // Header styles
   header: {
-    paddingBottom: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    paddingBottom: 50,
+ 
   },
   headerTop: {
     flexDirection: 'row',
@@ -111,12 +110,13 @@ export const styles = StyleSheet.create({
   // Device list styles
   devicesList: {
     flex: 1,
-    backgroundColor: '#ffffffff',
+    backgroundColor: 'white',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    marginTop: -30,
   },
   devicesListContent: {
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
 
   // Device item styles

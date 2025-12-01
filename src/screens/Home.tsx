@@ -104,7 +104,7 @@ const Home: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#002855', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -364,7 +364,6 @@ const Home: React.FC = () => {
     return true;
   };
 
-  // NUEVA FUNCIÓN: Verificar y activar GPS automáticamente
   const verificarYActivarGPS = async (): Promise<boolean> => {
     // SOLO ejecutar en Android
     if (Platform.OS !== 'android') {
@@ -757,8 +756,7 @@ const Home: React.FC = () => {
             badge="PERFIL"
             category="Información"
             title="Mi Perfil"
-            description="Revisa y actualiza tus datos personales fácilmente."
-            icon={User}
+description="Revisa y actualiza tus datos personales fácilmente en cualquier momento."            icon={User}
             activeOpacity={0.90}
 
           />
@@ -769,8 +767,8 @@ const Home: React.FC = () => {
             badge="UNIDADES"
             category="Rastreo"
             title="Unidades"
-            description="Rastrea tus unidades, conoce su última ubicación."
-            icon={Car}
+description="Rastrea tus unidades, conoce su última ubicación con exactitud."       
+icon={Car}
             activeOpacity={0.90}
           />
 
@@ -780,7 +778,7 @@ const Home: React.FC = () => {
             badge="REPORTES"
             category="Análisis"
             title="Reportes"
-            description="Genera reportes de tus unidades, general, velocidad."
+            description="Genera reportes de tus unidades, general, velocidad y más detalles."
             icon={BarChart3}
             activeOpacity={0.90}
           />
@@ -791,7 +789,7 @@ const Home: React.FC = () => {
             badge="SEGURIDAD"
             category="Protección"
             title="Seguridad"
-            description="Activa la autenticación con datos biométricos."
+            description="Activa la autenticación con datos biométricos para mayor seguridad."
             icon={Shield}
             activeOpacity={0.90}
           />

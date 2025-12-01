@@ -7,14 +7,9 @@ import {
   Eye,
   EyeOff,
   Fingerprint,
-  Lock,
   LogIn,
-  Phone,
   Scan,
-  User,
   KeyRound,
-  Navigation,
-  Loader2,
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
@@ -75,10 +70,10 @@ const Login = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      SystemNavigationBar.setNavigationColor('#edf2fb');
+      SystemNavigationBar.setNavigationColor('#ffffff');
 
       return () => {
-        SystemNavigationBar.setNavigationColor('#edf2fb');
+        SystemNavigationBar.setNavigationColor('#ffffff');
       };
     }, []),
   );
@@ -370,21 +365,6 @@ const Login = () => {
     }
   };
 
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-    backgroundColor: isLoggingIn ? '#22c55e' : '#f97316',
-  }));
-
-  const loadingIconStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${loadingRotation.value}deg` }],
-  }));
-
-  const gpsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { scale: gpsScale.value },
-      { rotate: `${gpsRotation.value}deg` },
-    ],
-  }));
 
   useEffect(() => {
     loadSavedCredentials();
@@ -474,67 +454,65 @@ const Login = () => {
 
   return (
     <>
- 
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor="transparent"
-          translucent
-        />
+      <View style={styles.mainContent}>
+        {/* Background Section with GPS image */}
+        <View style={styles.topBackgroundSection}>
+          {/* GPS Background Image */}
+          <Image
+            source={{
+              uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764132427/fondovel_gtsqvo.jpg',
+            }}
+            style={styles.gpsBackgroundImage}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={[
+              'rgba(0, 31, 84, 0.9)',
+              'rgba(0, 15, 40, 0.6)',
+              'rgba(1, 7, 35, 0.2)',
+            ]}
+            style={styles.backgroundOverlay}
+          />
+          {/* Welcome Header */}
+          <View style={styles.headerSection}>
+            <Text style={styles.welcomeTitles}>Bienvenido</Text>
 
-        <View style={styles.mainContent}>
-          {/* Background Section with GPS image */}
-          <View style={styles.topBackgroundSection}>
-            {/* GPS Background Image */}
+            <Text style={styles.welcomeSubtitle}>
+              Inicia sesión para continuar
+            </Text>
+          </View>
+
+          {/* Logo GPS centrado */}
+          <Animated.View style={[styles.logoContainer, logoStyle]}>
             <Image
-              source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764132427/fondovel_gtsqvo.jpg' }}
-              style={styles.gpsBackgroundImage}
-              resizeMode="cover"
+              source={{
+                uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764131055/logomini_h3n8jb.png',
+              }}
+              style={styles.logoImage}
+              resizeMode="contain"
             />
-<LinearGradient
-  colors={['rgba(0, 31, 84, 0.9)', 'rgba(0, 15, 40, 0.6)', 'rgba(1, 7, 35, 0.2)']}
-  style={styles.backgroundOverlay}
-/>            
-            {/* Welcome Header */}
-            <View style={styles.headerSection}>
-              <Text style={styles.welcomeTitles}>Bienvenido</Text>
+            <Text style={styles.welcomeTitle}>VELSAT</Text>
+          </Animated.View>
 
-              <Text style={styles.welcomeSubtitle}>Inicia sesión para continuar</Text>
+          {/* Biometric/PIN buttons inside background section */}
+          {showPinOption && !showBiometricOption && (
+            <View style={{ marginBottom: 20 }}>
+              <TouchableOpacity
+                style={styles.biometricButton}
+                onPress={handlePinLogin}
+              >
+                <View style={styles.biometricButtonContent}>
+                  <KeyRound color="#fff" size={24} />
+                  <Text style={styles.biometricButtonText}>
+                    Acceder con PIN
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
+          )}
 
-            {/* Logo GPS centrado */}
-              <Animated.View style={[styles.logoContainer, logoStyle]}>
-                <Image 
-                  source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764131055/logomini_h3n8jb.png' }}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-              <Text style={styles.welcomeTitle}>VELSAT</Text>
-
-              </Animated.View>
-
-
-            
-
-            {/* Biometric/PIN buttons inside background section */}
-            {showPinOption && !showBiometricOption && (
-             <View style={{ marginBottom: 20 }}>
-  <TouchableOpacity
-    style={styles.biometricButton}
-    onPress={handlePinLogin}
-  >
-    <View style={styles.biometricButtonContent}>
-      <KeyRound color="#fff" size={24} />
-      <Text style={styles.biometricButtonText}>
-        Acceder con PIN
-      </Text>
-    </View>
-  </TouchableOpacity>
-</View>
-            )}
-
-            {showBiometricOption && (
-                           <View style={{ marginBottom: 20 }}>
-
+          {showBiometricOption && (
+            <View style={{ marginBottom: 20 }}>
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handleBiometricLogin}
@@ -552,23 +530,23 @@ const Login = () => {
                   </Text>
                 </View>
               </TouchableOpacity>
-              </View>
-            )}
-          </View>
+            </View>
+          )}
+        </View>
 
-          {/* Form Section */}
-          
-          <Animated.View style={[styles.formContainer, formStyle]}>
-            {/* Or Divider - only show if biometric/pin is available */}
-            {(showPinOption || showBiometricOption) && (
-              <View style={styles.orDivider}>
-                <Text style={styles.orText}>o</Text>
-              </View>
-            )}
+        {/* Form Section */}
 
-            {/* Input Fields */}
+        <Animated.View style={[styles.formContainer, formStyle]}>
+          {/* Or Divider - only show if biometric/pin is available */}
+          {(showPinOption || showBiometricOption) && (
+            <View style={styles.orDivider}>
+              <Text style={styles.orText}>o</Text>
+            </View>
+          )}
 
-            <View style={styles.mainContentInputs}>
+          {/* Input Fields */}
+
+          <View style={styles.mainContentInputs}>
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabel}>Usuario</Text>
               <View style={styles.inputContainer}>
@@ -606,71 +584,64 @@ const Login = () => {
                 </TouchableOpacity>
               </View>
             </View>
-</View>
+          </View>
 
+          {/* Sign In Button */}
+          <TouchableOpacity
+            style={styles.signInButton}
+            onPress={handleLogin}
+            disabled={isLoggingIn}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={
+                isLoggingIn ? ['#22c55e', '#16a34a'] : ['#e85d04', '#dc2f02']
+              }
+              style={styles.signInGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              {isLoggingIn ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <>
+                  <Text style={styles.signInText}>Iniciar Sesión</Text>
+                  <LogIn color="#ffffff" size={20} style={{ marginLeft: 8 }} />
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
 
-            {/* Sign In Button */}
-     <TouchableOpacity
-  style={styles.signInButton}
-  onPress={handleLogin}
-  disabled={isLoggingIn}
-  activeOpacity={0.8}
->
-
-
-<LinearGradient
-  colors={isLoggingIn ? ['#22c55e', '#16a34a'] : ['#e85d04', '#dc2f02']}  
-  style={styles.signInGradient}
-  start={{ x: 0, y: 0 }}
-  end={{ x: 1, y: 0 }}
->
-  {isLoggingIn ? (
-    <ActivityIndicator size="small" color="#ffffff" />
-  ) : (
-    <>
-      <Text style={styles.signInText}>Iniciar Sesión</Text>
-      <LogIn color="#ffffff" size={20} style={{ marginLeft: 8 }} />
-    </>
-  )}
-</LinearGradient>
-
-
-</TouchableOpacity>
-
-            {/* Bottom Links */}
-            <View style={styles.bottomLinks}>
-              <TouchableOpacity
-                style={styles.rememberContainer}
-                onPress={() => setRememberMe(!rememberMe)}
+          {/* Bottom Links */}
+          <View style={styles.bottomLinks}>
+            <TouchableOpacity
+              style={styles.rememberContainer}
+              onPress={() => setRememberMe(!rememberMe)}
+            >
+              <View
+                style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
               >
-                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                  {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-                <Text style={styles.linkText}>Recordar usuario</Text>
-              </TouchableOpacity>
-              
-            
+                {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.linkText}>Recordar usuario</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.footerContainer}>
+            {/* Social Login Section */}
+            <View style={styles.socialSection}>
+              <Text style={styles.socialText}>
+                Aplicación de control logístico
+              </Text>
             </View>
 
-      <View style={styles.footerContainer}>
-      {/* Social Login Section */}
-      <View style={styles.socialSection}>
-        <Text style={styles.socialText}>Aplicación de control logístico</Text>
-  
+            {/* Version */}
+            <View style={styles.versionContainer}>
+              <Text style={styles.versionText}>V. 2.3.8</Text>
+            </View>
+          </View>
+        </Animated.View>
       </View>
-
-      {/* Version */}
-      <View style={styles.versionContainer}>
-        <Text style={styles.versionText}>V. 2.3.8</Text>
-      </View>
-    </View>
-
-
-
-          </Animated.View>
-
-
-        </View>
 
       <ModalAlert
         isVisible={modalVisible}
