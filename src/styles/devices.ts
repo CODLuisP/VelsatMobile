@@ -111,7 +111,7 @@ export const styles = StyleSheet.create({
   // Device list styles
   devicesList: {
     flex: 1,
-    backgroundColor: 'red',
+    backgroundColor: '#ffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     marginTop: -20,

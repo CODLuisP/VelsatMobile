@@ -374,7 +374,7 @@ const Devices = () => {
     <View style={[styles.container, { paddingBottom: bottomSpace  }]}>
       {/* Header */}
       <LinearGradient
-        colors={['#021e4bff', '#183890ff', '#183890ff']}
+        colors={['#031e4aff', '#0e2563ff', '#1439a0ff']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
         style={[styles.header, { paddingTop: topSpace }]}
