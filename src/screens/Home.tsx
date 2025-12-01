@@ -756,7 +756,7 @@ const Home: React.FC = () => {
             badge="PERFIL"
             category="Información"
             title="Mi Perfil"
-description="Revisa y actualiza tus datos personales fácilmente en cualquier momento."            icon={User}
+            description="Revisa y actualiza tus datos personales fácilmente en cualquier momento." icon={User}
             activeOpacity={0.90}
 
           />
@@ -767,8 +767,8 @@ description="Revisa y actualiza tus datos personales fácilmente en cualquier mo
             badge="UNIDADES"
             category="Rastreo"
             title="Unidades"
-description="Rastrea tus unidades, conoce su última ubicación con exactitud."       
-icon={Car}
+            description="Rastrea tus unidades, conoce su última ubicación con exactitud."
+            icon={Car}
             activeOpacity={0.90}
           />
 
