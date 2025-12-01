@@ -455,7 +455,7 @@ const Login = () => {
         {/* Background Section with GPS image */}
         <LinearGradient       
         
-        colors={['#010b1aff', '#041239ff', '#042c6dff']}
+        colors={['#041b3eff', '#061b53ff', '#042c6dff']}
               start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
        style={styles.topBackgroundSection}>
