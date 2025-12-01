@@ -7,8 +7,8 @@ export const styles = StyleSheet.create({
 
   // Header styles
   header: {
-    marginTop: -60,
-    height: Platform.OS === 'ios' ? 270 : 250,
+    marginTop: Platform.OS === 'ios' ? -60 : 0,
+    height: Platform.OS === 'ios' ? 270 : 190,
  
   },
   headerTop: {
