@@ -461,9 +461,8 @@ const Login = () => {
        style={styles.topBackgroundSection}>
           {/* GPS Background Image */}
           <Image
-            source={{
-              uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764132427/fondovel_gtsqvo.jpg',
-            }}
+              source={require('../../../assets/fondovel.jpg')}
+
             style={styles.gpsBackgroundImage}
             resizeMode="cover"
           />
@@ -480,9 +479,7 @@ const Login = () => {
           {/* Logo GPS centrado */}
           <Animated.View style={[styles.logoContainer, logoStyle]}>
             <Image
-              source={{
-                uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764131055/logomini_h3n8jb.png',
-              }}
+              source={require('../../../assets/logob.png')}
               style={styles.logoImage}
               resizeMode="contain"
             />

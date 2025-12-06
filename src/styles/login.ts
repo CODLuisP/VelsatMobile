@@ -27,6 +27,7 @@ export const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 324,
+    width: '100%',
     opacity: 0.12,
   },
 logoImage: {

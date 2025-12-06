@@ -57,7 +57,7 @@ const ReportSlider: React.FC<ReportSliderProps> = ({
     const imageUrl =
       item.eos ||
       item.imageUrl ||
-      'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761537390/rgeneral_oeexfs.jpg';
+      'https://res.cloudinary.com/db8efdixd/image/upload/v1764991360/rgeneral_gkmeve.jpg';
 
     return (
       <View key={item.id} style={styles.slideCardContainer}>

@@ -123,7 +123,7 @@ const CustomMarker = ({ color }: { color: string }) => {
       {/* Imagen del carro encima */}
       <Image
         source={{
-          uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png',
+          uri: 'https://res.cloudinary.com/dmamynahb/image/upload/v1764985196/UnidadK_mqqyfj.png',
         }}
         style={{
           width: 70,
@@ -308,7 +308,7 @@ const MapAlert = () => {
                         <div class="radar-pulse" style="background-color: ${alertColor}; top: 10px; left: 20px;"></div>
                         <div class="radar-pulse" style="background-color: ${alertColor}; top: 10px; left: 20px; animation-delay: 1s;"></div>
                         <div class="radar-pulse" style="background-color: ${alertColor}; top: 10px; left: 20px; animation-delay: 2s;"></div>
-                        <img src="https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759966615/Car_nkielr.png" 
+                        <img src="https://res.cloudinary.com/dmamynahb/image/upload/v1764985196/UnidadK_mqqyfj.png" 
                              style="position: relative; z-index: 10; width: 60px; height: 40px;" />
                     </div>
                 \`,

@@ -117,7 +117,7 @@ const Reports: React.FC = () => {
       icon: Hand,
       description: 'Detalle de paradas realizadas',
       gradient: ['#ffffffff', '#ffffffff'],
-      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761576820/rpardas_jjwfx3.jpg',
+      eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991429/paradas_kdfusl.jpg',
 
     },
     {
@@ -126,7 +126,7 @@ const Reports: React.FC = () => {
       icon: Gauge,
       description: 'Control de excesos de velocidad',
       gradient: ['#ffffffff', '#ffffffff'],
-      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544459/rspeed_fxgibm.jpg',
+      eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991360/rspeed_pskxjg.jpg',
 
     },
     {
@@ -135,7 +135,7 @@ const Reports: React.FC = () => {
       icon: Route,
       description: 'Distancias recorridas por unidad(es)',
       gradient: ['#ffffffff', '#ffffffff'],
-      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761545353/kilometraje_gpkdde.jpg',
+      eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991440/kilometraje_bbimzv.jpg',
 
     },
     {
@@ -144,7 +144,7 @@ const Reports: React.FC = () => {
       icon: FileText,
       description: 'Rutas y trayectos completos',
       gradient: ['#ffffffff', '#ffffffff'],
-      eos: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544460/rrecorrido_tivil8.jpg',
+      eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991360/rrecorrido_aavpzm.jpg',
 
     },
   ];

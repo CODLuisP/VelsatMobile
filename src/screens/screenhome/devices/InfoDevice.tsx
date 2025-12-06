@@ -257,9 +257,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
         {/* Vehicle Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{
-              uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1759594553/UnidadK_v4eru0.png',
-            }}
+             source={require('../../../../assets/Car.jpg')}
             style={styles.vehicleImage}
           />
         </View>

@@ -816,7 +816,8 @@ useEffect(() => {
                       disabled={!vehicleData}
                     >
                       <Image
-                        source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761544460/mapacamino_z9yics.jpg' }}
+                                      source={require('../../../../assets/mapacamino.jpg')}
+
                         style={styles.streetViewImage}
                         resizeMode="cover"
                       />
