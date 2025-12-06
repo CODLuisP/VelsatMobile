@@ -727,7 +727,7 @@ const Home: React.FC = () => {
 
           <View style={homeStyles.locationContainer}>
             <MapPin size={25} color="#FFF" />
-            <View>
+            <View >
               <Text style={homeStyles.locationLabel}>
                 Tu ubicación actual es:
               </Text>
