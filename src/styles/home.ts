@@ -6,7 +6,7 @@ export const homeStyles = StyleSheet.create({
     backgroundColor: Platform.OS === 'ios' ? '#FFFFFF' : '#FFFFFF',
   },
   header: {
-    height: Platform.OS==='ios'? 240:210,
+    height: Platform.OS==='ios'? 240:225,
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
