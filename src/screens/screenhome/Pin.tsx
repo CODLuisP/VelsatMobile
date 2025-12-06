@@ -58,9 +58,10 @@ const Pin = () => {
       id: 'sedan',
       title: 'Sedán clásico',
       description: 'Ideal para vehículos ligeros y automóviles',
-         image: require('../../../assets/sedan.jpg'), // Ruta local
+         image: require('../../../assets/sedan.jpg'), 
 
     },
+
     {
       id: 'pickup',
       title: 'Pick-up',
