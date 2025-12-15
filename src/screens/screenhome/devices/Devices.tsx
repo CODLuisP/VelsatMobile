@@ -103,25 +103,30 @@ const Devices = () => {
       );
 
       const transformedDevices: Device[] = response.data
-        .map(apiDevice => ({
-          id: apiDevice.deviceId,
-          name: apiDevice.deviceId,
-          status:
+          .map(apiDevice => ({
+            id: apiDevice.deviceId,
+            name: apiDevice.deviceId,
+            status:
+           
             apiDevice.lastValidSpeed <= 1
-              ? ('Detenido' as const)
-              : ('Movimiento' as const),
-          speed: Math.round(apiDevice.lastValidSpeed),
-          location: apiDevice.direccion,
-          isOnline: true,
-          latitude: apiDevice.lastValidLatitude,
-          longitude: apiDevice.lastValidLongitude,
-        }))
-        // ✅ Ordenar solo por el campo "name" (alfabético y numérico)
-        .sort((a, b) =>
+             
+              ? (('Detenido' as const)
+             )
+              : (('Movimiento' as const)),
+            speed: Math.round(apiDevice.lastValidSpeed),
+            location: apiDevice.direccion,
+            isOnline: true,
+            latitude: apiDevice.lastValidLatitude,
+            longitude: apiDevice.lastValidLongitude,
+          }))
+          // ✅ Ordenar solo por el campo "name" (alfabético y numérico)
+          .sort((a, b) =>
+         
           a.name.localeCompare(b.name, undefined, { numeric: true }),
+        ,
         );
 
-      setDevices(transformedDevices);
+        setDevices(transformedDevices);
     } catch (err) {
       setError('Error al cargar los dispositivos');
     } finally {
@@ -248,8 +253,8 @@ const Devices = () => {
                     selectedVehiclePin === 's'
                       ? 'https://res.cloudinary.com/dmamynahb/image/upload/v1764985196/UnidadK_mqqyfj.png'
                       : selectedVehiclePin === 'p'
-                      ? 'https://res.cloudinary.com/dmamynahb/image/upload/v1764986045/base_p01t73.png'
-                      : 'https://res.cloudinary.com/dmamynahb/image/upload/v1764986034/base_nvz2ke.png',
+                      ? 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407171/base_ahivtq.png'
+                      : 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1760407143/base_yhxknp.png',
                 }}
                 style={styles.carImage}
               />
@@ -367,7 +372,7 @@ const Devices = () => {
     );
   };
 
-  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
+    const topSpace = Platform.OS === 'ios' ? insets.top -  5 : insets.top + 5;
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
@@ -381,9 +386,13 @@ const Devices = () => {
       >
         <View style={styles.headerTop}>
           <TouchableOpacity
+           
             onPress={handleGoBack}
+           
             style={styles.backButton}
+           
             activeOpacity={0.7}
+          
           >
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
@@ -415,6 +424,7 @@ const Devices = () => {
           {devices.length > 1 && (
             <TouchableOpacity
               style={styles.filterButton}
+              onPress={() => setShowFilterModal(true)}
               onPress={() => setShowFilterModal(true)}
               activeOpacity={0.7}
             >
@@ -449,9 +459,11 @@ const Devices = () => {
         onClose={() => setShowFilterModal(false)}
         filters={filters}
         onApplyFilters={newFilters => setFilters(newFilters)}
+        onApplyFilters={newFilters => setFilters(newFilters)}
       />
     </View>
   );
 };
 
 export default Devices;
+

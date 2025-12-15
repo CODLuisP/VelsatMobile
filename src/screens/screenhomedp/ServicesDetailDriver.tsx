@@ -155,13 +155,15 @@ const ServicesDetailDriver = () => {
     }
   }, [serviceData.codservicio, refreshTrigger]);
 
-  const passengersForModal = allPassengers.map(passenger => ({
-    apellidos: passenger.apellidos,
-    codpedido: passenger.codpedido,
-    orden: passenger.orden,
-    wx: passenger.wx,
-    wy: passenger.wy,
-  }));
+const passengersForModal = allPassengers.map(passenger => ({
+  apellidos: passenger.codlan === '4175' 
+    ? 'Destino Aeropuerto Jorge Chavez' 
+    : (passenger.apellidos || 'SIN NOMBRE'), // ✅ Lógica condicional
+  codpedido: passenger.codpedido,
+  orden: passenger.orden,
+  wx: passenger.wx,
+  wy: passenger.wy,
+}));
 
   useFocusEffect(
     React.useCallback(() => {

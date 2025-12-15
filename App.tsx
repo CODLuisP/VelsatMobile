@@ -35,7 +35,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import FAQ from './src/screens/screenhome/help/Faq';
 
-
+// ⭐ IMPORTAR EL COMPONENTE DE ACTUALIZACIÓN
+import UpdateChecker from './src/components/login/UpdateChecker';
 
 // Tipos de datos
 interface Device {
@@ -111,9 +112,9 @@ export type RootStackParamList = {
   };
   Devices: undefined;
 
-DetailDevice: {
-  device: string; 
-};
+  DetailDevice: {
+    device: string; 
+  };
 
   InfoDevice: {
     deviceName: string;
@@ -276,6 +277,8 @@ const App = () => {
             )}
           </Stack.Navigator>
         </NavigationContainer>
+        {/* ⭐ AGREGAR EL COMPONENTE DE ACTUALIZACIÓN */}
+        <UpdateChecker />
       </View>
     </SafeAreaProvider>
   );
