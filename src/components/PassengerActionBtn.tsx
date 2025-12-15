@@ -37,7 +37,7 @@ const PassengerActionButton: React.FC<PassengerActionButtonProps> = ({
     
     try {
       const response = await axios.post(
-        `https://velsat.pe:2087/api/Aplicativo/SubirPasajero?codpedido=${codpedido}`
+        `https://do.velsat.pe:2053/api/Aplicativo/SubirPasajero?codpedido=${codpedido}`
       );
       setStatus('bajar');
     } catch (error) {
@@ -52,7 +52,7 @@ const PassengerActionButton: React.FC<PassengerActionButtonProps> = ({
     
     try {
       const response = await axios.post(
-        `https://velsat.pe:2087/api/Aplicativo/BajarPasajero?codpedido=${codpedido}`
+        `https://do.velsat.pe:2053/api/Aplicativo/BajarPasajero?codpedido=${codpedido}`
       );
       setStatus('finalizado');
     } catch (error) {

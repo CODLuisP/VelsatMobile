@@ -79,7 +79,7 @@ export const openStore = async () => {
       // Si falla, intentar abrir manualmente con la URL
       const storeUrl = Platform.OS === 'ios' 
         ? `https://apps.apple.com/app/id${IOS_APP_ID}`
-        : `https://play.google.com/store/apps/details?id=com.velsat.app`;
+        : `https://play.google.com/store/apps/details?id=com.velsat.mobile`;
       
       const canOpen = await Linking.canOpenURL(storeUrl);
       if (canOpen) {

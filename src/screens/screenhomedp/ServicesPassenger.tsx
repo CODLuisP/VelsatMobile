@@ -76,7 +76,7 @@ const ServicesPassenger = () => {
       setLoading(true);
       console.log('🔄 Cargando servicios del pasajero:', codigo);
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/serviciosPasajero/${codigo}`;
+      const url = `https://do.velsat.pe:2053/api/Aplicativo/serviciosPasajero/${codigo}`;
 
       const response = await axios.get(url, {
         timeout: 10000,

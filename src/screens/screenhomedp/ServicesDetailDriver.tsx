@@ -109,7 +109,7 @@ const ServicesDetailDriver = () => {
 
       try {
         const response = await axios.get<PassengerAPI[]>(
-          `https://velsat.pe:2087/api/Aplicativo/detalleServicioConductor/${serviceData.codservicio}`,
+          `https://do.velsat.pe:2053/api/Aplicativo/detalleServicioConductor/${serviceData.codservicio}`,
         );
 
         // Guardar TODOS los pasajeros sin filtrar

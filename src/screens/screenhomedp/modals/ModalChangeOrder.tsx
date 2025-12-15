@@ -116,7 +116,7 @@ const ModalChangeOrder: React.FC<ModalChangeOrderProps> = ({
 
 
       const response = await axios.put(
-        'https://velsat.pe:2087/api/Aplicativo/cambiarOrdenBatch',
+        'https://do.velsat.pe:2053/api/Aplicativo/cambiarOrdenBatch',
         cambios
       );
 

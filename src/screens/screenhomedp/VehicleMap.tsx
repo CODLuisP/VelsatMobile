@@ -66,7 +66,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
 
   // Ref para rastrear si el componente está montado
   const isMountedRef = useRef(true);
-  const pollingIntervalRef = useRef<number | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Función para hacer fetch de los datos del vehículo
   const fetchVehicleData = async () => {

@@ -72,7 +72,7 @@ const ModalObservations: React.FC<ModalObservationsProps> = ({
     if (selectedPassenger && observation.trim()) {
       try {
         const response = await axios.post(
-          `https://velsat.pe:2087/api/Aplicativo/EnviarObservacion?codpedido=${selectedPassenger.id}`,
+          `https://do.velsat.pe:2053/api/Aplicativo/EnviarObservacion?codpedido=${selectedPassenger.id}`,
           `"${observation.trim()}"`,
           {
             headers: {

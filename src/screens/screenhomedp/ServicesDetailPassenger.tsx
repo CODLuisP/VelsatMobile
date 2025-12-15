@@ -121,7 +121,7 @@ const ServicesDetailPassenger = () => {
     try {
       setLoadingPasajeros(true);
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/UbiPasajeros/${serviceData.codservicio}`;
+      const url = `https://do.velsat.pe:2053/api/Aplicativo/UbiPasajeros/${serviceData.codservicio}`;
 
       const response = await axios.get(url);
 
@@ -190,7 +190,7 @@ const ServicesDetailPassenger = () => {
     try {
       setLoadingDriver(true);
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
+      const url = `https://do.velsat.pe:2053/api/Aplicativo/detalleConductor/${serviceData.codconductor}`;
 
       const response = await axios.get(url);
 
@@ -213,7 +213,7 @@ const ServicesDetailPassenger = () => {
       setLoadingDestino(true);
       setDestinoError(null); // Limpia errores anteriores
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/detalleDestino/${codcliente}`;
+      const url = `https://do.velsat.pe:2053/api/Aplicativo/detalleDestino/${codcliente}`;
 
       const response = await axios.get(url);
 
@@ -330,7 +330,7 @@ const ServicesDetailPassenger = () => {
   const handleConfirmCancel = async () => {
     try {
       setCancellingService(true);
-      const url = 'https://velsat.pe:2087/api/Aplicativo/cancelarServicio';
+      const url = 'https://do.velsat.pe:2053/api/Aplicativo/cancelarServicio';
 
       const requestBody = {
         codservicio: serviceData.codservicio,
@@ -397,7 +397,7 @@ const ServicesDetailPassenger = () => {
     try {
       setSendingRating(true);
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/enviarCalificacion`;
+      const url = `https://do.velsat.pe:2053/api/Aplicativo/enviarCalificacion`;
 
       const response = await axios.post(url, null, {
         params: {

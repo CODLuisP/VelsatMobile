@@ -79,7 +79,7 @@ const ServicesDriver = () => {
     codservicio: string,
   ): Promise<number> => {
     try {
-      const url = `https://velsat.pe:2087/api/Aplicativo/PasajerosDisponibles/${codservicio}`;
+      const url = `https://do.velsat.pe:2053/api/Aplicativo/PasajerosDisponibles/${codservicio}`;
       const response = await axios.get(url, {
         timeout: 5000,
         headers: {
@@ -223,7 +223,7 @@ const ServicesDriver = () => {
     try {
       setIsLoading(true);
 
-      const url = `https://velsat.pe:2087/api/Aplicativo/serviciosConductor/${codigo}`;
+      const url = `https://do.velsat.pe:2053/api/Aplicativo/serviciosConductor/${codigo}`;
 
       const response = await axios.get(url, {
         timeout: 10000,
@@ -323,13 +323,13 @@ const ServicesDriver = () => {
     try {
       setLoadingStart(codservicio);
       await axios.post(
-        `https://velsat.pe:2087/api/Aplicativo/ActualizarFechaInicioServicio?codservicio=${codservicio}`,
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarFechaInicioServicio?codservicio=${codservicio}`,
       );
       await axios.post(
         `https://velsat.pe:2087/api/Aplicativo/ActualizarDeviceServicio?codservicio=${codservicio}&deviceID=${unidad}`,
       );
       await axios.post(
-        `https://velsat.pe:2087/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
       );
 
       // Cambiar estado local
@@ -348,13 +348,13 @@ const ServicesDriver = () => {
     try {
       setLoadingEnd(codservicio);
       await axios.post(
-        `https://velsat.pe:2087/api/Aplicativo/ActualizarFechaFinServicio?codservicio=${codservicio}`,
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarFechaFinServicio?codservicio=${codservicio}`,
       );
       await axios.post(
         `https://velsat.pe:2087/api/Aplicativo/ActualizarDeviceFinServicio?deviceID=${unidad}`,
       );
       await axios.post(
-        `https://velsat.pe:2087/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
       );
 
       // Cambiar estado local
