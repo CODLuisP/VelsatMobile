@@ -10,12 +10,13 @@ import {
   StatusBar,
   Animated,
 } from 'react-native';
-import VersionCheck from '../../hooks/version-config';
+import VersionCheck from 'react-native-version-check';
+import { checkForUpdates, openStore } from '../../hooks/version-config';
 import { AlertTriangle } from 'lucide-react-native';
 
 const UpdateChecker = () => {
   const [needsUpdate, setNeedsUpdate] = useState(false);
-  const [storeUrl, setStoreUrl] = useState('');
+  const [versionInfo, setVersionInfo] = useState({ current: '', latest: '' });
   const fadeAnim = useState(new Animated.Value(0))[0];
   const scaleAnim = useState(new Animated.Value(0.9))[0];
 
@@ -24,7 +25,7 @@ const UpdateChecker = () => {
     
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
-      () => needsUpdate // Bloquea el botón atrás cuando necesita actualizar
+      () => needsUpdate
     );
 
     return () => backHandler.remove();
@@ -50,27 +51,25 @@ const UpdateChecker = () => {
 
   const checkVersion = async () => {
     try {
-      const updateNeeded = await VersionCheck.needUpdate();
+      const result = await checkForUpdates();
+      
+      console.log('Resultado de verificación:', result);
 
-      if (updateNeeded && updateNeeded.isNeeded) {
+      if (result.needsUpdate) {
         setNeedsUpdate(true);
-        setStoreUrl(updateNeeded.storeUrl);
+        setVersionInfo({
+          current: result.currentVersion || 'Desconocida',
+          latest: result.latestVersion || 'Desconocida',
+        });
       }
     } catch (error) {
       console.error('Error checking version:', error);
-      // En producción, no bloquear la app si falla la verificación
-      // Solo mostrar el modal si hay confirmación de que necesita actualizar
     }
   };
 
   const handleUpdate = async () => {
     try {
-      if (storeUrl) {
-        await Linking.openURL(storeUrl);
-      } else {
-        const url = await VersionCheck.getStoreUrl();
-        await Linking.openURL(url);
-      }
+      await openStore();
     } catch (error) {
       console.error('Error opening store:', error);
     }
@@ -106,6 +105,13 @@ const UpdateChecker = () => {
           <Text style={styles.message}>
             Para continuar usando la aplicación, necesitas actualizar a la última versión.
           </Text>
+
+          <View style={styles.versionContainer}>
+            <Text style={styles.versionText}>
+              Versión actual: {versionInfo.current}
+            </Text>
+          
+          </View>
 
           <TouchableOpacity 
             style={styles.button}
@@ -168,9 +174,22 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     color: '#666',
     lineHeight: 20,
+  },
+  versionContainer: {
+    backgroundColor: '#f5f5f5',
+    padding: 12,
+    borderRadius: 8,
+    width: '100%',
+    marginBottom: 20,
+  },
+  versionText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginVertical: 2,
   },
   button: {
     backgroundColor: '#00296b',
