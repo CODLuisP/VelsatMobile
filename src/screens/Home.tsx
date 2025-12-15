@@ -104,7 +104,7 @@ const Home: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#002855', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -364,7 +364,6 @@ const Home: React.FC = () => {
     return true;
   };
 
-  // NUEVA FUNCIÓN: Verificar y activar GPS automáticamente
   const verificarYActivarGPS = async (): Promise<boolean> => {
     // SOLO ejecutar en Android
     if (Platform.OS !== 'android') {
@@ -728,7 +727,7 @@ const Home: React.FC = () => {
 
           <View style={homeStyles.locationContainer}>
             <MapPin size={25} color="#FFF" />
-            <View>
+            <View >
               <Text style={homeStyles.locationLabel}>
                 Tu ubicación actual es:
               </Text>
@@ -751,64 +750,69 @@ const Home: React.FC = () => {
 
         <View style={homeStyles.optionsGrid}>
 
- <OptionCard
-    onPress={handleNavigateToProfile}
-colors={['#0f3963ff', '#052b5dff']}    
-    badge="PERFIL"
-    category="Información"
-    title="Mi Perfil"
-description="Revisa y actualiza tus datos personales fácilmente."
-icon={User}
-  />
+          <OptionCard
+            onPress={handleNavigateToProfile}
+            colors={['#05255dff', '#093f86ff']}
+            badge="PERFIL"
+            category="Información"
+            title="Mi Perfil"
+            description="Revisa y actualiza tus datos personales fácilmente en cualquier momento." icon={User}
+            activeOpacity={0.90}
 
-   <OptionCard
-    onPress={handleNavigateToDevice}
-colors={['#0d67c2ff', '#052b5dff']}    
-badge="UNIDADES"
-    category="Rastreo"
-    title="Unidades"
-    description="Rastrea tus unidades, conoce su última ubicación."
-    icon={Car}
-    activeOpacity={0.95}
-  />
+          />
 
-      <OptionCard
-    onPress={handleNavigateToReports}
-colors={['#0d67c2ff', '#052b5dff']}    
-    badge="REPORTES"
-    category="Análisis"
-    title="Reportes"
-    description="Genera reportes de tus unidades, general, velocidad."
-    icon={BarChart3}
-    activeOpacity={0.95}
-  />
+          <OptionCard
+            onPress={handleNavigateToDevice}
+            colors={['#05255dff', '#093f86ff']}
+            badge="UNIDADES"
+            category="Rastreo"
+            title="Unidades"
+            description="Rastrea tus unidades, conoce su última ubicación con exactitud."
+            icon={Car}
+            activeOpacity={0.90}
+          />
 
-  <OptionCard
-    onPress={handleNavigateToSecurity}
-colors={['#0f3963ff', '#052b5dff']}    
-    badge="SEGURIDAD"
-    category="Protección"
-    title="Seguridad"
-    description="Activa la autenticación con datos biométricos."
-    icon={Shield}
-    activeOpacity={0.95}
-  />
+          <OptionCard
+            onPress={handleNavigateToReports}
+            colors={['#05255dff', '#093f86ff']}
+            badge="REPORTES"
+            category="Análisis"
+            title="Reportes"
+            description="Genera reportes de tus unidades, general, velocidad y más detalles."
+            icon={BarChart3}
+            activeOpacity={0.90}
+          />
+
+          <OptionCard
+            onPress={handleNavigateToSecurity}
+            colors={['#05255dff', '#093f86ff']}
+            badge="SEGURIDAD"
+            category="Protección"
+            title="Seguridad"
+            description="Activa la autenticación con datos biométricos para mayor seguridad."
+            icon={Shield}
+            activeOpacity={0.90}
+          />
         </View>
 
-     <View style={homeStyles.customerCareContainer}>
-  <OptionCard
-    onPress={handleNavigateToHelp}
-colors={['#0f3963ff', '#052b5dff']}    
-    badge="AYUDA"
-    category="Soporte"
-    title="Ayuda"
-    description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
-    icon={Headphones}
-    activeOpacity={0.95}
-    fullWidth={true} // ← Agrega esta prop
 
-  />
-</View>
+
+
+
+        <View style={homeStyles.customerCareContainer}>
+          <OptionCard
+            onPress={handleNavigateToHelp}
+            colors={['#05255dff', '#093f86ff']}
+            badge="AYUDA"
+            category="Soporte"
+            title="Ayuda"
+            description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
+            icon={Headphones}
+            activeOpacity={0.90}
+            fullWidth={true} // ← Agrega esta prop
+
+          />
+        </View>
 
         <ModalAlert
           isVisible={modalAlertVisible}

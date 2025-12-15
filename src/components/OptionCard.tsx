@@ -40,11 +40,7 @@ const OptionCard: React.FC<OptionCardProps> = ({
       activeOpacity={activeOpacity}
     >
       {/* Imagen de textura de fondo */}
-      <Image
-        source={{ uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1764275173/2287041_ymbx7c.jpg' }}
-        style={StyleSheet.absoluteFillObject}
-        resizeMode="cover"
-      />
+    
 
       {/* Gradiente sobre la textura */}
       <LinearGradient

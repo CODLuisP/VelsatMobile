@@ -65,15 +65,6 @@ export const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 18,
     width: '46%',
-   
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 10,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
     justifyContent: 'center',
@@ -130,7 +121,7 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop:20,
     paddingVertical: 10,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffffff',
     borderRadius: 20,
     alignItems: 'center',
       borderWidth: 1,
@@ -181,6 +172,6 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   optionCardHalf: {
-    width: '48%'
+    width: '46%'
   }
 });

@@ -36,11 +36,14 @@ import {
   User,
   CheckCircle,
   Shield,
+  Car,
+  
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../components/ModalAlert';
 import ModalConfirm from '../components/ModalConfirm';
 import { Text } from '../components/ScaledComponents';
+import OptionCard from '../components/OptionCard';
 
 // Tipos TypeScript
 interface WeatherState {
@@ -101,7 +104,7 @@ const HomeDriverPassenger: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -761,128 +764,60 @@ const HomeDriverPassenger: React.FC = () => {
           style={[homeStyles.content, { paddingBottom: bottomSpace }]}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={homeStyles.sectionTitle}>¿Qué haremos hoy?</Text>
+          <Text style={homeStyles.sectionTitle}>Servicios Disponibles</Text>
 
           {/* Grid de opciones principales - SOLO 4 OPCIONES CON IMÁGENES */}
           <View style={homeStyles.optionsGrid}>
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={handleNavigateToProfile}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
 
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <User size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Perfil</Text>
+            
+          <OptionCard
+            onPress={handleNavigateToProfile}
+            colors={['#05255dff', '#093f86ff']}
+            badge="PERFIL"
+            category="Información"
+            title="Mi Perfil"
+            description="Revisa y actualiza tus datos personales fácilmente en cualquier momento." 
+            icon={User}
+            activeOpacity={0.90}
 
-              <Text style={homeStyles.optionSubtitle}>
-                Revisa tu información personal, actualiza tus datos y
-                credenciales y personaliza tus marcadores.
-              </Text>
-            </TouchableOpacity>
+          />
 
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={
-                tipo === 'c'
-                  ? handleNavigateToServicesDriver
-                  : handleNavigateToServicesPassenger
-              }
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
+<OptionCard
+  onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
+  colors={['#05255dff', '#093f86ff']}
+  badge="SERVICIOS"
+  category="Programación"
+  title="Servicios"
+  description="Conoce tus servicios programados más recientes."
+  icon={Car}
 
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <CheckCircle size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Servicios</Text>
+  activeOpacity={0.7}
+/>
 
-              <Text style={homeStyles.optionSubtitle}>
-                Conoce tus servicios programados más recientes.
-              </Text>
-            </TouchableOpacity>
+           
+          <OptionCard
+            onPress={handleNavigateToSecurity}
+            colors={['#05255dff', '#093f86ff']}
+            badge="SEGURIDAD"
+            category="Protección"
+            title="Seguridad"
+            description="Activa la autenticación con datos biométricos para mayor seguridad."
+            icon={Shield}
+            activeOpacity={0.90}
+              fullWidth={true} // ← Agrega esta prop
+          />
+ <OptionCard
+            onPress={handleNavigateToHelp}
+            colors={['#05255dff', '#093f86ff']}
+            badge="AYUDA"
+            category="Soporte"
+            title="Ayuda"
+            description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
+            icon={Headphones}
+            activeOpacity={0.90}
+            fullWidth={true} // ← Agrega esta prop
 
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={handleNavigateToSecurity}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
-
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <Shield size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Seguridad</Text>
-
-              <Text style={homeStyles.optionSubtitle}>
-                Activa la autenticación con datos biométricos y habilita o
-                deshabilita las notificaciones.
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[homeStyles.optionCard]}
-              onPress={handleNavigateToHelp}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={['#FFFFFF', '#F1F5F9', '#E2E8F0']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
-              />
-
-              <View
-                style={[homeStyles.optionIcon, homeStyles.optionContentAbove]}
-              >
-                <Headphones size={24} color="#e36414" />
-              </View>
-              <Text style={homeStyles.optionTitle}>Ayuda</Text>
-
-              <Text style={homeStyles.optionSubtitle}>
-                Conoce nuestros números telefónicos, escríbenos al Whatsapp,
-                revisa las preguntas frecuentes y visualiza tutoriales útiles.
-              </Text>
-            </TouchableOpacity>
+          />
           </View>
 
           <ModalAlert

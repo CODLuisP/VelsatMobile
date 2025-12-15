@@ -58,19 +58,23 @@ const Pin = () => {
       id: 'sedan',
       title: 'Sedán clásico',
       description: 'Ideal para vehículos ligeros y automóviles',
-     image: { uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761749071/sedan_egttoq.jpg' },
+         image: require('../../../assets/sedan.jpg'), 
+
     },
+
     {
       id: 'pickup',
       title: 'Pick-up',
       description: 'Perfecto para camionetas y vehículos medianos',
-     image: { uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761749071/pickup_olgsyl.jpg' },
+         image: require('../../../assets/pickup.jpg'), // Ruta local
+
     },
     {
       id: 'truck',
       title: 'Camión cisterna',
       description: 'Diseñado para vehículos de carga pesada',
-     image: { uri: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1761749072/camion_rdbvfj.jpg' },
+            image: require('../../../assets/camion.jpg'), // Ruta local
+
     },
   ];
 const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;

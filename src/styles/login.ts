@@ -1,6 +1,5 @@
 import { StyleSheet, Dimensions, Platform } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   container: {
@@ -16,9 +15,9 @@ export const styles = StyleSheet.create({
   topBackgroundSection: {
     position: 'relative',
     marginHorizontal: -24,
-    paddingHorizontal: 48,
-    paddingBottom: 25,
     overflow: 'hidden',
+    height: 330,
+
     
   },
 
@@ -27,8 +26,9 @@ export const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 320,
-    opacity: 0.3,
+    height: 324,
+    width: '100%',
+    opacity: 0.12,
   },
 logoImage: {
   width:55,  
@@ -47,6 +47,7 @@ logoImage: {
   headerSection: {
     marginTop: Platform.OS === 'ios' ? 70 : 50,
     zIndex: 1,
+    paddingHorizontal: 48,
   },
 
   welcomeTitle: {
@@ -127,7 +128,7 @@ logoImage: {
   // Form Container
   formContainer: {
     flex: 1,
-    backgroundColor: '#edf2fb',
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 24,

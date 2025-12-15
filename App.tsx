@@ -196,7 +196,7 @@ const App = () => {
 
     const setNavigationBarColor = () => {
       try {
-        SystemNavigationBar.setNavigationColor('#00296b');
+        SystemNavigationBar.setNavigationColor('#ffffff');
       } catch (error) {
         // Ignorar error en versiones viejas
       }
@@ -214,12 +214,11 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: '#00296b' }}>
-        <StatusBar barStyle="light-content" backgroundColor="#00296b" />
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{
               headerShown: false,
-              contentStyle: { backgroundColor: '#06285fff' },
+              contentStyle: { backgroundColor: '#ffffff' },
               animation: 'slide_from_right',
             }}
           >
