@@ -27,29 +27,29 @@ export const NavigationModal: React.FC<NavigationModalProps> = ({
           { 
             id: 'google' as const, 
             name: 'Google Maps', 
-            icon: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1762316423/maps_cehbgq.png' 
+            icon: 'https://res.cloudinary.com/db8efdixd/image/upload/v1765817214/maps_fcrn3m.png' 
           },
           { 
             id: 'waze' as const, 
             name: 'Waze', 
-            icon: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1762316163/waze_mcurkz.png' 
+            icon: 'https://res.cloudinary.com/db8efdixd/image/upload/v1765817214/waze_scnotu.png' 
           },
         ]
       : [
           { 
             id: 'google' as const, 
             name: 'Google Maps', 
-            icon: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1762316423/maps_cehbgq.png' 
+            icon: 'https://res.cloudinary.com/db8efdixd/image/upload/v1765817214/maps_fcrn3m.png' 
           },
           { 
             id: 'waze' as const, 
             name: 'Waze', 
-            icon: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1762316163/waze_mcurkz.png' 
+            icon: 'https://res.cloudinary.com/db8efdixd/image/upload/v1765817214/waze_scnotu.png' 
           },
           { 
             id: 'apple' as const, 
             name: 'Apple Maps', 
-            icon: 'https://res.cloudinary.com/dyc4ik1ko/image/upload/v1762316453/apple_iultng.png' 
+            icon: 'https://res.cloudinary.com/db8efdixd/image/upload/v1765817214/apple_elquix.png' 
           },
         ];
 
