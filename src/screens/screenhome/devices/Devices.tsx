@@ -246,10 +246,10 @@ const Devices = () => {
                 source={{
                   uri:
                     selectedVehiclePin === 's'
-                      ? 'https://res.cloudinary.com/dmamynahb/image/upload/v1764985196/UnidadK_mqqyfj.png'
+                      ? 'https://imagedelivery.net/o0E1jB_kGKnYacpYCBFmZA/51e41432-ac64-4377-4fa8-961164c56300/public'
                       : selectedVehiclePin === 'p'
-                      ? 'https://res.cloudinary.com/dmamynahb/image/upload/v1764986045/base_p01t73.png'
-                      : 'https://res.cloudinary.com/dmamynahb/image/upload/v1764986034/base_nvz2ke.png',
+                      ? 'https://imagedelivery.net/o0E1jB_kGKnYacpYCBFmZA/7fc1028c-1ed7-4da9-4f84-7e2b7705fb00/public'
+                      : 'https://imagedelivery.net/o0E1jB_kGKnYacpYCBFmZA/d93f75dd-bc5e-4cff-5a06-8765f34bcf00/public',
                 }}
                 style={styles.carImage}
               />
