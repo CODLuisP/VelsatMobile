@@ -5,6 +5,7 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
+  SafeAreaView,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -74,7 +75,7 @@ const Profile = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -144,14 +145,16 @@ const Profile = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+  <View style={[styles.container, { paddingBottom: bottomSpace  }]}>
+
       {/* Header */}
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+    <LinearGradient
+         colors={['#05194fff', '#05194fff', '#18223dff']}
+       start={{ x: 0, y: 0 }}
+       end={{ x: 0, y: 1 }}
+         style={[styles.header, { paddingTop: topSpace }]}
+       >
+
         <TouchableOpacity
           style={[styles.backButton, { top: insets.top + 10 }]}
           onPress={handleGoBack}
@@ -172,10 +175,8 @@ const Profile = () => {
         <Text style={styles.companyNameTitle}>
           {toUpperCaseText(user?.description || user?.name || 'Usuario')}
         </Text>
-      </View>
 
-      {/* Information Section */}
-      <View style={styles.infoSection}>
+         <View style={styles.infoSection}>
         <View style={styles.infoHeader}>
           <Info size={20} color="#e36414" />
           <Text style={styles.infoTitle}>Información</Text>
@@ -304,145 +305,144 @@ const Profile = () => {
         )}
       </View>
 
+        
+      </LinearGradient>
+
+      {/* Information Section */}
+     
+
       {/* FlatList con menú */}
-      <FlatList
-        data={[]}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={null}
-        ListHeaderComponent={() => (
-          <>
-            <View style={styles.menuSection}>
-              {tipo != 'c' && tipo != 'p' &&(
-                <>
-                  <Text style={styles.sectionTitle}>GENERAL</Text>
+<View style={styles.scrollContent}>
+  <View style={styles.scrollContentContainer}>
+    <View style={styles.menuSection}>
+      {tipo != 'c' && tipo != 'p' && (
+        <>
+          <Text style={styles.sectionTitle}>GENERAL</Text>
 
-                  <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={handleSettings}
-                    activeOpacity={0.96}
-                  >
-                    <View style={styles.menuItemLeft}>
-                      <View style={styles.iconContainer}>
-                        <Settings size={22} color="#e36414" />
-                      </View>
-                      <View style={styles.menuTextContainer}>
-                        <Text style={styles.menuText}>Configuración</Text>
-                        <Text style={styles.menuSubtext}>
-                          Ajustes de la aplicación
-                        </Text>
-                      </View>
-                    </View>
-                    <ChevronLeft
-                      size={20}
-                      color="#999"
-                      style={styles.chevronRight}
-                    />
-                  </TouchableOpacity>
-                </>
-              )}
-
-              {shouldShowMarkerAndNotifications && (
-                <>
-                  <TouchableOpacity
-                    style={styles.menuItem}
-                    onPress={handlePin}
-                    activeOpacity={0.96}
-                  >
-                    <View style={styles.menuItemLeft}>
-                      <View style={styles.iconContainer}>
-                        <Pin size={22} color="#e36414" />
-                      </View>
-                      <View style={styles.menuTextContainer}>
-                        <Text style={styles.menuText}>Marcadores</Text>
-                        <Text style={styles.menuSubtext}>
-                          Contenido guardado
-                        </Text>
-                      </View>
-                    </View>
-                    <ChevronLeft
-                      size={20}
-                      color="#999"
-                      style={styles.chevronRight}
-                    />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.menuItemEnd}
-                    onPress={handleNotifications}
-                    activeOpacity={0.96}
-                  >
-                    <View style={styles.menuItemLeft}>
-                      <View style={styles.iconContainer}>
-                        <Megaphone size={22} color="#e36414" />
-                      </View>
-                      <View style={styles.menuTextContainer}>
-                        <Text style={styles.menuText}>Notificaciones</Text>
-                        <Text style={styles.menuSubtext}>Alertas y avisos</Text>
-                      </View>
-                    </View>
-                    <ChevronLeft
-                      size={20}
-                      color="#999"
-                      style={styles.chevronRight}
-                    />
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-
-            <View style={styles.menuSection}>
-              <Text style={styles.sectionTitle}>CUENTA</Text>
-
-              <TouchableOpacity
-                style={[styles.menuItemEnd]}
-                onPress={handleLogout}
-                activeOpacity={0.96}
-              >
-                <View style={styles.menuItemLeft}>
-                  <View
-                    style={[styles.iconContainer, styles.logoutIconContainer]}
-                  >
-                    <LogOut size={22} color="#dc2626" />
-                  </View>
-                  <Text style={[styles.menuText, styles.logoutText]}>
-                    Cerrar sesión
-                  </Text>
-                </View>
-                <ChevronLeft
-                  size={20}
-                  color="#dc2626"
-                  style={styles.chevronRight}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.footerContainer}>
-              <View style={styles.companyCard}>
-                <View style={styles.companyHeader}>
-                  <View style={styles.companyLogoPlaceholder}>
-                    <Image
-                      source={require('../../../assets/logoV.jpeg')}
-                      style={styles.avatarImageV}
-                    />
-                  </View>
-                  <View style={styles.companyDetails}>
-                    <Text style={styles.companyName}>VELSAT SAC</Text>
-                    <Text style={styles.companyLocation}>Lima - Perú</Text>
-                    <Text style={styles.companyLocation}>
-                      RUC - 20202020202202
-                    </Text>
-                  </View>
-                </View>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={handleSettings}
+            activeOpacity={0.96}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={styles.iconContainer}>
+                <Settings size={22} color="#e36414" />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.menuText}>Configuración</Text>
+                <Text style={styles.menuSubtext}>
+                  Ajustes de la aplicación
+                </Text>
               </View>
             </View>
-          </>
-        )}
-        style={styles.scrollContent}
-        contentContainerStyle={styles.scrollContentContainer}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={false}
-      />
-    </LinearGradient>
+            <ChevronLeft
+              size={20}
+              color="#999"
+              style={styles.chevronRight}
+            />
+          </TouchableOpacity>
+        </>
+      )}
+
+      {shouldShowMarkerAndNotifications && (
+        <>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={handlePin}
+            activeOpacity={0.96}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={styles.iconContainer}>
+                <Pin size={22} color="#e36414" />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.menuText}>Marcadores</Text>
+                <Text style={styles.menuSubtext}>
+                  Contenido guardado
+                </Text>
+              </View>
+            </View>
+            <ChevronLeft
+              size={20}
+              color="#999"
+              style={styles.chevronRight}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItemEnd}
+            onPress={handleNotifications}
+            activeOpacity={0.96}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={styles.iconContainer}>
+                <Megaphone size={22} color="#e36414" />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.menuText}>Notificaciones</Text>
+                <Text style={styles.menuSubtext}>Alertas y avisos</Text>
+              </View>
+            </View>
+            <ChevronLeft
+              size={20}
+              color="#999"
+              style={styles.chevronRight}
+            />
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
+
+    <View style={styles.menuSection}>
+      <Text style={styles.sectionTitle}>CUENTA</Text>
+
+      <TouchableOpacity
+        style={[styles.menuItemEnd]}
+        onPress={handleLogout}
+        activeOpacity={0.96}
+      >
+        <View style={styles.menuItemLeft}>
+          <View
+            style={[styles.iconContainer, styles.logoutIconContainer]}
+          >
+            <LogOut size={22} color="#dc2626" />
+          </View>
+          <Text style={[styles.menuText, styles.logoutText]}>
+            Cerrar sesión
+          </Text>
+        </View>
+        <ChevronLeft
+          size={20}
+          color="#dc2626"
+          style={styles.chevronRight}
+        />
+      </TouchableOpacity>
+    </View>
+
+    <View style={styles.footerContainer}>
+      <View style={styles.companyCard}>
+        <View style={styles.companyHeader}>
+          <View style={styles.companyLogoPlaceholder}>
+            <Image
+              source={require('../../../assets/logoV.jpeg')}
+              style={styles.avatarImageV}
+            />
+          </View>
+          <View style={styles.companyDetails}>
+            <Text style={styles.companyName}>VELSAT SAC</Text>
+            <Text style={styles.companyLocation}>Lima - Perú</Text>
+            <Text style={styles.companyLocation}>
+              RUC - 20202020202202
+            </Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+  
+
+    </View>
   );
 };
 

@@ -4,14 +4,12 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
+header: {
     paddingBottom: 80,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
+
+    height: 380,
+    width: '100%',
     alignItems: 'center',
-    position: 'relative',
-    zIndex: 1,
   },
   backButton: {
     position: 'absolute',
@@ -52,20 +50,16 @@ export const styles = StyleSheet.create({
   // Info Section
   infoSection: {
     backgroundColor: '#fff',
-    marginHorizontal: 20,
-    marginTop: -60,
-    marginBottom: 20,
     borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-    zIndex: 2,
+    width: '90%',
+    marginTop: 15,
+ 
   },
+
+
+
+
+
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -105,13 +99,14 @@ export const styles = StyleSheet.create({
 
   // Scroll Content (igual que devicesList en Devices)
   scrollContent: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    marginTop: -30,
+    paddingVertical: 20,
   },
   scrollContentContainer: {
-    paddingVertical: 20,
+    paddingVertical: 0,
   },
 
   // Menu Section
