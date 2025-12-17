@@ -116,7 +116,6 @@ const Devices = () => {
           latitude: apiDevice.lastValidLatitude,
           longitude: apiDevice.lastValidLongitude,
         }))
-        // ✅ Ordenar solo por el campo "name" (alfabético y numérico)
         .sort((a, b) =>
           a.name.localeCompare(b.name, undefined, { numeric: true }),
         );

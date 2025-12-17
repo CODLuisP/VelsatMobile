@@ -95,7 +95,7 @@ const DetailDevice = () => {
   } | null>(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-const [connectionStatus, setConnectionStatus] = useState<  // ✅ Agregado 
+const [connectionStatus, setConnectionStatus] = useState< 
     'connecting' | 'connected' | 'disconnected' | 'error'
   >('connecting');
 
@@ -266,7 +266,7 @@ useEffect(() => {
   };
 }, []);
 
-  // ✅ Handlers
+
   const handleOpenMaps = () => {
     if (!vehicleData) return;
     
@@ -300,7 +300,6 @@ useEffect(() => {
     setIsInfoExpanded(!isInfoExpanded);
   };
 
-  // ✅ Variables derivadas
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
   const speed = vehicleData?.lastValidSpeed || 0;
