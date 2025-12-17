@@ -4,7 +4,19 @@ import VersionCheck from 'react-native-version-check';
 import { Alert, Linking } from 'react-native';
 
 const IOS_APP_ID = '6755132444';
-const FALLBACK_VERSION = '2.2.9';
+const FALLBACK_VERSION = '2.3.0';
+
+// ✅ Función para comparar versiones semánticamente
+const isNewerVersion = (latestVersion, currentVersion) => {
+  const latest = latestVersion.split('.').map(Number);
+  const current = currentVersion.split('.').map(Number);
+  
+  for (let i = 0; i < 3; i++) {
+    if (latest[i] > current[i]) return true;
+    if (latest[i] < current[i]) return false;
+  }
+  return false;
+};
 
 export const checkForUpdates = async () => {
   try {
@@ -28,23 +40,24 @@ export const checkForUpdates = async () => {
         ...(Platform.OS === 'ios' && { appID: IOS_APP_ID }),
       });
       
-      // 🔍 LOGS DETALLADOS PARA DEBUG
-      console.log('===== DEBUG VERSIONES =====');
-      console.log('currentVersion:', currentVersion);
-      console.log('latestVersion:', latestVersion);
-      console.log('currentVersion type:', typeof currentVersion);
-      console.log('latestVersion type:', typeof latestVersion);
-      console.log('Son iguales?:', currentVersion === latestVersion);
-      console.log('Comparación con trim:', currentVersion.trim() === latestVersion.trim());
-      console.log('===========================');
-      
-      // Limpiar espacios en blanco y comparar
-      needsUpdate = currentVersion.trim() !== latestVersion.trim();
+      if (!latestVersion) {
+        console.log('⚠️ No se pudo obtener versión de la tienda');
+        needsUpdate = false;
+        latestVersion = currentVersion;
+      } else {
+        console.log('===== DEBUG VERSIONES =====');
+        console.log('currentVersion:', currentVersion);
+        console.log('latestVersion:', latestVersion);
+        
+        // ✅ Comparar semánticamente: latestVersion es MAYOR que currentVersion
+        needsUpdate = isNewerVersion(latestVersion.trim(), currentVersion.trim());
+        
+        console.log('La tienda tiene versión más nueva?:', needsUpdate);
+        console.log('===========================');
+      }
       
     } catch (error) {
       console.log('❌ Error obteniendo versión de la tienda:', error);
-      
-      // Si hay error, NO forzar actualización
       needsUpdate = false;
       latestVersion = currentVersion;
     }
