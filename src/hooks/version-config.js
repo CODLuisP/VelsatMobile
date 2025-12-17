@@ -28,18 +28,30 @@ export const checkForUpdates = async () => {
         ...(Platform.OS === 'ios' && { appID: IOS_APP_ID }),
       });
       
-      needsUpdate = currentVersion !== latestVersion;
-    } catch (error) {
-      console.log('No se pudo obtener versión de la tienda');
+      // 🔍 LOGS DETALLADOS PARA DEBUG
+      console.log('===== DEBUG VERSIONES =====');
+      console.log('currentVersion:', currentVersion);
+      console.log('latestVersion:', latestVersion);
+      console.log('currentVersion type:', typeof currentVersion);
+      console.log('latestVersion type:', typeof latestVersion);
+      console.log('Son iguales?:', currentVersion === latestVersion);
+      console.log('Comparación con trim:', currentVersion.trim() === latestVersion.trim());
+      console.log('===========================');
       
-      // 🔴 PARA PRUEBAS: Forzar actualización
-      needsUpdate = true;
-      latestVersion = '2.3.0';
+      // Limpiar espacios en blanco y comparar
+      needsUpdate = currentVersion.trim() !== latestVersion.trim();
+      
+    } catch (error) {
+      console.log('❌ Error obteniendo versión de la tienda:', error);
+      
+      // Si hay error, NO forzar actualización
+      needsUpdate = false;
+      latestVersion = currentVersion;
     }
     
-    console.log('Versión actual:', currentVersion);
-    console.log('Última versión:', latestVersion);
-    console.log('Necesita actualizar:', needsUpdate);
+    console.log('✅ Versión actual:', currentVersion);
+    console.log('✅ Última versión:', latestVersion);
+    console.log('✅ Necesita actualizar:', needsUpdate);
     
     return {
       needsUpdate,
@@ -47,12 +59,12 @@ export const checkForUpdates = async () => {
       latestVersion,
     };
   } catch (error) {
-    console.error('Error general verificando versión:', error);
+    console.error('❌ Error general verificando versión:', error);
     
     return {
-      needsUpdate: true,
+      needsUpdate: false,
       currentVersion: FALLBACK_VERSION,
-      latestVersion: '2.3.0',
+      latestVersion: FALLBACK_VERSION,
       error: error.message,
     };
   }
@@ -60,7 +72,6 @@ export const checkForUpdates = async () => {
 
 export const openStore = async () => {
   try {
-    // Verificar si estamos en un simulador
     const isSimulator = await VersionCheck.getCountry().catch(() => null) === null;
     
     if (isSimulator) {
@@ -72,11 +83,9 @@ export const openStore = async () => {
       return;
     }
 
-    // Intentar abrir con VersionCheck
     try {
       await VersionCheck.openStore();
     } catch (error) {
-      // Si falla, intentar abrir manualmente con la URL
       const storeUrl = Platform.OS === 'ios' 
         ? `https://apps.apple.com/app/id${IOS_APP_ID}`
         : `https://play.google.com/store/apps/details?id=com.velsat.mobile`;
