@@ -13,6 +13,8 @@ import Notifications from './src/screens/screenhome/Notifications';
 import MapAlert from './src/screens/screenhome/MapAlert';
 import Devices from './src/screens/screenhome/devices/Devices';
 import DetailDevice from './src/screens/screenhome/devices/DetailDevice';
+import DetailDeviceGM from './src/screens/screenhome/devices/DetailDeviceGM';
+
 import InfoDevice from './src/screens/screenhome/devices/InfoDevice';
 import Events from './src/screens/screenhome/devices/Events';
 import MapEvent from './src/screens/screenhome/devices/MapEvent';
@@ -115,6 +117,7 @@ export type RootStackParamList = {
   DetailDevice: {
     device: string; 
   };
+  DetailDeviceGM: { device: string };
 
   InfoDevice: {
     deviceName: string;
@@ -241,6 +244,8 @@ const App = () => {
                 <Stack.Screen name="MapAlert" component={MapAlert} />
                 <Stack.Screen name="Devices" component={Devices} />
                 <Stack.Screen name="DetailDevice" component={DetailDevice} />
+                <Stack.Screen name="DetailDeviceGM" component={DetailDeviceGM} />
+
                 <Stack.Screen name="InfoDevice" component={InfoDevice} />
                 <Stack.Screen name="Events" component={Events} />
                 <Stack.Screen name="MapEvent" component={MapEvent} />

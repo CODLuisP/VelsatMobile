@@ -73,9 +73,10 @@ const Devices = () => {
   });
   const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
 
-  const handleDetailDevice = (device: Device) => {
-    navigation.navigate('DetailDevice', { device: device.name });
-  };
+const handleDetailDevice = (device: Device) => {
+  const screenName = user?.username === 'cgacela' ? 'DetailDeviceGM' : 'DetailDevice';
+  navigation.navigate(screenName, { device: device.name });
+};
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();

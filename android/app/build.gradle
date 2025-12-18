@@ -89,8 +89,8 @@ android {
         applicationId "com.velsat.mobile"        
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 75
-        versionName "1.0.75"
+        versionCode 76
+        versionName "1.0.76"
     }
     signingConfigs {
         debug {
@@ -129,4 +129,9 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    // ⭐ AÑADE ESTAS LÍNEAS PARA GOOGLE MAPS
+    implementation 'com.google.android.gms:play-services-maps:18.1.0'
+    implementation 'com.google.android.gms:play-services-base:18.1.0'
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 }

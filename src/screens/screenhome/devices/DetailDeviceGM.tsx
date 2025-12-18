@@ -1,5 +1,5 @@
 import 'react-native-url-polyfill/auto';
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -22,9 +22,8 @@ import MapView, {
   Callout,
   Circle,
   Marker,
-  PROVIDER_DEFAULT,
+  PROVIDER_GOOGLE,
 } from 'react-native-maps';
-import { WebView } from 'react-native-webview';
 import {
   NavigationProp,
   useNavigation,
@@ -41,6 +40,7 @@ import {
   useNavigationMode,
 } from '../../../hooks/useNavigationMode';
 import { useAuthStore } from '../../../store/authStore';
+
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
 import { 
   formatDateTime, 
@@ -49,15 +49,11 @@ import {
   toUpperCaseText 
 } from '../../../utils/textUtils';
 import RadarDot from '../../../components/login/RadarDot';
-import {
-  DIRECTION_IMAGES,
-  getDirectionImage,
-  getDirectionImageData,
-} from '../../../styles/directionImages';
-import { generateLeafletHTML } from './leafletMapTemplate';
+
 import CoordinatesModal from './Coordinatesmodal';
 import { NavigationModal } from '../../../components/NavigationModal';
 import { Text } from '../../../components/ScaledComponents';
+import { getDirectionImage, getDirectionImageData } from '../../../styles/directionImagesGM';
 
 type DetailDeviceRouteProp = RouteProp<RootStackParamList, 'DetailDevice'>;
 
@@ -79,7 +75,7 @@ interface VehicleData {
   datosGeocercausu: any | null;
 }
 
-const DetailDevice = () => {
+const DetailDeviceGM = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<DetailDeviceRouteProp>();
   const [isInfoExpanded, setIsInfoExpanded] = useState(true);
@@ -95,11 +91,9 @@ const DetailDevice = () => {
   } | null>(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-const [connectionStatus, setConnectionStatus] = useState< 
+  const [connectionStatus, setConnectionStatus] = useState< 
     'connecting' | 'connected' | 'disconnected' | 'error'
   >('connecting');
-
-  const [isWebViewReady, setIsWebViewReady] = useState(false);
 
   const { user, server, selectedVehiclePin } = useAuthStore();
 
@@ -109,19 +103,19 @@ const [connectionStatus, setConnectionStatus] = useState<
     insets,
     navigationDetection.hasNavigationBar,
   );
+  
   const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('standard');
   const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
 
-  const [radarPulse, setRadarPulse] = useState({
-    wave1: 0,
-    wave2: 0.25,
-    wave3: 0.5,
-    wave4: 0.75,
-  });
+  // ✅ Estado del radar simplificado (un solo valor)
+  const [radarProgress, setRadarProgress] = useState(0);
 
   const isMountedRef = useRef(true);
-const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPollingRef = useRef(false);
+
+  const mapRef = useRef<MapView>(null);
+  const markerRef = useRef<any>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -137,20 +131,16 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (Platform.OS === 'ios' && vehicleData) {
-      const interval = setInterval(() => {
-        setRadarPulse(prev => ({
-          wave1: (prev.wave1 + 0.01) % 1,
-          wave2: (prev.wave2 + 0.01) % 1,
-          wave3: (prev.wave3 + 0.01) % 1,
-          wave4: (prev.wave4 + 0.01) % 1,
-        }));
-      }, 40);
+ // ✅ Animación del radar con múltiples ondas
+useEffect(() => {
+  if (vehicleData) {
+    const interval = setInterval(() => {
+      setRadarProgress(prev => (prev + 0.01) % 1);
+    }, 40);
 
-      return () => clearInterval(interval);
-    }
-  }, [vehicleData]);
+    return () => clearInterval(interval);
+  }
+}, [vehicleData]);
 
   const fetchVehicleData = async () => {
     if (isPollingRef.current) return;
@@ -240,32 +230,31 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     };
   }, [device, user?.username, server]);
 
-useEffect(() => {
-  const handleAppStateChange = (nextAppState: string) => {
-    if (nextAppState === 'active') {
-      if (!pollingIntervalRef.current && isMountedRef.current) {
-        fetchVehicleData();
-        pollingIntervalRef.current = setInterval(() => {
-          if (isMountedRef.current) {
-            fetchVehicleData();
-          }
-        }, 10000);
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        if (!pollingIntervalRef.current && isMountedRef.current) {
+          fetchVehicleData();
+          pollingIntervalRef.current = setInterval(() => {
+            if (isMountedRef.current) {
+              fetchVehicleData();
+            }
+          }, 10000);
+        }
+      } else {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
       }
-    } else {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-    }
-  };
+    };
 
-  const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
 
-  return () => {
-    subscription.remove();
-  };
-}, []);
-
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const handleOpenMaps = () => {
     if (!vehicleData) return;
@@ -314,97 +303,21 @@ useEffect(() => {
 
   const status = getStatus();
 
-  const getLeafletTileLayer = (type: 'standard' | 'satellite' | 'hybrid') => {
-    switch (type) {
-      case 'satellite':
-        return {
-          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          attribution: '&copy; Esri'
-        };
-      case 'hybrid':
-        return {
-          baseUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          overlayUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          attribution: '&copy; Esri &copy; OpenStreetMap'
-        };
-      default:
-        return {
-          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          attribution: '&copy; OpenStreetMap contributors'
-        };
-    }
-  };
-
-  const tileConfig = getLeafletTileLayer(mapType);
   const pinType = selectedVehiclePin || 's';
 
-  const iconSizes = pinType === 'c'
-    ? {
-      vertical: [35, 90] as [number, number],
-      horizontal: [90, 45] as [number, number],
-    }
-    : {
-      vertical: [30, 40] as [number, number],
-      horizontal: [55, 35] as [number, number],
-    };
+// useEffect para ir directo a la ubicación del vehículo
+useEffect(() => {
+  if (mapRef.current && vehicleData) {
+    mapRef.current?.setCamera({
+      center: { latitude, longitude },
+      zoom: 16,
+    });
+  }
+}, [vehicleData, latitude, longitude]);
 
-  const popupOffset = pinType === 'c' ? -50 : -30;
-
-  const leafletHTML = useMemo(() =>
-    generateLeafletHTML({
-      mapType,
-      tileConfig,
-      pinType,
-      DIRECTION_IMAGES,
-      iconSizes,
-      popupOffset
-    }),
-    [mapType, tileConfig, pinType, iconSizes, popupOffset]
-  );
-
-  const webViewRef = useRef<WebView>(null);
-  const mapRef = useRef<MapView>(null);
-  const markerRef = useRef<any>(null);
-
+  // useEffect para mostrar callout inicial
   useEffect(() => {
     if (
-      Platform.OS === 'android' &&
-      webViewRef.current &&
-      vehicleData &&
-      isWebViewReady
-    ) {
-      setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device}', '${device}'); true;`;
-        webViewRef.current?.injectJavaScript(script);
-      }, 100);
-    }
-  }, [
-    latitude,
-    longitude,
-    heading,
-    speed,
-    status,
-    vehicleData,
-    isWebViewReady,
-    mapType,
-  ]);
-
-  // ✅ useEffect para animación de cámara (iOS)
-  useEffect(() => {
-    if (Platform.OS === 'ios' && mapRef.current && vehicleData) {
-      setTimeout(() => {
-        mapRef.current?.animateCamera({
-          center: { latitude, longitude },
-          zoom: 16,
-        });
-      }, 300);
-    }
-  }, [vehicleData, latitude, longitude]);
-
-  // ✅ useEffect para mostrar callout inicial (iOS)
-  useEffect(() => {
-    if (
-      Platform.OS === 'ios' &&
       markerRef.current &&
       vehicleData &&
       !hasShownInitialCallout
@@ -412,210 +325,159 @@ useEffect(() => {
       setTimeout(() => {
         markerRef.current?.showCallout();
         setHasShownInitialCallout(true);
-      }, 300);
+      }, 500);
     }
   }, [vehicleData, hasShownInitialCallout]);
 
-  
+
+  // ✅ Actualizar callout cuando cambien los datos
+useEffect(() => {
+  if (markerRef.current && vehicleData && hasShownInitialCallout) {
+    markerRef.current?.hideCallout();
+    setTimeout(() => {
+      markerRef.current?.showCallout();
+    }, 100);
+  }
+}, [speed, heading, status]); // Se actualiza cuando cambian velocidad, dirección o estado
+
   const renderMap = () => {
-    if (Platform.OS === 'ios') {
-      const imageData = getDirectionImageData(heading);
+    const imageData = getDirectionImageData(heading);
 
-      const iosImageSize: [number, number] =
-        imageData.name === 'up.png' || imageData.name === 'down.png'
-          ? (pinType === 'c' ? [35, 90] : imageData.size)
-          : (pinType === 'c' ? [90, 50] : imageData.size);
+    const markerImageSize: [number, number] =
+      imageData.name === 'up.png' || imageData.name === 'down.png'
+        ? (pinType === 'c' ? [35, 90] : imageData.size)
+        : (pinType === 'c' ? [90, 50] : imageData.size);
 
-      const radarColor =
-        speed === 0
-          ? '#ef4444'
-          : speed > 0 && speed < 11
-            ? '#ff8000'
-            : speed >= 11 && speed < 60
-              ? '#38b000'
-              : '#00509d';
+    // ✅ Color del radar según velocidad
+    const radarColor =
+      speed === 0
+        ? '#ef4444'  // ROJO para detenido
+        : speed > 0 && speed < 11
+          ? '#fbbf24'  // AMARILLO para velocidad baja
+          : speed >= 11 && speed < 60
+            ? '#10b981'  // VERDE para velocidad media
+            : '#3b82f6';  // AZUL para velocidad alta
 
-      const wave1Radius = 10 + radarPulse.wave1 * 90;
-      const wave2Radius = 10 + radarPulse.wave2 * 90;
-      const wave3Radius = 10 + radarPulse.wave3 * 90;
-      const wave4Radius = 10 + radarPulse.wave4 * 90;
-
-      const getOpacity = (progress: number) => {
-        if (progress < 0.03 || progress > 0.8) return 0;
-        if (progress < 0.08) return ((progress - 0.03) / 0.05) * 0.2;
-        return (1 - progress) * 0.25;
-      };
-
-      const wave1Opacity = getOpacity(radarPulse.wave1);
-      const wave2Opacity = getOpacity(radarPulse.wave2);
-      const wave3Opacity = getOpacity(radarPulse.wave3);
-      const wave4Opacity = getOpacity(radarPulse.wave4);
-
-      return (
-        <>
-          <MapView
-            ref={mapRef}
-            provider={PROVIDER_DEFAULT}
-            style={styles.map}
-            mapType={mapType}
-            region={{
-              latitude: latitude,
-              longitude: longitude,
-              latitudeDelta: 0.008,
-              longitudeDelta: 0.008,
-            }}
-          >
-            {vehicleData && (
-              <>
-                {wave1Opacity > 0 && (
-                  <Circle
-                    center={{ latitude, longitude }}
-                    radius={wave1Radius}
-                    fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
-                    strokeWidth={2}
-                  />
-                )}
-                {wave2Opacity > 0 && (
-                  <Circle
-                    center={{ latitude, longitude }}
-                    radius={wave2Radius}
-                    fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
-                    strokeWidth={2}
-                  />
-                )}
-                {wave3Opacity > 0 && (
-                  <Circle
-                    center={{ latitude, longitude }}
-                    radius={wave3Radius}
-                    fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
-                    strokeWidth={2}
-                  />
-                )}
-                {wave4Opacity > 0 && (
-                  <Circle
-                    center={{ latitude, longitude }}
-                    radius={wave4Radius}
-                    fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
-                    strokeWidth={2}
-                  />
-                )}
-
-                <Marker
-                  ref={markerRef}
-                  key={device}
-                  anchor={{
-                    x: imageData.anchor[0] / imageData.size[0],
-                    y: imageData.anchor[1] / imageData.size[1],
-                  }}
-                  coordinate={{ latitude, longitude }}
-                >
-                  <Image
-                    source={getDirectionImage(heading, pinType)}
-                    style={{
-                      width: iosImageSize[0],
-                      height: iosImageSize[1],
-                    }}
-                    resizeMode="contain"
-                  />
-                  <Callout>
-                    <View style={{ padding: 0, minWidth: 230 }}>
-                      <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
-                        {toUpperCaseText(device)}
-                      </Text>
-                      <Text style={{ color: '#666' }}>
-                        {status} - {formatThreeDecimals(speed)} Km/h - {obtenerDireccion(heading)}
-                      </Text>
-                    </View>
-                  </Callout>
-                </Marker>
-              </>
-            )}
-          </MapView>
-
-          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
-            <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
-              onPress={() => setMapType('standard')}
-            >
-              <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
-                Calles
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
-              onPress={() => setMapType('satellite')}
-            >
-              <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
-                Satélite
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
-              onPress={() => setMapType('hybrid')}
-            >
-              <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
-                Híbrido
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      );
+    // ✅ Calcular radio y opacidad del radar (solo UN pulso)
+    const maxRadius = 100;
+    const radarRadius = 10 + radarProgress * maxRadius;
+    
+    // Opacidad que empieza en 0, sube rápido y baja lento
+    let radarOpacity = 0;
+    if (radarProgress < 0.1) {
+      radarOpacity = radarProgress * 3; // Sube rápido
+    } else if (radarProgress < 0.7) {
+      radarOpacity = 0.3; // Se mantiene
     } else {
-      return (
-        <>
-          <WebView
-            ref={webViewRef}
-            source={{ html: leafletHTML }}
-            style={styles.map}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-            scalesPageToFit={true}
-            mixedContentMode="compatibility"
-            onMessage={event => {
-              if (event.nativeEvent.data === 'webview-ready') {
-                setIsWebViewReady(true);
-              }
-            }}
-            onError={syntheticEvent => {
-              const { nativeEvent } = syntheticEvent;
-              console.error('WebView error:', nativeEvent);
-            }}
-          />
-
-          <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
-            <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
-              onPress={() => setMapType('standard')}
-            >
-              <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
-                Calles
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
-              onPress={() => setMapType('satellite')}
-            >
-              <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
-                Satélite
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
-              onPress={() => setMapType('hybrid')}
-            >
-              <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
-                Híbrido
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      );
+      radarOpacity = (1 - radarProgress) * 1.5; // Baja gradualmente
     }
+
+    return (
+      <>
+        <MapView
+          ref={mapRef}
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          mapType={mapType}
+          initialRegion={{
+            latitude: latitude,
+            longitude: longitude,
+            latitudeDelta: 0.008,
+            longitudeDelta: 0.008,
+          }}
+          showsUserLocation={false}
+          showsMyLocationButton={false}
+          showsCompass={true}
+          showsScale={true}
+          loadingEnabled={true}
+        >
+          {vehicleData && (
+            <>
+       {/* ✅ TRES ondas de radar desfasadas */}
+{radarOpacity > 0 && (
+  <>
+    <Circle
+      center={{ latitude, longitude }}
+      radius={radarRadius}
+      fillColor={`${radarColor}${Math.floor(radarOpacity * 100).toString(16).padStart(2, '0')}`}
+      strokeColor={`${radarColor}${Math.floor(radarOpacity * 180).toString(16).padStart(2, '0')}`}
+      strokeWidth={2}
+    />
+    <Circle
+      center={{ latitude, longitude }}
+      radius={10 + ((radarProgress + 0.33) % 1) * 100}
+      fillColor={`${radarColor}${Math.floor((radarProgress + 0.33) % 1 < 0.1 ? ((radarProgress + 0.33) % 1) * 300 : (radarProgress + 0.33) % 1 < 0.7 ? 100 : (1 - (radarProgress + 0.33) % 1) * 150).toString(16).padStart(2, '0')}`}
+      strokeColor={`${radarColor}${Math.floor((radarProgress + 0.33) % 1 < 0.1 ? ((radarProgress + 0.33) % 1) * 450 : (radarProgress + 0.33) % 1 < 0.7 ? 180 : (1 - (radarProgress + 0.33) % 1) * 270).toString(16).padStart(2, '0')}`}
+      strokeWidth={2}
+    />
+    <Circle
+      center={{ latitude, longitude }}
+      radius={10 + ((radarProgress + 0.66) % 1) * 100}
+      fillColor={`${radarColor}${Math.floor((radarProgress + 0.66) % 1 < 0.1 ? ((radarProgress + 0.66) % 1) * 300 : (radarProgress + 0.66) % 1 < 0.7 ? 100 : (1 - (radarProgress + 0.66) % 1) * 150).toString(16).padStart(2, '0')}`}
+      strokeColor={`${radarColor}${Math.floor((radarProgress + 0.66) % 1 < 0.1 ? ((radarProgress + 0.66) % 1) * 450 : (radarProgress + 0.66) % 1 < 0.7 ? 180 : (1 - (radarProgress + 0.66) % 1) * 270).toString(16).padStart(2, '0')}`}
+      strokeWidth={2}
+    />
+  </>
+)}
+
+           <Marker
+  ref={markerRef}
+  key={`marker-${device}-${heading}`}  
+  anchor={{ x: 0.5, y: 0.5 }}
+  coordinate={{ latitude, longitude }}
+>
+                <Image
+                  source={getDirectionImage(heading, pinType)}
+                  style={{
+                    width: markerImageSize[0],
+                    height: markerImageSize[1],
+                  }}
+                  resizeMode="contain"
+                />
+                <Callout>
+                  <View style={{ padding: 0, minWidth: 230 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
+                      {toUpperCaseText(device)}
+                    </Text>
+                    <Text style={{ color: '#666' }}>
+                      {status} - {formatThreeDecimals(speed)} Km/h - {obtenerDireccion(heading)}
+                    </Text>
+                  </View>
+                </Callout>
+              </Marker>
+            </>
+          )}
+        </MapView>
+
+        {/* Selector de tipo de mapa */}
+        <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
+          <TouchableOpacity
+            style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
+            onPress={() => setMapType('standard')}
+          >
+            <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
+              Calles
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
+            onPress={() => setMapType('satellite')}
+          >
+            <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
+              Satélite
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
+            onPress={() => setMapType('hybrid')}
+          >
+            <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
+              Híbrido
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    );
   };
 
   const getConnectionDisplay = () => {
@@ -638,6 +500,7 @@ useEffect(() => {
       <View style={styles.mapContainer}>
         {renderMap()}
 
+        {/* Overlay de carga */}
         {!vehicleData && (
           <View
             style={{
@@ -682,6 +545,7 @@ useEffect(() => {
           </View>
         )}
 
+        {/* Botón de regresar */}
         <TouchableOpacity
           style={[styles.floatingBackButton, { top: insets.top + 10 }]}
           onPress={handleGoBack}
@@ -691,6 +555,7 @@ useEffect(() => {
         </TouchableOpacity>
       </View>
 
+      {/* Panel de información */}
       <View
         style={[
           styles.infoPanel,
@@ -814,8 +679,7 @@ useEffect(() => {
                       disabled={!vehicleData}
                     >
                       <Image
-                                      source={require('../../../../assets/mapacamino.jpg')}
-
+                        source={require('../../../../assets/mapacamino.jpg')}
                         style={styles.streetViewImage}
                         resizeMode="cover"
                       />
@@ -859,6 +723,7 @@ useEffect(() => {
         )}
       </View>
 
+      {/* Modales */}
       {navigationCoords && (
         <NavigationModal
           visible={modalVisible}
@@ -878,4 +743,4 @@ useEffect(() => {
   );
 };
 
-export default DetailDevice;
+export default DetailDeviceGM;
