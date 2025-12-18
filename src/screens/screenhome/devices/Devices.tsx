@@ -74,7 +74,11 @@ const Devices = () => {
   const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
 
 const handleDetailDevice = (device: Device) => {
-  const screenName = user?.username === 'cgacela' ? 'DetailDeviceGM' : 'DetailDevice';
+  const screenName = Platform.OS === 'ios' 
+  ? 'DetailDevice'  
+  : user?.username === 'cgacela' 
+    ? 'DetailDeviceGM' 
+    : 'DetailDevice';
   navigation.navigate(screenName, { device: device.name });
 };
 
