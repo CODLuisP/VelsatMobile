@@ -112,7 +112,6 @@ const DetailDeviceGM = () => {
   );
   const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
 
-  // ✅ Estado del radar simplificado (un solo valor)
   const [radarProgress, setRadarProgress] = useState(0);
 
   const isMountedRef = useRef(true);
@@ -138,7 +137,6 @@ const DetailDeviceGM = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ Animación del radar con múltiples ondas
   useEffect(() => {
     if (vehicleData) {
       const interval = setInterval(() => {
@@ -338,7 +336,6 @@ const DetailDeviceGM = () => {
     }
   }, [vehicleData, hasShownInitialCallout]);
 
-  // ✅ Actualizar callout cuando cambien los datos
   useEffect(() => {
     if (markerRef.current && vehicleData && hasShownInitialCallout) {
       markerRef.current?.hideCallout();
@@ -346,7 +343,7 @@ const DetailDeviceGM = () => {
         markerRef.current?.showCallout();
       }, 100);
     }
-  }, [speed, heading, status]); // Se actualiza cuando cambian velocidad, dirección o estado
+  }, [speed, heading, status]);
 
   const renderMap = () => {
     const imageData = getDirectionImageData(heading);
@@ -360,7 +357,6 @@ const DetailDeviceGM = () => {
         ? [90, 50]
         : imageData.size;
 
-    // ✅ Color del radar según velocidad
     const radarColor =
       speed === 0
         ? '#ef4444' // ROJO para detenido
@@ -370,7 +366,6 @@ const DetailDeviceGM = () => {
         ? '#10b981' // VERDE para velocidad media
         : '#3b82f6'; // AZUL para velocidad alta
 
-    // ✅ Calcular radio y opacidad del radar (solo UN pulso)
     const maxRadius = 100;
     const radarRadius = 10 + radarProgress * maxRadius;
 
@@ -405,7 +400,6 @@ const DetailDeviceGM = () => {
         >
           {vehicleData && (
             <>
-              {/* ✅ TRES ondas de radar desfasadas */}
               {radarOpacity > 0 && (
                 <>
                   <Circle
