@@ -76,7 +76,7 @@ const Devices = () => {
 const handleDetailDevice = (device: Device) => {
   const screenName = Platform.OS === 'ios' 
   ? 'DetailDevice'  
-  : user?.username === 'rcmachacuay' 
+      : user?.username === 'rcmachacuay' || user?.username === 'vvwalter'
     ? 'DetailDeviceGM' 
     : 'DetailDevice';
   navigation.navigate(screenName, { device: device.name });

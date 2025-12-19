@@ -9,7 +9,7 @@ header: {
     height: Platform.OS === 'ios' ? 490 : 390,
     width: '100%',
     alignItems: 'center',
-marginTop: Platform.OS === 'ios' ? -85 : 0,
+    marginTop: Platform.OS === 'ios' ? -85 : 0,
     
   },
   backButton: {
