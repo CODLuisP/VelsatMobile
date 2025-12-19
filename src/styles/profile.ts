@@ -6,11 +6,10 @@ export const styles = StyleSheet.create({
   },
 header: {
 
-    height: 490,
+    height: Platform.OS === 'ios' ? 490 : 390,
     width: '100%',
     alignItems: 'center',
-    marginTop: -85,
-    paddingTop: 90,
+marginTop: Platform.OS === 'ios' ? -85 : 0,
     
   },
   backButton: {
