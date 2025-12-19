@@ -321,7 +321,7 @@ const Home: React.FC = () => {
       if (data && data.display_name) {
         setDireccionCoordenadas(data.display_name);
       } else if (data && data.error) {
-        setDireccionCoordenadas('Error API: ' + data.error);
+        setDireccionCoordenadas('Error API:' + data.error);
       } else {
         setDireccionCoordenadas('Sin dirección disponible');
       }

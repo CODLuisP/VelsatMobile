@@ -6,7 +6,7 @@ export const homeStyles = StyleSheet.create({
     backgroundColor: Platform.OS === 'ios' ? '#FFFFFF' : '#FFFFFF',
   },
   header: {
-    height: Platform.OS==='ios'? 240:225,
+    height: Platform.OS==='ios'? 245:228,
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
@@ -18,7 +18,7 @@ export const homeStyles = StyleSheet.create({
     right: 0,
     bottom: 0,
     width: '100%',
-    height: 230,
+    height: 240,
     resizeMode: 'cover',
   },
   backgroundOverlay: {
@@ -120,6 +120,7 @@ export const homeStyles = StyleSheet.create({
   locationLabel: {
     color: 'rgba(255,255,255,0.8)',
     fontSize: 12,
+    marginRight: 10,
   },
   locationText: {
     color: 'white',
