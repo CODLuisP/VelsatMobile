@@ -152,7 +152,7 @@ const Profile = () => {
          colors={['#05194fff', '#05194fff', '#18223dff']}
        start={{ x: 0, y: 0 }}
        end={{ x: 0, y: 1 }}
-         style={[styles.header, { paddingTop: topSpace }]}
+         style={[styles.header, { paddingTop: topSpace  }]}
        >
 
         <TouchableOpacity

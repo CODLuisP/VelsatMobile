@@ -5,11 +5,13 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
 header: {
-    paddingBottom: 80,
 
-    height: 380,
+    height: 490,
     width: '100%',
     alignItems: 'center',
+    marginTop: -85,
+    paddingTop: 90,
+    
   },
   backButton: {
     position: 'absolute',
@@ -19,6 +21,7 @@ header: {
   },
   avatarContainer: {
     marginBottom: 15,
+    marginTop: 20,
   },
   avatar: {
     width: 80,
