@@ -36,6 +36,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { AnimatedNavButton } from '../../components/AnimatedNavButton';
 import NavigationModal from '../../components/NavigationModal';
 import { Text } from '../../components/ScaledComponents';
+import GpsMobile from './rastreamientoGps/GpsMobile';
 
 type ServicesDetailDriverRouteProp = RouteProp<
   RootStackParamList,
@@ -101,6 +102,8 @@ const ServicesDetailDriver = () => {
   } | null>(null);
   const [showOrderWarning, setShowOrderWarning] = useState(false);
 
+
+
   // useEffect para consumir la API
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -112,13 +115,11 @@ const ServicesDetailDriver = () => {
           `https://do.velsat.pe:2053/api/Aplicativo/detalleServicioConductor/${serviceData.codservicio}`,
         );
 
-        // Guardar TODOS los pasajeros sin filtrar
         const allPassengers = response.data.sort(
           (a, b) => parseInt(a.orden) - parseInt(b.orden),
         );
-        setAllPassengers(allPassengers); // Nuevo estado para todos los pasajeros
+        setAllPassengers(allPassengers);
 
-        // ✅ DETECTAR SI HAY PASAJEROS SIN ORDEN
       const hasPassengersWithoutOrder = response.data.some(
         (p) => p.orden === null || p.orden === undefined || p.orden === ''
       );
@@ -146,7 +147,7 @@ const ServicesDetailDriver = () => {
       } catch (error) {
         setApiError('Error al obtener los detalles del servicio');
       } finally {
-        setIsLoading(false); // Termina loading
+        setIsLoading(false); 
       }
     };
 
@@ -158,7 +159,7 @@ const ServicesDetailDriver = () => {
 const passengersForModal = allPassengers.map(passenger => ({
   apellidos: passenger.codlan === '4175' 
     ? 'Destino Aeropuerto Jorge Chavez' 
-    : (passenger.apellidos || 'SIN NOMBRE'), // ✅ Lógica condicional
+    : (passenger.apellidos || 'SIN NOMBRE'),
   codpedido: passenger.codpedido,
   orden: passenger.orden,
   wx: passenger.wx,
@@ -167,7 +168,7 @@ const passengersForModal = allPassengers.map(passenger => ({
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -223,16 +224,13 @@ const passengersForModal = allPassengers.map(passenger => ({
   };
   
 const openGoogleMapsPassenger = (isPickup: boolean): void => {
-  // Determinar qué coordenadas usar según el tipo y si es recojo o destino
   let latitude: string | undefined;
   let longitude: string | undefined;
 
   if (isPickup) {
-    // Para lugar de recojo
     latitude = isEntrada ? currentPassenger?.wy : orderZeroPassenger?.wy;
     longitude = isEntrada ? currentPassenger?.wx : orderZeroPassenger?.wx;
   } else {
-    // Para destino de viaje
     latitude = isEntrada ? orderZeroPassenger?.wy : currentPassenger?.wy;
     longitude = isEntrada ? orderZeroPassenger?.wx : currentPassenger?.wx;
   }
@@ -243,7 +241,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
     handleShowAlert(
       'Ubicación no disponible',
       'No hay coordenadas registradas para esta ubicación.',
-      '#FFA726', // Naranja - Advertencia
+      '#FFA726', 
     );
     return;
   }
@@ -266,7 +264,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
   ): string => {
     if (!passenger) return '-';
 
-    // Si el codlan es "4175", mostrar datos del aeropuerto
+ 
     if (passenger.codlan === '4175') {
       switch (field) {
         case 'direccion':
@@ -282,7 +280,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
       }
     }
 
-    // Si no es "4175", usar los datos normales
+
     switch (field) {
       case 'direccion':
         return passenger.direccion || '-';
@@ -298,16 +296,14 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
   };
 
   const actualizarPasajeros = (usuario: string, pasajeros: number): string => {
-    // Convertir a número si viene como string
     let numeroPasajeros =
       typeof pasajeros === 'string' ? parseInt(pasajeros) : pasajeros;
 
-    // Validar que sea un número válido
+ 
     if (isNaN(numeroPasajeros)) {
       numeroPasajeros = 0;
     }
 
-    // Definir el valor a restar según el tipo de usuario
     let valorARestar;
 
     switch (usuario.toLowerCase()) {
@@ -315,33 +311,36 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
         valorARestar = 1;
         break;
       default:
-        valorARestar = 0; // No resta nada por defecto
+        valorARestar = 0; 
     }
 
-    // Restar y asegurar que no sea negativo
     numeroPasajeros = Math.max(0, numeroPasajeros - valorARestar);
 
-    // Retornar como string
     return numeroPasajeros.toString();
   };
 
   const topSpace = insets.top + 5;
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+       <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+   
+     <LinearGradient
+           colors={['#05194fff', '#05194fff', '#18223dff']}
+           start={{ x: 0, y: 0 }}
+           end={{ x: 0, y: 1 }}
+           style={[styles.header, { paddingTop: topSpace }]}
+         >
+
+        
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Detalles del servicio</Text>
         </View>
-      </View>
+
+
+  </LinearGradient>
 
       {isLoading ? (
         // Loading
@@ -373,6 +372,34 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
           contentContainerStyle={{ paddingBottom: 20 }}
         >
           <View style={styles.formContainer}>
+
+
+                <View style={styles.gpsAlert}>
+      <View style={styles.gpsAlertHeader}>
+
+
+        <GpsMobile />
+        {/* <MapPin size={24} color="#FF6B35" />
+        <Text style={styles.gpsAlertTitle}>Rastreo GPS</Text> */}
+      </View>
+      
+      <Text style={styles.gpsAlertMessage}>
+        Para iniciar el servicio, activa tu ubicación GPS
+      </Text>
+      
+      <TouchableOpacity style={styles.gpsActivateButton}>
+        <MapPin size={20} color="#fff" />
+        <Text style={styles.gpsActivateButtonText}>Activar GPS</Text>
+      </TouchableOpacity>
+      
+      <View style={styles.gpsStatusIndicator}>
+        <View style={styles.gpsStatusDot} />
+        <Text style={styles.gpsStatusText}>GPS desactivado</Text>
+      </View>
+    </View>
+
+          
+
             {/* Indicador de Pasajero */}
             <View style={styles.passengerIndicator}>
               <Text style={styles.passengerIndicatorLabel}>
@@ -779,7 +806,7 @@ const openGoogleMapsPassenger = (isPickup: boolean): void => {
           longitude={navigationCoords.longitude}
         />
       )}
-    </LinearGradient>
+ </View>
   );
 };
 

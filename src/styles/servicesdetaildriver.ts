@@ -1,12 +1,13 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    marginTop: Platform.OS === 'ios' ? -60 : 0,
+    height: Platform.OS === 'ios' ? 200 : 110,
+ 
   },
   headerTop: {
     flexDirection: 'row',
@@ -25,7 +26,8 @@ export const styles = StyleSheet.create({
   },
   contentList: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
+    marginTop: -25,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -295,4 +297,63 @@ export const styles = StyleSheet.create({
     justifyContent:'center',
     width:120
   },
+
+  gpsAlert: {
+  backgroundColor: '#FFF5F2',
+  borderRadius: 12,
+  padding: 16,
+  margin: 10,
+  borderWidth: 2,
+  borderColor: '#FF6B35',
+},
+gpsAlertHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 8,
+  gap: 8,
+},
+gpsAlertTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#FF6B35',
+},
+gpsAlertMessage: {
+  fontSize: 14,
+  color: '#666',
+  marginBottom: 12,
+  lineHeight: 20,
+},
+gpsActivateButton: {
+  backgroundColor: '#FF6B35',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+  gap: 8,
+  marginBottom: 12,
+},
+gpsActivateButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+gpsStatusIndicator: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+},
+gpsStatusDot: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: '#FF6B35',
+},
+gpsStatusText: {
+  fontSize: 13,
+  color: '#666',
+  fontWeight: '500',
+},
 });
