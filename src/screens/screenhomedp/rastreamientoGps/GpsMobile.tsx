@@ -1,78 +1,73 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
+  TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   Platform,
   PermissionsAndroid,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import BackgroundLocationService from './BackgroundLocationService';
-import {sendLocationToApi, initializeApiService, stopApiService} from '../../../services/ApiService';
 import SimpleLocationView from './SimpleLocationView';
+import BackgroundLocationService from './BackgroundLocationService';
+import { sendLocationToApi, initializeApiService, stopApiService } from '../../../services/ApiService';
 
-interface LocationData {
-  latitude: number;
-  longitude: number;
-  speed: number;
-  heading: number;
-}
+const GpsMobile = () => {
+  const [ubicacion, setUbicacion] = useState<{
+    lat: number;
+    lon: number;
+    speed: number | null;
+    heading: number | null;
+  } | null>(null);
+  
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [rastreando, setRastreando] = useState(false);
+  
+  const watchIdRef = useRef<number | null>(null);
 
-// ⭐ VARIABLES GLOBALES para mantener el estado entre montajes
-let globalLocation: LocationData | null = null;
-let isInitialized = false;
-let globalWatchId: number | null = null;
+  const [modalAlertVisible, setModalAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+  });
 
-const GpsMobile: React.FC = () => {
-  const [location, setLocation] = useState<LocationData | null>(globalLocation);
-  const [isGettingLocation, setIsGettingLocation] = useState<boolean>(!isInitialized);
-  const [hasError, setHasError] = useState<boolean>(false);
-  const watchIdRef = useRef<number | null>(globalWatchId);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousLocationRef = useRef<{latitude: number; longitude: number} | null>(null);
-  const currentHeadingRef = useRef<number>(0);
+  const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: '',
+    message: '',
+    color: '',
+    onConfirm: () => {},
+    confirmText: '',
+    cancelText: '',
+  });
 
-  const calculateHeading = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const lat1Rad = lat1 * Math.PI / 180;
-    const lat2Rad = lat2 * Math.PI / 180;
-
-    const y = Math.sin(dLon) * Math.cos(lat2Rad);
-    const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) -
-              Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
-
-    let heading = Math.atan2(y, x) * 180 / Math.PI;
-    heading = (heading + 360) % 360;
-
-    return heading;
+  const handleShowAlert = (title: string, message: string, color?: string) => {
+    setAlertConfig({ title, message, color: color || '' });
+    setModalAlertVisible(true);
   };
 
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+  const handleShowConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    color?: string,
+    confirmText?: string,
+    cancelText?: string,
+  ) => {
+    setConfirmConfig({
+      title,
+      message,
+      color: color || '#FFA726',
+      onConfirm,
+      confirmText: confirmText || 'Aceptar',
+      cancelText: cancelText || 'Cancelar',
+    });
+    setModalConfirmVisible(true);
   };
 
-  const requestLocationPermission = async (): Promise<boolean> => {
+  const solicitarPermisosUbicacion = async (): Promise<boolean> => {
     if (Platform.OS === 'android') {
       try {
         const granted = await PermissionsAndroid.requestMultiple([
@@ -87,6 +82,7 @@ const GpsMobile: React.FC = () => {
           return false;
         }
 
+        // 🔥 Permisos de ubicación en segundo plano (Android 10+)
         if (Platform.Version >= 29) {
           await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
@@ -102,211 +98,265 @@ const GpsMobile: React.FC = () => {
     return true;
   };
 
-  const startLocationTracking = () => {
-    // Si ya hay un watch activo, no crear otro
-    if (globalWatchId !== null) {
-      console.log('⚠️ Ya hay un watch activo, usando el existente');
-      return;
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      if (!globalLocation) {
-        console.log('⏱️ Timeout - obteniendo ubicación rápida');
-        Geolocation.getCurrentPosition(
-          position => {
-            const {latitude, longitude, speed, heading} = position.coords;
-            const initialHeading = heading && heading >= 0 ? heading : 0;
-            currentHeadingRef.current = initialHeading;
-            
-            const newLocation = {
-              latitude, 
-              longitude, 
-              speed: speed || 0,
-              heading: initialHeading
-            };
-            
-            setLocation(newLocation);
-            globalLocation = newLocation;
-            setIsGettingLocation(false);
-            isInitialized = true;
-            
-            previousLocationRef.current = {latitude, longitude};
-
-            sendLocationToApi({
-              lastValidLatitude: latitude,
-              lastValidLongitude: longitude,
-              lastValidHeading: initialHeading,
-              lastValidSpeed: speed || 0,
-            });
-          },
-          error => {
-            console.error('Error en ubicación rápida:', error);
-            setHasError(true);
-            setIsGettingLocation(false);
-          },
-          {
-            enableHighAccuracy: false,
-            timeout: 5000,
-            maximumAge: 10000,
-          }
-        );
-      }
-    }, 3000);
-
-    globalWatchId = Geolocation.watchPosition(
-      position => {
-        const {latitude, longitude, speed, heading: gpsHeading} = position.coords;
-        
-        let finalHeading = currentHeadingRef.current;
-
-        if (previousLocationRef.current) {
-          const distance = calculateDistance(
-            previousLocationRef.current.latitude,
-            previousLocationRef.current.longitude,
-            latitude,
-            longitude
-          );
-
-          if (distance >= 2) {
-            if (gpsHeading !== null && gpsHeading !== undefined && gpsHeading >= 0) {
-              finalHeading = gpsHeading;
-            } else {
-              finalHeading = calculateHeading(
-                previousLocationRef.current.latitude,
-                previousLocationRef.current.longitude,
-                latitude,
-                longitude
-              );
-            }
-            
-            currentHeadingRef.current = finalHeading;
-          }
-        }
-
-        if (!globalLocation) {
-          setIsGettingLocation(false);
-          isInitialized = true;
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-        }
-        
-        const newLocation = {
-          latitude,
-          longitude,
-          speed: speed || 0,
-          heading: finalHeading
-        };
-        
-        setLocation(newLocation);
-        globalLocation = newLocation;
-
-        previousLocationRef.current = {latitude, longitude};
-
-        sendLocationToApi({
-          lastValidLatitude: latitude,
-          lastValidLongitude: longitude,
-          lastValidHeading: finalHeading,
-          lastValidSpeed: speed || 0,
-        });
-      },
-      error => {
-        console.error('Error en watchPosition:', error);
-        setHasError(true);
-        setIsGettingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        distanceFilter: 2,
-        interval: 1000,
-        fastestInterval: 500,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-
-    watchIdRef.current = globalWatchId;
-  };
-
-  const initializeApp = async () => {
-    // Si ya está inicializado, no volver a inicializar
-    if (isInitialized) {
-      console.log('✅ GPS ya inicializado, usando datos existentes');
-      return;
+  const verificarYActivarGPS = async (): Promise<boolean> => {
+    if (Platform.OS !== 'android') {
+      return true;
     }
 
     try {
-      Geolocation.setRNConfiguration({
-        skipPermissionRequests: false,
-        authorizationLevel: 'always',
+      const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
+
+      await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+        interval: 10000,
       });
 
-      const hasPermission = await requestLocationPermission();
-      if (!hasPermission) {
-        setIsGettingLocation(false);
-        setHasError(true);
-        return;
+      return true;
+    } catch (error: any) {
+      if (error.message && error.message.includes('AndroidLocationEnabler')) {
+        return true;
       }
 
-      await initializeApiService();
+      if (error.code === 'ERR00') {
+        handleShowConfirm(
+          'GPS Desactivado',
+          'Para usar esta función, necesitas activar el GPS. ¿Deseas activarlo ahora?',
+          async () => {
+            try {
+              const RNAndroidLocationEnabler = require('react-native-android-location-enabler');
+              await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+                interval: 10000,
+              });
+            } catch (err) {}
+          },
+          '#FFA726',
+          'Activar GPS',
+          'Cancelar',
+        );
+        return false;
+      } else if (error.code === 'ERR01') {
+        handleShowAlert(
+          'GPS No Disponible',
+          'Los servicios de ubicación están deshabilitados en tu dispositivo',
+          '#e36414',
+        );
+        return false;
+      } else if (error.code === 'ERR02') {
+        return false;
+      }
 
-      startLocationTracking();
-
-      BackgroundLocationService.initialize()
-        .then(() => BackgroundLocationService.start())
-        .catch(e => console.error('Error servicio segundo plano:', e));
-
-    } catch (e) {
-      console.error('Error inicializando app:', e);
-      setIsGettingLocation(false);
-      setHasError(true);
+      return false;
     }
   };
 
-  useEffect(() => {
-    initializeApp();
+  const detenerRastreo = async () => {
+    if (watchIdRef.current !== null) {
+      Geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    
+    setRastreando(false);
+    setCargando(false);
 
-    // NO limpiar el watch cuando se desmonta
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+    // 🔥 Detener servicios de fondo
+    try {
+      await BackgroundLocationService.stop();
+      await stopApiService();
+      console.log('✅ Servicios de fondo detenidos');
+    } catch (error) {
+      console.error('Error deteniendo servicios:', error);
+    }
+  };
+
+  const convertirVelocidad = (speedMs: number | null): number => {
+    if (speedMs === null || speedMs < 0) return 0;
+    return parseFloat((speedMs * 3.6).toFixed(2));
+  };
+
+  const obtenerDireccionCardinal = (heading: number | null): string => {
+    if (heading === null || heading < 0) return 'N/A';
+    
+    const direcciones = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+    const index = Math.round(heading / 45) % 8;
+    return direcciones[index];
+  };
+
+  const obtenerUbicacion = async (): Promise<void> => {
+    try {
+      setCargando(true);
+      setError(null);
+
+      const tienePermiso = await solicitarPermisosUbicacion();
+
+      if (!tienePermiso) {
+        setError('Permiso de ubicación denegado');
+        setCargando(false);
+        return;
       }
-      // NO detener el servicio de fondo ni el API service
+
+      const gpsActivado = await verificarYActivarGPS();
+
+      if (!gpsActivado) {
+        setError('GPS desactivado. Por favor activa el GPS.');
+        setCargando(false);
+        return;
+      }
+
+      // 🔥 Inicializar servicios de API y segundo plano
+      try {
+        await initializeApiService();
+        await BackgroundLocationService.initialize();
+        await BackgroundLocationService.start();
+        console.log('✅ Servicios de fondo iniciados');
+      } catch (error) {
+        console.error('Error iniciando servicios:', error);
+      }
+
+      // 🚀 PASO 1: Obtener ubicación RÁPIDA primero
+      Geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude, speed, heading } = position.coords;
+
+          const nuevaUbicacion = {
+            lat: parseFloat(latitude.toFixed(6)),
+            lon: parseFloat(longitude.toFixed(6)),
+            speed: speed,
+            heading: heading,
+          };
+
+          setUbicacion(nuevaUbicacion);
+          setCargando(false);
+          setRastreando(true);
+
+          // 🔥 Enviar primera ubicación a la API
+          sendLocationToApi({
+            lastValidLatitude: latitude,
+            lastValidLongitude: longitude,
+            lastValidHeading: heading || 0,
+            lastValidSpeed: speed || 0,
+          });
+
+          // 🚀 PASO 2: Activar rastreo continuo DESPUÉS de la primera ubicación
+          watchIdRef.current = Geolocation.watchPosition(
+            (watchPosition) => {
+              const { latitude: lat, longitude: lon, speed: spd, heading: hdg } = watchPosition.coords;
+
+              const ubicacionActualizada = {
+                lat: parseFloat(lat.toFixed(6)),
+                lon: parseFloat(lon.toFixed(6)),
+                speed: spd,
+                heading: hdg,
+              };
+
+              setUbicacion(ubicacionActualizada);
+
+              // 🔥 Enviar ubicación a la API en cada actualización
+              sendLocationToApi({
+                lastValidLatitude: lat,
+                lastValidLongitude: lon,
+                lastValidHeading: hdg || 0,
+                lastValidSpeed: spd || 0,
+              });
+            },
+            (error) => {
+              console.error('Error watchPosition:', error);
+            },
+            {
+              enableHighAccuracy: true,
+              distanceFilter: 2, // 🔥 Cambié a 2 metros como el segundo archivo
+              interval: 1000, // 🔥 Más frecuente para mejor tracking
+              fastestInterval: 500,
+            }
+          );
+        },
+        (error) => {
+          console.error('Error getCurrentPosition:', error);
+          setError(`Error: ${error.message}`);
+          setCargando(false);
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 60000,
+        }
+      );
+
+    } catch (error) {
+      setError('Error al obtener ubicación');
+      setCargando(false);
+      setRastreando(false);
+    }
+  };
+
+  // 🔥 useEffect para configurar Geolocation al montar
+  useEffect(() => {
+    Geolocation.setRNConfiguration({
+      skipPermissionRequests: false,
+      authorizationLevel: 'always',
+    });
+
+    // 🔥 Cleanup al desmontar (opcional, depende de tu necesidad)
+    return () => {
+      // Si quieres que continúe en segundo plano, NO descomentar esto:
+      // detenerRastreo();
     };
   }, []);
 
   return (
     <View style={styles.container}>
-      {isGettingLocation ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#FF6B35" />
-          <Text style={styles.loadingText}>Obteniendo GPS...</Text>
+      <TouchableOpacity
+        style={[styles.boton, cargando && styles.disabled]}
+        onPress={rastreando ? detenerRastreo : obtenerUbicacion}
+        disabled={cargando && !rastreando}
+      >
+        <Text style={styles.texto}>
+          {cargando && !rastreando
+            ? 'Obteniendo ubicación…'
+            : rastreando
+            ? '⏹ Detener rastreo'
+            : '📍 Obtener ubicación'}
+        </Text>
+      </TouchableOpacity>
+
+      {rastreando && (
+        <View style={styles.statusBox}>
+          <Text style={styles.statusText}>🟢 Rastreando en tiempo real</Text>
         </View>
-      ) : location ? (
-        <View style={styles.gpsInfo}>
-          <View style={styles.statusIndicator}>
-            <View style={styles.statusDot} />
-            <Text style={styles.statusText}>GPS Activo</Text>
-          </View>
-          <Text style={styles.coordText}>
-            📍 {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+      )}
+
+      {error && (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>❌ {error}</Text>
+        </View>
+      )}
+
+      {ubicacion && (
+        <View style={styles.box}>
+          <Text style={styles.title}>📍 Ubicación actual</Text>
+          
+          <Text style={styles.coord}>Lat: {ubicacion.lat}</Text>
+          <Text style={styles.coord}>Lon: {ubicacion.lon}</Text>
+          
+          <View style={styles.separator} />
+          
+          <Text style={styles.coord}>
+            🚗 Velocidad: {convertirVelocidad(ubicacion.speed)} km/h
           </Text>
-          <Text style={styles.speedText}>
-            🚗 {(location.speed * 3.6).toFixed(1)} km/h
+          
+          <Text style={styles.coord}>
+            🧭 Rumbo: {ubicacion.heading !== null && ubicacion.heading >= 0 
+              ? `${ubicacion.heading.toFixed(0)}° (${obtenerDireccionCardinal(ubicacion.heading)})`
+              : 'N/A'}
           </Text>
 
-              <SimpleLocationView 
-              latitude={location.latitude} 
-              longitude={location.longitude}
-              speed={location.speed}
-              heading={location.heading}
-            />
-        </View>
-      ) : (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>
-            {hasError ? '❌ Error al obtener GPS' : '⏳ Esperando GPS...'}
-          </Text>
+          <View style={styles.separator} />
+          
+          {/* 🔥 SimpleLocationView con datos actualizados */}
+          <SimpleLocationView 
+            latitude={ubicacion.lat} 
+            longitude={ubicacion.lon}
+            speed={ubicacion.speed || 0}
+            heading={ubicacion.heading || 0}
+          />
         </View>
       )}
     </View>
@@ -315,58 +365,66 @@ const GpsMobile: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  gpsInfo: {
-    gap: 6,
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    flex: 1,
     backgroundColor: '#fff',
-    marginRight: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  statusText: {
+  boton: {
+    backgroundColor: '#0A7AFF',
+    padding: 16,
+    borderRadius: 10,
+    minWidth: 200,
+  },
+  disabled: {
+    backgroundColor: '#999',
+  },
+  texto: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '700',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
-  coordText: {
-    fontSize: 12,
-    color: '#333',
-    fontFamily: 'monospace',
+  box: {
+    marginTop: 30,
+    padding: 20,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 10,
+    width: '85%',
   },
-  speedText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  errorContainer: {
-    padding: 8,
-    backgroundColor: '#ffe0e0',
-    borderRadius: 8,
+  errorBox: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#ffe6e6',
+    borderRadius: 10,
+    width: '85%',
   },
   errorText: {
-    fontSize: 14,
-    color: '#d32f2f',
+    color: '#cc0000',
+    fontWeight: 'bold',
+  },
+  statusBox: {
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: '#e6ffe6',
+    borderRadius: 8,
+  },
+  statusText: {
+    color: '#00aa00',
+    fontWeight: 'bold',
+  },
+  title: {
+    fontWeight: 'bold',
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  coord: {
+    fontFamily: 'monospace',
+    marginVertical: 3,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 10,
   },
 });
 
