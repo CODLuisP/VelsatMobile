@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Animated, Easing } from 'react-native';
 import { getApiStats } from '../../../services/ApiService';
+import { Radio, WifiOff, RefreshCw, Clock, Database, Navigation } from 'lucide-react-native';
 
 interface SimpleLocationViewProps {
   latitude: number;
@@ -34,219 +35,307 @@ const SimpleLocationView: React.FC<SimpleLocationViewProps> = ({
     }
   });
 
+  // Animación para el pulso del indicador de transmisión
+  const pulseAnim = useState(new Animated.Value(1))[0];
+  const rotateAnim = useState(new Animated.Value(0))[0];
+  const waveAnim1 = useState(new Animated.Value(0))[0];
+  const waveAnim2 = useState(new Animated.Value(0))[0];
+  const waveAnim3 = useState(new Animated.Value(0))[0];
+  const [isTransmitting, setIsTransmitting] = useState(false);
+
   // Actualizar estadísticas cada segundo
   useEffect(() => {
     const interval = setInterval(() => {
-      setApiStats(getApiStats());
+      const stats = getApiStats();
+      setApiStats(stats);
+      setIsTransmitting(stats.offline.isOnline);
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
+  // Animación de pulso cuando está transmitiendo
+  useEffect(() => {
+    if (isTransmitting) {
+      // Pulso suave
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.15,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1200,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      // Rotación continua del icono
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 3000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+
+      // Ondas expansivas
+      const createWaveAnimation = (anim: Animated.Value, delay: number) => {
+        return Animated.loop(
+          Animated.sequence([
+            Animated.delay(delay),
+            Animated.parallel([
+              Animated.timing(anim, {
+                toValue: 1,
+                duration: 2000,
+                easing: Easing.out(Easing.ease),
+                useNativeDriver: true,
+              }),
+            ]),
+            Animated.timing(anim, {
+              toValue: 0,
+              duration: 0,
+              useNativeDriver: true,
+            }),
+          ])
+        );
+      };
+
+      createWaveAnimation(waveAnim1, 0).start();
+      createWaveAnimation(waveAnim2, 400).start();
+      createWaveAnimation(waveAnim3, 800).start();
+    } else {
+      pulseAnim.setValue(1);
+      rotateAnim.setValue(0);
+      waveAnim1.setValue(0);
+      waveAnim2.setValue(0);
+      waveAnim3.setValue(0);
+    }
+  }, [isTransmitting, pulseAnim, rotateAnim, waveAnim1, waveAnim2, waveAnim3]);
+
   const speedKmh = (speed * 3.6).toFixed(1);
   const isMoving = speed > 0;
-
-  const getCardinalDirection = (degrees: number): string => {
-    if (degrees < 0) return 'N/A';
-    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
-    const index = Math.round(degrees / 45) % 8;
-    return directions[index];
-  };
-
-  const getArrowRotation = (degrees: number): string => {
-    if (degrees < 0) return '0deg';
-    return `${degrees}deg`;
-  };
-
-  const cardinalDirection = getCardinalDirection(heading);
-  const hasValidHeading = heading >= 0;
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Ubicación Actual</Text>
-          {/* 🔥 Indicador de conexión */}
-          <View style={[
-            styles.connectionBadge,
-            apiStats.offline.isOnline ? styles.onlineBadge : styles.offlineBadge
-          ]}>
-            <View style={[
-              styles.connectionDot,
-              apiStats.offline.isOnline ? styles.onlineDot : styles.offlineDot
-            ]} />
-            <Text style={styles.connectionText}>
-              {apiStats.offline.isOnline ? 'ONLINE' : 'OFFLINE'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Latitud */}
-        <View style={styles.infoRow}>
-          <View style={styles.labelContainer}>
-            <Text style={styles.emoji}>🌐</Text>
-            <Text style={styles.label}>Latitud</Text>
-          </View>
-          <Text style={styles.value}>{latitude.toFixed(6)}</Text>
-        </View>
-
-        {/* Longitud */}
-        <View style={styles.infoRow}>
-          <View style={styles.labelContainer}>
-            <Text style={styles.emoji}>🌐</Text>
-            <Text style={styles.label}>Longitud</Text>
-          </View>
-          <Text style={styles.value}>{longitude.toFixed(6)}</Text>
-        </View>
-
-        {/* Velocidad */}
-        <View style={[styles.infoRow, styles.speedRow]}>
-          <View style={styles.labelContainer}>
-            <Text style={styles.emoji}>⚡</Text>
-            <Text style={styles.label}>Velocidad</Text>
-          </View>
-          <View style={styles.speedContainer}>
-            <Text style={[
-              styles.speedValue, 
-              isMoving ? styles.speedMoving : styles.speedStatic
-            ]}>
-              {speedKmh}
-            </Text>
-            <Text style={styles.speedUnit}>km/h</Text>
-          </View>
-        </View>
-
-        {/* Ángulo/Dirección */}
-        <View style={[styles.infoRow, styles.headingRow]}>
-          <View style={styles.labelContainer}>
-            <Text style={styles.emoji}>🧭</Text>
-            <Text style={styles.label}>Dirección</Text>
-          </View>
-          <View style={styles.headingContainer}>
-            {hasValidHeading ? (
+        
+        {/* Indicador de transmisión en tiempo real */}
+        <View style={styles.transmissionContainer}>
+          <View style={styles.transmissionIndicatorWrapper}>
+            {/* Ondas expansivas */}
+            {isTransmitting && (
               <>
-                <View style={styles.compassContainer}>
-                  <Text 
-                    style={[
-                      styles.arrowIcon,
-                      { transform: [{ rotate: getArrowRotation(heading) }] }
-                    ]}
-                  >
-                    ↑
-                  </Text>
-                </View>
-                <View style={styles.headingTextContainer}>
-                  <Text style={styles.headingDegrees}>
-                    {heading.toFixed(0)}°
-                  </Text>
-                  <Text style={styles.headingCardinal}>
-                    {cardinalDirection}
-                  </Text>
-                </View>
+                <Animated.View 
+                  style={[
+                    styles.wave,
+                    {
+                      opacity: waveAnim1.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.6, 0]
+                      }),
+                      transform: [{
+                        scale: waveAnim1.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, 1.5]
+                        })
+                      }]
+                    }
+                  ]}
+                />
+                <Animated.View 
+                  style={[
+                    styles.wave,
+                    {
+                      opacity: waveAnim2.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.6, 0]
+                      }),
+                      transform: [{
+                        scale: waveAnim2.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, 1.5]
+                        })
+                      }]
+                    }
+                  ]}
+                />
+                <Animated.View 
+                  style={[
+                    styles.wave,
+                    {
+                      opacity: waveAnim3.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.6, 0]
+                      }),
+                      transform: [{
+                        scale: waveAnim3.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, 1.5]
+                        })
+                      }]
+                    }
+                  ]}
+                />
               </>
-            ) : (
-              <Text style={styles.headingNA}>N/A</Text>
+            )}
+            
+            {/* Icono central */}
+            <Animated.View 
+              style={[
+                styles.transmissionIndicator,
+                isTransmitting && styles.transmissionActive,
+                { 
+                  transform: [
+                    { scale: isTransmitting ? pulseAnim : 1 },
+                    { 
+                      rotate: rotateAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg']
+                      })
+                    }
+                  ] 
+                }
+              ]}
+            >
+              {isTransmitting ? (
+                <Radio size={28} color="#2196F3" strokeWidth={2.5} />
+              ) : (
+                <WifiOff size={28} color="#9E9E9E" strokeWidth={2.5} />
+              )}
+            </Animated.View>
+          </View>
+          
+          <View style={styles.transmissionTextContainer}>
+            <Text style={[
+              styles.transmissionTitle,
+              isTransmitting && styles.transmissionTitleActive
+            ]}>
+              {isTransmitting ? 'Transmitiendo' : 'Sin conexión'}
+            </Text>
+            <Text style={styles.transmissionSubtitle}>
+              {isTransmitting 
+                ? 'Enviando datos en tiempo real' 
+                : 'Modo offline activo'}
+            </Text>
+            
+            {/* Indicador de puntos animados cuando transmite */}
+            {isTransmitting && (
+              <View style={styles.dotsContainer}>
+                <Animated.View style={[styles.dot, { 
+                  opacity: pulseAnim.interpolate({
+                    inputRange: [1, 1.15],
+                    outputRange: [0.3, 1]
+                  })
+                }]} />
+                <Animated.View style={[styles.dot, { 
+                  opacity: pulseAnim.interpolate({
+                    inputRange: [1, 1.15],
+                    outputRange: [1, 0.3]
+                  })
+                }]} />
+                <Animated.View style={[styles.dot, { 
+                  opacity: pulseAnim.interpolate({
+                    inputRange: [1, 1.15],
+                    outputRange: [0.3, 1]
+                  })
+                }]} />
+              </View>
             )}
           </View>
         </View>
 
-        {/* 🔥 Estadísticas PUT (UpdateTramaDevice) */}
-        <View style={[styles.infoRow, styles.putStatsRow]}>
-          <View style={styles.labelContainer}>
-            <Text style={styles.emoji}>🔄</Text>
-            <Text style={styles.label}>PUT (Update)</Text>
+        {/* Métricas PUT */}
+        <View style={styles.metricsRow}>
+          <View style={styles.metricIconContainer}>
+            <RefreshCw size={20} color="#673AB7" strokeWidth={2.5} />
           </View>
-          <View style={styles.apiStatsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{apiStats.put.total}</Text>
-              <Text style={styles.statLabel}>Total</Text>
+          <Text style={styles.metricLabel}>UPDATE</Text>
+          <View style={styles.metricsValues}>
+            <View style={styles.metricItem}>
+              <Text style={styles.metricValue}>{apiStats.put.total}</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, styles.statSuccess]}>
+            <View style={styles.metricDivider} />
+            <View style={styles.metricItem}>
+              <Text style={[styles.metricValue, styles.successText]}>
                 {apiStats.put.exitosos}
               </Text>
-              <Text style={styles.statLabel}>OK</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, styles.statError]}>
+            <View style={styles.metricDivider} />
+            <View style={styles.metricItem}>
+              <Text style={[styles.metricValue, styles.errorText]}>
                 {apiStats.put.fallidos}
               </Text>
-              <Text style={styles.statLabel}>Error</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, styles.statRate]}>
+            <View style={styles.metricDivider} />
+            <View style={styles.metricItem}>
+              <Text style={[styles.metricValue, styles.rateText]}>
                 {apiStats.put.tasaExito}%
               </Text>
-              <Text style={styles.statLabel}>Éxito</Text>
             </View>
           </View>
         </View>
 
-        {/* 🔥 Estadísticas POST (InsertarTrama cada 30s) */}
-        <View style={[styles.infoRow, styles.postStatsRow]}>
-          <View style={styles.labelContainer}>
-            <Text style={styles.emoji}>📮</Text>
-            <Text style={styles.label}>POST (30s)</Text>
+        {/* Métricas POST */}
+        <View style={styles.metricsRow}>
+          <View style={styles.metricIconContainer}>
+            <Clock size={20} color="#00ACC1" strokeWidth={2.5} />
           </View>
-          <View style={styles.apiStatsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{apiStats.post.total}</Text>
-              <Text style={styles.statLabel}>Total</Text>
+          <Text style={styles.metricLabel}>30s SYNC</Text>
+          <View style={styles.metricsValues}>
+            <View style={styles.metricItem}>
+              <Text style={styles.metricValue}>{apiStats.post.total}</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, styles.statSuccess]}>
+            <View style={styles.metricDivider} />
+            <View style={styles.metricItem}>
+              <Text style={[styles.metricValue, styles.successText]}>
                 {apiStats.post.exitosos}
               </Text>
-              <Text style={styles.statLabel}>OK</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, styles.statError]}>
+            <View style={styles.metricDivider} />
+            <View style={styles.metricItem}>
+              <Text style={[styles.metricValue, styles.errorText]}>
                 {apiStats.post.fallidos}
               </Text>
-              <Text style={styles.statLabel}>Error</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, styles.statRate]}>
+            <View style={styles.metricDivider} />
+            <View style={styles.metricItem}>
+              <Text style={[styles.metricValue, styles.rateText]}>
                 {apiStats.post.tasaExito}%
               </Text>
-              <Text style={styles.statLabel}>Éxito</Text>
             </View>
           </View>
         </View>
 
-        {/* 🔥 Cola offline */}
+        {/* Cola offline */}
         {apiStats.offline.pendientes > 0 && (
-          <View style={[styles.infoRow, styles.offlineRow]}>
-            <View style={styles.labelContainer}>
-              <Text style={styles.emoji}>💾</Text>
-              <Text style={styles.label}>Cola Offline</Text>
+          <View style={styles.offlineAlert}>
+            <View style={styles.offlineIconContainer}>
+              <Database size={20} color="#F57C00" strokeWidth={2.5} />
             </View>
-            <View style={styles.offlineContainer}>
+            <View style={styles.offlineContent}>
               <Text style={styles.offlineCount}>
                 {apiStats.offline.pendientes}
               </Text>
-              <Text style={styles.offlineLabel}>
-                tramas pendientes
-              </Text>
+              <Text style={styles.offlineLabel}>pendientes</Text>
             </View>
           </View>
         )}
 
-        {/* Indicador de estado */}
+        {/* Indicador de movimiento */}
         <View style={styles.statusContainer}>
           <View style={[
             styles.statusDot, 
             isMoving ? styles.statusDotMoving : styles.statusDotStatic
           ]} />
           <Text style={styles.statusText}>
-            {isMoving ? 'En movimiento' : 'Detenido'}
+            {isMoving ? `${speedKmh} km/h` : 'Detenido'}
           </Text>
         </View>
       </View>
@@ -257,245 +346,208 @@ const SimpleLocationView: React.FC<SimpleLocationViewProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
-    paddingHorizontal: 20,
+    backgroundColor: '#FAFAFA',
+    paddingHorizontal: 0,
   },
   card: {
     width: '100%',
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
     marginBottom: 20,
   },
-  header: {
+  
+  // Estilos del indicador de transmisión - Minimalista
+  transmissionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-    paddingBottom: 16,
-    borderBottomWidth: 2,
-    borderBottomColor: '#e8eaf6',
-  },
-  headerText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#2196F3',
-  },
-  // 🔥 Badge de conexión
-  connectionBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  onlineBadge: {
-    backgroundColor: '#E8F5E9',
-  },
-  offlineBadge: {
-    backgroundColor: '#FFEBEE',
-  },
-  connectionDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 5,
-  },
-  onlineDot: {
-    backgroundColor: '#4CAF50',
-  },
-  offlineDot: {
-    backgroundColor: '#F44336',
-  },
-  connectionText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#666',
-  },
-  infoRow: {
+    paddingBottom: 20,
     marginBottom: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
   },
-  speedRow: {
-    backgroundColor: '#e3f2fd',
-  },
-  headingRow: {
-    backgroundColor: '#fff3e0',
-  },
-  putStatsRow: {
-    backgroundColor: '#f3e5f5',
-  },
-  postStatsRow: {
-    backgroundColor: '#e1f5fe',
-  },
-  offlineRow: {
-    backgroundColor: '#fff9c4',
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  emoji: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  value: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#333',
-    letterSpacing: 0.5,
-  },
-  speedContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  speedValue: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  speedMoving: {
-    color: '#4CAF50',
-  },
-  speedStatic: {
-    color: '#999',
-  },
-  speedUnit: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
-    marginLeft: 8,
-  },
-  headingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  compassContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#FF9800',
+  transmissionIndicatorWrapper: {
+    width: 64,
+    height: 64,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    position: 'relative',
   },
-  arrowIcon: {
-    fontSize: 32,
-    color: '#fff',
-    fontWeight: '900',
+  wave: {
+    position: 'absolute',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#2196F3',
+    borderWidth: 2,
+    borderColor: '#2196F3',
   },
-  headingTextContainer: {
-    flexDirection: 'column',
+  transmissionIndicator: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
-  headingDegrees: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#FF6F00',
-    letterSpacing: 0.5,
+  transmissionActive: {
+    backgroundColor: '#E3F2FD',
+    shadowColor: '#2196F3',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  headingCardinal: {
+  transmissionTextContainer: {
+    flex: 1,
+  },
+  transmissionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#FF9800',
-    marginTop: 2,
+    fontWeight: '600',
+    color: '#424242',
+    marginBottom: 2,
   },
-  headingNA: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#999',
+  transmissionTitleActive: {
+    color: '#2196F3',
   },
-  apiStatsContainer: {
+  transmissionSubtitle: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#9E9E9E',
+    marginBottom: 4,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: 4,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#2196F3',
+  },
+  
+  // Estilos de métricas - Minimalista
+  metricsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
+  },
+  metricIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  metricLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#757575',
+    width: 70,
+    letterSpacing: 0.3,
+  },
+  metricsValues: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  statItem: {
+  metricItem: {
     alignItems: 'center',
     flex: 1,
   },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#7B1FA2',
+  metricValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#424242',
   },
-  statSuccess: {
+  successText: {
     color: '#4CAF50',
   },
-  statError: {
+  errorText: {
     color: '#F44336',
   },
-  statRate: {
+  rateText: {
     color: '#2196F3',
   },
-  statLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 2,
-    textTransform: 'uppercase',
-  },
-  statDivider: {
+  metricDivider: {
     width: 1,
-    height: 30,
-    backgroundColor: '#E0E0E0',
+    height: 20,
+    backgroundColor: '#EEEEEE',
   },
-  // 🔥 Estilos cola offline
-  offlineContainer: {
+  
+  // Estilos de la alerta offline - Minimalista
+  offlineAlert: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  offlineIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFE0B2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  offlineContent: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    flex: 1,
   },
   offlineCount: {
-    fontSize: 32,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '700',
     color: '#F57C00',
     marginRight: 8,
   },
   offlineLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#F57C00',
   },
+  
+  // Estilos del indicador de movimiento - Minimalista
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
     paddingTop: 16,
-    borderTopWidth: 2,
-    borderTopColor: '#e8eaf6',
   },
   statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     marginRight: 8,
   },
   statusDotMoving: {
     backgroundColor: '#4CAF50',
   },
   statusDotStatic: {
-    backgroundColor: '#999',
+    backgroundColor: '#BDBDBD',
   },
   statusText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '500',
+    color: '#757575',
   },
 });
 

@@ -6,11 +6,14 @@ import {
   StyleSheet,
   Platform,
   PermissionsAndroid,
+  Animated,
+  Easing,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import SimpleLocationView from './SimpleLocationView';
 import BackgroundLocationService from './BackgroundLocationService';
 import { sendLocationToApi, initializeApiService, stopApiService } from '../../../services/ApiService';
+import { MapPin, Square, Loader, XCircle, Activity, Gauge, Compass, Navigation } from 'lucide-react-native';
 
 const GpsMobile = () => {
   const [ubicacion, setUbicacion] = useState<{
@@ -25,6 +28,8 @@ const GpsMobile = () => {
   const [rastreando, setRastreando] = useState(false);
   
   const watchIdRef = useRef<number | null>(null);
+  const spinValue = useRef(new Animated.Value(0)).current;
+  const pulseValue = useRef(new Animated.Value(1)).current;
 
   const [modalAlertVisible, setModalAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState({
@@ -41,6 +46,51 @@ const GpsMobile = () => {
     onConfirm: () => {},
     confirmText: '',
     cancelText: '',
+  });
+
+  // Animación de spinner
+  useEffect(() => {
+    if (cargando && !rastreando) {
+      Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      spinValue.setValue(0);
+    }
+  }, [cargando, rastreando]);
+
+  // Animación de pulso
+  useEffect(() => {
+    if (rastreando) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseValue, {
+            toValue: 1.1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseValue, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      pulseValue.setValue(1);
+    }
+  }, [rastreando]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg']
   });
 
   const handleShowAlert = (title: string, message: string, color?: string) => {
@@ -82,7 +132,6 @@ const GpsMobile = () => {
           return false;
         }
 
-        // 🔥 Permisos de ubicación en segundo plano (Android 10+)
         if (Platform.Version >= 29) {
           await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
@@ -157,7 +206,6 @@ const GpsMobile = () => {
     setRastreando(false);
     setCargando(false);
 
-    // 🔥 Detener servicios de fondo
     try {
       await BackgroundLocationService.stop();
       await stopApiService();
@@ -201,7 +249,6 @@ const GpsMobile = () => {
         return;
       }
 
-      // 🔥 Inicializar servicios de API y segundo plano
       try {
         await initializeApiService();
         await BackgroundLocationService.initialize();
@@ -211,7 +258,6 @@ const GpsMobile = () => {
         console.error('Error iniciando servicios:', error);
       }
 
-      // 🚀 PASO 1: Obtener ubicación RÁPIDA primero
       Geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude, speed, heading } = position.coords;
@@ -227,7 +273,6 @@ const GpsMobile = () => {
           setCargando(false);
           setRastreando(true);
 
-          // 🔥 Enviar primera ubicación a la API
           sendLocationToApi({
             lastValidLatitude: latitude,
             lastValidLongitude: longitude,
@@ -235,7 +280,6 @@ const GpsMobile = () => {
             lastValidSpeed: speed || 0,
           });
 
-          // 🚀 PASO 2: Activar rastreo continuo DESPUÉS de la primera ubicación
           watchIdRef.current = Geolocation.watchPosition(
             (watchPosition) => {
               const { latitude: lat, longitude: lon, speed: spd, heading: hdg } = watchPosition.coords;
@@ -249,7 +293,6 @@ const GpsMobile = () => {
 
               setUbicacion(ubicacionActualizada);
 
-              // 🔥 Enviar ubicación a la API en cada actualización
               sendLocationToApi({
                 lastValidLatitude: lat,
                 lastValidLongitude: lon,
@@ -262,8 +305,8 @@ const GpsMobile = () => {
             },
             {
               enableHighAccuracy: true,
-              distanceFilter: 2, // 🔥 Cambié a 2 metros como el segundo archivo
-              interval: 1000, // 🔥 Más frecuente para mejor tracking
+              distanceFilter: 2,
+              interval: 1000,
               fastestInterval: 500,
             }
           );
@@ -287,76 +330,144 @@ const GpsMobile = () => {
     }
   };
 
-  // 🔥 useEffect para configurar Geolocation al montar
   useEffect(() => {
     Geolocation.setRNConfiguration({
       skipPermissionRequests: false,
       authorizationLevel: 'always',
     });
 
-    // 🔥 Cleanup al desmontar (opcional, depende de tu necesidad)
-    return () => {
-      // Si quieres que continúe en segundo plano, NO descomentar esto:
-      // detenerRastreo();
-    };
+    return () => {};
   }, []);
 
   return (
     <View style={styles.container}>
+      {/* Botón principal mejorado */}
       <TouchableOpacity
-        style={[styles.boton, cargando && styles.disabled]}
+        style={[
+          styles.mainButton,
+          cargando && !rastreando && styles.buttonLoading,
+          rastreando && styles.buttonTracking
+        ]}
         onPress={rastreando ? detenerRastreo : obtenerUbicacion}
         disabled={cargando && !rastreando}
+        activeOpacity={0.8}
       >
-        <Text style={styles.texto}>
-          {cargando && !rastreando
-            ? 'Obteniendo ubicación…'
-            : rastreando
-            ? '⏹ Detener rastreo'
-            : '📍 Obtener ubicación'}
-        </Text>
+        <View style={styles.buttonContent}>
+          {cargando && !rastreando ? (
+            <Animated.View style={{ transform: [{ rotate: spin }] }}>
+              <Loader size={24} color="#FFFFFF" strokeWidth={2.5} />
+            </Animated.View>
+          ) : rastreando ? (
+            <Square size={24} color="#FFFFFF" strokeWidth={2.5} fill="#FFFFFF" />
+          ) : (
+            <MapPin size={24} color="#FFFFFF" strokeWidth={2.5} />
+          )}
+          <Text style={styles.buttonText}>
+            {cargando && !rastreando
+              ? 'Obteniendo ubicación...'
+              : rastreando
+              ? 'Detener rastreo'
+              : 'Iniciar rastreo GPS'}
+          </Text>
+        </View>
       </TouchableOpacity>
 
+      {/* Indicador de estado activo */}
       {rastreando && (
-        <View style={styles.statusBox}>
-          <Text style={styles.statusText}>🟢 Rastreando en tiempo real</Text>
-        </View>
+        <Animated.View style={[styles.statusBadge, { transform: [{ scale: pulseValue }] }]}>
+          <Activity size={16} color="#4CAF50" strokeWidth={2.5} />
+          <Text style={styles.statusBadgeText}>Rastreando en vivo</Text>
+        </Animated.View>
       )}
 
+      {/* Error mejorado */}
       {error && (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>❌ {error}</Text>
+        <View style={styles.errorCard}>
+          <View style={styles.errorIconContainer}>
+            <XCircle size={24} color="#F44336" strokeWidth={2.5} />
+          </View>
+          <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
 
+      {/* Información de ubicación mejorada */}
       {ubicacion && (
-        <View style={styles.box}>
-          <Text style={styles.title}>📍 Ubicación actual</Text>
-          
-          <Text style={styles.coord}>Lat: {ubicacion.lat}</Text>
-          <Text style={styles.coord}>Lon: {ubicacion.lon}</Text>
-          
-          <View style={styles.separator} />
-          
-          <Text style={styles.coord}>
-            🚗 Velocidad: {convertirVelocidad(ubicacion.speed)} km/h
-          </Text>
-          
-          <Text style={styles.coord}>
-            🧭 Rumbo: {ubicacion.heading !== null && ubicacion.heading >= 0 
-              ? `${ubicacion.heading.toFixed(0)}° (${obtenerDireccionCardinal(ubicacion.heading)})`
-              : 'N/A'}
-          </Text>
+        <View style={styles.locationCard}>
+          {/* Header de ubicación */}
+          <View style={styles.locationHeader}>
+            <View style={styles.locationHeaderLeft}>
+              <MapPin size={20} color="#2196F3" strokeWidth={2.5} />
+              <Text style={styles.locationTitle}>Ubicación actual</Text>
+            </View>
+          </View>
 
-          <View style={styles.separator} />
-          
-          {/* 🔥 SimpleLocationView con datos actualizados */}
-          <SimpleLocationView 
-            latitude={ubicacion.lat} 
-            longitude={ubicacion.lon}
-            speed={ubicacion.speed || 0}
-            heading={ubicacion.heading || 0}
-          />
+          {/* Coordenadas */}
+          <View style={styles.coordsContainer}>
+            <View style={styles.coordRow}>
+              <Text style={styles.coordLabel}>Latitud</Text>
+              <Text style={styles.coordValue}>{ubicacion.lat}</Text>
+            </View>
+            <View style={styles.coordRow}>
+              <Text style={styles.coordLabel}>Longitud</Text>
+              <Text style={styles.coordValue}>{ubicacion.lon}</Text>
+            </View>
+          </View>
+
+          {/* Métricas en grid */}
+          <View style={styles.metricsGrid}>
+            {/* Velocidad */}
+            <View style={styles.metricCard}>
+              <View style={styles.metricIconContainer}>
+                <Gauge size={24} color="#FF9800" strokeWidth={2.5} />
+              </View>
+              <Text style={styles.metricValue}>
+                {convertirVelocidad(ubicacion.speed)}
+              </Text>
+              <Text style={styles.metricUnit}>km/h</Text>
+              <Text style={styles.metricLabel}>Velocidad</Text>
+            </View>
+
+            {/* Rumbo */}
+            <View style={styles.metricCard}>
+              <View style={styles.metricIconContainer}>
+                <Navigation 
+                  size={24} 
+                  color="#9C27B0" 
+                  strokeWidth={2.5}
+                  style={{
+                    transform: [{ 
+                      rotate: ubicacion.heading !== null && ubicacion.heading >= 0 
+                        ? `${ubicacion.heading}deg` 
+                        : '0deg' 
+                    }]
+                  }}
+                />
+              </View>
+              <Text style={styles.metricValue}>
+                {ubicacion.heading !== null && ubicacion.heading >= 0 
+                  ? ubicacion.heading.toFixed(0)
+                  : 'N/A'}
+              </Text>
+              <Text style={styles.metricUnit}>
+                {ubicacion.heading !== null && ubicacion.heading >= 0
+                  ? obtenerDireccionCardinal(ubicacion.heading)
+                  : '—'}
+              </Text>
+              <Text style={styles.metricLabel}>Rumbo</Text>
+            </View>
+          </View>
+
+          {/* SimpleLocationView */}
+          {rastreando && (
+            <View style={styles.detailsContainer}>
+              <SimpleLocationView 
+                latitude={ubicacion.lat} 
+                longitude={ubicacion.lon}
+                speed={ubicacion.speed || 0}
+                heading={ubicacion.heading || 0}
+              />
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -366,65 +477,195 @@ const GpsMobile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    padding: 20,
+
+  },
+  
+  mainButton: {
+    backgroundColor: '#008000',
+    borderRadius: 16,
+    paddingVertical: 13,
+
+  },
+  buttonLoading: {
+    backgroundColor: '#9E9E9E',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+  },
+  buttonTracking: {
+    backgroundColor: '#F44336',
+    shadowColor: '#F44336',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+
+  // Badge de estado
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 16,
+    gap: 8,
+  },
+  statusBadgeText: {
+    color: '#4CAF50',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Error card
+  errorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFEBEE',
+    borderLeftWidth: 4,
+    borderLeftColor: '#F44336',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    gap: 12,
+  },
+  errorIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFCDD2',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  boton: {
-    backgroundColor: '#0A7AFF',
-    padding: 16,
-    borderRadius: 10,
-    minWidth: 200,
-  },
-  disabled: {
-    backgroundColor: '#999',
-  },
-  texto: {
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  box: {
-    marginTop: 30,
-    padding: 20,
-    backgroundColor: '#f2f2f2',
-    borderRadius: 10,
-    width: '85%',
-  },
-  errorBox: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: '#ffe6e6',
-    borderRadius: 10,
-    width: '85%',
-  },
   errorText: {
-    color: '#cc0000',
-    fontWeight: 'bold',
+    flex: 1,
+    color: '#C62828',
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
   },
-  statusBox: {
-    marginTop: 15,
-    padding: 12,
-    backgroundColor: '#e6ffe6',
-    borderRadius: 8,
+
+  // Location card
+  locationCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
-  statusText: {
-    color: '#00aa00',
-    fontWeight: 'bold',
+  locationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
   },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 10,
+  locationHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  locationTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#212121',
+  },
+
+  // Coordenadas
+  coordsContainer: {
+    backgroundColor: '#FAFAFA',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    gap: 12,
+  },
+  coordRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  coordLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#757575',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  coordValue: {
     fontSize: 16,
+    fontWeight: '700',
+    color: '#212121',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
-  coord: {
-    fontFamily: 'monospace',
-    marginVertical: 3,
+
+  // Grid de métricas
+  metricsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
   },
-  separator: {
-    height: 1,
-    backgroundColor: '#ddd',
-    marginVertical: 10,
+  metricCard: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+  },
+  metricIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  metricValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#212121',
+    marginBottom: 2,
+  },
+  metricUnit: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#757575',
+    marginBottom: 8,
+  },
+  metricLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#9E9E9E',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Detalles
+  detailsContainer: {
+    marginTop: 8,
   },
 });
 

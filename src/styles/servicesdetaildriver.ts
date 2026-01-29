@@ -17,12 +17,14 @@ export const styles = StyleSheet.create({
   backButton: {
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 15,
+
   },
   headerMainTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginLeft: 15,
+    marginLeft: 20,
   },
   contentList: {
     flex: 1,
@@ -247,9 +249,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-      borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    marginTop: 80,
   },
   emptyStateTitle: {
     color: '#00296b',
@@ -299,17 +299,14 @@ export const styles = StyleSheet.create({
   },
 
   gpsAlert: {
-  backgroundColor: '#FFF5F2',
   borderRadius: 12,
-  padding: 16,
   margin: 10,
-  borderWidth: 2,
-  borderColor: '#FF6B35',
+  backgroundColor: 'red',
+
 },
 gpsAlertHeader: {
   flexDirection: 'row',
   alignItems: 'center',
-  marginBottom: 8,
   gap: 8,
 },
 gpsAlertTitle: {
