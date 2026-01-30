@@ -57,7 +57,6 @@ const SimpleLocationView: React.FC<SimpleLocationViewProps> = ({
   // Animación de pulso cuando está transmitiendo
   useEffect(() => {
     if (isTransmitting) {
-      // Pulso suave
       Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
@@ -347,7 +346,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
-    paddingHorizontal: 0,
   },
   card: {
     width: '100%',
@@ -362,7 +360,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   
-  // Estilos del indicador de transmisión - Minimalista
   transmissionContainer: {
     flexDirection: 'row',
     alignItems: 'center',

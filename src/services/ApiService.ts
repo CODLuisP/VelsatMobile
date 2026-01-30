@@ -447,7 +447,7 @@ export const getApiStats = () => ({
   }
 });
 
-export const resetApiStats = () => {
+export const resetApiStats = async () => {
   totalEnvios = 0;
   enviosExitosos = 0;
   enviosFallidos = 0;
@@ -457,7 +457,8 @@ export const resetApiStats = () => {
   geocodingCache.clear();
   pendingLocation = null;
   lastTramaData = null;
-  clearOfflineQueue();
+  offlineQueue = []; // 🔥 Limpia el array inmediatamente
+  await clearOfflineQueue(); // 🔥 Espera a que se borre de AsyncStorage
 };
 
 export const initializeApiService = async (): Promise<void> => {

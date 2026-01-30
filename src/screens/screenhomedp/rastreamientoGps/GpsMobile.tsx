@@ -12,7 +12,7 @@ import {
 import Geolocation from '@react-native-community/geolocation';
 import SimpleLocationView from './SimpleLocationView';
 import BackgroundLocationService from './BackgroundLocationService';
-import { sendLocationToApi, initializeApiService, stopApiService } from '../../../services/ApiService';
+import { sendLocationToApi, initializeApiService, stopApiService, resetApiStats } from '../../../services/ApiService';
 import { MapPin, Square, Loader, XCircle, Activity, Gauge, Compass, Navigation } from 'lucide-react-native';
 
 const GpsMobile = () => {
@@ -197,23 +197,25 @@ const GpsMobile = () => {
     }
   };
 
-  const detenerRastreo = async () => {
-    if (watchIdRef.current !== null) {
-      Geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    
-    setRastreando(false);
-    setCargando(false);
+const detenerRastreo = async () => {
+  if (watchIdRef.current !== null) {
+    Geolocation.clearWatch(watchIdRef.current);
+    watchIdRef.current = null;
+  }
+  
+  setRastreando(false);
+  setCargando(false);
 
-    try {
-      await BackgroundLocationService.stop();
-      await stopApiService();
-      console.log('✅ Servicios de fondo detenidos');
-    } catch (error) {
-      console.error('Error deteniendo servicios:', error);
-    }
-  };
+  try {
+    await BackgroundLocationService.stop();
+    await stopApiService();
+    console.log('Servicios de fondo detenidos');
+  } catch (error) {
+    console.error('Error deteniendo servicios:', error);
+  } finally {
+    await resetApiStats();
+  }
+};
 
   const convertirVelocidad = (speedMs: number | null): number => {
     if (speedMs === null || speedMs < 0) return 0;
@@ -253,7 +255,7 @@ const GpsMobile = () => {
         await initializeApiService();
         await BackgroundLocationService.initialize();
         await BackgroundLocationService.start();
-        console.log('✅ Servicios de fondo iniciados');
+        console.log('Servicios de fondo iniciados');
       } catch (error) {
         console.error('Error iniciando servicios:', error);
       }
@@ -352,6 +354,9 @@ const GpsMobile = () => {
         disabled={cargando && !rastreando}
         activeOpacity={0.8}
       >
+
+
+        
         <View style={styles.buttonContent}>
           {cargando && !rastreando ? (
             <Animated.View style={{ transform: [{ rotate: spin }] }}>
@@ -370,15 +375,18 @@ const GpsMobile = () => {
               : 'Iniciar rastreo GPS'}
           </Text>
         </View>
+
+
+
       </TouchableOpacity>
 
       {/* Indicador de estado activo */}
-      {rastreando && (
+      {/* {rastreando && (
         <Animated.View style={[styles.statusBadge, { transform: [{ scale: pulseValue }] }]}>
           <Activity size={16} color="#4CAF50" strokeWidth={2.5} />
           <Text style={styles.statusBadgeText}>Rastreando en vivo</Text>
         </Animated.View>
-      )}
+      )} */}
 
       {/* Error mejorado */}
       {error && (
@@ -394,6 +402,7 @@ const GpsMobile = () => {
       {ubicacion && (
         <View style={styles.locationCard}>
           {/* Header de ubicación */}
+
           <View style={styles.locationHeader}>
             <View style={styles.locationHeaderLeft}>
               <MapPin size={20} color="#2196F3" strokeWidth={2.5} />
@@ -403,14 +412,17 @@ const GpsMobile = () => {
 
           {/* Coordenadas */}
           <View style={styles.coordsContainer}>
+
             <View style={styles.coordRow}>
               <Text style={styles.coordLabel}>Latitud</Text>
               <Text style={styles.coordValue}>{ubicacion.lat}</Text>
             </View>
+
             <View style={styles.coordRow}>
               <Text style={styles.coordLabel}>Longitud</Text>
               <Text style={styles.coordValue}>{ubicacion.lon}</Text>
             </View>
+
           </View>
 
           {/* Métricas en grid */}
@@ -477,21 +489,22 @@ const GpsMobile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-
+    marginTop: 8,
+    paddingHorizontal: 5,
   },
   
   mainButton: {
     backgroundColor: '#008000',
     borderRadius: 16,
     paddingVertical: 13,
-
   },
+
   buttonLoading: {
     backgroundColor: '#9E9E9E',
     shadowColor: '#000',
     shadowOpacity: 0.2,
   },
+
   buttonTracking: {
     backgroundColor: '#F44336',
     shadowColor: '#F44336',
@@ -555,24 +568,20 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Location card
+
   locationCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
+    padding: 5,
+    marginTop: 10,
+
   },
   locationHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingBottom: 16,
+    marginBottom: 10,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#F5F5F5',
   },
@@ -582,7 +591,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   locationTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
     color: '#212121',
   },
@@ -591,7 +600,7 @@ const styles = StyleSheet.create({
   coordsContainer: {
     backgroundColor: '#FAFAFA',
     borderRadius: 12,
-    padding: 16,
+    padding: 10,
     marginBottom: 20,
     gap: 12,
   },
@@ -601,14 +610,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   coordLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
     color: '#757575',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   coordValue: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
     color: '#212121',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -624,7 +633,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
     borderRadius: 16,
-    padding: 16,
+    padding: 10,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#EEEEEE',
@@ -644,7 +653,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   metricValue: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: '800',
     color: '#212121',
     marginBottom: 2,
@@ -663,7 +672,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // Detalles
   detailsContainer: {
     marginTop: 8,
   },

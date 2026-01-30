@@ -300,8 +300,6 @@ export const styles = StyleSheet.create({
 
   gpsAlert: {
   borderRadius: 12,
-  margin: 10,
-  backgroundColor: 'red',
 
 },
 gpsAlertHeader: {
