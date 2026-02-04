@@ -4,13 +4,13 @@ const API_URL_PUT = 'https://do.velsat.pe:2053/api/Aplicativo/UpdateTramaDevice'
 const API_URL_POST = 'https://do.velsat.pe:2053/api/Aplicativo/InsertarTrama';
 const GEOCODING_URL = 'http://63.251.107.133:90/nominatim/reverse.php';
 const DEVICE_ID = 'M2L777';
-const ACCOUNT_ID = 'M2L777';
+const ACCOUNT_ID = 'movilbus';
 const COD_SERVICIO = 'movilbus';
 
 const OFFLINE_QUEUE_KEY = '@offline_tramas_queue';
-const POST_INTERVAL = 30000; // 30 segundos
+const POST_INTERVAL = 30000; 
 
-// 🔥 Función para obtener fecha/hora de Perú (UTC-5)
+
 const getPeruDateTime = (): string => {
   const now = new Date();
   const peruTime = new Date(now.getTime() - (5 * 60 * 60 * 1000));
@@ -31,7 +31,7 @@ interface TramaPost {
   accountID: string;
   latitude: number;
   longitude: number;
-  sepeedKPH: number;
+  speedKPH: number;
   heading: number;
   address: string;
 }
@@ -232,12 +232,12 @@ const getAddressFromCoordinates = async (
 const sendTramaPost = async (tramaData: TramaData, direccion: string): Promise<void> => {
   const trama: TramaPost = {
     deviceID: DEVICE_ID,
-    fecha: getPeruDateTime(), // 🔥 Fecha de Perú (UTC-5)
+    fecha: getPeruDateTime(), 
     codservicio: COD_SERVICIO,
     accountID: ACCOUNT_ID,
     latitude: tramaData.lastValidLatitude,
     longitude: tramaData.lastValidLongitude,
-    sepeedKPH: tramaData.lastValidSpeed,
+    speedKPH: tramaData.lastValidSpeed * 3.6,
     heading: tramaData.lastValidHeading,
     address: direccion,
   };
@@ -280,6 +280,7 @@ const sendTramaPost = async (tramaData: TramaData, direccion: string): Promise<v
 };
 
 
+
 const sendOfflineQueue = async (): Promise<void> => {
   if (offlineQueue.length === 0) return;
 
@@ -287,13 +288,37 @@ const sendOfflineQueue = async (): Promise<void> => {
   const queueSize = queueToSend.length;
 
   try {
+
+    const tramasGeocodificadas = await Promise.all(
+      queueToSend.map(async (trama) => {
+        if (trama.address.startsWith('Coordenadas')) {
+          try {
+            const geocodingResult = await getAddressFromCoordinates(
+              trama.latitude,
+              trama.longitude
+            );
+            
+            return {
+              ...trama,
+              address: geocodingResult.address
+            };
+          } catch (error) {
+     
+            return trama;
+          }
+        }
+
+        return trama;
+      })
+    );
+
     const response = await fetch(API_URL_POST, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify(queueToSend),
+      body: JSON.stringify(tramasGeocodificadas),
     });
 
     if (response.ok) {
@@ -315,7 +340,6 @@ const sendOfflineQueue = async (): Promise<void> => {
     // Cola se mantiene
   }
 };
-
 
 const startPostInterval = (): void => {
   if (postIntervalId) {
@@ -346,13 +370,14 @@ const processLocationQueue = async () => {
   pendingLocation = null;
 
   try {
+
     totalEnvios++;
-    
+
     const geocodingResult = await getAddressFromCoordinates(
       locationToProcess.lastValidLatitude,
       locationToProcess.lastValidLongitude
     );
-    
+
     const direccion = geocodingResult.address;
     
     if (onGeocodingLog) {
@@ -382,8 +407,8 @@ const processLocationQueue = async () => {
       lastValidLatitude: locationToProcess.lastValidLatitude,
       lastValidLongitude: locationToProcess.lastValidLongitude,
       lastValidHeading: locationToProcess.lastValidHeading,
-      lastValidSpeed: locationToProcess.lastValidSpeed,
-      lastValidDate: getPeruDateTime(), // 🔥 Fecha de Perú (UTC-5)
+      lastValidSpeed: locationToProcess.lastValidSpeed * 3.6,
+      lastValidDate: getPeruDateTime(),
       direccion: direccion,
     };
 
@@ -457,8 +482,8 @@ export const resetApiStats = async () => {
   geocodingCache.clear();
   pendingLocation = null;
   lastTramaData = null;
-  offlineQueue = []; // 🔥 Limpia el array inmediatamente
-  await clearOfflineQueue(); // 🔥 Espera a que se borre de AsyncStorage
+  offlineQueue = []; 
+  await clearOfflineQueue(); 
 };
 
 export const initializeApiService = async (): Promise<void> => {

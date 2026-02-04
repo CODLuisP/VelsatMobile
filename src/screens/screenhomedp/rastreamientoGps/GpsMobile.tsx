@@ -197,25 +197,25 @@ const GpsMobile = () => {
     }
   };
 
-const detenerRastreo = async () => {
-  if (watchIdRef.current !== null) {
-    Geolocation.clearWatch(watchIdRef.current);
-    watchIdRef.current = null;
-  }
-  
-  setRastreando(false);
-  setCargando(false);
+  const detenerRastreo = async () => {
+    if (watchIdRef.current !== null) {
+      Geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    
+    setRastreando(false);
+    setCargando(false);
 
-  try {
-    await BackgroundLocationService.stop();
-    await stopApiService();
-    console.log('Servicios de fondo detenidos');
-  } catch (error) {
-    console.error('Error deteniendo servicios:', error);
-  } finally {
-    await resetApiStats();
-  }
-};
+    try {
+      await BackgroundLocationService.stop();
+      await stopApiService();
+      console.log('Servicios de fondo detenidos');
+    } catch (error) {
+      console.error('Error deteniendo servicios:', error);
+    } finally {
+      await resetApiStats();
+    }
+  };
 
   const convertirVelocidad = (speedMs: number | null): number => {
     if (speedMs === null || speedMs < 0) return 0;
@@ -230,7 +230,9 @@ const detenerRastreo = async () => {
     return direcciones[index];
   };
 
-  const obtenerUbicacion = async (): Promise<void> => {
+
+
+const obtenerUbicacion = async (): Promise<void> => {
     try {
       setCargando(true);
       setError(null);
@@ -265,8 +267,8 @@ const detenerRastreo = async () => {
           const { latitude, longitude, speed, heading } = position.coords;
 
           const nuevaUbicacion = {
-            lat: parseFloat(latitude.toFixed(6)),
-            lon: parseFloat(longitude.toFixed(6)),
+            lat: latitude, 
+            lon: longitude,
             speed: speed,
             heading: heading,
           };
@@ -287,8 +289,8 @@ const detenerRastreo = async () => {
               const { latitude: lat, longitude: lon, speed: spd, heading: hdg } = watchPosition.coords;
 
               const ubicacionActualizada = {
-                lat: parseFloat(lat.toFixed(6)),
-                lon: parseFloat(lon.toFixed(6)),
+                   lat: lat, 
+                lon: lon,  
                 speed: spd,
                 heading: hdg,
               };
@@ -315,7 +317,7 @@ const detenerRastreo = async () => {
         },
         (error) => {
           console.error('Error getCurrentPosition:', error);
-          setError(`Error: ${error.message}`);
+            setError(`Error: ${error.message}`);
           setCargando(false);
         },
         {
@@ -332,6 +334,7 @@ const detenerRastreo = async () => {
     }
   };
 
+
   useEffect(() => {
     Geolocation.setRNConfiguration({
       skipPermissionRequests: false,
@@ -343,50 +346,51 @@ const detenerRastreo = async () => {
 
   return (
     <View style={styles.container}>
-      {/* Botón principal mejorado */}
-      <TouchableOpacity
-        style={[
-          styles.mainButton,
-          cargando && !rastreando && styles.buttonLoading,
-          rastreando && styles.buttonTracking
-        ]}
-        onPress={rastreando ? detenerRastreo : obtenerUbicacion}
-        disabled={cargando && !rastreando}
-        activeOpacity={0.8}
-      >
+      {/* Botones de control mejorados */}
+      <View style={styles.buttonContainer}>
+        {/* Botón Iniciar */}
+        <TouchableOpacity
+          style={[
+            styles.actionButton,
+            styles.startButton,
+            rastreando && styles.buttonDisabled,
+            cargando && !rastreando && styles.buttonLoading,
+          ]}
+          onPress={obtenerUbicacion}
+          disabled={rastreando || cargando}
+          activeOpacity={0.8}
+        >
+          <View style={styles.buttonContent}>
+            {cargando && !rastreando ? (
+              <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                <Loader size={22} color="#FFFFFF" strokeWidth={2.5} />
+              </Animated.View>
+            ) : (
+              <MapPin size={22} color="#FFFFFF" strokeWidth={2.5} />
+            )}
+            <Text style={styles.buttonText}>
+              {cargando && !rastreando ? 'Iniciando...' : 'Iniciar Rastreo'}
+            </Text>
+          </View>
+        </TouchableOpacity>
 
-
-        
-        <View style={styles.buttonContent}>
-          {cargando && !rastreando ? (
-            <Animated.View style={{ transform: [{ rotate: spin }] }}>
-              <Loader size={24} color="#FFFFFF" strokeWidth={2.5} />
-            </Animated.View>
-          ) : rastreando ? (
-            <Square size={24} color="#FFFFFF" strokeWidth={2.5} fill="#FFFFFF" />
-          ) : (
-            <MapPin size={24} color="#FFFFFF" strokeWidth={2.5} />
-          )}
-          <Text style={styles.buttonText}>
-            {cargando && !rastreando
-              ? 'Obteniendo ubicación...'
-              : rastreando
-              ? 'Detener rastreo'
-              : 'Iniciar rastreo GPS'}
-          </Text>
-        </View>
-
-
-
-      </TouchableOpacity>
-
-      {/* Indicador de estado activo */}
-      {/* {rastreando && (
-        <Animated.View style={[styles.statusBadge, { transform: [{ scale: pulseValue }] }]}>
-          <Activity size={16} color="#4CAF50" strokeWidth={2.5} />
-          <Text style={styles.statusBadgeText}>Rastreando en vivo</Text>
-        </Animated.View>
-      )} */}
+        {/* Botón Detener */}
+        <TouchableOpacity
+          style={[
+            styles.actionButton,
+            styles.stopButton,
+            !rastreando && styles.buttonDisabled,
+          ]}
+          onPress={detenerRastreo}
+          disabled={!rastreando}
+          activeOpacity={0.8}
+        >
+          <View style={styles.buttonContent}>
+            <Square size={22} color="#FFFFFF" strokeWidth={2.5} fill="#FFFFFF" />
+            <Text style={styles.buttonText}>Detener Servicio</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
 
       {/* Error mejorado */}
       {error && (
@@ -402,7 +406,6 @@ const detenerRastreo = async () => {
       {ubicacion && (
         <View style={styles.locationCard}>
           {/* Header de ubicación */}
-
           <View style={styles.locationHeader}>
             <View style={styles.locationHeaderLeft}>
               <MapPin size={20} color="#2196F3" strokeWidth={2.5} />
@@ -412,7 +415,6 @@ const detenerRastreo = async () => {
 
           {/* Coordenadas */}
           <View style={styles.coordsContainer}>
-
             <View style={styles.coordRow}>
               <Text style={styles.coordLabel}>Latitud</Text>
               <Text style={styles.coordValue}>{ubicacion.lat}</Text>
@@ -422,7 +424,6 @@ const detenerRastreo = async () => {
               <Text style={styles.coordLabel}>Longitud</Text>
               <Text style={styles.coordValue}>{ubicacion.lon}</Text>
             </View>
-
           </View>
 
           {/* Métricas en grid */}
@@ -493,51 +494,55 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   
-  mainButton: {
-    backgroundColor: '#008000',
+  // Contenedor de botones
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+
+  // Botones de acción
+  actionButton: {
+    flex: 1,
     borderRadius: 16,
-    paddingVertical: 13,
+    paddingVertical: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+
+  startButton: {
+    backgroundColor: '#4CAF50',
+  },
+
+  stopButton: {
+    backgroundColor: '#F44336',
+  },
+
+  buttonDisabled: {
+    backgroundColor: '#BDBDBD',
+    opacity: 0.6,
+    shadowOpacity: 0.1,
+    elevation: 2,
   },
 
   buttonLoading: {
-    backgroundColor: '#9E9E9E',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
+    backgroundColor: '#66BB6A',
   },
 
-  buttonTracking: {
-    backgroundColor: '#F44336',
-    shadowColor: '#F44336',
-  },
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    gap: 10,
   },
 
-  // Badge de estado
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E8F5E9',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginTop: 16,
-    gap: 8,
-  },
-  statusBadgeText: {
-    color: '#4CAF50',
-    fontSize: 14,
-    fontWeight: '600',
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
 
   // Error card
@@ -568,13 +573,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-
+  // Location card
   locationCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 5,
     marginTop: 10,
-
   },
   locationHeader: {
     flexDirection: 'row',
