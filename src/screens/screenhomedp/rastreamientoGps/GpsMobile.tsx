@@ -29,7 +29,12 @@ import {
   Navigation,
 } from 'lucide-react-native';
 
-const GpsMobile = () => {
+interface GpsMobileProps {
+  placa: string;
+  usuario: string;
+}
+
+const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
   const [ubicacion, setUbicacion] = useState<{
     lat: number;
     lon: number;
@@ -267,7 +272,7 @@ const GpsMobile = () => {
       }
 
       try {
-        await initializeApiService();
+        await initializeApiService(placa, usuario);
         await BackgroundLocationService.initialize();
         await BackgroundLocationService.start();
         console.log('Servicios de fondo iniciados');

@@ -325,7 +325,7 @@ const RastreoMobile: React.FC = () => {
 
       // Inicializar servicios
       try {
-        await initializeApiService();
+        await initializeApiService(placaCompleta, codigoUsuario);
         await BackgroundLocationService.initialize();
         await BackgroundLocationService.start();
         console.log('✅ Servicios de fondo iniciados');
