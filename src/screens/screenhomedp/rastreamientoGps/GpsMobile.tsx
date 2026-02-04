@@ -12,8 +12,22 @@ import {
 import Geolocation from '@react-native-community/geolocation';
 import SimpleLocationView from './SimpleLocationView';
 import BackgroundLocationService from './BackgroundLocationService';
-import { sendLocationToApi, initializeApiService, stopApiService, resetApiStats } from '../../../services/ApiService';
-import { MapPin, Square, Loader, XCircle, Activity, Gauge, Compass, Navigation } from 'lucide-react-native';
+import {
+  sendLocationToApi,
+  initializeApiService,
+  stopApiService,
+  resetApiStats,
+} from '../../../services/ApiService';
+import {
+  MapPin,
+  Square,
+  Loader,
+  XCircle,
+  Activity,
+  Gauge,
+  Compass,
+  Navigation,
+} from 'lucide-react-native';
 
 const GpsMobile = () => {
   const [ubicacion, setUbicacion] = useState<{
@@ -22,11 +36,11 @@ const GpsMobile = () => {
     speed: number | null;
     heading: number | null;
   } | null>(null);
-  
+
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rastreando, setRastreando] = useState(false);
-  
+
   const watchIdRef = useRef<number | null>(null);
   const spinValue = useRef(new Animated.Value(0)).current;
   const pulseValue = useRef(new Animated.Value(1)).current;
@@ -57,7 +71,7 @@ const GpsMobile = () => {
           duration: 1000,
           easing: Easing.linear,
           useNativeDriver: true,
-        })
+        }),
       ).start();
     } else {
       spinValue.setValue(0);
@@ -81,7 +95,7 @@ const GpsMobile = () => {
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     } else {
       pulseValue.setValue(1);
@@ -90,7 +104,7 @@ const GpsMobile = () => {
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg']
+    outputRange: ['0deg', '360deg'],
   });
 
   const handleShowAlert = (title: string, message: string, color?: string) => {
@@ -125,8 +139,9 @@ const GpsMobile = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
         ]);
 
-        const fineLocationGranted = 
-          granted['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED;
+        const fineLocationGranted =
+          granted['android.permission.ACCESS_FINE_LOCATION'] ===
+          PermissionsAndroid.RESULTS.GRANTED;
 
         if (!fineLocationGranted) {
           return false;
@@ -202,7 +217,7 @@ const GpsMobile = () => {
       Geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
-    
+
     setRastreando(false);
     setCargando(false);
 
@@ -224,15 +239,13 @@ const GpsMobile = () => {
 
   const obtenerDireccionCardinal = (heading: number | null): string => {
     if (heading === null || heading < 0) return 'N/A';
-    
+
     const direcciones = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
     const index = Math.round(heading / 45) % 8;
     return direcciones[index];
   };
 
-
-
-const obtenerUbicacion = async (): Promise<void> => {
+  const obtenerUbicacion = async (): Promise<void> => {
     try {
       setCargando(true);
       setError(null);
@@ -263,11 +276,11 @@ const obtenerUbicacion = async (): Promise<void> => {
       }
 
       Geolocation.getCurrentPosition(
-        (position) => {
+        position => {
           const { latitude, longitude, speed, heading } = position.coords;
 
           const nuevaUbicacion = {
-            lat: latitude, 
+            lat: latitude,
             lon: longitude,
             speed: speed,
             heading: heading,
@@ -285,12 +298,17 @@ const obtenerUbicacion = async (): Promise<void> => {
           });
 
           watchIdRef.current = Geolocation.watchPosition(
-            (watchPosition) => {
-              const { latitude: lat, longitude: lon, speed: spd, heading: hdg } = watchPosition.coords;
+            watchPosition => {
+              const {
+                latitude: lat,
+                longitude: lon,
+                speed: spd,
+                heading: hdg,
+              } = watchPosition.coords;
 
               const ubicacionActualizada = {
-                   lat: lat, 
-                lon: lon,  
+                lat: lat,
+                lon: lon,
                 speed: spd,
                 heading: hdg,
               };
@@ -304,7 +322,7 @@ const obtenerUbicacion = async (): Promise<void> => {
                 lastValidSpeed: spd || 0,
               });
             },
-            (error) => {
+            error => {
               console.error('Error watchPosition:', error);
             },
             {
@@ -312,28 +330,26 @@ const obtenerUbicacion = async (): Promise<void> => {
               distanceFilter: 2,
               interval: 1000,
               fastestInterval: 500,
-            }
+            },
           );
         },
-        (error) => {
+        error => {
           console.error('Error getCurrentPosition:', error);
-            setError(`Error: ${error.message}`);
+          setError(`Error: ${error.message}`);
           setCargando(false);
         },
         {
           enableHighAccuracy: false,
           timeout: 5000,
           maximumAge: 60000,
-        }
+        },
       );
-
     } catch (error) {
       setError('Error al obtener ubicación');
       setCargando(false);
       setRastreando(false);
     }
   };
-
 
   useEffect(() => {
     Geolocation.setRNConfiguration({
@@ -386,7 +402,12 @@ const obtenerUbicacion = async (): Promise<void> => {
           activeOpacity={0.8}
         >
           <View style={styles.buttonContent}>
-            <Square size={22} color="#FFFFFF" strokeWidth={2.5} fill="#FFFFFF" />
+            <Square
+              size={22}
+              color="#FFFFFF"
+              strokeWidth={2.5}
+              fill="#FFFFFF"
+            />
             <Text style={styles.buttonText}>Detener Servicio</Text>
           </View>
         </TouchableOpacity>
@@ -443,21 +464,24 @@ const obtenerUbicacion = async (): Promise<void> => {
             {/* Rumbo */}
             <View style={styles.metricCard}>
               <View style={styles.metricIconContainer}>
-                <Navigation 
-                  size={24} 
-                  color="#9C27B0" 
+                <Navigation
+                  size={24}
+                  color="#9C27B0"
                   strokeWidth={2.5}
                   style={{
-                    transform: [{ 
-                      rotate: ubicacion.heading !== null && ubicacion.heading >= 0 
-                        ? `${ubicacion.heading}deg` 
-                        : '0deg' 
-                    }]
+                    transform: [
+                      {
+                        rotate:
+                          ubicacion.heading !== null && ubicacion.heading >= 0
+                            ? `${ubicacion.heading}deg`
+                            : '0deg',
+                      },
+                    ],
                   }}
                 />
               </View>
               <Text style={styles.metricValue}>
-                {ubicacion.heading !== null && ubicacion.heading >= 0 
+                {ubicacion.heading !== null && ubicacion.heading >= 0
                   ? ubicacion.heading.toFixed(0)
                   : 'N/A'}
               </Text>
@@ -473,8 +497,8 @@ const obtenerUbicacion = async (): Promise<void> => {
           {/* SimpleLocationView */}
           {rastreando && (
             <View style={styles.detailsContainer}>
-              <SimpleLocationView 
-                latitude={ubicacion.lat} 
+              <SimpleLocationView
+                latitude={ubicacion.lat}
                 longitude={ubicacion.lon}
                 speed={ubicacion.speed || 0}
                 heading={ubicacion.heading || 0}
@@ -493,7 +517,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 5,
   },
-  
+
   // Contenedor de botones
   buttonContainer: {
     flexDirection: 'row',

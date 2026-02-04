@@ -1,12 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+let DEVICE_ID = 'M2L777';
+let ACCOUNT_ID = 'movilbus';
+
 const API_URL_PUT = 'https://do.velsat.pe:2053/api/Aplicativo/UpdateTramaDevice';
 const API_URL_POST = 'https://do.velsat.pe:2053/api/Aplicativo/InsertarTrama';
 const GEOCODING_URL = 'http://63.251.107.133:90/nominatim/reverse.php';
-const DEVICE_ID = 'M2L777';
-const ACCOUNT_ID = 'movilbus';
-const COD_SERVICIO = 'movilbus';
-
 const OFFLINE_QUEUE_KEY = '@offline_tramas_queue';
 const POST_INTERVAL = 30000; 
 
@@ -27,7 +26,6 @@ interface TramaData {
 interface TramaPost {
   deviceID: string;
   fecha: string;
-  codservicio: string;
   accountID: string;
   latitude: number;
   longitude: number;
@@ -232,8 +230,7 @@ const getAddressFromCoordinates = async (
 const sendTramaPost = async (tramaData: TramaData, direccion: string): Promise<void> => {
   const trama: TramaPost = {
     deviceID: DEVICE_ID,
-    fecha: getPeruDateTime(), 
-    codservicio: COD_SERVICIO,
+    fecha: getPeruDateTime(),
     accountID: ACCOUNT_ID,
     latitude: tramaData.lastValidLatitude,
     longitude: tramaData.lastValidLongitude,
@@ -472,6 +469,13 @@ export const getApiStats = () => ({
   }
 });
 
+// Agregar esta función nueva antes de initializeApiService
+export const setApiCredentials = (deviceId: string, accountId: string): void => {
+  DEVICE_ID = deviceId;
+  ACCOUNT_ID = accountId;
+  console.log('✅ Credenciales API configuradas:', { DEVICE_ID, ACCOUNT_ID });
+};
+
 export const resetApiStats = async () => {
   totalEnvios = 0;
   enviosExitosos = 0;
@@ -486,9 +490,18 @@ export const resetApiStats = async () => {
   await clearOfflineQueue(); 
 };
 
-export const initializeApiService = async (): Promise<void> => {
+export const initializeApiService = async (
+  deviceId?: string, 
+  accountId?: string
+): Promise<void> => {
+  if (deviceId && accountId) {
+    setApiCredentials(deviceId, accountId);
+  }
+  
   await loadOfflineQueue();
   startPostInterval();
+  
+  console.log('✅ ApiService inicializado con:', { DEVICE_ID, ACCOUNT_ID });
 };
 
 export const stopApiService = (): void => {

@@ -7,7 +7,7 @@ import {
   Image,
   PermissionsAndroid,
   Platform,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import {
   NavigationProp,
@@ -34,10 +34,9 @@ import {
   CloudSnow,
   MapPin,
   User,
-  CheckCircle,
   Shield,
   Car,
-  
+  Satellite
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../components/ModalAlert';
@@ -134,6 +133,10 @@ const HomeDriverPassenger: React.FC = () => {
 
   const handleNavigateToServicesPassenger = () => {
     navigation.navigate('ServicesPassenger');
+  };
+
+  const handleNavigateToRastreo = () => {
+    navigation.navigate('RastreoMobile'); // Cambiar por el nombre correcto
   };
 
   const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
@@ -408,8 +411,7 @@ const HomeDriverPassenger: React.FC = () => {
               await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
                 interval: 10000,
               });
-            } catch (err) {
-            }
+            } catch (err) {}
           },
           '#FFA726', // Naranja
           'Activar GPS',
@@ -648,10 +650,6 @@ const HomeDriverPassenger: React.FC = () => {
     obtenerUbicacion();
   }, []);
 
-  const handleLogout = (): void => {
-    logout();
-  };
-
   const toggleDropdown = (): void => {
     setShowDropdown(!showDropdown);
   };
@@ -662,7 +660,7 @@ const HomeDriverPassenger: React.FC = () => {
   };
 
   return (
-  <LinearGradient
+    <LinearGradient
       colors={['#031838ff', '#00296b', '#00296b']}
       style={[homeStyles.container]}
       start={{ x: 0, y: 0 }}
@@ -768,56 +766,69 @@ const HomeDriverPassenger: React.FC = () => {
 
           {/* Grid de opciones principales - SOLO 4 OPCIONES CON IMÁGENES */}
           <View style={homeStyles.optionsGrid}>
+            <OptionCard
+              onPress={handleNavigateToProfile}
+              colors={['#05255dff', '#093f86ff']}
+              badge="PERFIL"
+              category="Información"
+              title="Mi Perfil"
+              description="Revisa y actualiza tus datos personales fácilmente en cualquier momento."
+              icon={User}
+              activeOpacity={0.9}
+            />
 
-            
-          <OptionCard
-            onPress={handleNavigateToProfile}
-            colors={['#05255dff', '#093f86ff']}
-            badge="PERFIL"
-            category="Información"
-            title="Mi Perfil"
-            description="Revisa y actualiza tus datos personales fácilmente en cualquier momento." 
-            icon={User}
-            activeOpacity={0.90}
+            {/* Condición para mostrar Servicios o algo diferente según el tipo */}
+            {tipo !== 'r' ? (
+              <OptionCard
+                onPress={
+                  tipo === 'c'
+                    ? handleNavigateToServicesDriver
+                    : handleNavigateToServicesPassenger
+                }
+                colors={['#05255dff', '#093f86ff']}
+                badge="SERVICIOS"
+                category="Programación"
+                title="Servicios"
+                description="Conoce tus servicios programados más recientes."
+                icon={Car}
+                activeOpacity={0.7}
+              />
+            ) : (
+              // AQUÍ VA LA NUEVA OPCIÓN PARA tipo === 'r'
+              <OptionCard
+                onPress={handleNavigateToRastreo} // Crear esta función
+                colors={['#05255dff', '#093f86ff']}
+                badge="TRANSMISIÓN"
+                category="Rastreo"
+                title="Transmisión"
+                description="Usa el GPS celular para enviar tu ubicación actual."
+                icon={Satellite} // Cambiar por el ícono que necesites
+                activeOpacity={0.7}
+              />
+            )}
 
-          />
-
-<OptionCard
-  onPress={tipo === 'c' ? handleNavigateToServicesDriver : handleNavigateToServicesPassenger}
-  colors={['#05255dff', '#093f86ff']}
-  badge="SERVICIOS"
-  category="Programación"
-  title="Servicios"
-  description="Conoce tus servicios programados más recientes."
-  icon={Car}
-
-  activeOpacity={0.7}
-/>
-
-           
-          <OptionCard
-            onPress={handleNavigateToSecurity}
-            colors={['#05255dff', '#093f86ff']}
-            badge="SEGURIDAD"
-            category="Protección"
-            title="Seguridad"
-            description="Activa la autenticación con datos biométricos para mayor seguridad."
-            icon={Shield}
-            activeOpacity={0.90}
+            <OptionCard
+              onPress={handleNavigateToSecurity}
+              colors={['#05255dff', '#093f86ff']}
+              badge="SEGURIDAD"
+              category="Protección"
+              title="Seguridad"
+              description="Activa la autenticación con datos biométricos para mayor seguridad."
+              icon={Shield}
+              activeOpacity={0.9}
               fullWidth={true} // ← Agrega esta prop
-          />
- <OptionCard
-            onPress={handleNavigateToHelp}
-            colors={['#05255dff', '#093f86ff']}
-            badge="AYUDA"
-            category="Soporte"
-            title="Ayuda"
-            description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
-            icon={Headphones}
-            activeOpacity={0.90}
-            fullWidth={true} // ← Agrega esta prop
-
-          />
+            />
+            <OptionCard
+              onPress={handleNavigateToHelp}
+              colors={['#05255dff', '#093f86ff']}
+              badge="AYUDA"
+              category="Soporte"
+              title="Ayuda"
+              description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
+              icon={Headphones}
+              activeOpacity={0.9}
+              fullWidth={true} // ← Agrega esta prop
+            />
           </View>
 
           <ModalAlert
