@@ -432,15 +432,16 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
       {ubicacion && (
         <View style={styles.locationCard}>
           {/* Header de ubicación */}
-          <View style={styles.locationHeader}>
+
+          {/* <View style={styles.locationHeader}>
             <View style={styles.locationHeaderLeft}>
               <MapPin size={20} color="#2196F3" strokeWidth={2.5} />
               <Text style={styles.locationTitle}>Ubicación actual</Text>
             </View>
-          </View>
+          </View> */}
 
           {/* Coordenadas */}
-          <View style={styles.coordsContainer}>
+          {/* <View style={styles.coordsContainer}>
             <View style={styles.coordRow}>
               <Text style={styles.coordLabel}>Latitud</Text>
               <Text style={styles.coordValue}>{ubicacion.lat}</Text>
@@ -450,11 +451,11 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
               <Text style={styles.coordLabel}>Longitud</Text>
               <Text style={styles.coordValue}>{ubicacion.lon}</Text>
             </View>
-          </View>
+          </View> */}
 
           {/* Métricas en grid */}
           <View style={styles.metricsGrid}>
-            {/* Velocidad */}
+
             <View style={styles.metricCard}>
               <View style={styles.metricIconContainer}>
                 <Gauge size={24} color="#FF9800" strokeWidth={2.5} />
@@ -686,7 +687,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   metricValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
     color: '#212121',
     marginBottom: 2,
@@ -698,7 +699,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   metricLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: '#9E9E9E',
     textTransform: 'uppercase',

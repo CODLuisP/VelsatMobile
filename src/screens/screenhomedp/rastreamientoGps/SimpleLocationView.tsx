@@ -251,7 +251,7 @@ const SimpleLocationView: React.FC<SimpleLocationViewProps> = ({
         </View>
 
         {/* Métricas PUT */}
-        <View style={styles.metricsRow}>
+        {/* <View style={styles.metricsRow}>
           <View style={styles.metricIconContainer}>
             <RefreshCw size={20} color="#673AB7" strokeWidth={2.5} />
           </View>
@@ -279,10 +279,10 @@ const SimpleLocationView: React.FC<SimpleLocationViewProps> = ({
               </Text>
             </View>
           </View>
-        </View>
+        </View> */}
 
         {/* Métricas POST */}
-        <View style={styles.metricsRow}>
+        {/* <View style={styles.metricsRow}>
           <View style={styles.metricIconContainer}>
             <Clock size={20} color="#00ACC1" strokeWidth={2.5} />
           </View>
@@ -310,7 +310,7 @@ const SimpleLocationView: React.FC<SimpleLocationViewProps> = ({
               </Text>
             </View>
           </View>
-        </View>
+        </View> */}
 
         {/* Cola offline */}
         {apiStats.offline.pendientes > 0 && (
