@@ -356,7 +356,12 @@ const ServicesDetailDriver = () => {
           <View style={styles.formContainer}>
             <View style={styles.gpsAlert}>
               <View style={styles.gpsAlertHeader}>
-                <GpsMobile placa={serviceData.unidad} usuario={serviceData.codusuario}/>
+                {serviceData.codusuario === 'movilbus' && (
+                  <GpsMobile
+                    placa={serviceData.unidad}
+                    usuario={serviceData.codusuario}
+                  />
+                )}
               </View>
             </View>
 
