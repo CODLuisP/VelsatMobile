@@ -458,7 +458,7 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
 
             <View style={styles.metricCard}>
               <View style={styles.metricIconContainer}>
-                <Gauge size={24} color="#FF9800" strokeWidth={2.5} />
+                <Gauge size={22} color="#FF9800" strokeWidth={2.5} />
               </View>
               <Text style={styles.metricValue}>
                 {convertirVelocidad(ubicacion.speed)}
@@ -471,7 +471,7 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
             <View style={styles.metricCard}>
               <View style={styles.metricIconContainer}>
                 <Navigation
-                  size={24}
+                  size={22}
                   color="#9C27B0"
                   strokeWidth={2.5}
                   style={{
@@ -673,9 +673,9 @@ const styles = StyleSheet.create({
     borderColor: '#EEEEEE',
   },
   metricIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#757575',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   metricLabel: {
     fontSize: 10,
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   },
 
   detailsContainer: {
-    marginTop: 8,
+    marginTop: 4,
   },
 });
 

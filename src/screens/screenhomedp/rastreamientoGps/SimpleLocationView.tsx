@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingBottom: 20,
-    marginBottom: 20,
+    marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#F5F5F5',
   },
@@ -493,8 +493,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
     borderRadius: 12,
     padding: 16,
-    marginTop: 12,
-    marginBottom: 12,
+    marginTop: 2,
+    marginBottom: 2,
   },
   offlineIconContainer: {
     width: 36,
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   offlineCount: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: '700',
     color: '#F57C00',
     marginRight: 8,
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 16,
+    paddingTop: 4,
   },
   statusDot: {
     width: 8,
