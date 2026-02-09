@@ -360,6 +360,9 @@ const ServicesDetailDriver = () => {
                   <GpsMobile
                     placa={serviceData.unidad}
                     usuario={serviceData.codusuario}
+                    codservicio={serviceData.codservicio}
+                    unidad={serviceData.unidad}
+                    codconductor={serviceData.codconductor}
                   />
                 )}
               </View>

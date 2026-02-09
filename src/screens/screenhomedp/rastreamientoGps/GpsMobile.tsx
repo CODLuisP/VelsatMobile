@@ -10,6 +10,7 @@ import {
   Easing,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
+import axios from 'axios';
 import SimpleLocationView from './SimpleLocationView';
 import BackgroundLocationService from './BackgroundLocationService';
 import {
@@ -23,18 +24,25 @@ import {
   Square,
   Loader,
   XCircle,
-  Activity,
   Gauge,
-  Compass,
   Navigation,
 } from 'lucide-react-native';
 
 interface GpsMobileProps {
   placa: string;
   usuario: string;
+  codservicio: string;
+  unidad: string;
+  codconductor: string;
 }
 
-const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
+const GpsMobile = ({
+  placa,
+  usuario,
+  codservicio,
+  unidad,
+  codconductor,
+}: GpsMobileProps) => {
   const [ubicacion, setUbicacion] = useState<{
     lat: number;
     lon: number;
@@ -134,6 +142,116 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
       cancelText: cancelText || 'Cancelar',
     });
     setModalConfirmVisible(true);
+  };
+
+  // 🔥 NUEVA FUNCIÓN: Verificar estado del servicio en el backend
+  const verificarServicioIniciado = async (): Promise<boolean> => {
+    // Si no se proporcionaron los props necesarios, omitir verificación
+    if (!codservicio) {
+      console.log(
+        '⚠️ No se proporcionó codservicio, omitiendo verificación de inicio',
+      );
+      return false;
+    }
+
+    try {
+      console.log(
+        `🔍 Verificando estado del servicio ${codservicio} en el backend...`,
+      );
+
+      const response = await axios.get(
+        `https://do.velsat.pe:2053/api/Aplicativo/GetEstadoServicio?codservicio=${codservicio}`,
+        {
+          timeout: 5000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      console.log('📡 Respuesta del backend:', response.data);
+
+      // 🔥 CORRECCIÓN: El backend devuelve directamente el número, no un objeto con .status
+      if (response.data !== undefined && response.data !== null) {
+        const status = response.data.toString();
+        const yaIniciado = status === '2' || status === '3';
+
+        console.log(
+          `📊 Status del servicio: ${status} - ¿Ya iniciado?: ${yaIniciado}`,
+        );
+        return yaIniciado;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('❌ Error verificando estado del servicio:', error);
+      // En caso de error, asumir que NO está iniciado para intentar iniciarlo
+      return false;
+    }
+  };
+
+  // 🔥 NUEVA FUNCIÓN: Ejecutar APIs del botón "Iniciar" original
+  const ejecutarInicioServicio = async (): Promise<boolean> => {
+    // Verificar que se proporcionaron todos los props necesarios
+    if (!codservicio || !unidad || !codconductor) {
+      console.log(
+        '⚠️ Faltan props necesarios para ejecutar inicio de servicio',
+      );
+      return true; // Devolver true para continuar con el rastreo normal
+    }
+
+    try {
+      console.log('🚀 Ejecutando APIs de inicio de servicio...');
+
+      await axios.post(
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarFechaInicioServicio?codservicio=${codservicio}`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log('✅ API 1/3: Fecha de inicio actualizada');
+
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarDeviceServicio?codservicio=${codservicio}&deviceID=${unidad}`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log('✅ API 2/3: Device actualizado');
+
+      await axios.post(
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarTaxiServicio?codservicio=${codservicio}&codtaxi=${codconductor}`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log('✅ API 3/3: Taxi actualizado');
+
+      console.log('✨ Todas las APIs de inicio ejecutadas correctamente');
+      return true;
+    } catch (error) {
+      console.error('❌ Error ejecutando APIs de inicio:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Detalles del error:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        });
+      }
+      return false;
+    }
   };
 
   const solicitarPermisosUbicacion = async (): Promise<boolean> => {
@@ -250,11 +368,38 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
     return direcciones[index];
   };
 
+  // 🔥 FUNCIÓN MODIFICADA: obtenerUbicacion con verificación en backend
   const obtenerUbicacion = async (): Promise<void> => {
     try {
       setCargando(true);
       setError(null);
 
+      // 🔥 PASO 1: Verificar en el backend si el servicio ya está iniciado (solo si se proporcionó codservicio)
+      if (codservicio) {
+        const yaFueIniciado = await verificarServicioIniciado();
+
+        // 🔥 PASO 2: Si NO está iniciado (status !== '2' y !== '3'), ejecutar las APIs
+        if (!yaFueIniciado) {
+          console.log('🆕 Servicio no iniciado, ejecutando APIs de inicio...');
+          const inicioExitoso = await ejecutarInicioServicio();
+
+          if (!inicioExitoso) {
+            setError(
+              'Error al iniciar el servicio. Por favor intenta de nuevo.',
+            );
+            setCargando(false);
+            return;
+          }
+
+          console.log('✅ Servicio iniciado correctamente');
+        } else {
+          console.log(
+            '♻️ Servicio ya iniciado según backend, continuando con rastreo...',
+          );
+        }
+      }
+
+      // 🔥 PASO 3: Continuar con la lógica normal de rastreo GPS (sin cambios)
       const tienePermiso = await solicitarPermisosUbicacion();
 
       if (!tienePermiso) {
@@ -350,6 +495,7 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
         },
       );
     } catch (error) {
+      console.error('Error general en obtenerUbicacion:', error);
       setError('Error al obtener ubicación');
       setCargando(false);
       setRastreando(false);
@@ -431,31 +577,8 @@ const GpsMobile = ({ placa, usuario }: GpsMobileProps) => {
       {/* Información de ubicación mejorada */}
       {ubicacion && (
         <View style={styles.locationCard}>
-          {/* Header de ubicación */}
-
-          {/* <View style={styles.locationHeader}>
-            <View style={styles.locationHeaderLeft}>
-              <MapPin size={20} color="#2196F3" strokeWidth={2.5} />
-              <Text style={styles.locationTitle}>Ubicación actual</Text>
-            </View>
-          </View> */}
-
-          {/* Coordenadas */}
-          {/* <View style={styles.coordsContainer}>
-            <View style={styles.coordRow}>
-              <Text style={styles.coordLabel}>Latitud</Text>
-              <Text style={styles.coordValue}>{ubicacion.lat}</Text>
-            </View>
-
-            <View style={styles.coordRow}>
-              <Text style={styles.coordLabel}>Longitud</Text>
-              <Text style={styles.coordValue}>{ubicacion.lon}</Text>
-            </View>
-          </View> */}
-
           {/* Métricas en grid */}
           <View style={styles.metricsGrid}>
-
             <View style={styles.metricCard}>
               <View style={styles.metricIconContainer}>
                 <Gauge size={24} color="#FF9800" strokeWidth={2.5} />
