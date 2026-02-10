@@ -507,11 +507,10 @@ const ServicesDriver = () => {
                             <Text style={styles.dateValue}>{finServicio}</Text>
                           </View>
 
-                          {serviceStates[service.codservicio] !==
-                            'finished' && (
-                            <View style={styles.actionButtons}>
-                              {/* Botón Iniciar - solo para usuarios diferentes a movilbus */}
-                              {!isMovilbus && (
+                          {serviceStates[service.codservicio] !== 'finished' &&
+                            !isMovilbus && (
+                              <View style={styles.actionButtons}>
+                                {/* Botón Iniciar */}
                                 <TouchableOpacity
                                   style={[
                                     styles.actionButton,
@@ -546,45 +545,44 @@ const ServicesDriver = () => {
                                       : 'Iniciar'}
                                   </Text>
                                 </TouchableOpacity>
-                              )}
 
-                              {/* Botón Finalizar */}
-                              <TouchableOpacity
-                                style={[
-                                  styles.actionButton,
-                                  serviceStates[service.codservicio] ===
-                                  'started'
-                                    ? styles.actionButtonEnd
-                                    : styles.actionButtonDisabled,
-                                ]}
-                                onPress={() =>
-                                  handleEndService(
-                                    service.codservicio,
-                                    service.unidad,
-                                    service.codconductor,
-                                  )
-                                }
-                                disabled={
-                                  serviceStates[service.codservicio] !==
-                                    'started' ||
-                                  loadingEnd === service.codservicio
-                                }
-                              >
-                                <Text
+                                {/* Botón Finalizar */}
+                                <TouchableOpacity
                                   style={[
-                                    styles.actionButtonText,
-                                    serviceStates[service.codservicio] !==
-                                      'started' &&
-                                      styles.actionButtonTextDisabled,
+                                    styles.actionButton,
+                                    serviceStates[service.codservicio] ===
+                                    'started'
+                                      ? styles.actionButtonEnd
+                                      : styles.actionButtonDisabled,
                                   ]}
+                                  onPress={() =>
+                                    handleEndService(
+                                      service.codservicio,
+                                      service.unidad,
+                                      service.codconductor,
+                                    )
+                                  }
+                                  disabled={
+                                    serviceStates[service.codservicio] !==
+                                      'started' ||
+                                    loadingEnd === service.codservicio
+                                  }
                                 >
-                                  {loadingEnd === service.codservicio
-                                    ? 'Finalizando...'
-                                    : 'Finalizar'}
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                          )}
+                                  <Text
+                                    style={[
+                                      styles.actionButtonText,
+                                      serviceStates[service.codservicio] !==
+                                        'started' &&
+                                        styles.actionButtonTextDisabled,
+                                    ]}
+                                  >
+                                    {loadingEnd === service.codservicio
+                                      ? 'Finalizando...'
+                                      : 'Finalizar'}
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
                         </View>
                       </View>
                     </View>

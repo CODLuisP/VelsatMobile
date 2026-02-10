@@ -335,16 +335,98 @@ const GpsMobile = ({
     }
   };
 
-  const detenerRastreo = async () => {
-    if (watchIdRef.current !== null) {
-      Geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
+  // 🔥 NUEVA FUNCIÓN: Ejecutar APIs de finalización del servicio
+  const ejecutarFinServicio = async (): Promise<boolean> => {
+    // Verificar que se proporcionaron todos los props necesarios
+    if (!codservicio || !unidad || !codconductor) {
+      console.log(
+        '⚠️ Faltan props necesarios para ejecutar finalización de servicio',
+      );
+      return true; // Devolver true para continuar con la detención normal del rastreo
     }
 
-    setRastreando(false);
-    setCargando(false);
-
     try {
+      console.log('🏁 Ejecutando APIs de finalización de servicio...');
+
+      await axios.post(
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarFechaFinServicio?codservicio=${codservicio}`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log('✅ API 1/3: Fecha de fin actualizada');
+
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarDeviceFinServicio?deviceID=${unidad}`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log('✅ API 2/3: Device fin actualizado');
+
+      await axios.post(
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log('✅ API 3/3: Taxi fin actualizado');
+
+      console.log('✨ Todas las APIs de finalización ejecutadas correctamente');
+      return true;
+    } catch (error) {
+      console.error('❌ Error ejecutando APIs de finalización:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Detalles del error:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        });
+      }
+      return false;
+    }
+  };
+
+  // 🔥 FUNCIÓN MODIFICADA: detenerRastreo con APIs de finalización
+  const detenerRastreo = async () => {
+    try {
+      // 🔥 PASO 1: Ejecutar APIs de finalización (solo si se proporcionaron los props necesarios)
+      if (codservicio && unidad && codconductor) {
+        console.log('🏁 Iniciando proceso de finalización del servicio...');
+        const finalizacionExitosa = await ejecutarFinServicio();
+
+        if (!finalizacionExitosa) {
+          console.warn(
+            '⚠️ Error en finalización, pero continuando con detención del rastreo',
+          );
+          // Podrías mostrar un mensaje de advertencia al usuario aquí si lo deseas
+          // setError('Advertencia: Error al finalizar el servicio en el servidor');
+        } else {
+          console.log('✅ Servicio finalizado correctamente en el backend');
+        }
+      }
+
+      // 🔥 PASO 2: Continuar con la lógica normal de detención del rastreo GPS
+      if (watchIdRef.current !== null) {
+        Geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+
+      setRastreando(false);
+      setCargando(false);
+
       await BackgroundLocationService.stop();
       await stopApiService();
       console.log('Servicios de fondo detenidos');
@@ -536,7 +618,7 @@ const GpsMobile = ({
               <MapPin size={22} color="#FFFFFF" strokeWidth={2.5} />
             )}
             <Text style={styles.buttonText}>
-              {cargando && !rastreando ? 'Iniciando...' : 'Iniciar'}
+              {cargando && !rastreando ? 'Iniciando...' : 'Iniciar Servicio'}
             </Text>
           </View>
         </TouchableOpacity>
