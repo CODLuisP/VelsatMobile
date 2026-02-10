@@ -536,7 +536,7 @@ const GpsMobile = ({
               <MapPin size={22} color="#FFFFFF" strokeWidth={2.5} />
             )}
             <Text style={styles.buttonText}>
-              {cargando && !rastreando ? 'Iniciando...' : 'Iniciar Rastreo'}
+              {cargando && !rastreando ? 'Iniciando...' : 'Iniciar'}
             </Text>
           </View>
         </TouchableOpacity>
