@@ -52,6 +52,7 @@ const ServicesDriver = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStart, setLoadingStart] = useState<string | null>(null);
   const [loadingEnd, setLoadingEnd] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -287,6 +288,30 @@ const ServicesDriver = () => {
     navigation.navigate('ServicesDetailDriver', { serviceData: service });
   };
 
+  const handleStartService = async (
+    codservicio: string,
+    unidad: string,
+    codconductor: string,
+  ) => {
+    try {
+      setLoadingStart(codservicio);
+      await axios.post(
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarFechaInicioServicio?codservicio=${codservicio}`,
+      );
+      await axios.post(
+        `https://velsat.pe:2087/api/Aplicativo/ActualizarDeviceServicio?codservicio=${codservicio}&deviceID=${unidad}`,
+      );
+      await axios.post(
+        `https://do.velsat.pe:2053/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
+      );
+
+      setServiceStates(prev => ({ ...prev, [codservicio]: 'started' }));
+    } catch (error) {
+    } finally {
+      setLoadingStart(null);
+    }
+  };
+
   const handleEndService = async (
     codservicio: string,
     unidad: string,
@@ -396,6 +421,8 @@ const ServicesDriver = () => {
               const inicioServicio = getInicioServicio(service);
               const finServicio = getFinServicio(service);
               const status = getServiceStatus(service);
+              const isMovilbus =
+                service.codusuario.toLowerCase() === 'movilbus';
 
               return (
                 <TouchableOpacity
@@ -480,12 +507,53 @@ const ServicesDriver = () => {
                             <Text style={styles.dateValue}>{finServicio}</Text>
                           </View>
 
-                          {serviceStates[service.codservicio] !== 'finished' && (
+                          {serviceStates[service.codservicio] !==
+                            'finished' && (
                             <View style={styles.actionButtons}>
+                              {/* Botón Iniciar - solo para usuarios diferentes a movilbus */}
+                              {!isMovilbus && (
+                                <TouchableOpacity
+                                  style={[
+                                    styles.actionButton,
+                                    serviceStates[service.codservicio] ===
+                                    'idle'
+                                      ? styles.actionButtonActive
+                                      : styles.actionButtonDisabled,
+                                  ]}
+                                  onPress={() =>
+                                    handleStartService(
+                                      service.codservicio,
+                                      service.unidad,
+                                      service.codconductor,
+                                    )
+                                  }
+                                  disabled={
+                                    serviceStates[service.codservicio] !==
+                                      'idle' ||
+                                    loadingStart === service.codservicio
+                                  }
+                                >
+                                  <Text
+                                    style={[
+                                      styles.actionButtonText,
+                                      serviceStates[service.codservicio] !==
+                                        'idle' &&
+                                        styles.actionButtonTextDisabled,
+                                    ]}
+                                  >
+                                    {loadingStart === service.codservicio
+                                      ? 'Iniciando...'
+                                      : 'Iniciar'}
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
+
+                              {/* Botón Finalizar */}
                               <TouchableOpacity
                                 style={[
                                   styles.actionButton,
-                                  serviceStates[service.codservicio] === 'started'
+                                  serviceStates[service.codservicio] ===
+                                  'started'
                                     ? styles.actionButtonEnd
                                     : styles.actionButtonDisabled,
                                 ]}
@@ -497,14 +565,16 @@ const ServicesDriver = () => {
                                   )
                                 }
                                 disabled={
-                                  serviceStates[service.codservicio] !== 'started' ||
+                                  serviceStates[service.codservicio] !==
+                                    'started' ||
                                   loadingEnd === service.codservicio
                                 }
                               >
                                 <Text
                                   style={[
                                     styles.actionButtonText,
-                                    serviceStates[service.codservicio] !== 'started' &&
+                                    serviceStates[service.codservicio] !==
+                                      'started' &&
                                       styles.actionButtonTextDisabled,
                                   ]}
                                 >
