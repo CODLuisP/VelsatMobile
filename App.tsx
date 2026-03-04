@@ -37,6 +37,7 @@ import FAQ from './src/screens/screenhome/help/Faq';
 
 // ⭐ IMPORTAR EL COMPONENTE DE ACTUALIZACIÓN
 import UpdateChecker from './src/components/login/UpdateChecker';
+import Documents from './src/screens/screenhome/documents/Documents';
 
 // Tipos de datos
 interface Device {
@@ -93,6 +94,7 @@ export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
   Profile: undefined;
+  Documents: undefined;
   Setting: undefined;
   Pin: undefined;
   Notifications: undefined;
@@ -237,6 +239,7 @@ const App = () => {
                   }
                 />
                 <Stack.Screen name="Profile" component={Profile} />
+                <Stack.Screen name="Documents" component={Documents} />
                 <Stack.Screen name="Setting" component={Setting} />
                 <Stack.Screen name="Pin" component={Pin} />
                 <Stack.Screen name="Notifications" component={Notifications} />
