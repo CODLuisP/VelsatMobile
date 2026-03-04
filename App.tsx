@@ -7,6 +7,7 @@ import ServicesDriver from './src/screens/screenhomedp/ServicesDriver';
 import ServicesPassenger from './src/screens/screenhomedp/ServicesPassenger';
 import ServicesDetailDriver from './src/screens/screenhomedp/ServicesDetailDriver';
 import ServicesDetailPassenger from './src/screens/screenhomedp/ServicesDetailPassenger';
+import RastreoMobile from './src/screens/screentracking/RastreoMobile';
 import Setting from './src/screens/screenhome/Setting';
 import Pin from './src/screens/screenhome/Pin';
 import Notifications from './src/screens/screenhome/Notifications';
@@ -14,7 +15,6 @@ import MapAlert from './src/screens/screenhome/MapAlert';
 import Devices from './src/screens/screenhome/devices/Devices';
 import DetailDevice from './src/screens/screenhome/devices/DetailDevice';
 import DetailDeviceGM from './src/screens/screenhome/devices/DetailDeviceGM';
-
 import InfoDevice from './src/screens/screenhome/devices/InfoDevice';
 import Events from './src/screens/screenhome/devices/Events';
 import MapEvent from './src/screens/screenhome/devices/MapEvent';
@@ -27,13 +27,11 @@ import TourReport from './src/screens/screenhome/reports/TourReport';
 import Security from './src/screens/screenhome/security/Security';
 import Help from './src/screens/screenhome/help/Help';
 import Central from './src/screens/screenhome/help/Central';
-
 import Login from './src/components/login/Login';
 import Home from './src/screens/Home';
 import HomeDriverPassenger from './src/screens/HomeDriverPassenger';
 import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import FAQ from './src/screens/screenhome/help/Faq';
 
@@ -115,7 +113,7 @@ export type RootStackParamList = {
   Devices: undefined;
 
   DetailDevice: {
-    device: string; 
+    device: string;
   };
   DetailDeviceGM: { device: string };
 
@@ -181,6 +179,7 @@ export type RootStackParamList = {
   ServicesDetailPassenger: {
     serviceData: ApiService;
   };
+  RastreoMobile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -232,7 +231,7 @@ const App = () => {
                   component={
                     tipo === 'n'
                       ? Home
-                      : tipo === 'c' || tipo === 'p'
+                      : tipo === 'c' || tipo === 'p' || tipo === 'r'
                       ? HomeDriverPassenger
                       : Home
                   }
@@ -244,7 +243,10 @@ const App = () => {
                 <Stack.Screen name="MapAlert" component={MapAlert} />
                 <Stack.Screen name="Devices" component={Devices} />
                 <Stack.Screen name="DetailDevice" component={DetailDevice} />
-                <Stack.Screen name="DetailDeviceGM" component={DetailDeviceGM} />
+                <Stack.Screen
+                  name="DetailDeviceGM"
+                  component={DetailDeviceGM}
+                />
 
                 <Stack.Screen name="InfoDevice" component={InfoDevice} />
                 <Stack.Screen name="Events" component={Events} />
@@ -263,7 +265,10 @@ const App = () => {
                   component={FAQ}
                   options={{ headerShown: false }}
                 />
-                <Stack.Screen name="ServicesDriver" component={ServicesDriver} />
+                <Stack.Screen
+                  name="ServicesDriver"
+                  component={ServicesDriver}
+                />
                 <Stack.Screen
                   name="ServicesPassenger"
                   component={ServicesPassenger}
@@ -275,6 +280,11 @@ const App = () => {
                 <Stack.Screen
                   name="ServicesDetailPassenger"
                   component={ServicesDetailPassenger}
+                />
+                <Stack.Screen
+                  name="RastreoMobile"
+                  component={RastreoMobile} // El componente de tu pantalla de rastreo
+                  options={{ headerShown: false }} // o las opciones que necesites
                 />
               </>
             ) : (

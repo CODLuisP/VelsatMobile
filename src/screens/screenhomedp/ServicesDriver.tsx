@@ -54,7 +54,7 @@ const ServicesDriver = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStart, setLoadingStart] = useState<string | null>(null);
   const [loadingEnd, setLoadingEnd] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false); // 👈 Estado para pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
 
   const { user, logout, server, tipo } = useAuthStore();
   const codigo = user?.codigo;
@@ -70,11 +70,10 @@ const ServicesDriver = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#1e3a8a', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
-  // Agregar después de la función fetchServices
   const fetchPasajerosDisponibles = async (
     codservicio: string,
   ): Promise<number> => {
@@ -90,18 +89,17 @@ const ServicesDriver = () => {
       if (response.data && response.data.pasajerosDisponibles !== undefined) {
         return response.data.pasajerosDisponibles;
       }
-      return 0; // Si no hay datos, retornar 0
+      return 0;
     } catch (error) {
       console.error(
         `Error al obtener pasajeros disponibles para ${codservicio}:`,
         error,
       );
-      return 0; // En caso de error, retornar 0
+      return 0;
     }
   };
 
   const getServiceStatus = (service: Service) => {
-    // Si el status es '2', siempre mostrar "En progreso"
     if (service.status === '2') {
       return {
         text: 'En progreso',
@@ -109,7 +107,6 @@ const ServicesDriver = () => {
       };
     }
 
-    // Si el status es '3', siempre mostrar "Finalizado"
     if (service.status === '3') {
       return {
         text: 'Finalizado',
@@ -117,7 +114,6 @@ const ServicesDriver = () => {
       };
     }
 
-    // Para status '1', aplicar la lógica original
     const fechaInicio = service.fechapasajero || service.fechaservicio;
     const [fecha, hora] = fechaInicio.split(' ');
     const [dia, mes, año] = fecha.split('/');
@@ -139,9 +135,7 @@ const ServicesDriver = () => {
     const diferenciaMinutos = Math.floor(diferenciaMs / (1000 * 60));
     const diferenciaHoras = Math.floor(diferenciaMs / (1000 * 60 * 60));
 
-    // Si ya pasó la hora de inicio
     if (diferenciaMs <= 0) {
-      // Calcular fecha de fin (fechaservicio + 1 hora)
       const [fechaFin, horaFin] = service.fechaservicio.split(' ');
       const [diaFin, mesFin, añoFin] = fechaFin.split('/');
       const [horasFin, minutosFin] = horaFin.split(':');
@@ -154,10 +148,8 @@ const ServicesDriver = () => {
         parseInt(minutosFin),
       );
 
-      // Agregar 1 hora a fechaservicio
       fechaFinServicio.setHours(fechaFinServicio.getHours() + 1);
 
-      // Si ya pasó fechaservicio + 1 hora, está finalizado
       if (ahoraPeru.getTime() > fechaFinServicio.getTime()) {
         return {
           text: 'Finalizado',
@@ -165,14 +157,12 @@ const ServicesDriver = () => {
         };
       }
 
-      // Si está entre fechapasajero y fechaservicio + 1 hora, está en progreso
       return {
         text: 'En progreso',
         color: '#4CAF50',
       };
     }
 
-    // Si falta menos de 60 minutos
     if (diferenciaMinutos < 60) {
       return {
         text: `Faltan ${diferenciaMinutos} min`,
@@ -180,31 +170,24 @@ const ServicesDriver = () => {
       };
     }
 
-    // Si faltan más de 60 minutos
     return {
       text: `Faltan ${diferenciaHoras} hrs`,
       color: '#FFA726',
     };
   };
 
-  // Función para obtener inicio de servicio
   const getInicioServicio = (service: Service): string => {
-    // Si fechapasajero es null o vacío, usar fechaservicio
     return service.fechapasajero || service.fechaservicio;
   };
 
-  // Función para obtener fin de servicio
   const getFinServicio = (service: Service): string => {
-    // Si tipo es "I" (Entrada), mostrar fechaservicio, sino mostrar "-"
     return service.tipo === 'I' ? service.fechaservicio : '-';
   };
 
-  // Función para mapear tipo de servicio
   const getTipoServicio = (tipo: string) => {
     return tipo === 'I' ? 'Entrada' : 'Salida';
   };
 
-  // Función para mapear grupo
   const getGrupo = (grupo: string) => {
     switch (grupo) {
       case 'N':
@@ -218,7 +201,6 @@ const ServicesDriver = () => {
     }
   };
 
-  // Función para obtener los servicios de la API
   const fetchServices = async () => {
     try {
       setIsLoading(true);
@@ -233,7 +215,6 @@ const ServicesDriver = () => {
       });
 
       if (response.data && Array.isArray(response.data)) {
-        // 🔥 Obtener pasajeros disponibles para cada servicio
         const serviciosConPasajeros = await Promise.all(
           response.data.map(async (srv: Service) => {
             const pasajerosDisponibles = await fetchPasajerosDisponibles(
@@ -246,15 +227,13 @@ const ServicesDriver = () => {
           }),
         );
 
-        // 🔥 Filtrar servicios donde (pasajerosDisponibles - 1) NO sea 0
         const serviciosFiltrados = serviciosConPasajeros.filter(srv => {
           const resultado = srv.pasajerosDisponibles! - 1;
-          return resultado !== 0; // Mantener solo si el resultado NO es 0
+          return resultado !== 0;
         });
 
         setServices(serviciosFiltrados);
 
-        // Inicializar estado de botones según el status
         const initialStates: {
           [key: string]: 'idle' | 'started' | 'finished';
         } = {};
@@ -287,12 +266,10 @@ const ServicesDriver = () => {
     }
   };
 
-  // Cargar servicios al montar el componente
   useEffect(() => {
     fetchServices();
   }, []);
 
-  // 🔥 Pull-to-refresh manual
   const onRefresh = useCallback(() => {
     console.log('🔄 Pull-to-refresh activado');
     setRefreshing(true);
@@ -308,12 +285,8 @@ const ServicesDriver = () => {
   };
 
   const handleNavigateToServicesDetailDriver = (service: Service) => {
-    // Pasar todos los datos del servicio a la siguiente vista
     navigation.navigate('ServicesDetailDriver', { serviceData: service });
   };
-
-  const delay = (ms: number) =>
-    new Promise(resolve => setTimeout(() => resolve(undefined), ms));
 
   const handleStartService = async (
     codservicio: string,
@@ -332,7 +305,6 @@ const ServicesDriver = () => {
         `https://do.velsat.pe:2053/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
       );
 
-      // Cambiar estado local
       setServiceStates(prev => ({ ...prev, [codservicio]: 'started' }));
     } catch (error) {
     } finally {
@@ -357,7 +329,6 @@ const ServicesDriver = () => {
         `https://do.velsat.pe:2053/api/Aplicativo/ActualizarTaxiFinServicio?codtaxi=${codconductor}`,
       );
 
-      // Cambiar estado local
       setServiceStates(prev => ({ ...prev, [codservicio]: 'finished' }));
     } catch (error) {
     } finally {
@@ -366,16 +337,13 @@ const ServicesDriver = () => {
   };
 
   const actualizarPasajeros = (usuario: string, pasajeros: number): string => {
-    // Convertir a número si viene como string
     let numeroPasajeros =
       typeof pasajeros === 'string' ? parseInt(pasajeros) : pasajeros;
 
-    // Validar que sea un número válido
     if (isNaN(numeroPasajeros)) {
       numeroPasajeros = 0;
     }
 
-    // Definir el valor a restar según el tipo de usuario
     let valorARestar;
 
     switch (usuario.toLowerCase()) {
@@ -383,26 +351,23 @@ const ServicesDriver = () => {
         valorARestar = 1;
         break;
       default:
-        valorARestar = 0; // No resta nada por defecto
+        valorARestar = 0;
     }
-
-    // Restar y asegurar que no sea negativo
     numeroPasajeros = Math.max(0, numeroPasajeros - valorARestar);
 
-    // Retornar como string
     return numeroPasajeros.toString();
   };
 
   const topSpace = insets.top + 5;
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+      <LinearGradient
+        colors={['#05194fff', '#05194fff', '#18223dff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.header, { paddingTop: topSpace }]}
+      >
         <View style={styles.headerTop}>
           <TouchableOpacity
             onPress={handleGoBack}
@@ -413,21 +378,20 @@ const ServicesDriver = () => {
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Servicios programados</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       <ScrollView
         style={styles.contentList}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
-        // 🔥 Agregar RefreshControl para pull-to-refresh
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#e36414']} // Android
-            tintColor="#e36414" // iOS
-            title="Actualizando servicios..." // iOS
-            titleColor="#fff" // iOS
+            colors={['#e36414']}
+            tintColor="#e36414"
+            title="Actualizando servicios..."
+            titleColor="#fff"
           />
         }
       >
@@ -457,6 +421,8 @@ const ServicesDriver = () => {
               const inicioServicio = getInicioServicio(service);
               const finServicio = getFinServicio(service);
               const status = getServiceStatus(service);
+              const isMovilbus =
+                service.codusuario.toLowerCase() === 'movilbus';
 
               return (
                 <TouchableOpacity
@@ -465,7 +431,6 @@ const ServicesDriver = () => {
                   activeOpacity={0.7}
                 >
                   <View style={styles.serviceCard}>
-                    {/* Header del servicio */}
                     <View style={styles.serviceHeader}>
                       <View style={styles.serviceHeaderLeft}>
                         <Text style={styles.serviceNumber}>
@@ -504,7 +469,6 @@ const ServicesDriver = () => {
                       </View>
                     </View>
 
-                    {/* Body del servicio */}
                     <View style={styles.serviceBody}>
                       <View style={styles.infoRow}>
                         <View style={styles.leftColumn}>
@@ -543,81 +507,86 @@ const ServicesDriver = () => {
                             <Text style={styles.dateValue}>{finServicio}</Text>
                           </View>
 
-                          {serviceStates[service.codservicio] !==
-                            'finished' && (
-                            <View style={styles.actionButtons}>
-                              <TouchableOpacity
-                                style={[
-                                  styles.actionButton,
-                                  serviceStates[service.codservicio] === 'idle'
-                                    ? styles.actionButtonActive
-                                    : styles.actionButtonDisabled,
-                                ]}
-                                onPress={() =>
-                                  handleStartService(
-                                    service.codservicio,
-                                    service.unidad,
-                                    service.codconductor,
-                                  )
-                                }
-                                disabled={
-                                  serviceStates[service.codservicio] !==
-                                    'idle' ||
-                                  loadingStart === service.codservicio
-                                }
-                              >
-                                <Text
+                          {serviceStates[service.codservicio] !== 'finished' &&
+                            !isMovilbus && (
+                              <View style={styles.actionButtons}>
+                                {/* Botón Iniciar */}
+                                <TouchableOpacity
                                   style={[
-                                    styles.actionButtonText,
-                                    serviceStates[service.codservicio] !==
-                                      'idle' && styles.actionButtonTextDisabled,
+                                    styles.actionButton,
+                                    serviceStates[service.codservicio] ===
+                                    'idle'
+                                      ? styles.actionButtonActive
+                                      : styles.actionButtonDisabled,
                                   ]}
+                                  onPress={() =>
+                                    handleStartService(
+                                      service.codservicio,
+                                      service.unidad,
+                                      service.codconductor,
+                                    )
+                                  }
+                                  disabled={
+                                    serviceStates[service.codservicio] !==
+                                      'idle' ||
+                                    loadingStart === service.codservicio
+                                  }
                                 >
-                                  {loadingStart === service.codservicio
-                                    ? 'Iniciando...'
-                                    : 'Iniciar'}
-                                </Text>
-                              </TouchableOpacity>
+                                  <Text
+                                    style={[
+                                      styles.actionButtonText,
+                                      serviceStates[service.codservicio] !==
+                                        'idle' &&
+                                        styles.actionButtonTextDisabled,
+                                    ]}
+                                  >
+                                    {loadingStart === service.codservicio
+                                      ? 'Iniciando...'
+                                      : 'Iniciar'}
+                                  </Text>
+                                </TouchableOpacity>
 
-                              <TouchableOpacity
-                                style={[
-                                  styles.actionButton,
-                                  serviceStates[service.codservicio] ===
-                                  'started'
-                                    ? styles.actionButtonEnd
-                                    : styles.actionButtonDisabled,
-                                ]}
-                                onPress={() =>
-                                  handleEndService(
-                                    service.codservicio,
-                                    service.unidad,
-                                    service.codconductor,
-                                  )
-                                }
-                                disabled={
-                                  serviceStates[service.codservicio] !==
-                                    'started' ||
-                                  loadingEnd === service.codservicio
-                                }
-                              >
-                                <Text
+                                {/* Botón Finalizar */}
+                                <TouchableOpacity
                                   style={[
-                                    styles.actionButtonText,
-                                    serviceStates[service.codservicio] !==
-                                      'started' &&
-                                      styles.actionButtonTextDisabled,
+                                    styles.actionButton,
+                                    serviceStates[service.codservicio] ===
+                                    'started'
+                                      ? styles.actionButtonEnd
+                                      : styles.actionButtonDisabled,
                                   ]}
+                                  onPress={() =>
+                                    handleEndService(
+                                      service.codservicio,
+                                      service.unidad,
+                                      service.codconductor,
+                                    )
+                                  }
+                                  disabled={
+                                    serviceStates[service.codservicio] !==
+                                      'started' ||
+                                    loadingEnd === service.codservicio
+                                  }
                                 >
-                                  {loadingEnd === service.codservicio
-                                    ? 'Finalizando...'
-                                    : 'Finalizar'}
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                          )}
+                                  <Text
+                                    style={[
+                                      styles.actionButtonText,
+                                      serviceStates[service.codservicio] !==
+                                        'started' &&
+                                        styles.actionButtonTextDisabled,
+                                    ]}
+                                  >
+                                    {loadingEnd === service.codservicio
+                                      ? 'Finalizando...'
+                                      : 'Finalizar'}
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
                         </View>
                       </View>
                     </View>
+
                     <TouchableOpacity
                       style={styles.clickPrompt}
                       onPress={() =>
@@ -638,7 +607,7 @@ const ServicesDriver = () => {
           )}
         </View>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 

@@ -126,7 +126,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 1,
     borderBottomWidth: 0.5,
-    borderColor: '#bfbfbfff', // o el color que prefieras   
+    borderColor: '#bfbfbfff', 
   },
 
   deviceContent: {

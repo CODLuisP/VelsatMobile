@@ -145,6 +145,9 @@ const Profile = () => {
   };
 
   return (
+
+
+    
   <View style={[styles.container, { paddingBottom: bottomSpace  }]}>
 
       {/* Header */}

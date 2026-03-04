@@ -97,7 +97,7 @@ const Home: React.FC = () => {
     title: '',
     message: '',
     color: '',
-    onConfirm: () => { },
+    onConfirm: () => {},
     confirmText: '',
     cancelText: '',
   });
@@ -396,8 +396,7 @@ const Home: React.FC = () => {
               await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
                 interval: 10000,
               });
-            } catch (err) {
-            }
+            } catch (err) {}
           },
           '#FFA726', // Naranja
           'Activar GPS',
@@ -587,11 +586,11 @@ const Home: React.FC = () => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) { }
+                      } catch (error) {}
                     }
-                  } catch (error) { }
+                  } catch (error) {}
                 },
-                error => { },
+                error => {},
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
@@ -650,8 +649,8 @@ const Home: React.FC = () => {
   };
 
   return (
-
-    <SafeAreaView style={[homeStyles.container, { paddingBottom: bottomSpace - 70 }]}
+    <SafeAreaView
+      style={[homeStyles.container, { paddingBottom: bottomSpace - 70 }]}
     >
       <View
         style={[
@@ -727,7 +726,7 @@ const Home: React.FC = () => {
 
           <View style={homeStyles.locationContainer}>
             <MapPin size={25} color="#FFF" />
-            <View >
+            <View>
               <Text style={homeStyles.locationLabel}>
                 Tu ubicación actual es:
               </Text>
@@ -749,16 +748,15 @@ const Home: React.FC = () => {
         <Text style={homeStyles.sectionTitle}>Servicios Disponibles</Text>
 
         <View style={homeStyles.optionsGrid}>
-
           <OptionCard
             onPress={handleNavigateToProfile}
             colors={['#05255dff', '#093f86ff']}
             badge="PERFIL"
             category="Información"
             title="Mi Perfil"
-            description="Revisa y actualiza tus datos personales fácilmente en cualquier momento." icon={User}
-            activeOpacity={0.90}
-
+            description="Revisa y actualiza tus datos personales fácilmente en cualquier momento."
+            icon={User}
+            activeOpacity={0.9}
           />
 
           <OptionCard
@@ -769,7 +767,7 @@ const Home: React.FC = () => {
             title="Unidades"
             description="Rastrea tus unidades, conoce su última ubicación con exactitud."
             icon={Car}
-            activeOpacity={0.90}
+            activeOpacity={0.9}
           />
 
           <OptionCard
@@ -780,7 +778,7 @@ const Home: React.FC = () => {
             title="Reportes"
             description="Genera reportes de tus unidades, general, velocidad y más detalles."
             icon={BarChart3}
-            activeOpacity={0.90}
+            activeOpacity={0.9}
           />
 
           <OptionCard
@@ -791,13 +789,9 @@ const Home: React.FC = () => {
             title="Seguridad"
             description="Activa la autenticación con datos biométricos para mayor seguridad."
             icon={Shield}
-            activeOpacity={0.90}
+            activeOpacity={0.9}
           />
         </View>
-
-
-
-
 
         <View style={homeStyles.customerCareContainer}>
           <OptionCard
@@ -808,9 +802,8 @@ const Home: React.FC = () => {
             title="Ayuda"
             description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
             icon={Headphones}
-            activeOpacity={0.90}
+            activeOpacity={0.9}
             fullWidth={true} // ← Agrega esta prop
-
           />
         </View>
 
@@ -837,7 +830,6 @@ const Home: React.FC = () => {
         />
       </ScrollView>
     </SafeAreaView>
-
   );
 };
 

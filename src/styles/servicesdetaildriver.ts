@@ -1,12 +1,13 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    marginTop: Platform.OS === 'ios' ? -60 : 0,
+    height: Platform.OS === 'ios' ? 200 : 110,
+ 
   },
   headerTop: {
     flexDirection: 'row',
@@ -16,16 +17,19 @@ export const styles = StyleSheet.create({
   backButton: {
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 15,
+
   },
   headerMainTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginLeft: 15,
+    marginLeft: 20,
   },
   contentList: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
+    marginTop: -25,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -245,9 +249,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-      borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    marginTop: 80,
   },
   emptyStateTitle: {
     color: '#00296b',
@@ -295,4 +297,58 @@ export const styles = StyleSheet.create({
     justifyContent:'center',
     width:120
   },
+
+  gpsAlert: {
+  borderRadius: 12,
+
+},
+gpsAlertHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+},
+gpsAlertTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#FF6B35',
+},
+gpsAlertMessage: {
+  fontSize: 14,
+  color: '#666',
+  marginBottom: 12,
+  lineHeight: 20,
+},
+gpsActivateButton: {
+  backgroundColor: '#FF6B35',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+  gap: 8,
+  marginBottom: 12,
+},
+gpsActivateButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+gpsStatusIndicator: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+},
+gpsStatusDot: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: '#FF6B35',
+},
+gpsStatusText: {
+  fontSize: 13,
+  color: '#666',
+  fontWeight: '500',
+},
 });
