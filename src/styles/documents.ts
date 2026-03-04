@@ -1,0 +1,191 @@
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+export const styles = StyleSheet.create({
+  // ── Layout ───────────────────────────────────────────────────────────────────
+  container: { flex: 1, backgroundColor: '#1e3a8a' },
+
+  // ── Header ───────────────────────────────────────────────────────────────────
+  header: { paddingHorizontal: 20, paddingBottom: 30 },
+  headerTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 15, marginTop: 10 },
+  backButton: { justifyContent: 'center', alignItems: 'center' },
+  headerMainTitle: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF', marginLeft: 15 },
+  headerBottom: { marginTop: 5, marginLeft: 10 },
+  headerTitle: { fontSize: 16, fontWeight: '600', color: '#FFFFFF', marginBottom: 8 },
+  headerSubtitle: { fontSize: 14, color: '#E3F2FD', lineHeight: 20, opacity: 0.9 },
+
+  // ── Body ─────────────────────────────────────────────────────────────────────
+  contentList: {
+    flex: 1,
+    backgroundColor: '#f8faff',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  formContainer: { marginTop: 20, paddingHorizontal: 16, marginBottom: 20, flex: 1 },
+
+  // ── Summary ──────────────────────────────────────────────────────────────────
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, gap: 8 },
+  summaryCard: { flex: 1, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', borderWidth: 1 },
+  summaryValue: { fontSize: 20, fontWeight: '800', lineHeight: 24 },
+  summaryLabel: { fontSize: 10, fontWeight: '600', textAlign: 'center', marginTop: 2, lineHeight: 13 },
+
+  // ── Alert banner ─────────────────────────────────────────────────────────────
+  alertBanner: { backgroundColor: '#fffbeb', borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#fde68a' },
+  alertBannerHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 6 },
+  alertBannerTitle: { fontSize: 13, fontWeight: '700', color: '#92400e' },
+  alertItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 4, gap: 8 },
+  alertDot: { width: 6, height: 6, borderRadius: 3 },
+  alertItemText: { fontSize: 12, color: '#78350f', fontWeight: '500' },
+
+  // ── Section header ────────────────────────────────────────────────────────────
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 8 },
+  sectionIconWrap: { width: 28, height: 28, borderRadius: 8, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center' },
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: '#1e293b', flex: 1, letterSpacing: 0.2 },
+  sectionAddBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e40af', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, gap: 4 },
+  sectionAddBtnText: { fontSize: 12, fontWeight: '600', color: '#fff' },
+
+  // ── Doc card ──────────────────────────────────────────────────────────────────
+  docCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    borderLeftWidth: 4,
+    shadowColor: '#1e3a8a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  docCardTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  docIconWrap: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  docInfo: { flex: 1 },
+  docName: { fontSize: 13, fontWeight: '700', color: '#1e293b', marginBottom: 2 },
+  docExpiry: { fontSize: 11, color: '#94a3b8', fontWeight: '500' },
+
+  // ── Thumbnail ─────────────────────────────────────────────────────────────────
+  thumbWrap: { borderRadius: 10, overflow: 'hidden', marginBottom: 10, height: 130, position: 'relative' },
+  thumbImg: { width: '100%', height: '100%' },
+  thumbOverlay: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 7, gap: 6,
+  },
+  thumbOverlayText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  thumbEmpty: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#f1f5f9', borderRadius: 10, paddingVertical: 10,
+    paddingHorizontal: 14, marginBottom: 10,
+  },
+  thumbEmptyText: { fontSize: 12, color: '#94a3b8', fontWeight: '500' },
+
+  // ── Badge ─────────────────────────────────────────────────────────────────────
+  badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20, gap: 4 },
+  badgeText: { fontSize: 10, fontWeight: '700' },
+
+  // ── Doc actions ───────────────────────────────────────────────────────────────
+  docActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  btnUpload: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f97316', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, gap: 5 },
+  btnUploadText: { fontSize: 12, fontWeight: '600', color: '#fff' },
+  btnView: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#eff6ff', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, gap: 5, borderWidth: 1, borderColor: '#bfdbfe' },
+  btnViewText: { fontSize: 12, fontWeight: '600', color: '#1e40af' },
+  btnDownload: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff7ed', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, gap: 5, borderWidth: 1, borderColor: '#fed7aa' },
+  btnDownloadText: { fontSize: 12, fontWeight: '600', color: '#f97316' },
+  btnDelete: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff1f2', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, gap: 5, borderWidth: 1, borderColor: '#fecdd3' },
+  btnDeleteText: { fontSize: 12, fontWeight: '600', color: '#dc2626' },
+
+  // ── Vehicle card ──────────────────────────────────────────────────────────────
+  vehicleCard: { backgroundColor: '#ffffff', borderRadius: 16, overflow: 'hidden', shadowColor: '#1e3a8a', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+  vehicleHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14 },
+  vehicleHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  vehicleIconWrap: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  vehicleIconOk: { backgroundColor: '#dbeafe' },
+  vehicleIconAlert: { backgroundColor: '#fef3c7' },
+  vehiclePlate: { fontSize: 14, fontWeight: '800', color: '#1e293b', letterSpacing: 0.5 },
+  vehicleName: { fontSize: 11, color: '#94a3b8', fontWeight: '500', marginTop: 1 },
+  vehicleRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  vehicleAlertBadge: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#fef3c7', justifyContent: 'center', alignItems: 'center' },
+  vehicleDeleteBtn: { width: 28, height: 28, borderRadius: 8, backgroundColor: '#fff1f2', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#fecdd3' },
+  vehicleDocs: { paddingHorizontal: 12, paddingBottom: 12, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 10 },
+
+  // ── Add doc inline ────────────────────────────────────────────────────────────
+  addDocInlineBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#bfdbfe', borderStyle: 'dashed', borderRadius: 10, paddingVertical: 10, gap: 6, marginTop: 4 },
+  addDocInlineBtnText: { fontSize: 13, fontWeight: '600', color: '#1e40af' },
+
+  // ── Modal ─────────────────────────────────────────────────────────────────────
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+  modalHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#1e293b' },
+  modalLabel: { fontSize: 12, fontWeight: '600', color: '#64748b', marginBottom: 6, marginTop: 12 },
+  modalInput: { borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: '#1e293b', backgroundColor: '#f8faff' },
+  statusPicker: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  statusOption: { flex: 1, paddingVertical: 8, borderRadius: 8, borderWidth: 1.5, borderColor: '#e2e8f0', alignItems: 'center' },
+  statusOptionText: { fontSize: 11, fontWeight: '600', color: '#64748b' },
+
+  // ── Modal image picker ────────────────────────────────────────────────────────
+  modalImagePicker: {
+    height: 110,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#bfdbfe',
+    borderStyle: 'dashed',
+    backgroundColor: '#f0f7ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    gap: 6,
+  },
+  modalImageThumb: { width: '100%', height: '100%', position: 'absolute' },
+  modalImagePickerOverlay: {
+    position: 'absolute', inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    flexDirection: 'row',
+  },
+  modalImagePickerOverlayText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  modalImagePickerText: { fontSize: 13, fontWeight: '600', color: '#1e40af' },
+  modalImagePickerSub: { fontSize: 11, color: '#94a3b8' },
+
+  modalAddBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#1e40af', paddingVertical: 13, borderRadius: 12, marginTop: 20, gap: 8 },
+  modalAddBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+
+  // ── Image viewer modal ────────────────────────────────────────────────────────
+  imageModalOverlay: { flex: 1, backgroundColor: 'rgba(2,14,40,0.97)' },
+  imageModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 56,
+    paddingBottom: 16,
+    gap: 12,
+  },
+  imageModalClose: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.12)', justifyContent: 'center', alignItems: 'center' },
+  imageModalTitleWrap: { flex: 1 },
+  imageModalTitle: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  imageModalMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 },
+  imageModalExpiry: { fontSize: 11, color: '#94a3b8' },
+  imageModalBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+  imageModalBadgeText: { fontSize: 10, fontWeight: '700' },
+  imageModalDownload: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1e40af', justifyContent: 'center', alignItems: 'center' },
+  imageModalBody: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16 },
+  imageModalImg: { width: SCREEN_WIDTH - 32, height: SCREEN_HEIGHT * 0.62, borderRadius: 16 },
+  imageModalEmpty: { alignItems: 'center', gap: 14 },
+  imageModalEmptyText: { fontSize: 14, color: '#64748b', fontWeight: '500' },
+  imageModalFooterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1e40af',
+    marginHorizontal: 16,
+    marginBottom: 40,
+    paddingVertical: 14,
+    borderRadius: 14,
+    gap: 8,
+  },
+  imageModalFooterBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+});
