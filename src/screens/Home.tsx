@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   TouchableOpacity,
-  StatusBar,
   ScrollView,
   Image,
   PermissionsAndroid,
@@ -35,9 +34,9 @@ import {
   Car,
   BarChart3,
   Shield,
+  FileText,
 } from 'lucide-react-native';
 import { getBottomSpace, useNavigationMode } from '../hooks/useNavigationMode';
-import LinearGradient from 'react-native-linear-gradient';
 import ModalConfirm from '../components/ModalConfirm';
 import ModalAlert from '../components/ModalAlert';
 import { Text } from '../components/ScaledComponents';
@@ -118,6 +117,10 @@ const Home: React.FC = () => {
 
   const handleNavigateToProfile = () => {
     navigation.navigate('Profile');
+  };
+
+  const handleNavigateToDocuments = () => {
+    navigation.navigate('Documents');
   };
 
   const handleNavigateToDevice = () => {
@@ -759,6 +762,19 @@ const Home: React.FC = () => {
             activeOpacity={0.9}
           />
 
+          {server === 'https://sub.velsat.pe:2087' && (
+            <OptionCard
+              onPress={handleNavigateToDocuments}
+              colors={['#05255dff', '#093f86ff']}
+              badge="LIVE"
+              category="Alcance"
+              title="Documentos"
+              description="Carga, visualiza y revisa el estado de documentos, tuyos como los de tu vehículo."
+              icon={FileText}
+              activeOpacity={0.9}
+            />
+          )}
+
           <OptionCard
             onPress={handleNavigateToDevice}
             colors={['#05255dff', '#093f86ff']}
@@ -791,21 +807,38 @@ const Home: React.FC = () => {
             icon={Shield}
             activeOpacity={0.9}
           />
+
+          {/* Ayuda entra al grid solo cuando hay Documentos (5 cards = impar, Ayuda completa el par) */}
+          {server === 'https://sub.velsat.pe:2087' && (
+            <OptionCard
+              onPress={handleNavigateToHelp}
+              colors={['#05255dff', '#093f86ff']}
+              badge="AYUDA"
+              category="Soporte"
+              title="Ayuda"
+              description="Conoce nuestros números telefónicos, escríbenos al Whatsapp y revisa las preguntas frecuentes."
+              icon={Headphones}
+              activeOpacity={0.9}
+            />
+          )}
         </View>
 
-        <View style={homeStyles.customerCareContainer}>
-          <OptionCard
-            onPress={handleNavigateToHelp}
-            colors={['#05255dff', '#093f86ff']}
-            badge="AYUDA"
-            category="Soporte"
-            title="Ayuda"
-            description="Conoce nuestros números telefónicos, llámanos a la central de monitoreo, escríbenos al Whatsapp, revisa las preguntas frecuentes y visualiza tutoriales útiles."
-            icon={Headphones}
-            activeOpacity={0.9}
-            fullWidth={true} // ← Agrega esta prop
-          />
-        </View>
+        {/* Ayuda ancho completo solo cuando NO hay Documentos */}
+        {server !== 'https://sub.velsat.pe:2087' && (
+          <View style={homeStyles.customerCareContainer}>
+            <OptionCard
+              onPress={handleNavigateToHelp}
+              colors={['#05255dff', '#093f86ff']}
+              badge="AYUDA"
+              category="Soporte"
+              title="Ayuda"
+              description="Conoce nuestros números telefónicos, escríbenos al Whatsapp y revisa las preguntas frecuentes."
+              icon={Headphones}
+              activeOpacity={0.9}
+              fullWidth={true}
+            />
+          </View>
+        )}
 
         <ModalAlert
           isVisible={modalAlertVisible}
