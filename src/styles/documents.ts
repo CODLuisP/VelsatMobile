@@ -3,6 +3,56 @@ import { StyleSheet, Dimensions } from 'react-native';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
+  // Añadir a styles/documents.ts
+centered: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingVertical: 40,
+},
+loadingText: {
+  marginTop: 10,
+  color: '#64748b',
+  fontSize: 14,
+},
+errorText: {
+  color: '#dc2626',
+  fontSize: 14,
+  textAlign: 'center',
+  marginBottom: 12,
+},
+retryBtn: {
+  backgroundColor: '#1e40af',
+  paddingHorizontal: 20,
+  paddingVertical: 8,
+  borderRadius: 8,
+},
+retryBtnText: {
+  color: '#fff',
+  fontSize: 14,
+},
+emptyText: {
+  color: '#94a3b8',
+  fontSize: 13,
+  textAlign: 'center',
+  paddingVertical: 12,
+},
+emptyState: {
+  alignItems: 'center',
+  paddingVertical: 24,
+  gap: 8,
+},
+estadoBadge: {
+  paddingHorizontal: 8,
+  paddingVertical: 3,
+  borderRadius: 20,
+  borderWidth: 1,
+  marginLeft: 'auto',
+},
+estadoBadgeText: {
+  fontSize: 11,
+  fontWeight: '600',
+},
   // ── Layout ───────────────────────────────────────────────────────────────────
   container: { flex: 1},
 
@@ -501,3 +551,4 @@ export const styles = StyleSheet.create({
   },
   imageModalFooterBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
 });
+

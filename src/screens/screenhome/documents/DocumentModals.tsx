@@ -25,12 +25,24 @@ const CLOUDFLARE_ACCOUNT_ID   = 'c6e484ceb13141b8bd322c1015e6fd29';
 const CLOUDFLARE_API_TOKEN    = 'q6vLjdHN_zE2g71msCqi3s8J32Gh4NRGyBcHbrXj';
 const CLOUDFLARE_DELIVERY_URL = 'https://imagedelivery.net/o0E1jB_kGKnYacpYCBFmZA';
 
-// ─── Helper: formatear fecha como DD/MM/AAAA ─────────────────────────────────
+const API_BASE   = 'https://sub.velsat.pe:2096/api/Admin';
+const ACCOUNT_ID = 'pakatnamu';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 const formatDate = (date: Date): string => {
   const d = date.getDate().toString().padStart(2, '0');
   const m = (date.getMonth() + 1).toString().padStart(2, '0');
   const y = date.getFullYear();
   return `${d}/${m}/${y}`;
+};
+
+const toISOLocal = (date: Date): string => {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  );
 };
 
 // ─── Cloudflare: subir imagen ─────────────────────────────────────────────────
@@ -41,41 +53,24 @@ const uploadToCloudflare = async (
   mimeType: string,
 ): Promise<{ id: string; url: string } | null> => {
   try {
-    console.log('[CF] Iniciando subida:', { fileUri, fileName, mimeType });
-
     const formData = new FormData();
-    formData.append('file', {
-      uri: fileUri,
-      name: fileName,
-      type: mimeType,
-    } as any);
-
+    formData.append('file', { uri: fileUri, name: fileName, type: mimeType } as any);
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1`,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-        },
+        headers: { Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}` },
         body: formData,
       },
     );
-
-    console.log('[CF] HTTP status:', response.status);
     const result = await response.json();
-    console.log('[CF] Respuesta:', JSON.stringify(result));
-
     if (result.success) {
       const imageId  = result.result.id;
       const imageUrl = `${CLOUDFLARE_DELIVERY_URL}/${imageId}/public`;
-      console.log('[CF] ✅ Subida exitosa:', imageUrl);
       return { id: imageId, url: imageUrl };
     }
-
-    console.error('[CF] ❌ Error:', JSON.stringify(result.errors));
     return null;
-  } catch (error) {
-    console.error('[CF] ❌ Excepción:', error);
+  } catch {
     return null;
   }
 };
@@ -86,10 +81,7 @@ export const deleteFromCloudflare = async (imageId: string): Promise<boolean> =>
   try {
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/images/v1/${imageId}`,
-      {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}` },
-      },
+      { method: 'DELETE', headers: { Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}` } },
     );
     const result = await response.json();
     return result.success;
@@ -117,45 +109,30 @@ export const ImageViewerModal = ({
     if (!displayUri) return;
     try {
       setDownloading(true);
-
       if (Platform.OS === 'android') {
         const androidVersion = Platform.Version as number;
-        if (androidVersion >= 33) {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            Alert.alert('Permiso denegado', 'Ve a Configuración > Aplicaciones y habilita el permiso de galería.');
-            return;
-          }
-        } else {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            Alert.alert('Permiso denegado', 'Ve a Configuración > Aplicaciones y habilita el permiso de galería.');
-            return;
-          }
+        const permission = androidVersion >= 33
+          ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+          : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+        const granted = await PermissionsAndroid.request(permission);
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permiso denegado', 'Habilita el permiso de galería en Configuración.');
+          return;
         }
       }
-
       let localUri = displayUri;
-
       if (displayUri.startsWith('http')) {
         const destPath = `${RNFS.CachesDirectoryPath}/doc_${Date.now()}.jpg`;
-        const download = RNFS.downloadFile({ fromUrl: displayUri, toFile: destPath });
-        const result = await download.promise;
+        const result = await RNFS.downloadFile({ fromUrl: displayUri, toFile: destPath }).promise;
         if (result.statusCode !== 200) {
-          Alert.alert('Error', 'No se pudo descargar la imagen del servidor.');
+          Alert.alert('Error', 'No se pudo descargar la imagen.');
           return;
         }
         localUri = `file://${destPath}`;
       }
-
       await CameraRoll.saveAsset(localUri, { type: 'photo' });
       Alert.alert('Guardado', 'La imagen se guardó en tu galería.');
-    } catch (error) {
-      console.error('Download error:', error);
+    } catch {
       Alert.alert('Error', 'No se pudo guardar la imagen.');
     } finally {
       setDownloading(false);
@@ -165,7 +142,6 @@ export const ImageViewerModal = ({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.imageModalOverlay}>
-
         <View style={styles.imageModalHeader}>
           <TouchableOpacity onPress={onClose} style={styles.imageModalClose} activeOpacity={0.8}>
             <X size={20} color="#fff" />
@@ -204,17 +180,11 @@ export const ImageViewerModal = ({
             activeOpacity={0.85}
             disabled={downloading}
           >
-            {downloading ? (
-              <ActivityIndicator size={16} color="#fff" />
-            ) : (
-              <>
-                <Download size={16} color="#fff" />
-                <Text style={styles.imageModalFooterBtnText}>Descargar imagen</Text>
-              </>
-            )}
+            {downloading
+              ? <ActivityIndicator size={16} color="#fff" />
+              : <><Download size={16} color="#fff" /><Text style={styles.imageModalFooterBtnText}>Descargar imagen</Text></>}
           </TouchableOpacity>
         )}
-
       </View>
     </Modal>
   );
@@ -223,10 +193,12 @@ export const ImageViewerModal = ({
 // ─── AddDocModal ──────────────────────────────────────────────────────────────
 
 export const AddDocModal = ({
-  visible, onClose, onAdd,
+  visible, onClose, onAdd, tipoDocumento, deviceID,
 }: {
   visible: boolean;
   onClose: () => void;
+  tipoDocumento: '1' | '2';
+  deviceID?: string | null;
   onAdd: (
     name: string,
     expiry: string,
@@ -235,15 +207,15 @@ export const AddDocModal = ({
     cloudflareImageId: string | null,
   ) => void;
 }) => {
-  const [name, setName]           = useState('');
-  const [expiryDate, setExpiryDate] = useState<Date>(new Date());
+  const [name, setName]                     = useState('');
+  const [expiryDate, setExpiryDate]         = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dateSelected, setDateSelected] = useState(false);
-  const [imageUri, setImageUri]   = useState<string | null>(null);
-  const [imageName, setImageName] = useState('imagen.jpg');
-  const [imageMime, setImageMime] = useState('image/jpeg');
-  const [picking, setPicking]     = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [dateSelected, setDateSelected]     = useState(false);
+  const [imageUri, setImageUri]             = useState<string | null>(null);
+  const [imageName, setImageName]           = useState('imagen.jpg');
+  const [imageMime, setImageMime]           = useState('image/jpeg');
+  const [picking, setPicking]               = useState(false);
+  const [uploading, setUploading]           = useState(false);
 
   const reset = () => {
     setName('');
@@ -256,10 +228,7 @@ export const AddDocModal = ({
   };
 
   const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    // En Android se cierra solo al seleccionar
-    if (Platform.OS === 'android') {
-      setShowDatePicker(false);
-    }
+    if (Platform.OS === 'android') setShowDatePicker(false);
     if (event.type === 'set' && selectedDate) {
       setExpiryDate(selectedDate);
       setDateSelected(true);
@@ -270,14 +239,8 @@ export const AddDocModal = ({
     if (picking || uploading) return;
     setPicking(true);
     try {
-      const result = await launchImageLibrary({
-        mediaType: 'photo',
-        quality: 0.8,
-        selectionLimit: 1,
-      });
-
+      const result = await launchImageLibrary({ mediaType: 'photo', quality: 0.8, selectionLimit: 1 });
       if (result.didCancel || !result.assets?.length) return;
-
       const asset = result.assets[0];
       setImageUri(asset.uri ?? null);
       setImageName(asset.fileName ?? 'imagen.jpg');
@@ -298,32 +261,60 @@ export const AddDocModal = ({
     }
 
     const expiryStr = formatDate(expiryDate);
+    let finalImageUri: string | null      = null;
+    let finalCloudflareUrl: string | null = null;
+    let finalCloudflareId: string | null  = null;
 
+    // 1️⃣ Subir imagen a Cloudflare
     if (imageUri) {
       setUploading(true);
       try {
         const cloudResult = await uploadToCloudflare(imageUri, imageName, imageMime);
         if (cloudResult) {
-          onAdd(name.trim(), expiryStr, imageUri, cloudResult.url, cloudResult.id);
+          finalImageUri      = imageUri;
+          finalCloudflareUrl = cloudResult.url;
+          finalCloudflareId  = cloudResult.id;
         } else {
-          Alert.alert('Aviso', 'No se pudo subir a Cloudflare. Se guardará solo localmente.');
-          onAdd(name.trim(), expiryStr, imageUri, null, null);
+          Alert.alert('Aviso', 'No se pudo subir la imagen. Se guardará sin imagen.');
+          finalImageUri = imageUri;
         }
       } finally {
         setUploading(false);
       }
-    } else {
-      onAdd(name.trim(), expiryStr, null, null, null);
     }
 
+    // 2️⃣ POST a la API
+    try {
+      const body = {
+        accountID:         ACCOUNT_ID,
+        deviceID:          deviceID || '',
+        tipo_documento:    tipoDocumento,
+        nombre_documento:  name.trim(),
+        archivo_url:       finalCloudflareUrl ?? '',
+        fecha_vencimiento: toISOLocal(expiryDate),
+      };
+      const response = await fetch(`${API_BASE}/CreateDocumento`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await response.json();
+      if (!response.ok || !json.success) {
+        Alert.alert('Error', 'No se pudo guardar el documento en el servidor.');
+        return;
+      }
+    } catch {
+      Alert.alert('Error de red', 'No se pudo conectar con el servidor.');
+      return;
+    }
+
+    // 3️⃣ Notificar éxito
+    onAdd(name.trim(), expiryStr, finalImageUri, finalCloudflareUrl, finalCloudflareId);
     reset();
     onClose();
   };
 
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
+  const handleClose = () => { reset(); onClose(); };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
@@ -337,7 +328,6 @@ export const AddDocModal = ({
             </TouchableOpacity>
           </View>
 
-          {/* Nombre */}
           <Text style={styles.modalLabel}>Nombre del documento</Text>
           <TextInput
             style={styles.modalInput}
@@ -347,13 +337,8 @@ export const AddDocModal = ({
             onChangeText={setName}
           />
 
-          {/* Fecha de vencimiento */}
           <Text style={styles.modalLabel}>Fecha de vencimiento</Text>
-          <TouchableOpacity
-            style={styles.modalInput}
-            onPress={() => setShowDatePicker(true)}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.modalInput} onPress={() => setShowDatePicker(true)} activeOpacity={0.8}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Calendar size={16} color="#94a3b8" />
               <Text style={{ color: dateSelected ? '#1e293b' : '#94a3b8', fontSize: 14 }}>
@@ -362,14 +347,10 @@ export const AddDocModal = ({
             </View>
           </TouchableOpacity>
 
-          {/* DatePicker — Android: inline al tocar; iOS: modal */}
           {showDatePicker && (
             Platform.OS === 'ios' ? (
               <Modal transparent animationType="fade" onRequestClose={() => setShowDatePicker(false)}>
-                <View style={{
-                  flex: 1, justifyContent: 'flex-end',
-                  backgroundColor: 'rgba(0,0,0,0.4)',
-                }}>
+                <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' }}>
                   <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
                       <TouchableOpacity onPress={() => setShowDatePicker(false)}>
@@ -379,29 +360,15 @@ export const AddDocModal = ({
                         <Text style={{ color: '#1e40af', fontSize: 15, fontWeight: '600' }}>Listo</Text>
                       </TouchableOpacity>
                     </View>
-                    <DateTimePicker
-                      value={expiryDate}
-                      mode="date"
-                      display="spinner"
-                      onChange={onDateChange}
-                      minimumDate={new Date()}
-                      locale="es-ES"
-                    />
+                    <DateTimePicker value={expiryDate} mode="date" display="spinner" onChange={onDateChange} minimumDate={new Date()} locale="es-ES" />
                   </View>
                 </View>
               </Modal>
             ) : (
-              <DateTimePicker
-                value={expiryDate}
-                mode="date"
-                display="default"
-                onChange={onDateChange}
-                minimumDate={new Date()}
-              />
+              <DateTimePicker value={expiryDate} mode="date" display="default" onChange={onDateChange} minimumDate={new Date()} />
             )
           )}
 
-          {/* Imagen */}
           <Text style={styles.modalLabel}>Imagen del documento</Text>
           <TouchableOpacity
             style={styles.modalImagePicker}
@@ -410,15 +377,9 @@ export const AddDocModal = ({
             disabled={picking || uploading}
           >
             {picking ? (
-              <>
-                <ActivityIndicator size={20} color="#1e40af" />
-                <Text style={styles.modalImagePickerText}>Seleccionando...</Text>
-              </>
+              <><ActivityIndicator size={20} color="#1e40af" /><Text style={styles.modalImagePickerText}>Seleccionando...</Text></>
             ) : uploading ? (
-              <>
-                <ActivityIndicator size={20} color="#1e40af" />
-                <Text style={styles.modalImagePickerText}>Subiendo a Cloudflare...</Text>
-              </>
+              <><ActivityIndicator size={20} color="#1e40af" /><Text style={styles.modalImagePickerText}>Subiendo imagen...</Text></>
             ) : imageUri ? (
               <>
                 <Image source={{ uri: imageUri }} style={styles.modalImageThumb} resizeMode="cover" />
@@ -454,31 +415,27 @@ export const AddDocModal = ({
   );
 };
 
-// ─── AddVehicleModal ──────────────────────────────────────────────────────────
+// ─── AddVehicleDocModal ───────────────────────────────────────────────────────
 
-export const AddVehicleModal = ({
-  visible, onClose, onAdd,
+export const AddVehicleDocModal = ({
+  visible, onClose, onConfirm,
 }: {
   visible: boolean;
   onClose: () => void;
-  onAdd: (plate: string, name: string) => void;
+  onConfirm: (plate: string) => void;
 }) => {
   const [plate, setPlate] = useState('');
-  const [name, setName]   = useState('');
 
-  const reset = () => { setPlate(''); setName(''); };
-
-  const handleAdd = () => {
-    if (!plate.trim() || !name.trim()) {
-      Alert.alert('Campos requeridos', 'Ingresa placa y nombre de la unidad.');
+  const handleConfirm = () => {
+    if (!plate.trim()) {
+      Alert.alert('Campo requerido', 'Ingresa la placa del vehículo.');
       return;
     }
-    onAdd(plate.trim().toUpperCase(), name.trim());
-    reset();
-    onClose();
+    onConfirm(plate.trim().toUpperCase());
+    setPlate('');
   };
 
-  const handleClose = () => { reset(); onClose(); };
+  const handleClose = () => { setPlate(''); onClose(); };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
@@ -486,34 +443,25 @@ export const AddVehicleModal = ({
         <View style={styles.modalSheet}>
 
           <View style={styles.modalHeaderRow}>
-            <Text style={styles.modalTitle}>Agregar unidad</Text>
+            <Text style={styles.modalTitle}>Nueva unidad</Text>
             <TouchableOpacity onPress={handleClose} activeOpacity={0.8}>
               <X size={20} color="#64748b" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.modalLabel}>Placa</Text>
+          <Text style={styles.modalLabel}>Placa del vehículo</Text>
           <TextInput
             style={styles.modalInput}
-            placeholder="Ej. MNO-321"
+            placeholder="Ej. M2L-777"
             placeholderTextColor="#94a3b8"
             value={plate}
             onChangeText={setPlate}
             autoCapitalize="characters"
           />
 
-          <Text style={styles.modalLabel}>Nombre / Modelo</Text>
-          <TextInput
-            style={styles.modalInput}
-            placeholder="Ej. Kenworth T680"
-            placeholderTextColor="#94a3b8"
-            value={name}
-            onChangeText={setName}
-          />
-
-          <TouchableOpacity style={styles.modalAddBtn} onPress={handleAdd} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.modalAddBtn} onPress={handleConfirm} activeOpacity={0.85}>
             <Plus size={16} color="#fff" />
-            <Text style={styles.modalAddBtnText}>Agregar unidad</Text>
+            <Text style={styles.modalAddBtnText}>Continuar</Text>
           </TouchableOpacity>
 
         </View>
