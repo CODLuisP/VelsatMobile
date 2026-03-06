@@ -53,6 +53,15 @@
       android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask"
       android:foregroundServiceType="location"
       android:exported="false" />
+
+    <!-- FIREBASE MESSAGING -->
+    <service
+      android:name="io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+      </intent-filter>
+    </service>
     
     <!-- ACTIVIDAD PRINCIPAL -->
     <activity
