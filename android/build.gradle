@@ -6,8 +6,6 @@ buildscript {
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
-        
-        // ⭐ AÑADE ESTAS DOS LÍNEAS
         playServicesVersion = "18.1.0"
         androidMapsUtilsVersion = "2.3.0"
     }
@@ -19,6 +17,7 @@ buildscript {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath("com.google.gms:google-services:4.4.0")  // <- agrega esto
     }
 }
 
