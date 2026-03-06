@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "462342830830",
+    "project_id": "velsat-app",
+    "storage_bucket": "velsat-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:462342830830:android:cd1c88467f50b205ad51ff",
+        "android_client_info": {
+          "package_name": "com.velsat.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOWx6WmbvVnOyEllxmQEmLzL5v78kJXMc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
