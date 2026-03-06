@@ -33,7 +33,6 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 		<key>NSAllowsLocalNetworking</key>
@@ -50,8 +49,12 @@
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Necesitamos tu ubicación en segundo plano para rastrear tu ruta incluso con la pantalla apagada</string>
 	
+	<!-- PERMISOS DE GALERÍA -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Necesitamos acceso a tus fotos para que puedas compartir imágenes</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Necesitamos permiso para guardar documentos en tu galería</string>
+
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	

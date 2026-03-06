@@ -375,7 +375,10 @@ const handleDetailDevice = (device: Device) => {
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
+    
     <View style={[styles.container, { paddingBottom: bottomSpace  }]}>
+
+
       {/* Header */}
       <LinearGradient
         colors={['#05194fff', '#05194fff', '#18223dff']}
