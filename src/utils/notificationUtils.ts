@@ -29,16 +29,15 @@ export async function requestNotificationPermission(): Promise<boolean> {
     return enabled;
   }
 
-  if (Platform.OS === 'android') {
-    // Android 13+ (API 33) requiere permiso explícito
-    if (parseInt(Platform.Version as string, 10) >= 33) {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-      );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    }
-    return true; // Android < 13 no requiere permiso
+if (Platform.OS === 'android') {
+  if ((Platform.Version as number) >= 33) {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
   }
+  return true;
+}
 
   return false;
 }

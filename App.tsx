@@ -34,10 +34,15 @@ import { useAuthStore } from './src/store/authStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 import FAQ from './src/screens/screenhome/help/Faq';
-
-// ⭐ IMPORTAR EL COMPONENTE DE ACTUALIZACIÓN
 import UpdateChecker from './src/components/login/UpdateChecker';
 import Documents from './src/screens/screenhome/documents/Documents';
+
+// ⭐ NOTIFICACIONES
+import {
+  requestNotificationPermission,
+  getFCMToken,
+  setupNotificationListeners,
+} from './src/utils/notificationUtils';
 
 // Tipos de datos
 interface Device {
@@ -113,12 +118,10 @@ export type RootStackParamList = {
     };
   };
   Devices: undefined;
-
   DetailDevice: {
     device: string;
   };
   DetailDeviceGM: { device: string };
-
   InfoDevice: {
     deviceName: string;
   };
@@ -207,11 +210,26 @@ const App = () => {
     };
 
     setNavigationBarColor();
-
     const timer = setTimeout(setNavigationBarColor, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ⭐ INICIALIZAR NOTIFICACIONES
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
+    const initNotifications = async () => {
+      const hasPermission = await requestNotificationPermission();
+      if (hasPermission) {
+        await getFCMToken();
+        unsubscribe = setupNotificationListeners();
+      }
+    };
+
+    initNotifications();
 
     return () => {
-      clearTimeout(timer);
+      unsubscribe?.();
     };
   }, []);
 
@@ -246,11 +264,7 @@ const App = () => {
                 <Stack.Screen name="MapAlert" component={MapAlert} />
                 <Stack.Screen name="Devices" component={Devices} />
                 <Stack.Screen name="DetailDevice" component={DetailDevice} />
-                <Stack.Screen
-                  name="DetailDeviceGM"
-                  component={DetailDeviceGM}
-                />
-
+                <Stack.Screen name="DetailDeviceGM" component={DetailDeviceGM} />
                 <Stack.Screen name="InfoDevice" component={InfoDevice} />
                 <Stack.Screen name="Events" component={Events} />
                 <Stack.Screen name="MapEvent" component={MapEvent} />
@@ -268,26 +282,14 @@ const App = () => {
                   component={FAQ}
                   options={{ headerShown: false }}
                 />
-                <Stack.Screen
-                  name="ServicesDriver"
-                  component={ServicesDriver}
-                />
-                <Stack.Screen
-                  name="ServicesPassenger"
-                  component={ServicesPassenger}
-                />
-                <Stack.Screen
-                  name="ServicesDetailDriver"
-                  component={ServicesDetailDriver}
-                />
-                <Stack.Screen
-                  name="ServicesDetailPassenger"
-                  component={ServicesDetailPassenger}
-                />
+                <Stack.Screen name="ServicesDriver" component={ServicesDriver} />
+                <Stack.Screen name="ServicesPassenger" component={ServicesPassenger} />
+                <Stack.Screen name="ServicesDetailDriver" component={ServicesDetailDriver} />
+                <Stack.Screen name="ServicesDetailPassenger" component={ServicesDetailPassenger} />
                 <Stack.Screen
                   name="RastreoMobile"
-                  component={RastreoMobile} // El componente de tu pantalla de rastreo
-                  options={{ headerShown: false }} // o las opciones que necesites
+                  component={RastreoMobile}
+                  options={{ headerShown: false }}
                 />
               </>
             ) : (
@@ -295,7 +297,6 @@ const App = () => {
             )}
           </Stack.Navigator>
         </NavigationContainer>
-        {/* ⭐ AGREGAR EL COMPONENTE DE ACTUALIZACIÓN */}
         <UpdateChecker />
       </View>
     </SafeAreaProvider>
