@@ -2,6 +2,8 @@ export interface DocItem {
   id: string;
   name: string;
   icon: any;
+  estado?: string;
+  deviceID?: string;
   expiry: string;
   imageUri: string | null;           // URI local del dispositivo
   cloudflareImageUrl: string | null; // URL pública en Cloudflare

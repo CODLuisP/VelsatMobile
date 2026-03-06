@@ -6,7 +6,7 @@ import {
   Alert,
   PermissionsAndroid,
 } from 'react-native';
-import { ChevronLeft, FileText } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,13 +19,16 @@ import { RootStackParamList } from '../../../../App';
 import { getBottomSpace, useNavigationMode } from '../../../hooks/useNavigationMode';
 import { styles } from '../../../styles/documents';
 import { Text } from '../../../components/ScaledComponents';
-import { DocItem, Vehicle } from './types';
-import { initialDriverDocs, initialVehicles } from './mockData';
-import { generateId } from './helpers';
+import { DocItem } from './types';
 import DocumentsBody from './DocumentsBody';
-import { AddDocModal, AddVehicleModal, ImageViewerModal, deleteFromCloudflare } from './DocumentModals';
+import {
+  AddDocModal,
+  AddVehicleDocModal,
+  ImageViewerModal,
+  deleteFromCloudflare,
+} from './DocumentModals';
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+const API_BASE = 'https://sub.velsat.pe:2096/api/Admin';
 
 const Documents = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -34,17 +37,16 @@ const Documents = () => {
   const bottomSpace = getBottomSpace(insets, navigationDetection.hasNavigationBar);
   const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
-  // ── State ───────────────────────────────────────────────────────────────────
-
-  const [driverDocs, setDriverDocs]   = useState<DocItem[]>(initialDriverDocs);
-  const [vehicles, setVehicles]       = useState<Vehicle[]>(initialVehicles);
+  // ── State ──
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const refetch = () => setRefreshKey(k => k + 1);
 
   // Modals
   const [showAddDriverDoc, setShowAddDriverDoc] = useState(false);
-  const [showAddVehicle, setShowAddVehicle]     = useState(false);
-  const [addDocVehicleId, setAddDocVehicleId]   = useState<string | null>(null);
-  const [viewerDoc, setViewerDoc]               = useState<DocItem | null>(null);
+  const [showAddVehicleStep1, setShowAddVehicleStep1] = useState(false);
+  const [addDocVehicleId, setAddDocVehicleId] = useState<string | null>(null);
+  const [viewerDoc, setViewerDoc] = useState<DocItem | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -52,7 +54,7 @@ const Documents = () => {
     }, []),
   );
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
+  // ── Handlers ──
 
   const handleDownload = async (doc: DocItem) => {
     const uri = doc.cloudflareImageUrl || doc.imageUri;
@@ -62,153 +64,121 @@ const Documents = () => {
     }
     try {
       setDownloading(doc.id);
-
-      // Pedir permiso correcto según versión Android
       if (Platform.OS === 'android') {
         const androidVersion = Platform.Version as number;
-        if (androidVersion >= 33) {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            Alert.alert('Permiso denegado', 'Ve a Configuración > Aplicaciones y habilita el permiso de galería.');
-            return;
-          }
-        } else {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          );
-          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-            Alert.alert('Permiso denegado', 'Ve a Configuración > Aplicaciones y habilita el permiso de galería.');
-            return;
-          }
+        const permission = androidVersion >= 33
+          ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+          : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+        const granted = await PermissionsAndroid.request(permission);
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permiso denegado', 'Ve a Configuración > Aplicaciones y habilita el permiso de galería.');
+          return;
         }
       }
-
       let localUri = uri;
-
-      // Si es URL remota (Cloudflare), descargar primero al cache
       if (uri.startsWith('http')) {
         const destPath = `${RNFS.CachesDirectoryPath}/doc_${Date.now()}.jpg`;
-        const download = RNFS.downloadFile({ fromUrl: uri, toFile: destPath });
-        const result = await download.promise;
+        const result = await RNFS.downloadFile({ fromUrl: uri, toFile: destPath }).promise;
         if (result.statusCode !== 200) {
           Alert.alert('Error', 'No se pudo descargar la imagen del servidor.');
           return;
         }
         localUri = `file://${destPath}`;
       }
-
       await CameraRoll.saveAsset(localUri, { type: 'photo' });
       Alert.alert('Guardado', 'La imagen se guardó en tu galería.');
-    } catch (error) {
-      console.error('Download error:', error);
+    } catch {
       Alert.alert('Error', 'No se pudo guardar la imagen.');
     } finally {
       setDownloading(null);
     }
   };
 
-  const deleteDriverDoc = (id: string) => {
-    const doc = driverDocs.find(d => d.id === id);
-    if (doc?.cloudflareImageId) {
-      deleteFromCloudflare(doc.cloudflareImageId).catch(() => {});
+  const deleteDocFromAPI = async (id: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE}/DeleteDocumento?id=${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) return false;
+      const text = await response.text();
+      if (!text) return true;
+      const json = JSON.parse(text);
+      return json.success !== false;
+    } catch {
+      return false;
     }
-    setDriverDocs(prev => prev.filter(d => d.id !== id));
   };
 
-  const deleteVehicleDoc = (vehicleId: string, docId: string) => {
-    const vehicle = vehicles.find(v => v.id === vehicleId);
-    const doc = vehicle?.documents.find(d => d.id === docId);
-    if (doc?.cloudflareImageId) {
-      deleteFromCloudflare(doc.cloudflareImageId).catch(() => {});
+  const deleteDriverDoc = async (id: string) => {
+    const ok = await deleteDocFromAPI(id);
+    if (!ok) {
+      Alert.alert('Error', 'No se pudo eliminar el documento del servidor.');
+      return;
     }
-    setVehicles(prev =>
-      prev.map(v =>
-        v.id === vehicleId
-          ? { ...v, documents: v.documents.filter(d => d.id !== docId) }
-          : v,
-      ),
-    );
+    refetch();
+  };
+
+  const deleteVehicleDoc = async (vehicleId: string, docId: string) => {
+    const ok = await deleteDocFromAPI(docId);
+    if (!ok) {
+      Alert.alert('Error', 'No se pudo eliminar el documento del servidor.');
+      return;
+    }
+    refetch();
   };
 
   const confirmDeleteVehicle = (id: string, plate: string) => {
-    Alert.alert(
-      'Eliminar unidad',
-      `¿Eliminar la unidad ${plate} y todos sus documentos?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: () => {
-            const vehicle = vehicles.find(v => v.id === id);
-            vehicle?.documents.forEach(doc => {
-              if (doc.cloudflareImageId) {
-                deleteFromCloudflare(doc.cloudflareImageId).catch(() => {});
-              }
-            });
-            setVehicles(prev => prev.filter(v => v.id !== id));
-          },
+  Alert.alert(
+    'Eliminar unidad',
+    `¿Eliminar la unidad ${plate} y todos sus documentos?`,
+    [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          // Buscar los docs de esa unidad en el estado local de DocumentsBody
+          // Como el estado vive en DocumentsBody, pasamos el id de la unidad
+          // y eliminamos todos sus docs via API
+          try {
+            // Necesitamos los doc ids — los obtenemos del GET actual
+            const response = await fetch(
+              `https://sub.velsat.pe:2096/api/Admin/GetDocumento?accountID=pakatnamu`,
+            );
+            const json = await response.json();
+            const docs = (json.data ?? []).filter(
+              (d: any) => d.deviceID === id,
+            );
+
+            await Promise.all(
+              docs.map((d: any) =>
+                fetch(
+                  `https://sub.velsat.pe:2096/api/Admin/DeleteDocumento?id=${d.id}`,
+                  { method: 'DELETE' },
+                ),
+              ),
+            );
+          } catch {
+            Alert.alert('Error', 'No se pudieron eliminar todos los documentos.');
+            return;
+          }
+
+          refetch();
         },
-      ],
-    );
+      },
+    ],
+  );
+};
+
+  const toggleVehicle = (id: string) => {
+    // El toggle se maneja internamente en DocumentsBody
   };
 
-  const addDriverDoc = (
-    name: string,
-    expiry: string,
-    imageUri: string | null,
-    cloudflareImageUrl: string | null,
-    cloudflareImageId: string | null,
-  ) => {
-    setDriverDocs(prev => [
-      ...prev,
-      { id: generateId(), name, expiry, icon: FileText, imageUri, cloudflareImageUrl, cloudflareImageId },
-    ]);
-  };
-
-  const addVehicleDoc = (
-    vehicleId: string,
-    name: string,
-    expiry: string,
-    imageUri: string | null,
-    cloudflareImageUrl: string | null,
-    cloudflareImageId: string | null,
-  ) => {
-    setVehicles(prev =>
-      prev.map(v =>
-        v.id === vehicleId
-          ? {
-              ...v,
-              documents: [
-                ...v.documents,
-                { id: generateId(), name, expiry, icon: FileText, imageUri, cloudflareImageUrl, cloudflareImageId },
-              ],
-            }
-          : v,
-      ),
-    );
-  };
-
-  const addVehicle = (plate: string, name: string) => {
-    setVehicles(prev => [
-      ...prev,
-      { id: generateId(), plate, name, expanded: true, documents: [] },
-    ]);
-  };
-
-  const toggleVehicle = (id: string) =>
-    setVehicles(prev =>
-      prev.map(v => (v.id === id ? { ...v, expanded: !v.expanded } : v)),
-    );
-
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ── Render ──
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-
-      {/* ── Header ── */}
+      {/* Header */}
       <LinearGradient
         colors={['#05194fff', '#05194fff', '#18223dff']}
         start={{ x: 0, y: 0 }}
@@ -233,45 +203,52 @@ const Documents = () => {
         </View>
       </LinearGradient>
 
-      {/* ── Body ── */}
+      {/* Body */}
       <DocumentsBody
-        driverDocs={driverDocs}
-        vehicles={vehicles}
         downloading={downloading}
         onViewDoc={setViewerDoc}
         onDeleteDriverDoc={deleteDriverDoc}
         onDownload={handleDownload}
         onAddDriverDoc={() => setShowAddDriverDoc(true)}
-        onToggleVehicle={toggleVehicle}
         onDeleteVehicle={confirmDeleteVehicle}
         onDeleteVehicleDoc={deleteVehicleDoc}
         onAddVehicleDoc={setAddDocVehicleId}
-        onAddVehicle={() => setShowAddVehicle(true)}
+        onAddVehicle={() => setShowAddVehicleStep1(true)}
+        refreshKey={refreshKey}
       />
 
-      {/* ── Modals ── */}
+      {/* Modal: documento del conductor */}
       <AddDocModal
         visible={showAddDriverDoc}
         onClose={() => setShowAddDriverDoc(false)}
-        onAdd={addDriverDoc}
+        tipoDocumento="1"
+        deviceID={null}
+        onAdd={() => refetch()}
       />
 
-      <AddDocModal
-        visible={!!addDocVehicleId}
-        onClose={() => setAddDocVehicleId(null)}
-        onAdd={(name, expiry, imageUri, cloudflareImageUrl, cloudflareImageId) => {
-          if (addDocVehicleId) {
-            addVehicleDoc(addDocVehicleId, name, expiry, imageUri, cloudflareImageUrl, cloudflareImageId);
-          }
+      {/* Modal paso 1: pedir placa de nueva unidad */}
+      <AddVehicleDocModal
+        visible={showAddVehicleStep1}
+        onClose={() => setShowAddVehicleStep1(false)}
+        onConfirm={(plate) => {
+          setShowAddVehicleStep1(false);
+          setAddDocVehicleId(plate);
         }}
       />
 
-      <AddVehicleModal
-        visible={showAddVehicle}
-        onClose={() => setShowAddVehicle(false)}
-        onAdd={addVehicle}
+      {/* Modal paso 2: agregar documento a la unidad */}
+      <AddDocModal
+        visible={!!addDocVehicleId}
+        onClose={() => setAddDocVehicleId(null)}
+        tipoDocumento="2"
+        deviceID={addDocVehicleId}
+        onAdd={() => {
+          setAddDocVehicleId(null);
+          refetch();
+        }}
       />
 
+      {/* Visor de imagen */}
       <ImageViewerModal
         visible={!!viewerDoc}
         uri={viewerDoc?.imageUri ?? null}
@@ -280,7 +257,6 @@ const Documents = () => {
         expiry={viewerDoc?.expiry ?? ''}
         onClose={() => setViewerDoc(null)}
       />
-
     </View>
   );
 };
