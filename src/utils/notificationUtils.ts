@@ -2,7 +2,7 @@ import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
 import {Platform, PermissionsAndroid, Alert} from 'react-native';
-
+import notifee from '@notifee/react-native';
 // ─── TIPOS ────────────────────────────────────────────────────────────────────
 
 export interface NotificationPayload {
@@ -49,6 +49,7 @@ export async function getFCMToken(): Promise<string | null> {
     await messaging().registerDeviceForRemoteMessages();
     const token = await messaging().getToken();
     console.log('[FCM] Token:', token);
+    Alert.alert('FCM Token', token);
     // TODO: enviar este token a tu backend para guardar por usuario
     return token;
   } catch (error) {
@@ -62,15 +63,30 @@ export async function getFCMToken(): Promise<string | null> {
 export function setupNotificationListeners(): () => void {
   // App ABIERTA (foreground) — muestra un Alert manual porque FCM no muestra
   // notificaciones visuales cuando la app está en primer plano
+
   const unsubscribeForeground = messaging().onMessage(
-    async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-      console.log('[FCM] Foreground:', remoteMessage);
-      Alert.alert(
-        remoteMessage.notification?.title ?? 'Nueva notificación',
-        remoteMessage.notification?.body ?? '',
-      );
-    },
-  );
+  async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+    console.log('[FCM] Foreground:', remoteMessage);
+
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+await notifee.displayNotification({
+  title: remoteMessage.notification?.title,
+  body: remoteMessage.notification?.body,
+  android: {
+    channelId,
+    smallIcon: 'ic_notification',
+    largeIcon: require('../../assets/ic_launcher.png'), // ← logo a color
+    pressAction: { id: 'default' },
+  },
+});
+
+
+  },
+);
 
   // App en BACKGROUND — usuario toca la notificación
   messaging().onNotificationOpenedApp(
