@@ -54,6 +54,11 @@
       android:foregroundServiceType="location"
       android:exported="false" />
 
+    <!-- FIREBASE MESSAGING DEFAULT ICON -->
+    <meta-data
+      android:name="com.google.firebase.messaging.default_notification_icon"
+      android:resource="@drawable/ic_notification" />
+
     <!-- FIREBASE MESSAGING -->
     <service
       android:name="io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService"

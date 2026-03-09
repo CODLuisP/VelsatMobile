@@ -79,7 +79,7 @@ await notifee.displayNotification({
   android: {
     channelId,
     smallIcon: 'ic_notification',
-    largeIcon: require('../../assets/ic_launcher.png'), // ← logo a color
+    largeIcon: 'ic_launcher', // ← usa el recurso nativo
     pressAction: { id: 'default' },
   },
 });
