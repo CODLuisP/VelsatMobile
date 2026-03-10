@@ -57,7 +57,7 @@ estadoBadgeText: {
   container: { flex: 1},
 
   // ── Header ───────────────────────────────────────────────────────────────────
-  header: { paddingHorizontal: 20, paddingBottom: 30 },
+  header: { paddingHorizontal: 20, paddingBottom: 40 },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',

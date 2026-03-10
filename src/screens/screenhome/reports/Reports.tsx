@@ -62,10 +62,10 @@ const Reports: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
-
+  
   const [allUnitsEnabled, setAllUnitsEnabled] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
   const [selectedReport, setSelectedReport] = useState<number>(0);
@@ -654,13 +654,15 @@ const Reports: React.FC = () => {
 const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace + 10 }]}>
+   
+        <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+    
+  <LinearGradient
+        colors={['#05194fff', '#05194fff', '#18223dff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.header, { paddingTop: topSpace }]}
+      >        
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
             <ChevronLeft size={24} color="white" />
@@ -673,7 +675,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           selectedReportId={selectedReport}
           onSelectReport={handleSelectReport}
         />
-      </View>
+ </LinearGradient>
 
       <KeyboardAwareScrollView
         style={styles.content}
@@ -861,7 +863,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
         message={alertConfig.message}
         color={alertConfig.color}
       />
-    </LinearGradient>
+    </View>
   );
 };
 

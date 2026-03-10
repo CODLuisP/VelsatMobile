@@ -48,7 +48,7 @@ const Help = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -152,13 +152,16 @@ const Help = () => {
   const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
+
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+
+
     <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+        colors={['#05194fff', '#05194fff', '#18223dff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.header, { paddingTop: topSpace }]}
+      >        
         <View style={styles.headerTop}>
           <TouchableOpacity
             onPress={handleGoBack}
@@ -176,7 +179,7 @@ const Help = () => {
             guías o revisa las preguntas más frecuentes.
           </Text>
         </View>
-      </View>
+</LinearGradient>
 
       <ScrollView
         style={styles.optionsList}
@@ -256,7 +259,7 @@ const Help = () => {
           </View>
         </View>
       </ScrollView>
-    </LinearGradient>
+       </View>
   );
 };
 

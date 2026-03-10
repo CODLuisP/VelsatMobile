@@ -5,7 +5,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingBottom: 20,
+    paddingBottom: 60,
     paddingHorizontal: 20,
   
   },
@@ -45,10 +45,11 @@ export const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
-    marginTop: 0,
+    marginTop: -30,
     backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    
   },
   optionsContainer: {
     paddingHorizontal: 15,

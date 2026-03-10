@@ -4,11 +4,10 @@ import { StyleSheet, Dimensions } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
   },
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingBottom: 50,
   
   },
   headerTop: {
@@ -48,6 +47,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+    marginTop: -30,
   },
   formContainer: {
     marginTop: 20,

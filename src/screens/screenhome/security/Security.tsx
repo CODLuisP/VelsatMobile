@@ -113,7 +113,7 @@ const Security: React.FC = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
 
@@ -419,13 +419,18 @@ const navigateToPin = async (): Promise<void> => {
 const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+
+
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+
+
+
+       <LinearGradient
+              colors={['#05194fff', '#05194fff', '#18223dff']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={[styles.header, { paddingTop: topSpace }]}
+            >
         <View style={styles.headerTop}>
           <TouchableOpacity
             onPress={handleGoBack}
@@ -447,7 +452,10 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
               : 'Configuración de Seguridad'}
           </Text>
         </View>
-      </View>
+</LinearGradient>
+
+
+
 
       <ScrollView
         style={styles.scrollContainer}
@@ -548,7 +556,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           cancelText={confirmConfig.cancelText}
         />
       </ScrollView>
-    </LinearGradient>
+  </View>
   );
 };
 

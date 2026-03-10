@@ -1,107 +1,77 @@
-import { Dimensions, StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
 
+  // ─── HEADER (igual que Profile) ───────────────────────────────────────────
   header: {
-    flexDirection: 'row',
+    width: '100%',
     alignItems: 'center',
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: Platform.OS === 'ios' ? -85 : 0,
+    paddingBottom: 40,
   },
-  scrollContent: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
+
   backButton: {
-    marginRight: 15,
+    position: 'absolute',
+    left: 10,
+    borderRadius: 8,
+    padding: 8,
   },
 
-   headerSection: {
-    alignItems: 'center',
-    marginBottom: 15,
-    paddingHorizontal: 20,
+  avatarContainer: {
+    marginBottom: 10,
+    marginTop: 20,
   },
 
-    iconWrapper: {
-    marginBottom: 20,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-
-    headerTitleForm: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 40,
-    backgroundColor: '#f7e4daff',
+  avatar: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#e36414',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
   },
 
-
-   headerSubtitle: {
-    fontSize: 13,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 15,
-    paddingHorizontal: 10,
+  companyNameTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
   },
+
+  // ─── TABS DE NAVEGACIÓN (dentro del header) ───────────────────────────────
   navigationContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    flexDirection: 'row',
+    width: '90%',
+    marginBottom: 12,
+    gap: 10,
   },
 
   navOption: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 15,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
 
   navOptionActive: {
     backgroundColor: '#fff',
-    borderWidth: 1,
     borderColor: '#e36414',
   },
 
   navOptionText: {
     flex: 1,
-    marginLeft: 12,
-    fontSize: 15,
+    marginLeft: 8,
+    fontSize: 12,
     fontWeight: '500',
-    color: '#333',
+    color: '#aaa',
   },
 
   navOptionTextActive: {
@@ -113,144 +83,110 @@ export const styles = StyleSheet.create({
     transform: [{ rotate: '180deg' }],
   },
 
-  contentContainer: {
-    flex: 1,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-  },
-
-  formContainer: {
-    flex: 1,
-    paddingTop: 15,
-  },
-
-
+  // ─── INFO SECTION (igual que Profile) ─────────────────────────────────────
   infoSection: {
-    marginBottom: 10,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3be9dff',
   },
 
   infoTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-
-  infoSubtitle: {
-    fontSize: 13,
-    color: '#666',
-    lineHeight: 20,
-  },
- inputSection: {
-    paddingHorizontal: 20,
-  },
-
-    inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-
-  input: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: '#333',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
- 
-  },
-
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-
-  },
-
-  passwordInput: {
+    color: '#e36414',
+    marginLeft: 8,
     flex: 1,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: '#333',
   },
 
-  eyeButton: {
-    padding: 8,
-    marginLeft: 4,
+  infoContent: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
 
-  primaryButton: {
-    backgroundColor: '#e36414',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 0,
-  
+  // ─── INPUTS ───────────────────────────────────────────────────────────────
+  inputGroup: {
+    marginBottom: 12,
   },
 
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 14,
+  inputLabel: {
+    fontSize: 12,
     fontWeight: '600',
-  },
-  buttonWrapper: {
-    paddingHorizontal: 20,
-    marginTop: 4,
-  },
-
-  gradientButton: {
-    flexDirection: 'row',
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
- 
-  },
-
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    color: '#333',
+    marginBottom: 6,
   },
 
   requiredAsterisk: {
     color: '#e36414',
   },
 
-   inputContainer: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1.5,
     borderColor: '#e8e8e8',
-    paddingHorizontal: 14,
-    height: 52,
+    paddingHorizontal: 12,
+    height: 44,
   },
 
-inputIcon: {
-    marginRight: 10,
+  inputIcon: {
+    marginRight: 8,
   },
+
   textInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 13,
     color: '#1a1a1a',
     height: '100%',
   },
 
+  eyeButton: {
+    padding: 6,
+  },
 
+  // ─── SCROLL CONTENT BLANCO (igual que Profile) ────────────────────────────
+  scrollContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    marginTop: -30,
+    flex: 1,
+    paddingVertical: 25,
+  },
+
+  scrollContentContainer: {
+    paddingVertical: 0,
+  },
+
+  // ─── BOTÓN ────────────────────────────────────────────────────────────────
+  buttonWrapper: {
+    paddingHorizontal: 20,
+  },
+
+  gradientButton: {
+    flexDirection: 'row',
+    height: 50,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  buttonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
 });
-
-

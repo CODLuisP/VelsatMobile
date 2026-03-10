@@ -18,17 +18,23 @@ import {
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
-import { useAuthStore } from '../../store/authStore'; 
+import { useAuthStore } from '../../store/authStore';
 import { Text } from '../../components/ScaledComponents';
 
 const Pin = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  
-  const selectedVehiclePin = useAuthStore(state => state.selectedVehiclePin);
-  const setSelectedVehiclePin = useAuthStore(state => state.setSelectedVehiclePin);
 
-  const selectedOption = selectedVehiclePin === 's' ? 'sedan' : 
-                         selectedVehiclePin === 'p' ? 'pickup' : 'truck';
+  const selectedVehiclePin = useAuthStore(state => state.selectedVehiclePin);
+  const setSelectedVehiclePin = useAuthStore(
+    state => state.setSelectedVehiclePin,
+  );
+
+  const selectedOption =
+    selectedVehiclePin === 's'
+      ? 'sedan'
+      : selectedVehiclePin === 'p'
+      ? 'pickup'
+      : 'truck';
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -39,17 +45,16 @@ const Pin = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#ffffff', true);
     }, []),
   );
-
+  
   const handleGoBack = () => {
     navigation.goBack();
   };
 
   const handleSelect = (option: string) => {
-    const pinCode = option === 'sedan' ? 's' : 
-                    option === 'pickup' ? 'p' : 'c';
+    const pinCode = option === 'sedan' ? 's' : option === 'pickup' ? 'p' : 'c';
     setSelectedVehiclePin(pinCode);
   };
 
@@ -58,37 +63,40 @@ const Pin = () => {
       id: 'sedan',
       title: 'Sedán clásico',
       description: 'Ideal para vehículos ligeros y automóviles',
-         image: require('../../../assets/sedan.jpg'), 
-
+      image: require('../../../assets/sedan.jpg'),
     },
 
     {
       id: 'pickup',
       title: 'Pick-up',
       description: 'Perfecto para camionetas y vehículos medianos',
-         image: require('../../../assets/pickup.jpg'), // Ruta local
-
+      image: require('../../../assets/pickup.jpg'), // Ruta local
     },
     {
       id: 'truck',
       title: 'Camión cisterna',
       description: 'Diseñado para vehículos de carga pesada',
-            image: require('../../../assets/camion.jpg'), // Ruta local
-
+      image: require('../../../assets/camion.jpg'), // Ruta local
     },
   ];
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
-   <LinearGradient
-       colors={['#021e4bff', '#183890ff', '#032660ff']}
-       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-       start={{ x: 0, y: 0 }}
-       end={{ x: 0, y: 1 }}
-     >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+     
+     
+      <LinearGradient
+        colors={['#05194fff', '#05194fff', '#18223dff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.header, { paddingTop: topSpace }]}
+      >
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Marcadores</Text>
@@ -96,11 +104,11 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
         <View style={styles.headerBottom}>
           <Text style={styles.headerTitle}>Cambiar marcador de unidades</Text>
           <Text style={styles.headerSubtitle}>
-            Elige el marcador de tu preferencia; este se visualizará en tus unidades.
+            Elige el marcador de tu preferencia; este se visualizará en tus
+            unidades.
           </Text>
-
         </View>
-      </View>
+      </LinearGradient>
 
       <ScrollView
         style={styles.scrollContainer}
@@ -128,7 +136,8 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                   <View
                     style={[
                       styles.imageContainer,
-                      selectedOption === option.id && styles.imageContainerSelected,
+                      selectedOption === option.id &&
+                        styles.imageContainerSelected,
                     ]}
                   >
                     <Image
@@ -139,7 +148,10 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                     {selectedOption === option.id && (
                       <>
                         <LinearGradient
-                          colors={['rgba(227, 100, 20, 0.15)', 'rgba(187, 77, 8, 0.4)']}
+                          colors={[
+                            'rgba(227, 100, 20, 0.15)',
+                            'rgba(187, 77, 8, 0.4)',
+                          ]}
                           style={styles.imageOverlay}
                         />
                         <View style={styles.selectedBadge}>
@@ -172,7 +184,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           ))}
         </View>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 

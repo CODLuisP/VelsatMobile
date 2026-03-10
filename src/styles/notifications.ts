@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 50,
   
   },
   headerTop: {
@@ -58,6 +58,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
+        marginTop: -30,
     
   },
   notificationCard: {

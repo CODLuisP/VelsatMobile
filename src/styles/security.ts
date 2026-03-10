@@ -6,7 +6,8 @@ export const styles = StyleSheet.create({
   },
 
   header: {
-    paddingBottom: 20,
+    paddingBottom: 50,
+
     paddingHorizontal: 5,
   },
   headerTop: {
@@ -39,13 +40,14 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#fff',
-    marginLeft:8,
+    marginLeft: 8,
     opacity: 0.9,
   },
 
   scrollContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    marginTop: -30,
+    backgroundColor: '#ffffffff',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
   },
@@ -58,14 +60,14 @@ export const styles = StyleSheet.create({
   cardContainer: {
     borderRadius: 25,
     padding: 25,
-    marginTop: 30,   
+    marginTop: 30,
   },
 
   phoneContainer: {
     alignItems: 'center',
     marginBottom: 0,
-    backgroundColor:'white',
-    borderRadius:20
+    backgroundColor: 'white',
+    borderRadius: 20,
   },
   phoneWrapper: {
     position: 'relative',
@@ -278,7 +280,7 @@ export const styles = StyleSheet.create({
   textContent: {
     alignItems: 'center',
     marginBottom: 15,
-    paddingTop:20
+    paddingTop: 20,
   },
   mainTitle: {
     fontSize: 20,
@@ -333,7 +335,6 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
     position: 'relative',
     overflow: 'hidden',
-
   },
   buttonContent: {
     flexDirection: 'row',
@@ -360,7 +361,7 @@ export const styles = StyleSheet.create({
   phoneImage: {
     width: 150,
     height: 150,
-    paddingVertical:10
+    paddingVertical: 10,
   },
 
   secondaryButton: {

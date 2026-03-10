@@ -1,13 +1,11 @@
-import { StyleSheet, Dimensions } from 'react-native';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    paddingBottom: 8,
+    paddingBottom: 50,
   },
   headerTop: {
     flexDirection: 'row',
@@ -122,6 +120,7 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 20,
+    marginTop: -30,
   },
 
   sectionTitle: {
@@ -152,18 +151,15 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 5,
-    
   },
 
   unitInputContent: {
     flex: 1,
-    
   },
 
   unitInputPlaceholder: {
     color: '#9CA3AF',
     fontSize: 14,
-
   },
 
   selectedUnitContainer: {
@@ -311,7 +307,7 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#D1D5DB',
     padding: 3,
-    
+
     justifyContent: 'center',
   },
 
@@ -324,7 +320,6 @@ export const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
-   
   },
 
   // Botones
@@ -410,13 +405,13 @@ export const styles = StyleSheet.create({
   // Modal de Unidades
   unitModalContainer: {
     flex: 1,
- backgroundColor: '#fff',    
- justifyContent: 'flex-end',
+    backgroundColor: '#fff',
+    justifyContent: 'flex-end',
   },
 
   unitModalContent: {
     backgroundColor: 'white',
- 
+
     height: '100%',
     paddingTop: 20,
     flex: 1,
