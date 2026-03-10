@@ -61,6 +61,7 @@
 	<!-- MODOS DE SEGUNDO PLANO PARA RASTREO GPS -->
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>remote-notification</string>
 		<string>location</string>
 		<string>fetch</string>
 	</array>

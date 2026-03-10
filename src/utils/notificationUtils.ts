@@ -51,6 +51,10 @@ export async function getFCMToken(): Promise<string | null> {
     console.log('[FCM] Token:', token);
     Alert.alert('FCM Token', token);
     // TODO: enviar este token a tu backend para guardar por usuario
+
+    await messaging().subscribeToTopic('todos');
+    console.log('[FCM] Suscrito al topic: todos');
+    
     return token;
   } catch (error) {
     console.error('[FCM] Error obteniendo token:', error);
