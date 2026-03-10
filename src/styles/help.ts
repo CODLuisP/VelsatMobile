@@ -1,14 +1,14 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 50,
-  
+ header: {
+    marginTop: Platform.OS === 'ios' ? -60 : 0,
+    height: Platform.OS === 'ios' ? 300 : 190,
+ 
   },
   headerTop: {
     flexDirection: 'row',
@@ -17,18 +17,20 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
   backButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderRadius: 8,
+    padding: 8,
+    marginRight: 10,
+    marginLeft: 5
   },
   headerMainTitle: {
-    fontSize: 18,
+      fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginLeft: 15,
+    color: '#fff',
+    marginBottom: 2,
   },
   headerBottom: {
-    marginTop: 5,
-    marginLeft: 10,
+    marginTop: 0,
+    marginLeft: 20,
   },
   headerTitle: {
     fontSize: 16,
