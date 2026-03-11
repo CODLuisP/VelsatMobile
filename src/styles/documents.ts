@@ -3,7 +3,6 @@ import { StyleSheet, Dimensions, Platform } from 'react-native';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
-  // Añadir a styles/documents.ts
 centered: {
   flex: 1,
   justifyContent: 'center',
@@ -64,7 +63,7 @@ estadoBadgeText: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
    backButton: {
     borderRadius: 8,
