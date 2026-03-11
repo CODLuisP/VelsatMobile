@@ -3,6 +3,8 @@ import messaging, {
 } from '@react-native-firebase/messaging';
 import {Platform, PermissionsAndroid, Alert} from 'react-native';
 import notifee from '@notifee/react-native';
+import axios from 'axios';
+
 // ─── TIPOS ────────────────────────────────────────────────────────────────────
 
 export interface NotificationPayload {
@@ -29,32 +31,59 @@ export async function requestNotificationPermission(): Promise<boolean> {
     return enabled;
   }
 
-if (Platform.OS === 'android') {
-  if ((Platform.Version as number) >= 33) {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-    );
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  if (Platform.OS === 'android') {
+    if ((Platform.Version as number) >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
+    return true;
   }
-  return true;
-}
 
   return false;
 }
 
-// ─── 2. OBTENER TOKEN FCM ─────────────────────────────────────────────────────
+// ─── 2. GUARDAR TOKEN EN EL SERVIDOR ──────────────────────────────────────────
 
-export async function getFCMToken(): Promise<string | null> {
+async function saveTokenToServer(
+  username?: string,
+  token?: string,
+): Promise<void> {
+  if (!username || !token) return;
+
+  try {
+    const response = await axios.post(
+      'https://sub.velsat.pe:2087/api/Aplicativo/save-token',
+      {
+        userId: username,
+        fcmToken: token,
+        platform: Platform.OS,
+      },
+    );
+    console.log('[FCM] Token guardado:', response.data);
+  } catch (error: any) {
+    // Ver exactamente qué devuelve el servidor
+    console.error('[FCM] Status:', error?.response?.status);
+     console.error('[FCM] Respuesta servidor:', JSON.stringify(error?.response?.data));
+    console.error('[FCM] Body enviado:', { userId: username, fcmToken: token, platform: Platform.OS });
+  }
+}
+
+// ─── 3. OBTENER TOKEN FCM ─────────────────────────────────────────────────────
+
+export async function getFCMToken(username?: string): Promise<string | null> {
   try {
     await messaging().registerDeviceForRemoteMessages();
     const token = await messaging().getToken();
     console.log('[FCM] Token:', token);
-    Alert.alert('FCM Token', token);
-    // TODO: enviar este token a tu backend para guardar por usuario
+
+    // Enviar token al backend
+    await saveTokenToServer(username, token);
 
     await messaging().subscribeToTopic('todos');
     console.log('[FCM] Suscrito al topic: todos');
-    
+
     return token;
   } catch (error) {
     console.error('[FCM] Error obteniendo token:', error);
@@ -62,35 +91,31 @@ export async function getFCMToken(): Promise<string | null> {
   }
 }
 
-// ─── 3. LISTENERS ─────────────────────────────────────────────────────────────
+// ─── 4. LISTENERS ─────────────────────────────────────────────────────────────
 
 export function setupNotificationListeners(): () => void {
-  // App ABIERTA (foreground) — muestra un Alert manual porque FCM no muestra
-  // notificaciones visuales cuando la app está en primer plano
-
+  // App ABIERTA (foreground)
   const unsubscribeForeground = messaging().onMessage(
-  async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-    console.log('[FCM] Foreground:', remoteMessage);
+    async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+      console.log('[FCM] Foreground:', remoteMessage);
 
-    const channelId = await notifee.createChannel({
-      id: 'default',
-      name: 'Default Channel',
-    });
+      const channelId = await notifee.createChannel({
+        id: 'default',
+        name: 'Default Channel',
+      });
 
-await notifee.displayNotification({
-  title: remoteMessage.notification?.title,
-  body: remoteMessage.notification?.body,
-  android: {
-    channelId,
-    smallIcon: 'ic_notification',
-    largeIcon: 'ic_launcher', // ← usa el recurso nativo
-    pressAction: { id: 'default' },
-  },
-});
-
-
-  },
-);
+      await notifee.displayNotification({
+        title: remoteMessage.notification?.title,
+        body: remoteMessage.notification?.body,
+        android: {
+          channelId,
+          smallIcon: 'ic_notification',
+          largeIcon: 'ic_launcher',
+          pressAction: {id: 'default'},
+        },
+      });
+    },
+  );
 
   // App en BACKGROUND — usuario toca la notificación
   messaging().onNotificationOpenedApp(
@@ -114,7 +139,7 @@ await notifee.displayNotification({
   return unsubscribeForeground;
 }
 
-// ─── 4. HANDLER PARA APP CERRADA (se registra fuera del componente) ───────────
+// ─── 5. HANDLER PARA APP CERRADA (se registra fuera del componente) ───────────
 // Esta función debe llamarse en index.js, ANTES de registrar el componente App
 
 export function registerBackgroundHandler(): void {
