@@ -37,7 +37,6 @@ import FAQ from './src/screens/screenhome/help/Faq';
 import UpdateChecker from './src/components/login/UpdateChecker';
 import Documents from './src/screens/screenhome/documents/Documents';
 
-// ⭐ NOTIFICACIONES
 import {
   requestNotificationPermission,
   getFCMToken,
@@ -190,7 +189,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = () => {
-  const { isAuthenticated, isLoading, setLoading, tipo } = useAuthStore();
+  const { isAuthenticated, isLoading, setLoading, tipo, user } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated && isLoading) {
@@ -219,9 +218,10 @@ const App = () => {
     let unsubscribe: (() => void) | undefined;
 
     const initNotifications = async () => {
+      if (!isAuthenticated || !user?.username) return;
       const hasPermission = await requestNotificationPermission();
       if (hasPermission) {
-        await getFCMToken();
+        await getFCMToken(user.username);
         unsubscribe = setupNotificationListeners();
       }
     };
@@ -231,7 +231,7 @@ const App = () => {
     return () => {
       unsubscribe?.();
     };
-  }, []);
+  }, [isAuthenticated, user?.username]);
 
   return (
     <SafeAreaProvider>
