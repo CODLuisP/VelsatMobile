@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
-    marginTop: 10,
+    marginTop: 5,
   },
   backButton: {
     borderRadius: 8,

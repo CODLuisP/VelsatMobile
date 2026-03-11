@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -53,25 +53,37 @@ estadoBadgeText: {
   fontSize: 11,
   fontWeight: '600',
 },
-  // ── Layout ───────────────────────────────────────────────────────────────────
   container: { flex: 1},
 
-  // ── Header ───────────────────────────────────────────────────────────────────
-  header: { paddingHorizontal: 20, paddingBottom: 40 },
-  headerTop: {
+   header: {
+      marginTop: Platform.OS === 'ios' ? -60 : 0,
+      height: Platform.OS === 'ios' ? 290 : 160,
+   
+    },
+ headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    marginTop: 10,
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
-  backButton: { justifyContent: 'center', alignItems: 'center' },
+   backButton: {
+    borderRadius: 8,
+    padding: 8,
+    marginRight: 10,
+    marginLeft: -10,
+  },
   headerMainTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginLeft: 15,
+    marginLeft: 0,
   },
-  headerBottom: { marginTop: 5, marginLeft: 10 },
+  headerBottom: { 
+    marginTop: 0, 
+    paddingHorizontal: 0,
+    marginLeft: 20,
+  
+  },
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -83,6 +95,7 @@ estadoBadgeText: {
     color: '#E3F2FD',
     lineHeight: 20,
     opacity: 0.9,
+    marginRight: 5,
   },
 
   // ── Body ─────────────────────────────────────────────────────────────────────
@@ -100,7 +113,6 @@ estadoBadgeText: {
     flex: 1,
   },
 
-  // ── Summary ──────────────────────────────────────────────────────────────────
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -124,7 +136,6 @@ estadoBadgeText: {
     lineHeight: 13,
   },
 
-  // ── Alert banner ─────────────────────────────────────────────────────────────
   alertBanner: {
     backgroundColor: '#fffbeb',
     borderRadius: 14,

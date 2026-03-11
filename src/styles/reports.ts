@@ -1,12 +1,14 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    paddingBottom: 50,
-  },
+     marginTop: Platform.OS === 'ios' ? -60 : 0,
+     height: Platform.OS === 'ios' ? 390 : 160,
+  
+   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
