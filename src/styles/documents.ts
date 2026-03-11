@@ -56,7 +56,7 @@ estadoBadgeText: {
 
    header: {
       marginTop: Platform.OS === 'ios' ? -60 : 0,
-      height: Platform.OS === 'ios' ? 290 : 160,
+      height: Platform.OS === 'ios' ? 290 : 190,
    
     },
  headerTop: {
