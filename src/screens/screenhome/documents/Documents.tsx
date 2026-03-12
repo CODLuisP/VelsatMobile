@@ -198,7 +198,7 @@ const Documents = () => {
         <View style={styles.headerBottom}>
           <Text style={styles.headerTitle}>Gestión documental</Text>
           <Text style={styles.headerSubtitle}>
-            Controla el estado de todos los documentos de tu flota y del conductor.
+            Controla el estado de todos los documentos de tu flota y del conductor
           </Text>
         </View>
       </LinearGradient>

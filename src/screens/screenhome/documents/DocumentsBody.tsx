@@ -285,7 +285,8 @@ const DocumentsBody = ({
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+       <View style={[styles.contentList, styles.centered]}>
+
         <ActivityIndicator size="large" color="#1e40af" />
         <Text style={styles.loadingText}>Cargando documentos…</Text>
       </View>
