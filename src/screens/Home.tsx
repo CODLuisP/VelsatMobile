@@ -96,7 +96,7 @@ const Home: React.FC = () => {
     title: '',
     message: '',
     color: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
     confirmText: '',
     cancelText: '',
   });
@@ -298,20 +298,31 @@ const Home: React.FC = () => {
       setDebugUrl(url);
       setDireccionCoordenadas('Consultando servidor...');
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 10000);
+      const fetchWithTimeout = async (requestUrl: string) => {
+        return new Promise<Response>((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error('TimeoutError'));
+          }, 10000);
 
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
+          fetch(requestUrl, {
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'User-Agent': 'VelsatMobileApp/1.0',
+            },
+          })
+            .then(res => {
+              clearTimeout(timeoutId);
+              resolve(res);
+            })
+            .catch(err => {
+              clearTimeout(timeoutId);
+              reject(err);
+            });
+        });
+      };
 
-      clearTimeout(timeoutId);
+      const response = await fetchWithTimeout(url);
 
       if (!response.ok) {
         throw new Error(
@@ -330,7 +341,7 @@ const Home: React.FC = () => {
       }
     } catch (error) {
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
+        if (error.message === 'TimeoutError' || error.name === 'AbortError') {
           setDireccionCoordenadas('Timeout - Servidor muy lento');
         } else if (error.message.includes('Network')) {
           setDireccionCoordenadas('Sin conexión a internet');
@@ -399,7 +410,7 @@ const Home: React.FC = () => {
               await RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
                 interval: 10000,
               });
-            } catch (err) {}
+            } catch (err) { }
           },
           '#FFA726', // Naranja
           'Activar GPS',
@@ -589,11 +600,11 @@ const Home: React.FC = () => {
 
                       try {
                         await obtenerDireccion(preciseLat, preciseLng);
-                      } catch (error) {}
+                      } catch (error) { }
                     }
-                  } catch (error) {}
+                  } catch (error) { }
                 },
-                error => {},
+                error => { },
                 {
                   enableHighAccuracy: true,
                   timeout: 10000,
