@@ -271,90 +271,82 @@ const Home: React.FC = () => {
     }
   };
 
+
   const obtenerDireccion = async (lat: string, lng: string) => {
-    setDireccionCoordenadas('Validando coordenadas...');
+  setDireccionCoordenadas(`LAT: ${lat} | LNG: ${lng}`);
 
-    if (!lat || !lng || lat === 'null' || lng === 'null') {
-      setDireccionCoordenadas('Coordenadas no válidas');
-      return;
-    }
+  if (!lat || !lng || lat === 'null' || lng === 'null') {
+    setDireccionCoordenadas('Coordenadas no válidas');
+    return;
+  }
 
-    const latNum = parseFloat(lat);
-    const lngNum = parseFloat(lng);
+  const latNum = parseFloat(lat);
+  const lngNum = parseFloat(lng);
 
-    if (isNaN(latNum) || isNaN(lngNum)) {
-      setDireccionCoordenadas('Coordenadas no válidas (NaN)');
-      return;
-    }
+  if (isNaN(latNum) || isNaN(lngNum)) {
+    setDireccionCoordenadas('Coordenadas no válidas (NaN)');
+    return;
+  }
 
-    if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
-      setDireccionCoordenadas('Coordenadas fuera de rango');
-      return;
-    }
+  if (latNum < -90 || latNum > 90 || lngNum < -180 || lngNum > 180) {
+    setDireccionCoordenadas('Coordenadas fuera de rango');
+    return;
+  }
 
-    try {
-      const url = `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+  try {
+    const url = `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}`;
 
-      setDebugUrl(url);
-      setDireccionCoordenadas('Consultando servidor...');
+    setDebugUrl(url);
+    setDireccionCoordenadas(`Consultando...`);
 
-      const fetchWithTimeout = async (requestUrl: string) => {
-        return new Promise<Response>((resolve, reject) => {
-          const timeoutId = setTimeout(() => {
-            reject(new Error('TimeoutError'));
-          }, 10000);
+    const fetchWithTimeout = async (requestUrl: string) => {
+      return new Promise<Response>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          reject(new Error('TimeoutError'));
+        }, 10000);
 
-          fetch(requestUrl, {
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              'User-Agent': 'VelsatMobileApp/1.0',
-            },
+        fetch(requestUrl, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+          },
+        })
+          .then(res => {
+            clearTimeout(timeoutId);
+            resolve(res);
           })
-            .then(res => {
-              clearTimeout(timeoutId);
-              resolve(res);
-            })
-            .catch(err => {
-              clearTimeout(timeoutId);
-              reject(err);
-            });
-        });
-      };
+          .catch(err => {
+            clearTimeout(timeoutId);
+            reject(err);
+          });
+      });
+    };
 
-      const response = await fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url);
 
-      if (!response.ok) {
-        throw new Error(
-          `HTTP Error: ${response.status} - ${response.statusText}`,
-        );
-      }
-
-      const data = await response.json();
-
-      if (data && data.display_name) {
-        setDireccionCoordenadas(data.display_name);
-      } else if (data && data.error) {
-        setDireccionCoordenadas('Error API:' + data.error);
-      } else {
-        setDireccionCoordenadas('Sin dirección disponible');
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'TimeoutError' || error.name === 'AbortError') {
-          setDireccionCoordenadas('Timeout - Servidor muy lento');
-        } else if (error.message.includes('Network')) {
-          setDireccionCoordenadas('Sin conexión a internet');
-        } else if (error.message.includes('fetch')) {
-          setDireccionCoordenadas('Error conectando al servidor');
-        } else {
-          setDireccionCoordenadas(`Error: ${error.message}`);
-        }
-      } else {
-        setDireccionCoordenadas(`Error desconocido: ${String(error)}`);
-      }
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
     }
-  };
+
+    const data = await response.json();
+
+    if (data && data.features && data.features.length > 0) {
+      const props = data.features[0].properties;
+      const direccion = [props.name, props.city, props.country]
+        .filter(Boolean)
+        .join(', ');
+      setDireccionCoordenadas(direccion || 'Sin dirección disponible');
+    } else {
+      setDireccionCoordenadas('Sin dirección disponible');
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      setDireccionCoordenadas(`ERR: ${error.message} | NAME: ${error.name}`);
+    } else {
+      setDireccionCoordenadas(`ERR desconocido: ${String(error)}`);
+    }
+  }
+};
 
   const solicitarPermisosUbicacion = async (): Promise<boolean> => {
     if (Platform.OS === 'android') {
