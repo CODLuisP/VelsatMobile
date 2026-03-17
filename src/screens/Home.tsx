@@ -272,8 +272,8 @@ const Home: React.FC = () => {
   };
 
 
-  const obtenerDireccion = async (lat: string, lng: string) => {
-  setDireccionCoordenadas(`LAT: ${lat} | LNG: ${lng}`);
+const obtenerDireccion = async (lat: string, lng: string) => {
+  setDireccionCoordenadas('Validando coordenadas...');
 
   if (!lat || !lng || lat === 'null' || lng === 'null') {
     setDireccionCoordenadas('Coordenadas no válidas');
@@ -294,56 +294,62 @@ const Home: React.FC = () => {
   }
 
   try {
-    const url = `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}`;
+    // iOS usa HTTPS, Android usa tu servidor HTTP
+    const url = Platform.OS === 'ios'
+      ? `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}`
+      : `http://63.251.107.133:90/nominatim/reverse.php?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
 
     setDebugUrl(url);
-    setDireccionCoordenadas(`Consultando...`);
+    setDireccionCoordenadas('Consultando...');
 
-    const fetchWithTimeout = async (requestUrl: string) => {
-      return new Promise<Response>((resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-          reject(new Error('TimeoutError'));
-        }, 10000);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        fetch(requestUrl, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-          },
-        })
-          .then(res => {
-            clearTimeout(timeoutId);
-            resolve(res);
-          })
-          .catch(err => {
-            clearTimeout(timeoutId);
-            reject(err);
-          });
-      });
-    };
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
 
-    const response = await fetchWithTimeout(url);
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
+      throw new Error(`HTTP Error: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (data && data.features && data.features.length > 0) {
-      const props = data.features[0].properties;
-      const direccion = [props.name, props.city, props.country]
-        .filter(Boolean)
-        .join(', ');
-      setDireccionCoordenadas(direccion || 'Sin dirección disponible');
+    // iOS - respuesta de Photon
+    if (Platform.OS === 'ios') {
+      if (data && data.features && data.features.length > 0) {
+        const props = data.features[0].properties;
+        const direccion = [props.name, props.city, props.country]
+          .filter(Boolean)
+          .join(', ');
+        setDireccionCoordenadas(direccion || 'Sin dirección disponible');
+      } else {
+        setDireccionCoordenadas('Sin dirección disponible');
+      }
     } else {
-      setDireccionCoordenadas('Sin dirección disponible');
+      // Android - respuesta de Nominatim
+      if (data && data.display_name) {
+        setDireccionCoordenadas(data.display_name);
+      } else if (data && data.error) {
+        setDireccionCoordenadas('Error API: ' + data.error);
+      } else {
+        setDireccionCoordenadas('Sin dirección disponible');
+      }
     }
   } catch (error) {
     if (error instanceof Error) {
-      setDireccionCoordenadas(`ERR: ${error.message} | NAME: ${error.name}`);
+      if (error.name === 'AbortError') {
+        setDireccionCoordenadas('Timeout - Servidor muy lento');
+      } else if (error.message.includes('Network')) {
+        setDireccionCoordenadas('Sin conexión a internet');
+      } else {
+        setDireccionCoordenadas(`Error: ${error.message}`);
+      }
     } else {
-      setDireccionCoordenadas(`ERR desconocido: ${String(error)}`);
+      setDireccionCoordenadas(`Error desconocido: ${String(error)}`);
     }
   }
 };
