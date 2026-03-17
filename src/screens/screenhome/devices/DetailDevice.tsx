@@ -42,11 +42,11 @@ import {
 } from '../../../hooks/useNavigationMode';
 import { useAuthStore } from '../../../store/authStore';
 import { obtenerDireccion } from '../../../utils/obtenerDireccion';
-import { 
-  formatDateTime, 
-  formatThreeDecimals, 
-  openGoogleMaps, 
-  toUpperCaseText 
+import {
+  formatDateTime,
+  formatThreeDecimals,
+  openGoogleMaps,
+  toUpperCaseText,
 } from '../../../utils/textUtils';
 import RadarDot from '../../../components/login/RadarDot';
 import {
@@ -95,7 +95,7 @@ const DetailDevice = () => {
   } | null>(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-const [connectionStatus, setConnectionStatus] = useState< 
+  const [connectionStatus, setConnectionStatus] = useState<
     'connecting' | 'connected' | 'disconnected' | 'error'
   >('connecting');
 
@@ -109,7 +109,9 @@ const [connectionStatus, setConnectionStatus] = useState<
     insets,
     navigationDetection.hasNavigationBar,
   );
-  const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>('standard');
+  const [mapType, setMapType] = useState<'standard' | 'satellite' | 'hybrid'>(
+    'standard',
+  );
   const [hasShownInitialCallout, setHasShownInitialCallout] = useState(false);
 
   const [radarPulse, setRadarPulse] = useState({
@@ -120,7 +122,9 @@ const [connectionStatus, setConnectionStatus] = useState<
   });
 
   const isMountedRef = useRef(true);
-const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
   const isPollingRef = useRef(false);
 
   useFocusEffect(
@@ -154,7 +158,7 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchVehicleData = async () => {
     if (isPollingRef.current) return;
-    
+
     const username = user?.username;
     const placa = device;
 
@@ -167,17 +171,21 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     try {
       let serverUrl = server?.trim() || '';
-      
-      if (serverUrl && !serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+
+      if (
+        serverUrl &&
+        !serverUrl.startsWith('http://') &&
+        !serverUrl.startsWith('https://')
+      ) {
         serverUrl = `https://${serverUrl}`;
       }
-      
+
       serverUrl = serverUrl.replace(/\/$/, '');
 
       const encodedUsername = encodeURIComponent(username);
       const encodedPlaca = encodeURIComponent(placa);
       const apiUrl = `${serverUrl}/api/Aplicativo/vehiculo/${encodedUsername}/${encodedPlaca}`;
-      
+
       console.log('Fetching vehicle data from:', apiUrl);
 
       const controller = new AbortController();
@@ -199,7 +207,7 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
       }
 
       const data = await response.json();
-      
+
       if (!isMountedRef.current) return;
 
       if (data?.vehiculo) {
@@ -208,10 +216,9 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
       } else {
         setConnectionStatus('error');
       }
-
     } catch (error) {
       if (!isMountedRef.current) return;
-      
+
       console.error('Error fetching vehicle data:', error);
       setConnectionStatus('error');
     } finally {
@@ -221,9 +228,9 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
-    
+
     fetchVehicleData();
-    
+
     pollingIntervalRef.current = setInterval(() => {
       if (isMountedRef.current) {
         fetchVehicleData();
@@ -232,7 +239,7 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     return () => {
       isMountedRef.current = false;
-      
+
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
@@ -240,38 +247,40 @@ const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     };
   }, [device, user?.username, server]);
 
-useEffect(() => {
-  const handleAppStateChange = (nextAppState: string) => {
-    if (nextAppState === 'active') {
-      if (!pollingIntervalRef.current && isMountedRef.current) {
-        fetchVehicleData();
-        pollingIntervalRef.current = setInterval(() => {
-          if (isMountedRef.current) {
-            fetchVehicleData();
-          }
-        }, 10000);
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        if (!pollingIntervalRef.current && isMountedRef.current) {
+          fetchVehicleData();
+          pollingIntervalRef.current = setInterval(() => {
+            if (isMountedRef.current) {
+              fetchVehicleData();
+            }
+          }, 10000);
+        }
+      } else {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
       }
-    } else {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-    }
-  };
+    };
 
-  const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
 
-  return () => {
-    subscription.remove();
-  };
-}, []);
-
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const handleOpenMaps = () => {
     if (!vehicleData) return;
-    
+
     const result = openGoogleMaps(latitude, longitude);
-    
+
     if (result) {
       setNavigationCoords({ latitude, longitude });
       setModalVisible(true);
@@ -319,18 +328,21 @@ useEffect(() => {
       case 'satellite':
         return {
           url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          attribution: '&copy; Esri'
+          attribution: '&copy; Esri',
         };
       case 'hybrid':
         return {
-          baseUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          overlayUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          attribution: '&copy; Esri &copy; OpenStreetMap'
+          baseUrl:
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          // ✅ Cambiado: OSM Francia en lugar de OSM estándar
+          overlayUrl: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+          attribution: '&copy; Esri &copy; OpenStreetMap',
         };
       default:
+        // ✅ Cambiado: OSM Francia en lugar de OSM estándar
         return {
-          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          attribution: '&copy; OpenStreetMap contributors'
+          url: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+          attribution: '&copy; OpenStreetMap contributors',
         };
     }
   };
@@ -338,28 +350,30 @@ useEffect(() => {
   const tileConfig = getLeafletTileLayer(mapType);
   const pinType = selectedVehiclePin || 's';
 
-  const iconSizes = pinType === 'c'
-    ? {
-      vertical: [35, 90] as [number, number],
-      horizontal: [90, 45] as [number, number],
-    }
-    : {
-      vertical: [30, 40] as [number, number],
-      horizontal: [55, 35] as [number, number],
-    };
+  const iconSizes =
+    pinType === 'c'
+      ? {
+          vertical: [35, 90] as [number, number],
+          horizontal: [90, 45] as [number, number],
+        }
+      : {
+          vertical: [30, 40] as [number, number],
+          horizontal: [55, 35] as [number, number],
+        };
 
   const popupOffset = pinType === 'c' ? -50 : -30;
 
-  const leafletHTML = useMemo(() =>
-    generateLeafletHTML({
-      mapType,
-      tileConfig,
-      pinType,
-      DIRECTION_IMAGES,
-      iconSizes,
-      popupOffset
-    }),
-    [mapType, tileConfig, pinType, iconSizes, popupOffset]
+  const leafletHTML = useMemo(
+    () =>
+      generateLeafletHTML({
+        mapType,
+        tileConfig,
+        pinType,
+        DIRECTION_IMAGES,
+        iconSizes,
+        popupOffset,
+      }),
+    [mapType, tileConfig, pinType, iconSizes, popupOffset],
   );
 
   const webViewRef = useRef<WebView>(null);
@@ -416,24 +430,27 @@ useEffect(() => {
     }
   }, [vehicleData, hasShownInitialCallout]);
 
-  
   const renderMap = () => {
     if (Platform.OS === 'ios') {
       const imageData = getDirectionImageData(heading);
 
       const iosImageSize: [number, number] =
         imageData.name === 'up.png' || imageData.name === 'down.png'
-          ? (pinType === 'c' ? [35, 90] : imageData.size)
-          : (pinType === 'c' ? [90, 50] : imageData.size);
+          ? pinType === 'c'
+            ? [35, 90]
+            : imageData.size
+          : pinType === 'c'
+          ? [90, 50]
+          : imageData.size;
 
       const radarColor =
         speed === 0
           ? '#ef4444'
           : speed > 0 && speed < 11
-            ? '#ff8000'
-            : speed >= 11 && speed < 60
-              ? '#38b000'
-              : '#00509d';
+          ? '#ff8000'
+          : speed >= 11 && speed < 60
+          ? '#38b000'
+          : '#00509d';
 
       const wave1Radius = 10 + radarPulse.wave1 * 90;
       const wave2Radius = 10 + radarPulse.wave2 * 90;
@@ -471,8 +488,12 @@ useEffect(() => {
                   <Circle
                     center={{ latitude, longitude }}
                     radius={wave1Radius}
-                    fillColor={`${radarColor}${Math.floor(wave1Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200).toString(16).padStart(2, '0')}`}
+                    fillColor={`${radarColor}${Math.floor(wave1Opacity * 255)
+                      .toString(16)
+                      .padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave1Opacity * 200)
+                      .toString(16)
+                      .padStart(2, '0')}`}
                     strokeWidth={2}
                   />
                 )}
@@ -480,8 +501,12 @@ useEffect(() => {
                   <Circle
                     center={{ latitude, longitude }}
                     radius={wave2Radius}
-                    fillColor={`${radarColor}${Math.floor(wave2Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200).toString(16).padStart(2, '0')}`}
+                    fillColor={`${radarColor}${Math.floor(wave2Opacity * 255)
+                      .toString(16)
+                      .padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave2Opacity * 200)
+                      .toString(16)
+                      .padStart(2, '0')}`}
                     strokeWidth={2}
                   />
                 )}
@@ -489,8 +514,12 @@ useEffect(() => {
                   <Circle
                     center={{ latitude, longitude }}
                     radius={wave3Radius}
-                    fillColor={`${radarColor}${Math.floor(wave3Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200).toString(16).padStart(2, '0')}`}
+                    fillColor={`${radarColor}${Math.floor(wave3Opacity * 255)
+                      .toString(16)
+                      .padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave3Opacity * 200)
+                      .toString(16)
+                      .padStart(2, '0')}`}
                     strokeWidth={2}
                   />
                 )}
@@ -498,8 +527,12 @@ useEffect(() => {
                   <Circle
                     center={{ latitude, longitude }}
                     radius={wave4Radius}
-                    fillColor={`${radarColor}${Math.floor(wave4Opacity * 255).toString(16).padStart(2, '0')}`}
-                    strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200).toString(16).padStart(2, '0')}`}
+                    fillColor={`${radarColor}${Math.floor(wave4Opacity * 255)
+                      .toString(16)
+                      .padStart(2, '0')}`}
+                    strokeColor={`${radarColor}${Math.floor(wave4Opacity * 200)
+                      .toString(16)
+                      .padStart(2, '0')}`}
                     strokeWidth={2}
                   />
                 )}
@@ -523,11 +556,18 @@ useEffect(() => {
                   />
                   <Callout>
                     <View style={{ padding: 0, minWidth: 230 }}>
-                      <Text style={{ fontWeight: 'bold', fontSize: 14, marginBottom: 5 }}>
+                      <Text
+                        style={{
+                          fontWeight: 'bold',
+                          fontSize: 14,
+                          marginBottom: 5,
+                        }}
+                      >
                         {toUpperCaseText(device)}
                       </Text>
                       <Text style={{ color: '#666' }}>
-                        {status} - {formatThreeDecimals(speed)} Km/h - {obtenerDireccion(heading)}
+                        {status} - {formatThreeDecimals(speed)} Km/h -{' '}
+                        {obtenerDireccion(heading)}
                       </Text>
                     </View>
                   </Callout>
@@ -538,26 +578,50 @@ useEffect(() => {
 
           <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
             <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
+              style={[
+                styles.mapTypeButton,
+                mapType === 'standard' && styles.mapTypeButtonActive,
+              ]}
               onPress={() => setMapType('standard')}
             >
-              <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
+              <Text
+                style={[
+                  styles.mapTypeButtonText,
+                  mapType === 'standard' && styles.mapTypeButtonTextActive,
+                ]}
+              >
                 Calles
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
+              style={[
+                styles.mapTypeButton,
+                mapType === 'satellite' && styles.mapTypeButtonActive,
+              ]}
               onPress={() => setMapType('satellite')}
             >
-              <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
+              <Text
+                style={[
+                  styles.mapTypeButtonText,
+                  mapType === 'satellite' && styles.mapTypeButtonTextActive,
+                ]}
+              >
                 Satélite
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
+              style={[
+                styles.mapTypeButton,
+                mapType === 'hybrid' && styles.mapTypeButtonActive,
+              ]}
               onPress={() => setMapType('hybrid')}
             >
-              <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
+              <Text
+                style={[
+                  styles.mapTypeButtonText,
+                  mapType === 'hybrid' && styles.mapTypeButtonTextActive,
+                ]}
+              >
                 Híbrido
               </Text>
             </TouchableOpacity>
@@ -589,26 +653,50 @@ useEffect(() => {
 
           <View style={[styles.mapTypeSelector, { top: insets.top + 15 }]}>
             <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
+              style={[
+                styles.mapTypeButton,
+                mapType === 'standard' && styles.mapTypeButtonActive,
+              ]}
               onPress={() => setMapType('standard')}
             >
-              <Text style={[styles.mapTypeButtonText, mapType === 'standard' && styles.mapTypeButtonTextActive]}>
+              <Text
+                style={[
+                  styles.mapTypeButtonText,
+                  mapType === 'standard' && styles.mapTypeButtonTextActive,
+                ]}
+              >
                 Calles
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
+              style={[
+                styles.mapTypeButton,
+                mapType === 'satellite' && styles.mapTypeButtonActive,
+              ]}
               onPress={() => setMapType('satellite')}
             >
-              <Text style={[styles.mapTypeButtonText, mapType === 'satellite' && styles.mapTypeButtonTextActive]}>
+              <Text
+                style={[
+                  styles.mapTypeButtonText,
+                  mapType === 'satellite' && styles.mapTypeButtonTextActive,
+                ]}
+              >
                 Satélite
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.mapTypeButton, mapType === 'hybrid' && styles.mapTypeButtonActive]}
+              style={[
+                styles.mapTypeButton,
+                mapType === 'hybrid' && styles.mapTypeButtonActive,
+              ]}
               onPress={() => setMapType('hybrid')}
             >
-              <Text style={[styles.mapTypeButtonText, mapType === 'hybrid' && styles.mapTypeButtonTextActive]}>
+              <Text
+                style={[
+                  styles.mapTypeButtonText,
+                  mapType === 'hybrid' && styles.mapTypeButtonTextActive,
+                ]}
+              >
                 Híbrido
               </Text>
             </TouchableOpacity>
@@ -675,8 +763,8 @@ useEffect(() => {
                 {connectionStatus === 'connecting'
                   ? 'Conectando al servidor...'
                   : connectionStatus === 'error'
-                    ? 'Error de conexión'
-                    : 'Esperando datos...'}
+                  ? 'Error de conexión'
+                  : 'Esperando datos...'}
               </Text>
             </View>
           </View>
@@ -704,9 +792,7 @@ useEffect(() => {
         <TouchableOpacity style={styles.panelHeader} onPress={toggleInfo}>
           <View style={styles.panelHeaderContent}>
             <View style={styles.deviceHeaderInfo}>
-              <Text style={styles.deviceName}>
-                {toUpperCaseText(device)}
-              </Text>
+              <Text style={styles.deviceName}>{toUpperCaseText(device)}</Text>
               <View style={styles.deviceStatusRow}>
                 <View
                   style={[
@@ -753,8 +839,8 @@ useEffect(() => {
                       status === 'Movimiento'
                         ? '#38b000'
                         : status === 'Detenido'
-                          ? '#ef4444'
-                          : '#6b7280'
+                        ? '#ef4444'
+                        : '#6b7280'
                     }
                   />
                   <Text
@@ -765,8 +851,8 @@ useEffect(() => {
                           status === 'Movimiento'
                             ? '#38b000'
                             : status === 'Detenido'
-                              ? '#ef4444'
-                              : '#6b7280',
+                            ? '#ef4444'
+                            : '#6b7280',
                       },
                     ]}
                   >
@@ -790,7 +876,7 @@ useEffect(() => {
                   >
                     <MapPin size={15} color="#fff" />
                   </TouchableOpacity>
-                  
+
                   <Text style={styles.lastReportTextGps}>¿Cómo llegar?</Text>
                 </View>
               </View>
@@ -814,8 +900,7 @@ useEffect(() => {
                       disabled={!vehicleData}
                     >
                       <Image
-                                      source={require('../../../../assets/mapacamino.jpg')}
-
+                        source={require('../../../../assets/mapacamino.jpg')}
                         style={styles.streetViewImage}
                         resizeMode="cover"
                       />
@@ -840,7 +925,9 @@ useEffect(() => {
                   </View>
                 </View>
                 <View style={styles.locationInfoRight}>
-                  <Text style={styles.locationTitle} numberOfLines={3}>{address}</Text>
+                  <Text style={styles.locationTitle} numberOfLines={3}>
+                    {address}
+                  </Text>
                   <Text style={styles.locationSubtitle}>Ubicación actual</Text>
                 </View>
               </View>
