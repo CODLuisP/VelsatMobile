@@ -123,6 +123,9 @@ const DetailDeviceGM = () => {
   const mapRef = useRef<MapView>(null);
   const markerRef = useRef<any>(null);
 
+  const [calloutVisible, setCalloutVisible] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(16);
+
   useFocusEffect(
     React.useCallback(() => {
       NavigationBarColor('#ffffff', true);
@@ -319,25 +322,30 @@ const DetailDeviceGM = () => {
   // useEffect para ir directo a la ubicación del vehículo
   useEffect(() => {
     if (mapRef.current && vehicleData) {
-      mapRef.current?.setCamera({
-        center: { latitude, longitude },
-        zoom: 16,
-      });
+      mapRef.current?.animateCamera(
+        {
+          center: { latitude, longitude },
+          zoom: currentZoom,
+        },
+        { duration: 300 },
+      );
     }
   }, [vehicleData, latitude, longitude]);
 
-  // useEffect para mostrar callout inicial
+  // Mostrar callout inicial
   useEffect(() => {
-    if (markerRef.current && vehicleData && !hasShownInitialCallout) {
+    if (vehicleData && !hasShownInitialCallout) {
       setTimeout(() => {
         markerRef.current?.showCallout();
         setHasShownInitialCallout(true);
+        setCalloutVisible(true);
       }, 500);
     }
   }, [vehicleData, hasShownInitialCallout]);
 
+  // Refrescar callout al cambiar datos
   useEffect(() => {
-    if (markerRef.current && vehicleData && hasShownInitialCallout) {
+    if (vehicleData && hasShownInitialCallout && calloutVisible) {
       markerRef.current?.hideCallout();
       setTimeout(() => {
         markerRef.current?.showCallout();
@@ -467,6 +475,19 @@ const DetailDeviceGM = () => {
                 key={`marker-${device}-${heading}`}
                 anchor={{ x: 0.5, y: 0.5 }}
                 coordinate={{ latitude, longitude }}
+                onPress={() => {
+                  if (calloutVisible) {
+                    markerRef.current?.hideCallout();
+                    setCalloutVisible(false);
+                  } else {
+                    markerRef.current?.showCallout();
+                    setCalloutVisible(true);
+                  }
+                }}
+                onCalloutPress={() => {
+                  markerRef.current?.hideCallout();
+                  setCalloutVisible(false);
+                }}
               >
                 <Image
                   source={getDirectionImage(heading, pinType)}
@@ -476,21 +497,114 @@ const DetailDeviceGM = () => {
                   }}
                   resizeMode="contain"
                 />
-                <Callout>
-                  <View style={{ padding: 0, minWidth: 230 }}>
+                <Callout tooltip={true}>
+                  <View
+                    style={{
+                      padding: 12,
+                      minWidth: 230,
+                      backgroundColor: '#fff',
+                      borderRadius: 12,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 4,
+                      elevation: 5,
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => {
+                        markerRef.current?.hideCallout();
+                        setCalloutVisible(false);
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: 6,
+                        right: 10,
+                        zIndex: 10,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: '#999',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        ✕
+                      </Text>
+                    </TouchableOpacity>
+
                     <Text
                       style={{
                         fontWeight: 'bold',
-                        fontSize: 14,
-                        marginBottom: 5,
+                        fontSize: 15,
+                        color: '#e07b00',
+                        textAlign: 'center',
+                        marginBottom: 8,
                       }}
                     >
                       {toUpperCaseText(device)}
                     </Text>
-                    <Text style={{ color: '#666' }}>
-                      {status} - {formatThreeDecimals(speed)} Km/h -{' '}
-                      {obtenerDireccion(heading)}
-                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text style={{ color: '#333', fontWeight: '600' }}>
+                        Estado:
+                      </Text>
+                      <Text
+                        style={{
+                          color: status === 'Detenido' ? '#ef4444' : '#16a34a',
+                          fontWeight: '600',
+                        }}
+                      >
+                        {status}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text style={{ color: '#333', fontWeight: '600' }}>
+                        Velocidad:
+                      </Text>
+                      <Text style={{ color: '#333' }}>
+                        {formatThreeDecimals(speed)} Km/h
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text style={{ color: '#333', fontWeight: '600' }}>
+                        Dirección:
+                      </Text>
+                      <Text style={{ color: '#333' }}>
+                        {obtenerDireccion(heading)}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Text style={{ color: '#333', fontWeight: '600' }}>
+                        Conexión:
+                      </Text>
+                      <Text style={{ color: '#16a34a', fontWeight: '600' }}>
+                        Online
+                      </Text>
+                    </View>
                   </View>
                 </Callout>
               </Marker>
@@ -546,6 +660,68 @@ const DetailDeviceGM = () => {
               ]}
             >
               Híbrido
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={{
+            position: 'absolute',
+            top: insets.top + 65,
+            right: 10,
+            borderRadius: 8,
+            overflow: 'hidden',
+            elevation: 5,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#fff',
+              width: 40,
+              height: 40,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderBottomWidth: 0.5,
+              borderBottomColor: '#ccc',
+            }}
+            onPress={() => {
+              const newZoom = Math.min(currentZoom + 1, 20);
+              setCurrentZoom(newZoom);
+              mapRef.current?.animateCamera(
+                { zoom: newZoom },
+                { duration: 300 },
+              );
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={{ fontSize: 22, color: '#333', fontWeight: '400' }}>
+              +
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#fff',
+              width: 40,
+              height: 40,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => {
+              const newZoom = Math.max(currentZoom - 1, 3);
+              setCurrentZoom(newZoom);
+              mapRef.current?.animateCamera(
+                { zoom: newZoom },
+                { duration: 300 },
+              );
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={{ fontSize: 22, color: '#333', fontWeight: '400' }}>
+              −
             </Text>
           </TouchableOpacity>
         </View>
