@@ -71,16 +71,16 @@ const Devices = () => {
     status: '',
     location: '',
   });
-  const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
 
-const handleDetailDevice = (device: Device) => {
-  const screenName = Platform.OS === 'ios' 
-  ? 'DetailDevice'  
-      : user?.username === 'rcmachacuay' || user?.username === 'vvwalter'
-    ? 'DetailDeviceGM' 
-    : 'DetailDevice';
-  navigation.navigate(screenName, { device: device.name });
-};
+  const handleDetailDevice = (device: Device) => {
+    const screenName =
+      Platform.OS === 'ios'
+        ? 'DetailDevice'
+        : user?.username === 'rcmachacuay' || user?.username === 'vvwalter' || user?.username === 'huaynatepeca'
+        ? 'DetailDeviceGM'
+        : 'DetailDevice';
+    navigation.navigate(screenName, { device: device.name });
+  };
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -375,15 +375,12 @@ const handleDetailDevice = (device: Device) => {
   const activeFiltersCount = getActiveFiltersCount();
 
   return (
-    
-    <View style={[styles.container, { paddingBottom: bottomSpace  }]}>
-
-
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       {/* Header */}
       <LinearGradient
         colors={['#05194fff', '#05194fff', '#18223dff']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={[styles.header, { paddingTop: topSpace }]}
       >
         <View style={styles.headerTop}>
