@@ -57,13 +57,16 @@ const SimpleMarker = React.memo(
 );
 
 // Función para simplificar la ruta usando el algoritmo Ramer-Douglas-Peucker
-const simplifyRoute = (points: RoutePoint[], tolerance: number = 0.0001): RoutePoint[] => {
+const simplifyRoute = (
+  points: RoutePoint[],
+  tolerance: number = 0.0001,
+): RoutePoint[] => {
   if (points.length <= 2) return points;
 
   const getPerpendicularDistance = (
     point: RoutePoint,
     lineStart: RoutePoint,
-    lineEnd: RoutePoint
+    lineEnd: RoutePoint,
   ): number => {
     const dx = lineEnd.longitude - lineStart.longitude;
     const dy = lineEnd.latitude - lineStart.latitude;
@@ -89,7 +92,7 @@ const simplifyRoute = (points: RoutePoint[], tolerance: number = 0.0001): RouteP
     first: number,
     last: number,
     tolerance: number,
-    simplified: RoutePoint[]
+    simplified: RoutePoint[],
   ) => {
     let maxDistance = 0;
     let index = 0;
@@ -98,7 +101,7 @@ const simplifyRoute = (points: RoutePoint[], tolerance: number = 0.0001): RouteP
       const distance = getPerpendicularDistance(
         points[i],
         points[first],
-        points[last]
+        points[last],
       );
       if (distance > maxDistance) {
         maxDistance = distance;
@@ -459,8 +462,8 @@ const TourReport = () => {
           }).setView([firstPoint.latitude, firstPoint.longitude], 15);
           
           // Tiles optimizados
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-            maxZoom: 19,
+          L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { 
+            maxZoom: 20,
             updateWhenIdle: true,
             updateWhenZooming: false,
             keepBuffer: 2,
@@ -939,7 +942,6 @@ const TourReport = () => {
                       <Text style={styles.sidebarText}>
                         Total: {routeData.length} puntos
                       </Text>
-                   
                     </View>
                   )}
                 </ScrollView>

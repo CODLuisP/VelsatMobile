@@ -65,7 +65,7 @@ const Reports: React.FC = () => {
       NavigationBarColor('#ffffff', true);
     }, []),
   );
-  
+
   const [allUnitsEnabled, setAllUnitsEnabled] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
   const [selectedReport, setSelectedReport] = useState<number>(0);
@@ -80,10 +80,15 @@ const Reports: React.FC = () => {
   const [tempStartDate, setTempStartDate] = useState<Date>(new Date());
   const [tempEndDate, setTempEndDate] = useState<Date>(new Date());
 
-  const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
+  const [showStartDatePicker, setShowStartDatePicker] =
+    useState<boolean>(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
-  const [currentPickerMode, setCurrentPickerMode] = useState<'date' | 'time'>('date');
-  const [currentPickerType, setCurrentPickerType] = useState<'start' | 'end'>('start');
+  const [currentPickerMode, setCurrentPickerMode] = useState<'date' | 'time'>(
+    'date',
+  );
+  const [currentPickerType, setCurrentPickerType] = useState<'start' | 'end'>(
+    'start',
+  );
 
   const [startDateSelected, setStartDateSelected] = useState<boolean>(false);
   const [endDateSelected, setEndDateSelected] = useState<boolean>(false);
@@ -118,7 +123,6 @@ const Reports: React.FC = () => {
       description: 'Detalle de paradas realizadas',
       gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991429/paradas_kdfusl.jpg',
-
     },
     {
       id: 2,
@@ -127,7 +131,6 @@ const Reports: React.FC = () => {
       description: 'Control de excesos de velocidad',
       gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991360/rspeed_pskxjg.jpg',
-
     },
     {
       id: 3,
@@ -136,7 +139,6 @@ const Reports: React.FC = () => {
       description: 'Distancias recorridas por unidad(es)',
       gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991440/kilometraje_bbimzv.jpg',
-
     },
     {
       id: 4,
@@ -145,7 +147,6 @@ const Reports: React.FC = () => {
       description: 'Rutas y trayectos completos',
       gradient: ['#ffffffff', '#ffffffff'],
       eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991360/rrecorrido_aavpzm.jpg',
-
     },
   ];
 
@@ -218,7 +219,11 @@ const Reports: React.FC = () => {
 
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) {
-      handleShowAlert('Error', 'Se necesitan permisos de almacenamiento', '#e36414');
+      handleShowAlert(
+        'Error',
+        'Se necesitan permisos de almacenamiento',
+        '#e36414',
+      );
       return;
     }
 
@@ -238,7 +243,9 @@ const Reports: React.FC = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
-      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedStartDate = encodeURIComponent(
+        formatDateForAPI(startDate),
+      );
       const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
       let apiEndpoint = '';
@@ -284,9 +291,9 @@ const Reports: React.FC = () => {
         url = `${server}/api/Reporting/${apiEndpoint}/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
       }
 
-
       const { dirs } = RNFetchBlob.fs;
-      const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+      const downloadDir =
+        Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
       const fileName = `reporte_${reportName}_${plate}_${new Date().getTime()}.xlsx`;
       const filePath = `${downloadDir}/${fileName}`;
 
@@ -302,7 +309,6 @@ const Reports: React.FC = () => {
         },
       }).fetch('GET', url);
 
-
       if (Platform.OS === 'ios') {
         await Share.open({
           url: `file://${filePath}`,
@@ -317,7 +323,7 @@ const Reports: React.FC = () => {
         handleShowAlert(
           'Descarga exitosa',
           'Archivo guardado en Descargas',
-          '#4CAF50' // Verde para éxito
+          '#4CAF50', // Verde para éxito
         );
       }
     } catch (error) {
@@ -325,7 +331,7 @@ const Reports: React.FC = () => {
       handleShowAlert(
         'Error',
         'No se pudo descargar el archivo Excel',
-        '#e36414' // Rojo para error
+        '#e36414', // Rojo para error
       );
     }
   };
@@ -547,7 +553,7 @@ const Reports: React.FC = () => {
             buttonNeutral: 'Preguntar después',
             buttonNegative: 'Cancelar',
             buttonPositive: 'OK',
-          }
+          },
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (err) {
@@ -589,8 +595,8 @@ const Reports: React.FC = () => {
     const minimumDate = isStartPicker
       ? new Date(2020, 0, 1)
       : startDateSelected
-        ? startDate
-        : new Date(2020, 0, 1);
+      ? startDate
+      : new Date(2020, 0, 1);
 
     if (Platform.OS === 'ios') {
       return (
@@ -651,20 +657,22 @@ const Reports: React.FC = () => {
 
   const isSpeedOptionEnabled = () => selectedReport === 2;
   const isAllUnitsOptionEnabled = () => selectedReport === 3;
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
-   
-        <View style={[styles.container, { paddingBottom: bottomSpace }]}>
-    
-  <LinearGradient
+    <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+      <LinearGradient
         colors={['#05194fff', '#05194fff', '#18223dff']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={[styles.header, { paddingTop: topSpace }]}
-      >        
+      >
         <View style={styles.headerTop}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleGoBack}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Seleccione tipo de reporte</Text>
@@ -675,7 +683,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           selectedReportId={selectedReport}
           onSelectReport={handleSelectReport}
         />
- </LinearGradient>
+      </LinearGradient>
 
       <KeyboardAwareScrollView
         style={styles.content}
@@ -812,20 +820,26 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
             style={[
               styles.excelButton,
               downloadingExcel && { opacity: 0.7 },
-              selectedReport === 4 && { opacity: 0.7, backgroundColor: '#023047' },
+              selectedReport === 4 && {
+                opacity: 0.7,
+                backgroundColor: '#023047',
+              },
             ]}
             onPress={handleDownloadExcel}
             disabled={downloadingExcel || selectedReport === 4}
             activeOpacity={0.8}
-            
           >
             {downloadingExcel ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              >
                 <ActivityIndicator size="small" color="#fff" />
                 <Text style={styles.buttonText}>Descargando...</Text>
               </View>
             ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              >
                 <Image
                   source={require('../../../../assets/excel.png')}
                   style={{ width: 20, height: 20 }}
@@ -840,7 +854,6 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
             style={styles.showButton}
             onPress={handleShowReport}
             activeOpacity={0.8}
-
           >
             <Text style={styles.buttonText}>Mostrar</Text>
           </TouchableOpacity>
@@ -855,7 +868,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
         onClose={handleCloseUnitModal}
         onSelectUnit={handleSelectUnit}
       />
-      
+
       <ModalAlert
         isVisible={modalAlertVisible}
         onClose={() => setModalAlertVisible(false)}
