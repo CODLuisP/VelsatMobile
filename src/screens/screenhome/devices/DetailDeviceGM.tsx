@@ -125,6 +125,7 @@ const DetailDeviceGM = () => {
 
   const [calloutVisible, setCalloutVisible] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(16);
+  const [tracksViewChanges, setTracksViewChanges] = useState(true);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -353,6 +354,12 @@ const DetailDeviceGM = () => {
     }
   }, [speed, heading, status]);
 
+  useEffect(() => {
+    setTracksViewChanges(true);
+    const t = setTimeout(() => setTracksViewChanges(false), 500);
+    return () => clearTimeout(t);
+  }, [heading, latitude, longitude]);
+
   const renderMap = () => {
     const imageData = getDirectionImageData(heading);
 
@@ -472,9 +479,10 @@ const DetailDeviceGM = () => {
 
               <Marker
                 ref={markerRef}
-                key={`marker-${device}-${heading}`}
+                key={`marker-${device}`}
                 anchor={{ x: 0.5, y: 0.5 }}
                 coordinate={{ latitude, longitude }}
+                tracksViewChanges={true}
                 onPress={() => {
                   if (calloutVisible) {
                     markerRef.current?.hideCallout();
@@ -496,7 +504,9 @@ const DetailDeviceGM = () => {
                     height: markerImageSize[1],
                   }}
                   resizeMode="contain"
+                  onLoad={() => setTracksViewChanges(false)} // deja de trackear tras cargar
                 />
+
                 <Callout tooltip={true}>
                   <View
                     style={{
