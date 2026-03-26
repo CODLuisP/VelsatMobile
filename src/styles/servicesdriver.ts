@@ -5,23 +5,22 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    marginTop: Platform.OS === 'ios' ? -60 : 0,
-    height: Platform.OS === 'ios' ? 200 : 110,
+    marginTop: Platform.OS === 'ios' ? -70 : 0,
+    height: Platform.OS === 'ios' ? 210 : 110,
  
   },
-   headerTop: {
+  headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    marginTop: 10,
+    marginTop: -5,
   },
-  backButton: {
+   backButton: {
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-        marginLeft: 15
-
-    
   },
+  
   headerMainTitle: {
     fontSize: 18,
     fontWeight: 'bold',

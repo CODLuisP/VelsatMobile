@@ -3,9 +3,9 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl, // 👈 Agregar esto
+  RefreshControl,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react'; // 👈 Agregar useCallback
+import React, {  useState, useCallback } from 'react';
 import {
   ChevronLeft,
   Users,
@@ -264,20 +264,25 @@ const getServiceStatus = (fechaservicio: string, status: string) => {
   const topSpace = insets.top + 5;
 
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
+
+
+     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
+       <LinearGradient
+         colors={['#05194fff', '#05194fff', '#18223dff']}
+         start={{ x: 0, y: 0 }}
+         end={{ x: 0, y: 1 }}
+         style={[styles.header, { paddingTop: topSpace }]}
+       >
+
         <View style={styles.headerTop}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Servicios programados</Text>
         </View>
-      </View>
+   
+         </LinearGradient>
+   
 
       <ScrollView
         style={styles.contentList}
@@ -429,7 +434,7 @@ const getServiceStatus = (fechaservicio: string, status: string) => {
           )}
         </View>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
