@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { AlertCircle } from 'lucide-react-native';
 import { Text } from './ScaledComponents';
 
 interface ModalConfirmProps {
@@ -14,7 +15,7 @@ interface ModalConfirmProps {
   onConfirm: () => void;
   title: string;
   message: string;
-  color?: string; // Color solo para el header
+  color?: string;
   confirmText?: string;
   cancelText?: string;
 }
@@ -25,7 +26,7 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
   onConfirm,
   title,
   message,
-  color = '#FFA726', // color del header (naranja)
+  color = '#FFA726',
   confirmText = 'Aceptar',
   cancelText = 'Cancelar',
 }) => {
@@ -34,35 +35,41 @@ const ModalConfirm: React.FC<ModalConfirmProps> = ({
       visible={isVisible}
       transparent={true}
       animationType="fade"
+      statusBarTranslucent={true}
       onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.container}>
-          {/* Header con color */}
-          <View style={[styles.header, { backgroundColor: color }]}>
-            <Text style={styles.title}>{title}</Text>
+
+          {/* Ícono centrado */}
+          <View style={styles.iconWrapper}>
+            <View style={[styles.iconCircle, { backgroundColor: color + '22' }]}>
+              <AlertCircle size={36} color={color} strokeWidth={2} />
+            </View>
           </View>
 
-          {/* Mensaje */}
+          {/* Título y mensaje */}
           <View style={styles.body}>
+            <Text style={styles.title}>{title}</Text>
             <Text style={styles.message}>{message}</Text>
           </View>
 
-          {/* Botones blancos */}
+          {/* Botones en la misma línea */}
           <View style={styles.footer}>
             <TouchableOpacity
-              style={[styles.button, styles.whiteButton]}
+              style={styles.btnCancel}
               onPress={onClose}
               activeOpacity={0.7}>
-              <Text style={styles.blackText}>{cancelText}</Text>
+              <Text style={styles.btnCancelText}>{cancelText}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.button, styles.whiteButton]}
+              style={[styles.btnConfirm, { backgroundColor: color }]}
               onPress={onConfirm}
-              activeOpacity={0.7}>
-              <Text style={styles.blackText}>{confirmText}</Text>
+              activeOpacity={0.8}>
+              <Text style={styles.btnConfirmText}>{confirmText}</Text>
             </TouchableOpacity>
           </View>
+
         </View>
       </View>
     </Modal>
@@ -74,62 +81,81 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   container: {
-    width: width * 0.85,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    width: width * 0.82,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
     overflow: 'hidden',
-    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.2,
+    shadowRadius: 32,
+    elevation: 16,
+    paddingBottom: 20,
   },
-  header: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+  iconWrapper: {
     alignItems: 'center',
+    paddingTop: 32,
+    paddingBottom: 8,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   body: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#111827',
+    textAlign: 'center',
+    letterSpacing: 0.2,
   },
   message: {
-    fontSize: 16,
-    color: '#333333',
+    fontSize: 13.5,
+    color: '#6b7280',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 21,
   },
   footer: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    gap: 10,
   },
-  button: {
+  btnConfirm: {
     flex: 1,
-    paddingVertical: 14,
+    borderRadius: 10,
+    paddingVertical: 13,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  whiteButton: {
-    backgroundColor: '#fafafaff',
-    borderRightWidth: 1,
-    borderRightColor: '#E0E0E0',
+  btnConfirmText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
   },
-  blackText: {
-    fontSize: 16,
+  btnCancel: {
+    flex: 1,
+    borderRadius: 10,
+    paddingVertical: 13,
+    alignItems: 'center',
+    backgroundColor: '#ef4444',
+  },
+  btnCancelText: {
+    color: '#ffffff',
+    fontSize: 13,
     fontWeight: '600',
-    color: '#5c5c5cff',
   },
 });
 
