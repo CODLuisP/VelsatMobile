@@ -93,7 +93,7 @@ header: {
     textAlign: 'center',
   },
   infoText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#303030ff',
     flex: 1,
   },
