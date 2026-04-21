@@ -10,8 +10,10 @@ import {
   LogIn,
   Scan,
   KeyRound,
+  AlertCircle,
+  X,
 } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -22,6 +24,7 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -33,6 +36,11 @@ import Animated, {
   Easing,
   interpolate,
   runOnJS,
+  FadeIn,
+  FadeOut,
+  SlideInRight,
+  SlideOutRight,
+  Layout,
 } from 'react-native-reanimated';
 import { styles } from '../../styles/login';
 import { useFocusEffect } from '@react-navigation/native';
@@ -49,6 +57,143 @@ import { Text, TextInput } from '../ScaledComponents';
 
 const { width, height } = Dimensions.get('window');
 
+// ─── Componente de error inline ───────────────────────────────────────────────
+interface InlineErrorProps {
+  message: string;
+  onDismiss: () => void;
+}
+
+const getErrorTitle = (message: string): string => {
+  const m = message.toLowerCase();
+  if (m.includes('usuario') && m.includes('ingresa')) return 'Campo requerido';
+  if (m.includes('contraseña') && m.includes('ingresa')) return 'Campo requerido';
+  if (m.includes('incorrectos') || m.includes('inválida')) return 'Acceso denegado';
+  if (m.includes('conexión') || m.includes('internet') || m.includes('red')) return 'Sin conexión';
+  if (m.includes('servidor')) return 'Error del servidor';
+  if (m.includes('biométric') || m.includes('pin') || m.includes('identidad')) return 'Autenticación fallida';
+  return 'Atención';
+};
+
+const InlineError: React.FC<InlineErrorProps> = ({ message, onDismiss }) => {
+  const progressWidth = useSharedValue(100);
+  const containerOpacity = useSharedValue(0);
+  const containerTranslateY = useSharedValue(8);
+
+  useEffect(() => {
+    containerOpacity.value = withTiming(1, { duration: 250, easing: Easing.out(Easing.cubic) });
+    containerTranslateY.value = withTiming(0, { duration: 280, easing: Easing.out(Easing.back(1.4)) });
+    progressWidth.value = withTiming(0, { duration: 5000, easing: Easing.linear });
+  }, []);
+
+  const containerStyle = useAnimatedStyle(() => ({
+    opacity: containerOpacity.value,
+    transform: [{ translateY: containerTranslateY.value }],
+  }));
+
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progressWidth.value}%`,
+  }));
+
+  const title = getErrorTitle(message);
+
+  return (
+    <Animated.View style={[errorStyles.wrapper, containerStyle]}>
+      <View style={errorStyles.container}>
+        {/* Ícono circular */}
+        <View style={errorStyles.iconCircle}>
+          <AlertCircle color="#f87171" size={16} strokeWidth={2} />
+        </View>
+
+        {/* Texto */}
+        <View style={errorStyles.textBlock}>
+          <Text style={errorStyles.title}>{title}</Text>
+          <Text style={errorStyles.message} numberOfLines={2}>
+            {message}
+          </Text>
+        </View>
+
+        {/* Botón cerrar */}
+        <TouchableOpacity
+          onPress={onDismiss}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={errorStyles.closeBtn}
+        >
+          <X color="rgba(255,255,255,0.3)" size={11} strokeWidth={2.5} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Barra de progreso */}
+      <View style={errorStyles.progressTrack}>
+        <Animated.View style={[errorStyles.progressBar, progressStyle]} />
+      </View>
+    </Animated.View>
+  );
+};
+
+const errorStyles = StyleSheet.create({
+  wrapper: {
+    marginBottom: 14,
+    borderRadius: 14,
+    overflow: 'hidden',
+
+    backgroundColor: 'rgba(226, 75, 74, 0.09)',
+  },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingTop: 12,
+    paddingBottom: 12,
+    paddingHorizontal: 14,
+    gap: 10,
+  },
+  iconCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(226, 75, 74, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  textBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  title: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#d62828',
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+  },
+  message: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#d62828',
+    lineHeight: 18,
+  },
+  closeBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    marginTop: 3,
+  },
+  progressTrack: {
+    height: 2,
+    backgroundColor: 'rgba(226, 75, 74, 0.15)',
+  },
+  progressBar: {
+    height: 2,
+    backgroundColor: '#e24b4a',
+  },
+});
+// ──────────────────────────────────────────────────────────────────────────────
+
 const Login = () => {
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
@@ -58,8 +203,30 @@ const Login = () => {
   const buttonScale = useSharedValue(1);
   const loadingRotation = useSharedValue(0);
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalConfig, setModalConfig] = useState({ title: '', message: '' });
+  // ── Estado de error unificado (reemplaza modalVisible + modalConfig) ──
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const errorTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showError = (message: string) => {
+    // Limpiar timeout anterior si existía
+    if (errorTimeout.current) clearTimeout(errorTimeout.current);
+    setErrorMsg(message);
+    // Auto-dismiss tras 5 segundos
+    errorTimeout.current = setTimeout(() => setErrorMsg(null), 5000);
+  };
+
+  const dismissError = () => {
+    if (errorTimeout.current) clearTimeout(errorTimeout.current);
+    setErrorMsg(null);
+  };
+
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+    };
+  }, []);
+  // ─────────────────────────────────────────────────────────────────────
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -119,12 +286,7 @@ const Login = () => {
       if (success) {
         // Autenticación exitosa
       } else {
-        setModalConfig({
-          title: 'Autenticación fallida',
-          message:
-            'No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.',
-        });
-        setModalVisible(true);
+        showError('No se pudo verificar tu identidad. Intenta de nuevo o usa tu contraseña.');
         setIsLoggingIn(false);
         setLoading(false);
       }
@@ -135,12 +297,7 @@ const Login = () => {
         return;
       }
 
-      setModalConfig({
-        title: 'Error de Autenticación',
-        message:
-          'Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.',
-      });
-      setModalVisible(true);
+      showError('Hubo un problema con la autenticación biométrica. Intenta con tu usuario y contraseña.');
       setIsLoggingIn(false);
       setLoading(false);
     }
@@ -156,21 +313,12 @@ const Login = () => {
       if (success) {
         // Autenticación exitosa
       } else {
-        setModalConfig({
-          title: 'Autenticación fallida',
-          message: 'No se pudo autenticar con PIN. Intenta con tu contraseña.',
-        });
-        setModalVisible(true);
+        showError('No se pudo autenticar con PIN. Intenta con tu contraseña.');
         setIsLoggingIn(false);
         setLoading(false);
       }
     } catch (error: any) {
-      setModalConfig({
-        title: 'Error de Autenticación',
-        message:
-          'Hubo un problema con el PIN. Intenta con tu usuario y contraseña.',
-      });
-      setModalVisible(true);
+      showError('Hubo un problema con el PIN. Intenta con tu usuario y contraseña.');
       setIsLoggingIn(false);
       setLoading(false);
     }
@@ -221,32 +369,23 @@ const Login = () => {
         // Marcador abierto
       })
       .catch(error => {
-        setModalConfig({
-          title: 'No se pudo abrir el marcador',
-          message: `Marca manualmente este número:\n${phoneNumber}`,
-        });
-        setModalVisible(true);
+        showError(`No se pudo abrir el marcador. Marca manualmente: ${phoneNumber}`);
       });
   };
 
   const handleLogin = async () => {
     if (!usuario.trim()) {
-      setModalConfig({
-        title: 'Error',
-        message: 'Por favor ingresa tu usuario',
-      });
-      setModalVisible(true);
+      showError('Por favor ingresa tu usuario');
       return;
     }
 
     if (!password.trim()) {
-      setModalConfig({
-        title: 'Error',
-        message: 'Por favor ingresa tu contraseña',
-      });
-      setModalVisible(true);
+      showError('Por favor ingresa tu contraseña');
       return;
     }
+
+    // Limpiar error anterior al intentar login
+    dismissError();
 
     try {
       setIsLoggingIn(true);
@@ -276,12 +415,7 @@ const Login = () => {
       const serverData = serverResponse.data;
 
       if (!serverData.servidor) {
-        setModalConfig({
-          title: 'Error',
-          message: 'No se pudo obtener la configuración del servidor',
-        });
-        setModalVisible(true);
-
+        showError('No se pudo obtener la configuración del servidor');
         setIsLoggingIn(false);
         setLoading(false);
         return;
@@ -324,11 +458,7 @@ const Login = () => {
 
         setUser(userObj);
       } else {
-        setModalConfig({
-          title: 'Error',
-          message: 'Respuesta de login inválida',
-        });
-        setModalVisible(true);
+        showError('Respuesta de login inválida');
         setIsLoggingIn(false);
         setLoading(false);
       }
@@ -346,17 +476,13 @@ const Login = () => {
             errorMessage = `Error del servidor (${status})`;
           }
         } else if (error.request) {
-          errorMessage = 'Sin conexión a internet. Verifica tu conexión';
+          errorMessage = 'Sin conexión a internet. Verifica tu red';
         } else {
           errorMessage = 'Error de configuración';
         }
       }
 
-      setModalConfig({
-        title: 'Error de Login',
-        message: errorMessage,
-      });
-      setModalVisible(true);
+      showError(errorMessage);
       setIsLoggingIn(false);
       setLoading(false);
     }
@@ -453,24 +579,21 @@ const Login = () => {
     <>
       <View style={styles.mainContent}>
         {/* Background Section with GPS image */}
-        <LinearGradient       
-        
-        colors={['#03152fff', '#051541ff', '#042356ff']}
-              start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-       style={styles.topBackgroundSection}>
+        <LinearGradient
+          colors={['#03152fff', '#051541ff', '#042356ff']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.topBackgroundSection}>
           {/* GPS Background Image */}
           <Image
-              source={require('../../../assets/fondovel.jpg')}
-
+            source={require('../../../assets/fondovel.jpg')}
             style={styles.gpsBackgroundImage}
             resizeMode="cover"
           />
-        
+
           {/* Welcome Header */}
           <View style={styles.headerSection}>
             <Text style={styles.welcomeTitles}>Bienvenido</Text>
-
             <Text style={styles.welcomeSubtitle}>
               Inicia sesión para continuar
             </Text>
@@ -488,7 +611,7 @@ const Login = () => {
 
           {/* Biometric/PIN buttons inside background section */}
           {showPinOption && !showBiometricOption && (
-            <View style={{ marginBottom: 20 , paddingHorizontal: 48 }}>
+            <View style={{ marginBottom: 20, paddingHorizontal: 48 }}>
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handlePinLogin}
@@ -505,12 +628,11 @@ const Login = () => {
           )}
 
           {showBiometricOption && (
-            <View style={{ marginBottom: 20 , paddingHorizontal: 48 }}>
+            <View style={{ marginBottom: 20, paddingHorizontal: 48 }}>
               <TouchableOpacity
                 style={styles.biometricButton}
                 onPress={handleBiometricLogin}
-                                activeOpacity={0.7}
-
+                activeOpacity={0.7}
               >
                 <View style={styles.biometricButtonContent}>
                   {biometric.type === 'FaceID' && (
@@ -530,7 +652,6 @@ const Login = () => {
         </LinearGradient>
 
         {/* Form Section */}
-
         <Animated.View style={[styles.formContainer, formStyle]}>
           {/* Or Divider - only show if biometric/pin is available */}
           {(showPinOption || showBiometricOption) && (
@@ -540,7 +661,6 @@ const Login = () => {
           )}
 
           {/* Input Fields */}
-
           <View style={styles.mainContentInputs}>
             <View style={styles.inputWrapper}>
               <Text style={styles.inputLabel}>Usuario</Text>
@@ -550,7 +670,10 @@ const Login = () => {
                   placeholder=""
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   value={usuario}
-                  onChangeText={setUsuario}
+                  onChangeText={text => {
+                    setUsuario(text);
+                    if (errorMsg) dismissError();
+                  }}
                   autoCapitalize="none"
                 />
               </View>
@@ -564,7 +687,10 @@ const Login = () => {
                   placeholder=""
                   placeholderTextColor="rgba(255,255,255,0.4)"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={text => {
+                    setPassword(text);
+                    if (errorMsg) dismissError();
+                  }}
                   secureTextEntry={!showPassword}
                 />
                 <TouchableOpacity
@@ -580,6 +706,11 @@ const Login = () => {
               </View>
             </View>
           </View>
+
+          {/* ── Error inline ── */}
+          {errorMsg && (
+            <InlineError message={errorMsg} onDismiss={dismissError} />
+          )}
 
           {/* Sign In Button */}
           <TouchableOpacity
@@ -638,14 +769,8 @@ const Login = () => {
         </Animated.View>
       </View>
 
-      <ModalAlert
-        isVisible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        title={modalConfig.title}
-        message={modalConfig.message}
-          isError={true}
-
-      />
+      {/* ModalAlert ya NO se usa para errores de login/validación */}
+      {/* Si necesitas usarlo para otro propósito en el futuro, déjalo aquí */}
     </>
   );
 };
