@@ -93,6 +93,13 @@ export const generateLeafletHTML = ({
             right: 20px !important;
             top: 90px !important;
         }
+.leaflet-popup-content-wrapper {
+    padding: 10px !important;
+}
+.leaflet-popup-content {
+    margin: 0 !important;
+}
+
     </style>
 </head>
 <body>
@@ -137,6 +144,7 @@ export const generateLeafletHTML = ({
         };
         
         var marker = null;
+var userClosedPopup = false;
 
         // Función para obtener dirección cardinal
         function obtenerDireccion(heading) {
@@ -211,31 +219,14 @@ export const generateLeafletHTML = ({
             }
 
             var statusColor = statusText === 'Movimiento' ? '#38b000' : '#ef4444';
+            
+        var popupContent = \`
+         <div style="font-family: Arial, sans-serif; text-align: left; white-space: nowrap; min-width: 190px;">
 
-            var popupContent = \`
-                <div style="text-align: center; font-family: Arial, sans-serif; min-width: 200px;">
-                    <h3 style="margin: 8px 0; color: #f97316; font-size: 14.5px;text-transform: uppercase;font-weight: 800;">\${deviceName}</h3>
-                    <div style="display: flex; flex-direction: column; gap: 3px; text-align: left;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Estado:</span>
-                            <span style="color: \${statusColor}; font-weight: 600;">\${statusText}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Velocidad:</span>
-                            <span style="color: #6b7280;">\${speed.toFixed(0)} Km/h</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Dirección:</span>
-                            <span style="color: #6b7280;">\${obtenerDireccion(heading)}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-weight: 600; color: #374151;">Conexión:</span>
-                            <span style="color: #38b000; font-weight: 600;">Online</span>
-                        </div>
-                  
-                    </div>
-                </div>
-            \`;
+            <div style="font-weight: 800; font-size: 13px; color: #000; text-transform: uppercase;">\${deviceName}</div>
+              <div style="font-size: 12px; color: #555;">\${statusText} · \${speed.toFixed(0)} Km/h · \${obtenerDireccion(heading)}</div>
+         </div>
+        \`;
 
             // Si es la primera vez, crear el marcador Y el radar como capa separada
             if (marker === null) {
@@ -300,12 +291,20 @@ export const generateLeafletHTML = ({
                     autoPan: false
                 }).addTo(map);
                 
+         
                 marker.bindPopup(popupContent, {
-                    autoPan: false,
-                    closeButton: true,
-                    autoClose: false,
-                    closeOnClick: false
-                }).openPopup();
+    autoPan: false,
+    closeButton: true,
+    autoClose: false,
+    closeOnClick: false
+}).openPopup();
+
+marker.on('popupclose', function() {
+    userClosedPopup = true;
+});
+marker.on('popupopen', function() {
+    userClosedPopup = false;
+});
                 
                 map.setView([lat, lng], 16);
             } else {
@@ -340,12 +339,12 @@ export const generateLeafletHTML = ({
                     window.radarLayer._update();
                 }
                 
-                marker.getPopup().setContent(popupContent);
-                map.setView([lat, lng], map.getZoom());
-                
-                if (!marker.isPopupOpen()) {
-                    marker.openPopup();
-                }
+               marker.getPopup().setContent(popupContent);
+map.setView([lat, lng], map.getZoom());
+
+if (!userClosedPopup && !marker.isPopupOpen()) {
+    marker.openPopup();
+}
             }
         };
 
