@@ -212,6 +212,8 @@ const DetailDevice = () => {
 
       if (data?.vehiculo) {
         setVehicleData(data.vehiculo);
+        console.log('GPS Timestamp raw:', data.vehiculo.lastGPSTimestamp);
+        console.log('GPS Fecha:', new Date(data.vehiculo.lastGPSTimestamp));
         setConnectionStatus('connected');
       } else {
         setConnectionStatus('error');
@@ -721,6 +723,29 @@ const DetailDevice = () => {
 
   const connectionDisplay = getConnectionDisplay();
 
+  // Agrega esta función antes del return
+  const getDisplayTime = () => {
+    if (!vehicleData) return formatDateTime(currentTime);
+
+    const now = currentTime.getTime();
+    const gpsTime = vehicleData.lastGPSTimestamp;
+    const diffMinutes = (now - gpsTime) / 1000 / 60;
+
+    if (speed > 5 && diffMinutes > 15) {
+      // Mostrar lastGPSTimestamp en formato legible
+      const gpsDate = new Date(gpsTime);
+      const day = String(gpsDate.getDate()).padStart(2, '0');
+      const month = String(gpsDate.getMonth() + 1).padStart(2, '0');
+      const year = gpsDate.getFullYear();
+      const hours = String(gpsDate.getHours()).padStart(2, '0');
+      const minutes = String(gpsDate.getMinutes()).padStart(2, '0');
+      const seconds = String(gpsDate.getSeconds()).padStart(2, '0');
+      return `Fecha: ${day}/${month}/${year} Hora: ${hours}:${minutes}:${seconds}`;
+    }
+
+    return formatDateTime(currentTime);
+  };
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace - 2 }]}>
       <View style={styles.mapContainer}>
@@ -884,9 +909,7 @@ const DetailDevice = () => {
               <View style={styles.dateContainer}>
                 <Clock size={14} color="#6b7280" />
                 <View>
-                  <Text style={styles.dateText}>
-                    {formatDateTime(currentTime)}
-                  </Text>
+                  <Text style={styles.dateText}>{getDisplayTime()}</Text>
                   <Text style={styles.lastReportText}>Último reporte</Text>
                 </View>
               </View>
