@@ -480,7 +480,7 @@ const DetailDeviceGM = () => {
               <Marker
                 ref={markerRef}
                 key={`marker-${device}`}
-                anchor={{ x: 0.5, y: 0.5 }}
+                anchor={{ x: 0.5, y: 0.2 }}
                 coordinate={{ latitude, longitude }}
                 tracksViewChanges={true}
                 onPress={() => {
@@ -510,111 +510,63 @@ const DetailDeviceGM = () => {
                 <Callout tooltip={true}>
                   <View
                     style={{
-                      padding: 12,
-                      minWidth: 230,
+                      marginTop: 50,
+                      paddingHorizontal: 14,
+                      paddingVertical: 10,
+                      minWidth: 220,
                       backgroundColor: '#fff',
-                      borderRadius: 12,
+                      borderRadius: 10,
                       shadowColor: '#000',
                       shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.25,
+                      shadowOpacity: 0.2,
                       shadowRadius: 4,
                       elevation: 5,
                     }}
                   >
-                    <TouchableOpacity
-                      onPress={() => {
-                        markerRef.current?.hideCallout();
-                        setCalloutVisible(false);
-                      }}
+                    {/* Fila título + X */}
+                    <View
                       style={{
-                        position: 'absolute',
-                        top: 6,
-                        right: 10,
-                        zIndex: 10,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: 4,
                       }}
                     >
                       <Text
                         style={{
-                          fontSize: 12,
-                          color: '#999',
                           fontWeight: 'bold',
+                          fontSize: 15,
+                          color: '#111',
+                          flex: 1,
                         }}
                       >
-                        ✕
+                        {toUpperCaseText(device)}
                       </Text>
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          markerRef.current?.hideCallout();
+                          setCalloutVisible(false);
+                        }}
+                        style={{ marginLeft: 10, padding: 2 }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            color: '#aaa',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {'✕'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
 
-                    <Text
-                      style={{
-                        fontWeight: 'bold',
-                        fontSize: 15,
-                        color: '#e07b00',
-                        textAlign: 'center',
-                        marginBottom: 8,
-                      }}
-                    >
-                      {toUpperCaseText(device)}
+                    {/* Info con puntos separadores */}
+                    <Text style={{ color: '#666', fontSize: 13 }}>
+                      {`${status} · ${formatThreeDecimals(
+                        speed,
+                      )} Km/h · ${obtenerDireccion(heading)}`}
                     </Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Estado:
-                      </Text>
-                      <Text
-                        style={{
-                          color: status === 'Detenido' ? '#ef4444' : '#16a34a',
-                          fontWeight: '600',
-                        }}
-                      >
-                        {status}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Velocidad:
-                      </Text>
-                      <Text style={{ color: '#333' }}>
-                        {formatThreeDecimals(speed)} Km/h
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Dirección:
-                      </Text>
-                      <Text style={{ color: '#333' }}>
-                        {obtenerDireccion(heading)}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Conexión:
-                      </Text>
-                      <Text style={{ color: '#16a34a', fontWeight: '600' }}>
-                        Online
-                      </Text>
-                    </View>
                   </View>
                 </Callout>
               </Marker>
