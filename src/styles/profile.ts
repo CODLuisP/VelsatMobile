@@ -57,11 +57,6 @@ header: {
     marginTop: 15,
  
   },
-
-
-
-
-
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
