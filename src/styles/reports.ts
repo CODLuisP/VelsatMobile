@@ -305,8 +305,8 @@ export const styles = StyleSheet.create({
 
   toggleSwitch: {
     width: 52,
-    height: 28,
-    borderRadius: 10,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: '#D1D5DB',
     padding: 3,
 

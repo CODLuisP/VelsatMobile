@@ -19,6 +19,8 @@ import {
   ChevronDown,
   Calendar,
   X,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { styles } from '../../../styles/reports';
@@ -42,12 +44,19 @@ import Share from 'react-native-share';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
 import ReportSlider, { ReportType } from '../../../components/ReportSlider';
-import ModalAlert from '../../../components/ModalAlert';
 import { Text, TextInput } from '../../../components/ScaledComponents';
 
 interface Unit {
   id: number;
   plate: string;
+}
+
+type FieldError = 'unit' | 'startDate' | 'endDate' | 'speed' | null;
+
+interface InlineMessage {
+  field: FieldError;
+  message: string;
+  type: 'error' | 'success';
 }
 
 const Reports: React.FC = () => {
@@ -100,12 +109,23 @@ const Reports: React.FC = () => {
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const [modalAlertVisible, setModalAlertVisible] = useState(false);
-  const [alertConfig, setAlertConfig] = useState({
-    title: '',
-    message: '',
-    color: '',
-  });
+  // Estado para mensajes inline
+  const [inlineMessage, setInlineMessage] = useState<InlineMessage | null>(null);
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  const showInlineMessage = (field: FieldError, message: string, type: 'error' | 'success' = 'error') => {
+    setInlineMessage({ field, message, type });
+    Animated.sequence([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(3500),
+      Animated.timing(fadeAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setInlineMessage(null));
+  };
+
+  const clearInlineMessage = () => {
+    setInlineMessage(null);
+    fadeAnim.setValue(0);
+  };
 
   // Definición de tipos de reportes
   const reportTypes: ReportType[] = [
@@ -152,24 +172,19 @@ const Reports: React.FC = () => {
 
   const fetchUnits = async () => {
     const username = user?.username;
-
-    if (!username) {
-      return;
-    }
+    if (!username) return;
 
     setLoadingUnits(true);
     try {
       const response = await axios.get(
         `${server}/api/Aplicativo/unidades/${username}`,
       );
-
       const formattedUnits: Unit[] = response.data.map(
         (item: any, index: number) => ({
           id: index + 1,
           plate: item.deviceID,
         }),
       );
-
       setUnits(formattedUnits);
     } catch (error) {
     } finally {
@@ -182,10 +197,7 @@ const Reports: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (selectedReport !== 2) {
-      setSpeedValue('');
-    }
-
+    if (selectedReport !== 2) setSpeedValue('');
     if (selectedReport !== 3) {
       setAllUnitsEnabled(false);
       Animated.timing(animatedValue, {
@@ -194,15 +206,11 @@ const Reports: React.FC = () => {
         useNativeDriver: false,
       }).start();
     }
+    clearInlineMessage();
   }, [selectedReport]);
 
   const handleGoBack = () => {
     navigation.goBack();
-  };
-
-  const handleShowAlert = (title: string, message: string, color?: string) => {
-    setAlertConfig({ title, message, color: color || '' });
-    setModalAlertVisible(true);
   };
 
   const handleSelectReport = (reportId: number) => {
@@ -213,17 +221,13 @@ const Reports: React.FC = () => {
     const validation = validateForm();
 
     if (!validation.isValid) {
-      handleShowAlert('Campos requeridos', validation.message, '#e36414'); // Rojo para error
+      showInlineMessage(validation.field, validation.message, 'error');
       return;
     }
 
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) {
-      handleShowAlert(
-        'Error',
-        'Se necesitan permisos de almacenamiento',
-        '#e36414',
-      );
+      showInlineMessage('unit', 'Se necesitan permisos de almacenamiento', 'error');
       return;
     }
 
@@ -239,42 +243,22 @@ const Reports: React.FC = () => {
         const day = String(date.getDate()).padStart(2, '0');
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
-
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
-      const formattedStartDate = encodeURIComponent(
-        formatDateForAPI(startDate),
-      );
+      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
       const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
       let apiEndpoint = '';
       let reportName = '';
 
       switch (selectedReport) {
-        case 0:
-          apiEndpoint = 'downloadExcelG';
-          reportName = 'general';
-          break;
-        case 1:
-          apiEndpoint = 'downloadExcelS';
-          reportName = 'paradas';
-          break;
-        case 2:
-          apiEndpoint = 'downloadExcelV';
-          reportName = 'velocidad';
-          break;
-        case 3:
-          apiEndpoint = 'downloadExcelK';
-          reportName = 'kilometraje';
-          break;
-        case 4:
-          apiEndpoint = 'downloadExcelT';
-          reportName = 'recorrido';
-          break;
-        default:
-          apiEndpoint = 'downloadExcelG';
-          reportName = 'general';
+        case 0: apiEndpoint = 'downloadExcelG'; reportName = 'general'; break;
+        case 1: apiEndpoint = 'downloadExcelS'; reportName = 'paradas'; break;
+        case 2: apiEndpoint = 'downloadExcelV'; reportName = 'velocidad'; break;
+        case 3: apiEndpoint = 'downloadExcelK'; reportName = 'kilometraje'; break;
+        case 4: apiEndpoint = 'downloadExcelT'; reportName = 'recorrido'; break;
+        default: apiEndpoint = 'downloadExcelG'; reportName = 'general';
       }
 
       let url = '';
@@ -292,12 +276,11 @@ const Reports: React.FC = () => {
       }
 
       const { dirs } = RNFetchBlob.fs;
-      const downloadDir =
-        Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+      const downloadDir = Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
       const fileName = `reporte_${reportName}_${plate}_${new Date().getTime()}.xlsx`;
       const filePath = `${downloadDir}/${fileName}`;
 
-      const response = await RNFetchBlob.config({
+      await RNFetchBlob.config({
         fileCache: true,
         path: filePath,
         addAndroidDownloads: {
@@ -320,19 +303,11 @@ const Reports: React.FC = () => {
         setDownloadingExcel(false);
       } else {
         setDownloadingExcel(false);
-        handleShowAlert(
-          'Descarga exitosa',
-          'Archivo guardado en Descargas',
-          '#4CAF50', // Verde para éxito
-        );
+        showInlineMessage(null, 'Archivo guardado en Descargas', 'success');
       }
     } catch (error) {
       setDownloadingExcel(false);
-      handleShowAlert(
-        'Error',
-        'No se pudo descargar el archivo Excel',
-        '#e36414', // Rojo para error
-      );
+      showInlineMessage(null, 'No se pudo descargar el archivo Excel', 'error');
     }
   };
 
@@ -340,46 +315,25 @@ const Reports: React.FC = () => {
     const validation = validateForm();
 
     if (!validation.isValid) {
-      handleShowAlert('Campos requeridos', validation.message, '#e36414'); // Rojo para error
+      showInlineMessage(validation.field, validation.message, 'error');
       return;
     }
 
     switch (selectedReport) {
       case 0:
-        navigation.navigate('GeneralReport', {
-          unit: selectedUnit!,
-          startDate: startDate,
-          endDate: endDate,
-        });
+        navigation.navigate('GeneralReport', { unit: selectedUnit!, startDate, endDate });
         break;
       case 1:
-        navigation.navigate('StopReport', {
-          unit: selectedUnit!,
-          startDate: startDate,
-          endDate: endDate,
-        });
+        navigation.navigate('StopReport', { unit: selectedUnit!, startDate, endDate });
         break;
       case 2:
-        navigation.navigate('SpeedReport', {
-          unit: selectedUnit!,
-          startDate: startDate,
-          endDate: endDate,
-          speed: speedValue,
-        });
+        navigation.navigate('SpeedReport', { unit: selectedUnit!, startDate, endDate, speed: speedValue });
         break;
       case 3:
-        navigation.navigate('MileageReport', {
-          unit: selectedUnit ? selectedUnit : 'all',
-          startDate: startDate,
-          endDate: endDate,
-        });
+        navigation.navigate('MileageReport', { unit: selectedUnit ? selectedUnit : 'all', startDate, endDate });
         break;
       case 4:
-        navigation.navigate('TourReport', {
-          unit: selectedUnit!,
-          startDate: startDate,
-          endDate: endDate,
-        });
+        navigation.navigate('TourReport', { unit: selectedUnit!, startDate, endDate });
         break;
       default:
         break;
@@ -405,40 +359,24 @@ const Reports: React.FC = () => {
     outputRange: [2, 22],
   });
 
-  const handleOpenUnitModal = () => {
-    setShowUnitModal(true);
-  };
-
-  const handleCloseUnitModal = () => {
-    setShowUnitModal(false);
-  };
+  const handleOpenUnitModal = () => setShowUnitModal(true);
+  const handleCloseUnitModal = () => setShowUnitModal(false);
 
   const handleSelectUnit = (unit: Unit) => {
     setSelectedUnit(unit);
     setShowUnitModal(false);
+    if (inlineMessage?.field === 'unit') clearInlineMessage();
   };
 
-  const handleClearUnit = () => {
-    setSelectedUnit(null);
-  };
+  const handleClearUnit = () => setSelectedUnit(null);
 
   const formatDate = (date: Date): string => {
-    const dateOptions: Intl.DateTimeFormatOptions = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    };
-
-    const timeOptions: Intl.DateTimeFormatOptions = {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    };
+    const dateOptions: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
 
     try {
       const formattedDate = date.toLocaleDateString('es-ES', dateOptions);
       const formattedTime = date.toLocaleTimeString('es-ES', timeOptions);
-
       const [day, month, year] = formattedDate.split('/');
       return `${month}/${day}/${year}  ${formattedTime}`;
     } catch (error) {
@@ -447,7 +385,6 @@ const Reports: React.FC = () => {
       const year = date.getFullYear();
       const hours = date.getHours().toString().padStart(2, '0');
       const minutes = date.getMinutes().toString().padStart(2, '0');
-
       return `${month}/${day}/${year}  ${hours}:${minutes}`;
     }
   };
@@ -461,11 +398,8 @@ const Reports: React.FC = () => {
 
     if (selectedDate) {
       if (Platform.OS === 'ios') {
-        if (currentPickerType === 'start') {
-          setTempStartDate(selectedDate);
-        } else {
-          setTempEndDate(selectedDate);
-        }
+        if (currentPickerType === 'start') setTempStartDate(selectedDate);
+        else setTempEndDate(selectedDate);
       } else {
         if (currentPickerType === 'start') {
           if (currentPickerMode === 'date') {
@@ -479,6 +413,7 @@ const Reports: React.FC = () => {
             setStartDate(newDate);
             setShowStartDatePicker(false);
             setCurrentPickerMode('date');
+            if (inlineMessage?.field === 'startDate') clearInlineMessage();
           }
         } else {
           if (currentPickerMode === 'date') {
@@ -492,6 +427,7 @@ const Reports: React.FC = () => {
             setEndDate(newDate);
             setShowEndDatePicker(false);
             setCurrentPickerMode('date');
+            if (inlineMessage?.field === 'endDate') clearInlineMessage();
           }
         }
       }
@@ -522,28 +458,27 @@ const Reports: React.FC = () => {
     if (currentPickerType === 'start') {
       setStartDate(tempStartDate);
       setStartDateSelected(true);
+      if (inlineMessage?.field === 'startDate') clearInlineMessage();
     } else {
       setEndDate(tempEndDate);
       setEndDateSelected(true);
+      if (inlineMessage?.field === 'endDate') clearInlineMessage();
     }
     handleClosePicker();
   };
 
   const handleSpeedChange = (text: string) => {
     if (selectedReport !== 2) return;
-
     const numericValue = text.replace(/[^0-9]/g, '');
     setSpeedValue(numericValue);
+    if (inlineMessage?.field === 'speed') clearInlineMessage();
   };
 
   const requestStoragePermission = async () => {
     if (Platform.OS === 'android') {
       try {
         const apiLevel = Platform.Version;
-
-        if (apiLevel >= 33) {
-          return true;
-        }
+        if (apiLevel >= 33) return true;
 
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
@@ -563,30 +498,98 @@ const Reports: React.FC = () => {
     return true;
   };
 
-  const validateForm = () => {
+  const validateForm = (): { isValid: boolean; message: string; field: FieldError } => {
     if (!selectedUnit && !allUnitsEnabled) {
-      return {
-        isValid: false,
-        message: 'Debe seleccionar una unidad o habilitar "Todas las unidades"',
-      };
+      return { isValid: false, message: 'Selecciona una unidad para continuar', field: 'unit' };
     }
-
     if (!startDateSelected) {
-      return { isValid: false, message: 'Debe seleccionar la fecha inicial' };
+      return { isValid: false, message: 'Selecciona la fecha inicial', field: 'startDate' };
     }
-
     if (!endDateSelected) {
-      return { isValid: false, message: 'Debe seleccionar la fecha final' };
+      return { isValid: false, message: 'Selecciona la fecha final', field: 'endDate' };
     }
-
     if (selectedReport === 2 && (!speedValue || speedValue === '0')) {
-      return {
-        isValid: false,
-        message: 'Debe ingresar una velocidad mayor a 0 Km/h',
-      };
+      return { isValid: false, message: 'Ingresa una velocidad mayor a 0 Km/h', field: 'speed' };
     }
+    return { isValid: true, message: '', field: null };
+  };
 
-    return { isValid: true, message: '' };
+  // Componente de mensaje inline
+  const InlineError = ({ field }: { field: FieldError }) => {
+    if (!inlineMessage || inlineMessage.field !== field) return null;
+
+    const isSuccess = inlineMessage.type === 'success';
+
+    return (
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 5,
+          marginTop: 5,
+          marginBottom: 2,
+          paddingHorizontal: 10,
+          paddingVertical: 10,
+          borderRadius: 8,
+          backgroundColor: isSuccess ? '#f0faf4' : '#fff5f5',
+          borderLeftWidth: 3,
+          borderLeftColor: isSuccess ? '#22c55e' : '#ef4444',
+        }}
+      >
+        {isSuccess
+          ? <CheckCircle2 size={13} color="#22c55e" />
+          : <AlertCircle size={13} color="#ef4444" />
+        }
+        <Text style={{
+          fontSize: 12,
+          color: isSuccess ? '#16a34a' : '#ef4444',
+          fontWeight: '500',
+          flex: 1,
+        }}>
+          {inlineMessage.message}
+        </Text>
+      </Animated.View>
+    );
+  };
+
+  // Mensaje global (sin field específico) para éxito/error de descarga
+  const GlobalMessage = () => {
+    if (!inlineMessage || inlineMessage.field !== null) return null;
+
+    const isSuccess = inlineMessage.type === 'success';
+
+    return (
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+          marginTop: 10,
+          marginBottom: 2,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          borderRadius: 10,
+          backgroundColor: isSuccess ? '#f0faf4' : '#fff5f5',
+          borderWidth: 1,
+          borderColor: isSuccess ? '#bbf7d0' : '#fecaca',
+        }}
+      >
+        {isSuccess
+          ? <CheckCircle2 size={16} color="#22c55e" />
+          : <AlertCircle size={16} color="#ef4444" />
+        }
+        <Text style={{
+          fontSize: 13,
+          color: isSuccess ? '#16a34a' : '#ef4444',
+          fontWeight: '500',
+          flex: 1,
+        }}>
+          {inlineMessage.message}
+        </Text>
+      </Animated.View>
+    );
   };
 
   const renderDateTimePicker = () => {
@@ -612,10 +615,7 @@ const Reports: React.FC = () => {
                 <Text style={styles.datePickerTitle}>
                   {isStartPicker ? 'Fecha Inicial' : 'Fecha Final'}
                 </Text>
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={handleConfirmPicker}
-                >
+                <TouchableOpacity style={styles.closeButton} onPress={handleConfirmPicker}>
                   <Text style={styles.closeButtonText}>Listo</Text>
                 </TouchableOpacity>
               </View>
@@ -659,6 +659,11 @@ const Reports: React.FC = () => {
   const isAllUnitsOptionEnabled = () => selectedReport === 3;
   const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
+  const hasUnitError = inlineMessage?.field === 'unit';
+  const hasStartDateError = inlineMessage?.field === 'startDate';
+  const hasEndDateError = inlineMessage?.field === 'endDate';
+  const hasSpeedError = inlineMessage?.field === 'speed';
+
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
       <LinearGradient
@@ -695,11 +700,13 @@ const Reports: React.FC = () => {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
+        {/* UNIDAD */}
         <Text style={styles.sectionTitle}>Unidad</Text>
         <TouchableOpacity
           style={[
             styles.unitInputContainer,
             allUnitsEnabled && { opacity: 0.8, backgroundColor: '#e7ecef' },
+            hasUnitError && { borderColor: '#ef4444', borderWidth: 1 },
           ]}
           onPress={handleOpenUnitModal}
           disabled={allUnitsEnabled}
@@ -708,14 +715,9 @@ const Reports: React.FC = () => {
             {selectedUnit ? (
               <View style={styles.selectedUnitContainer}>
                 <View style={styles.selectedUnitInfo}>
-                  <Text style={styles.selectedUnitName}>
-                    {selectedUnit.plate}
-                  </Text>
+                  <Text style={styles.selectedUnitName}>{selectedUnit.plate}</Text>
                 </View>
-                <TouchableOpacity
-                  style={styles.clearUnitButton}
-                  onPress={handleClearUnit}
-                >
+                <TouchableOpacity style={styles.clearUnitButton} onPress={handleClearUnit}>
                   <X size={18} color="#999" />
                 </TouchableOpacity>
               </View>
@@ -725,121 +727,128 @@ const Reports: React.FC = () => {
               </Text>
             )}
           </View>
-          <ChevronDown size={20} color="#999" />
+          <ChevronDown size={20} color={hasUnitError ? '#ef4444' : '#999'} />
         </TouchableOpacity>
+        <InlineError field="unit" />
 
+        {/* FECHA INICIAL */}
         <Text style={styles.sectionTitle}>Fecha Inicial</Text>
         <TouchableOpacity
-          style={styles.dateInput}
+          style={[
+            styles.dateInput,
+            hasStartDateError && { borderColor: '#ef4444', borderWidth: 1 },
+          ]}
           onPress={handleStartDatePress}
         >
-          <Text
-            style={[
-              styles.dateInputText,
-              startDateSelected && { color: '#333' },
-            ]}
-          >
+          <Text style={[styles.dateInputText, startDateSelected && { color: '#333' }]}>
             {startDateSelected ? formatDate(startDate) : 'mm/dd/yyyy  hh:mm'}
           </Text>
-          <Calendar size={20} color="#999" />
+          <Calendar size={20} color={hasStartDateError ? '#ef4444' : '#999'} />
         </TouchableOpacity>
+        <InlineError field="startDate" />
 
+        {/* FECHA FINAL */}
         <Text style={styles.sectionTitle}>Fecha Final</Text>
-        <TouchableOpacity style={styles.dateInput} onPress={handleEndDatePress}>
-          <Text
-            style={[styles.dateInputText, endDateSelected && { color: '#333' }]}
-          >
+        <TouchableOpacity
+          style={[
+            styles.dateInput,
+            hasEndDateError && { borderColor: '#ef4444', borderWidth: 1 },
+          ]}
+          onPress={handleEndDatePress}
+        >
+          <Text style={[styles.dateInputText, endDateSelected && { color: '#333' }]}>
             {endDateSelected ? formatDate(endDate) : 'mm/dd/yyyy  hh:mm'}
           </Text>
-          <Calendar size={20} color="#999" />
+          <Calendar size={20} color={hasEndDateError ? '#ef4444' : '#999'} />
         </TouchableOpacity>
+        <InlineError field="endDate" />
 
-        <View style={styles.specificOptionsContainer}>
-          <Text style={styles.sectionTitleSpecific}>Opciones específicas</Text>
+        {/* OPCIONES ESPECÍFICAS */}
+        {(isSpeedOptionEnabled() || isAllUnitsOptionEnabled()) && (
+          <View style={styles.specificOptionsContainer}>
+            <Text style={styles.sectionTitleSpecific}>Opciones específicas</Text>
 
-          <View style={styles.optionRow}>
-            <View style={styles.optionIconContainer}>
-              <Gauge size={20} color="#ff6b35" strokeWidth={2} />
-            </View>
-            <Text style={styles.optionText}>Velocidad mayor a</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[
-                  styles.optionInput,
-                  !isSpeedOptionEnabled() && {
-                    backgroundColor: '#f5f5f5',
-                    color: '#999',
-                    opacity: 0.6,
+            {isSpeedOptionEnabled() && (
+              <>
+                <View style={[
+                  styles.optionRow,
+                  hasSpeedError && {
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#ef4444',
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
                   },
-                ]}
-                value={speedValue}
-                onChangeText={handleSpeedChange}
-                placeholder="0"
-                keyboardType="numeric"
-                placeholderTextColor={
-                  isSpeedOptionEnabled() ? '#9CA3AF' : '#ccc'
-                }
-                editable={isSpeedOptionEnabled()}
-              />
-              <Text style={styles.optionUnit}>Km/h</Text>
-            </View>
-          </View>
+                ]}>
+                  <View style={styles.optionIconContainer}>
+                    <Gauge size={20} color={hasSpeedError ? '#ef4444' : '#ff6b35'} strokeWidth={2} />
+                  </View>
+                  <Text style={[styles.optionText, hasSpeedError && { color: '#ef4444' }]}>
+                    Velocidad mayor a
+                  </Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.optionInput}
+                      value={speedValue}
+                      onChangeText={handleSpeedChange}
+                      placeholder="0"
+                      keyboardType="numeric"
+                      placeholderTextColor="#9CA3AF"
+                      editable={true}
+                    />
+                    <Text style={styles.optionUnit}>Km/h</Text>
+                  </View>
+                </View>
+                <InlineError field="speed" />
+              </>
+            )}
 
-          <View style={styles.toggleRow}>
-            <View style={styles.toggleLabelContainer}>
-              <Text style={styles.toggleLabel}>Todas las unidades</Text>
-              <Text style={styles.toggleSubtext}>
-                Incluir todos los vehículos
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.toggleSwitch,
-                allUnitsEnabled && styles.toggleSwitchActive,
-                (!isAllUnitsOptionEnabled() || !!selectedUnit) && {
-                  backgroundColor: '#fff',
-                  opacity: 1,
-                },
-              ]}
-              onPress={toggleAllUnits}
-              disabled={!isAllUnitsOptionEnabled() || !!selectedUnit}
-            >
-              <Animated.View
-                style={[
-                  styles.toggleCircle,
-                  { transform: [{ translateX }] },
-                  !isAllUnitsOptionEnabled() && { backgroundColor: '#ccc' },
-                ]}
-              />
-            </TouchableOpacity>
+            {isAllUnitsOptionEnabled() && (
+              <View style={styles.toggleRow}>
+                <View style={styles.toggleLabelContainer}>
+                  <Text style={styles.toggleLabel}>Todas las unidades</Text>
+                  <Text style={styles.toggleSubtext}>Incluir todos los vehículos</Text>
+                </View>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleSwitch,
+                    allUnitsEnabled && styles.toggleSwitchActive,
+                    !!selectedUnit && { backgroundColor: '#dcd2d2ff', opacity: 1 },
+                  ]}
+                  onPress={toggleAllUnits}
+                  disabled={!!selectedUnit}
+                >
+                  <Animated.View
+                    style={[styles.toggleCircle, { transform: [{ translateX }] }]}
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-        </View>
+        )}
 
+        {/* MENSAJE GLOBAL (descarga) */}
+        <GlobalMessage />
+
+        {/* BOTONES */}
         <View style={styles.buttonsContainer}>
           <TouchableOpacity
             style={[
               styles.excelButton,
               downloadingExcel && { opacity: 0.7 },
-              selectedReport === 4 && {
-                opacity: 0.7,
-                backgroundColor: '#023047',
-              },
+              selectedReport === 4 && { opacity: 0.7, backgroundColor: '#023047' },
             ]}
             onPress={handleDownloadExcel}
             disabled={downloadingExcel || selectedReport === 4}
             activeOpacity={0.8}
           >
             {downloadingExcel ? (
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-              >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <ActivityIndicator size="small" color="#fff" />
                 <Text style={styles.buttonText}>Descargando...</Text>
               </View>
             ) : (
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-              >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Image
                   source={require('../../../../assets/excel.png')}
                   style={{ width: 20, height: 20 }}
@@ -867,14 +876,6 @@ const Reports: React.FC = () => {
         units={units}
         onClose={handleCloseUnitModal}
         onSelectUnit={handleSelectUnit}
-      />
-
-      <ModalAlert
-        isVisible={modalAlertVisible}
-        onClose={() => setModalAlertVisible(false)}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        color={alertConfig.color}
       />
     </View>
   );

@@ -57,11 +57,6 @@ header: {
     marginTop: 15,
  
   },
-
-
-
-
-
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -74,7 +69,6 @@ header: {
     fontSize: 16,
     fontWeight: '600',
     color: '#e36414',
-    marginLeft: 8,
   },
   infoContent: {
     paddingHorizontal: 18,
@@ -94,7 +88,7 @@ header: {
     textAlign: 'center',
   },
   infoText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#303030ff',
     flex: 1,
   },
@@ -117,8 +111,7 @@ header: {
     marginHorizontal: 20,
     marginBottom: 16,
     borderRadius: 15,
-    borderWidth: 1,
-    borderColor: '#dee2e6',
+
 
   },
   sectionTitle: {
@@ -135,8 +128,8 @@ header: {
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 6,
-    paddingHorizontal: 20,
-    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    backgroundColor: '#efeeecff',
 
 
   },
@@ -146,8 +139,8 @@ header: {
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 5,
-    paddingHorizontal: 20,
-    backgroundColor: '#ffffffff',
+    paddingHorizontal: 10,
+    backgroundColor: '#efececff',
 
     borderBottomLeftRadius: 13,
     borderBottomRightRadius: 13,
@@ -161,7 +154,7 @@ header: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#fff0e9ff',
+    backgroundColor: '#efd2c4ff',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -189,7 +182,7 @@ header: {
     borderBottomWidth: 0,
   },
   logoutIconContainer: {
-    backgroundColor: '#fee',
+    backgroundColor: 'rgb(242, 202, 202)',
   },
   logoutText: {
     color: '#dc2626',
