@@ -181,7 +181,6 @@ const Profile = () => {
 
          <View style={styles.infoSection}>
         <View style={styles.infoHeader}>
-          <Info size={20} color="#e36414" />
           <Text style={styles.infoTitle}>Información</Text>
         </View>
 
@@ -422,25 +421,8 @@ const Profile = () => {
       </TouchableOpacity>
     </View>
 
-    <View style={styles.footerContainer}>
-      <View style={styles.companyCard}>
-        <View style={styles.companyHeader}>
-          <View style={styles.companyLogoPlaceholder}>
-            <Image
-              source={require('../../../assets/logoV.jpeg')}
-              style={styles.avatarImageV}
-            />
-          </View>
-          <View style={styles.companyDetails}>
-            <Text style={styles.companyName}>VELSAT SAC</Text>
-            <Text style={styles.companyLocation}>Lima - Perú</Text>
-            <Text style={styles.companyLocation}>
-              RUC - 20202020202202
-            </Text>
-          </View>
-        </View>
-      </View>
-    </View>
+
+
   </View>
 </View>
   
