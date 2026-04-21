@@ -149,63 +149,63 @@ const Setting = () => {
     finally { setLoadingPassword(false); }
   };
 
-  const topSpace = Platform.OS === 'ios' ? insets.top : insets.top + 10;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
 
-      {/* ── HEADER azul: solo avatar + título + tabs ── */}
-      <LinearGradient
-        colors={['#05194fff', '#05194fff', '#18223dff']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={[styles.header, { paddingTop: topSpace }]}
-      >
-        <TouchableOpacity
-          style={[styles.backButton, { top: insets.top + 10 }]}
-          onPress={handleGoBack}
-          activeOpacity={0.7}
-        >
-          <ChevronLeft size={26} color="#fff" />
-        </TouchableOpacity>
+     {/* ── HEADER azul: solo avatar + título + tabs ── */}
+<LinearGradient
+  colors={['#05194fff', '#05194fff', '#18223dff']}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 0, y: 1 }}
+  style={[styles.header, { paddingTop: topSpace }]}
+>
+  <TouchableOpacity
+    style={[styles.backButton, { top: insets.top + 10 }]}
+    onPress={handleGoBack}
+    activeOpacity={0.7}
+  >
+    <ChevronLeft size={26} color="#fff" />
+  </TouchableOpacity>
 
-        <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
-            {activeForm === 'update'
-              ? <RefreshCw size={28} color="#e36414" strokeWidth={2} />
-              : <Lock size={28} color="#e36414" strokeWidth={2} />
-            }
-          </View>
-        </View>
+  <View style={styles.avatarContainer}>
+    <View style={styles.avatar}>
+      {activeForm === 'update'
+        ? <RefreshCw size={28} color="#e36414" strokeWidth={2} />
+        : <Lock size={28} color="#e36414" strokeWidth={2} />
+      }
+    </View>
+  </View>
 
-        <Text style={styles.companyNameTitle}>Configuraciones</Text>
+  <Text style={styles.companyNameTitle}>Configuraciones</Text>
 
-        <View style={styles.navigationContainer}>
-          <TouchableOpacity
-            style={[styles.navOption, activeForm === 'update' && styles.navOptionActive]}
-            onPress={() => handleFormChange('update')}
-            activeOpacity={0.8}
-          >
-            <Settings size={16} color={activeForm === 'update' ? '#e36414' : '#bbb'} />
-            <Text style={[styles.navOptionText, activeForm === 'update' ? styles.navOptionTextActive : { color: '#bbb' }]}>
-              Actualizar datos
-            </Text>
-            <ChevronLeft size={16} color={activeForm === 'update' ? '#e36414' : '#bbb'} style={styles.chevronRight} />
-          </TouchableOpacity>
+  {/* ── SEGMENTED CONTROL ── */}
+  <View style={styles.segmentedContainer}>
+    <TouchableOpacity
+      style={[styles.segmentOption, activeForm === 'update' && styles.segmentOptionActive]}
+      onPress={() => handleFormChange('update')}
+      activeOpacity={0.8}
+    >
+      <Settings size={14} color={activeForm === 'update' ? '#e36414' : '#bbb'} />
+      <Text style={[styles.segmentText, activeForm === 'update' && styles.segmentTextActive]}>
+        Actualizar datos
+      </Text>
+    </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.navOption, activeForm === 'password' && styles.navOptionActive]}
-            onPress={() => handleFormChange('password')}
-            activeOpacity={0.8}
-          >
-            <Lock size={16} color={activeForm === 'password' ? '#e36414' : '#bbb'} />
-            <Text style={[styles.navOptionText, activeForm === 'password' ? styles.navOptionTextActive : { color: '#bbb' }]}>
-              Cambiar contraseña
-            </Text>
-            <ChevronLeft size={16} color={activeForm === 'password' ? '#e36414' : '#bbb'} style={styles.chevronRight} />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+    <TouchableOpacity
+      style={[styles.segmentOption, activeForm === 'password' && styles.segmentOptionActive]}
+      onPress={() => handleFormChange('password')}
+      activeOpacity={0.8}
+    >
+      <Lock size={14} color={activeForm === 'password' ? '#e36414' : '#bbb'} />
+      <Text style={[styles.segmentText, activeForm === 'password' && styles.segmentTextActive]}>
+        Cambiar contraseña
+      </Text>
+    </TouchableOpacity>
+  </View>
+
+</LinearGradient>
 
       {/* ── SECCIÓN BLANCA con bordes redondeados arriba ── */}
       <View style={styles.scrollContent}>

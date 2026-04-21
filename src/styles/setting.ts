@@ -6,11 +6,10 @@ export const styles = StyleSheet.create({
   },
 
   // ─── HEADER (igual que Profile) ───────────────────────────────────────────
-  header: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? -85 : 0,
-    paddingBottom: 40,
+ header: {
+    marginTop: Platform.OS === 'ios' ? -60 : 0,
+    height: Platform.OS === 'ios' ? 350 : 160,
+    alignItems:'center'
   },
 
   backButton: {
@@ -189,4 +188,46 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.3,
   },
+
+// ─── SEGMENTED CONTROL ────────────────────────────────────────────────────
+segmentedContainer: {
+  flexDirection: 'row',
+  backgroundColor: 'rgba(255,255,255,0.12)',
+  borderRadius: 12,
+  padding: 4,
+  width: '88%',
+  marginBottom: 12,
+},
+
+segmentOption: {
+  flex: 1,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 9,
+  paddingHorizontal: 10,
+  borderRadius: 9,
+  gap: 6,
+},
+
+segmentOptionActive: {
+  backgroundColor: '#fff',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.12,
+  shadowRadius: 3,
+  elevation: 2,
+},
+
+segmentText: {
+  fontSize: 12,
+  fontWeight: '500',
+  color: '#bbb',
+},
+
+segmentTextActive: {
+  color: '#e36414',
+  fontWeight: '700',
+},
+
 });

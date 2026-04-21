@@ -1,36 +1,35 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 50,
-  
+ header: {
+    marginTop: Platform.OS === 'ios' ? -60 : 0,
+    height: Platform.OS === 'ios' ? 330 : 160,
+ 
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    marginTop: 10,
-
+    marginBottom: 5,
   },
   backButton: {
-
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+
   },
   headerMainTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginLeft: 15,
+    marginLeft: 5,
 
   },
   headerBottom: {
-    marginTop: 5,
-    marginLeft: 10,
+    marginLeft: 20,
   },
   headerTitle: {
     fontSize: 16,

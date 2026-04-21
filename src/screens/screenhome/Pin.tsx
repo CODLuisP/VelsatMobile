@@ -79,7 +79,7 @@ const Pin = () => {
       image: require('../../../assets/camion.jpg'), // Ruta local
     },
   ];
-  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
+const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
@@ -101,6 +101,7 @@ const Pin = () => {
           </TouchableOpacity>
           <Text style={styles.headerMainTitle}>Marcadores</Text>
         </View>
+        
         <View style={styles.headerBottom}>
           <Text style={styles.headerTitle}>Cambiar marcador de unidades</Text>
           <Text style={styles.headerSubtitle}>

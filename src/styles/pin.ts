@@ -1,27 +1,29 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingBottom: 60,
-    paddingHorizontal: 20,
-  
+ header: {
+    marginTop: Platform.OS === 'ios' ? -60 : 0,
+    height: Platform.OS === 'ios' ? 280 : 160,
+ 
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    marginTop: 10,
+    marginBottom: 5,
   },
   backButton: {
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+
   },
+
   headerBottom: {
-    paddingLeft: 0,
-    marginLeft: 10,
+    marginLeft: 20,
   },
   headerMainTitle: {
     color: '#fff',
@@ -29,7 +31,7 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
     flex: 1,
-    marginLeft: 15,
+    marginLeft: 0,
   },
   headerTitle: {
     color: '#fff',

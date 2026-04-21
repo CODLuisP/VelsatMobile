@@ -123,7 +123,7 @@ const CustomMarker = ({ color }: { color: string }) => {
       {/* Imagen del carro encima */}
       <Image
         source={{
-          uri: 'https://res.cloudinary.com/dmamynahb/image/upload/v1764985196/UnidadK_mqqyfj.png',
+          uri: 'https://imagedelivery.net/o0E1jB_kGKnYacpYCBFmZA/c2aeb412-9e7b-4b2b-8c5b-06036ee57500/public',
         }}
         style={{
           width: 70,
