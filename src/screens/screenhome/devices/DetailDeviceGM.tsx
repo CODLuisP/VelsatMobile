@@ -206,7 +206,10 @@ const DetailDeviceGM = () => {
       if (!isMountedRef.current) return;
 
       if (data?.vehiculo) {
-        setVehicleData(data.vehiculo);
+        setVehicleData({
+          ...data.vehiculo,
+          lastGPSTimestamp: data.vehiculo.lastGPSTimestamp * 1000, // segundos → ms
+        });
         setConnectionStatus('connected');
       } else {
         setConnectionStatus('error');
@@ -714,8 +717,8 @@ const DetailDeviceGM = () => {
     const gpsTime = vehicleData.lastGPSTimestamp;
     const diffMinutes = (now - gpsTime) / 1000 / 60;
 
-    if (speed > 5 && diffMinutes > 15) {
-      const gpsDate = new Date(gpsTime);
+    const formatGPSTime = (timestamp: number) => {
+      const gpsDate = new Date(timestamp);
       const day = String(gpsDate.getDate()).padStart(2, '0');
       const month = String(gpsDate.getMonth() + 1).padStart(2, '0');
       const year = gpsDate.getFullYear();
@@ -723,8 +726,23 @@ const DetailDeviceGM = () => {
       const minutes = String(gpsDate.getMinutes()).padStart(2, '0');
       const seconds = String(gpsDate.getSeconds()).padStart(2, '0');
       return `Fecha: ${day}/${month}/${year} Hora: ${hours}:${minutes}:${seconds}`;
+    };
+
+    // GPS reciente (menos de 8 min) y en movimiento → mostrar lastGPSTimestamp
+    if (diffMinutes < 8 && speed > 4) {
+      return formatGPSTime(gpsTime);
     }
 
+    // GPS antiguo (9+ min) → evaluar velocidad
+    if (diffMinutes >= 9) {
+      if (speed > 5) {
+        return formatGPSTime(gpsTime);
+      } else {
+        return formatDateTime(currentTime);
+      }
+    }
+
+    // Entre 8 y 9 min (zona gris) → hora actual
     return formatDateTime(currentTime);
   };
 
