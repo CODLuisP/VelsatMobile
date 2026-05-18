@@ -55,6 +55,7 @@ interface LocationData {
 const UNIDADES_MAP: { [key: string]: string } = {
   r16: 'r16-bzc449',
   r17: 'r17-bzl372',
+  r19: 'r19-bzl628',
   r22: 'r22-bzm596',
   r23: 'r23-bzn007',
   r25: 'r25-bxz612',
