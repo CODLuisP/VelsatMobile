@@ -483,7 +483,7 @@ const DetailDeviceGM = () => {
               <Marker
                 ref={markerRef}
                 key={`marker-${device}`}
-                anchor={{ x: 0.5, y: 0.2 }}
+                anchor={{ x: 0.5, y: 0.5 }}
                 coordinate={{ latitude, longitude }}
                 tracksViewChanges={true}
                 onPress={() => {
@@ -515,7 +515,7 @@ const DetailDeviceGM = () => {
                     style={{
                       marginTop: 50,
                       paddingHorizontal: 14,
-                      paddingVertical: 10,
+                      paddingVertical: 6,
                       minWidth: 220,
                       backgroundColor: '#fff',
                       borderRadius: 10,
@@ -532,7 +532,7 @@ const DetailDeviceGM = () => {
                         flexDirection: 'row',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: 4,
+                        marginBottom: 1,
                       }}
                     >
                       <Text

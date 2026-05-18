@@ -3,7 +3,9 @@
     "allow": [
       "Bash(node _fetchImagesBase64.js)",
       "Bash(node -e ' *)",
-      "Bash(Remove-Item *)"
+      "Bash(Remove-Item *)",
+      "Bash(node _fetchImagesBase64GM.js)",
+      "Bash(del *)"
     ]
   }
 }
