@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node _fetchImagesBase64.js)",
+      "Bash(node -e ' *)",
+      "Bash(Remove-Item *)"
+    ]
+  }
+}

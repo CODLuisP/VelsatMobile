@@ -312,8 +312,18 @@ const DetailDevice = () => {
     setIsInfoExpanded(!isInfoExpanded);
   };
 
+  const changeMapType = (type: 'standard' | 'satellite' | 'hybrid') => {
+    if (Platform.OS === 'android') {
+      setIsWebViewReady(false);
+    }
+    setMapType(type);
+  };
+
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
+
+  const coordsRef = useRef({ lat: latitude, lng: longitude });
+  coordsRef.current = { lat: latitude, lng: longitude };
   const speed = vehicleData?.lastValidSpeed || 0;
   const address = vehicleData?.direccion || 'Cargando ubicación...';
   const heading = vehicleData?.lastValidHeading || 0;
@@ -372,9 +382,10 @@ const DetailDevice = () => {
         mapType,
         tileConfig,
         pinType,
-        DIRECTION_IMAGES,
         iconSizes,
         popupOffset,
+        initialLat: coordsRef.current.lat,
+        initialLng: coordsRef.current.lng,
       }),
     [mapType, tileConfig, pinType, iconSizes, popupOffset],
   );
@@ -391,7 +402,11 @@ const DetailDevice = () => {
       isWebViewReady
     ) {
       setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device}', '${device}'); true;`;
+        const imgData = getDirectionImageData(heading);
+        const isVertical = imgData.name === 'up.png' || imgData.name === 'down.png';
+        const [imgW, imgH] = isVertical ? iconSizes.vertical : iconSizes.horizontal;
+        const imageUrl = DIRECTION_IMAGES[pinType as 's' | 'p' | 'c'][imgData.name];
+        const script = `window.updateMarkerPosition(${latitude},${longitude},${heading},${speed},'${status}','${device}','${device}','${imageUrl}',${imgW},${imgH}); true;`;
         webViewRef.current?.injectJavaScript(script);
       }, 100);
     }
@@ -585,7 +600,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'standard' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('standard')}
+              onPress={() => changeMapType('standard')}
             >
               <Text
                 style={[
@@ -601,7 +616,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'satellite' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('satellite')}
+              onPress={() => changeMapType('satellite')}
             >
               <Text
                 style={[
@@ -617,7 +632,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'hybrid' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('hybrid')}
+              onPress={() => changeMapType('hybrid')}
             >
               <Text
                 style={[
@@ -660,7 +675,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'standard' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('standard')}
+              onPress={() => changeMapType('standard')}
             >
               <Text
                 style={[
@@ -676,7 +691,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'satellite' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('satellite')}
+              onPress={() => changeMapType('satellite')}
             >
               <Text
                 style={[
@@ -692,7 +707,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'hybrid' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('hybrid')}
+              onPress={() => changeMapType('hybrid')}
             >
               <Text
                 style={[

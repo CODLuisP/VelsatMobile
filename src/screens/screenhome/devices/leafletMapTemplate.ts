@@ -27,18 +27,20 @@ interface LeafletHTMLParams {
   mapType: 'hybrid' | 'standard' | string;
   tileConfig: TileConfig;
   pinType: string;
-  DIRECTION_IMAGES: Record<string, DirectionImages>;
   iconSizes: IconSizes;
   popupOffset: number;
+  initialLat?: number;
+  initialLng?: number;
 }
 
 export const generateLeafletHTML = ({
   mapType,
   tileConfig,
   pinType,
-  DIRECTION_IMAGES,
   iconSizes,
-  popupOffset
+  popupOffset,
+  initialLat = -12.0464,
+  initialLng = -77.0428,
 }: LeafletHTMLParams): string => {
   return `
 <!DOCTYPE html>
@@ -66,13 +68,8 @@ export const generateLeafletHTML = ({
         }
 
         .radar-pulse {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
             animation: pulse 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
             animation-fill-mode: both;
-            pointer-events: none;
         }
         @keyframes pulse {
             0% {
@@ -110,7 +107,7 @@ export const generateLeafletHTML = ({
             scrollWheelZoom: true,
             doubleClickZoom: true,
             touchZoom: true
-        }).setView([-12.0464, -77.0428], 16);
+        }).setView([${initialLat}, ${initialLng}], 16);
 
         // Capa base inicial
         ${mapType === 'hybrid' ? `
@@ -131,22 +128,15 @@ export const generateLeafletHTML = ({
         var overlayLayer = null;
         `}
 
-        // Guardar todas las URLs de imágenes
-        window.imageUrls = {
-            up: '${DIRECTION_IMAGES[pinType]['up.png']}',
-            topright: '${DIRECTION_IMAGES[pinType]['topright.png']}',
-            right: '${DIRECTION_IMAGES[pinType]['right.png']}',
-            downright: '${DIRECTION_IMAGES[pinType]['downright.png']}',
-            down: '${DIRECTION_IMAGES[pinType]['down.png']}',
-            downleft: '${DIRECTION_IMAGES[pinType]['downleft.png']}',
-            left: '${DIRECTION_IMAGES[pinType]['left.png']}',
-            topleft: '${DIRECTION_IMAGES[pinType]['topleft.png']}'
-        };
-        
-        var marker = null;
-var userClosedPopup = false;
+        // Contenedor fijo: el ícono NUNCA cambia de tamaño → nunca se llama setIcon() después de crearlo
+        var CW = ${Math.max(iconSizes.vertical[0], iconSizes.horizontal[0])};
+        var CH = ${Math.max(iconSizes.vertical[1], iconSizes.horizontal[1])};
 
-        // Función para obtener dirección cardinal
+        setTimeout(function() { map.invalidateSize(true); }, 200);
+
+        var marker = null;
+        var userClosedPopup = false;
+
         function obtenerDireccion(heading) {
             if (heading >= 0 && heading <= 22.5) return 'Norte';
             if (heading >= 22.51 && heading <= 67.5) return 'Noreste';
@@ -160,193 +150,88 @@ var userClosedPopup = false;
             return 'Desconocido';
         }
 
-        map.on('focus', function() {
-            map.scrollWheelZoom.enable();
-        });
-        map.on('blur', function() {
-            map.scrollWheelZoom.disable();
-        });
+        function getSpeedColor(spd) {
+            if (spd === 0) return '#ef4444';
+            if (spd < 11)  return '#ff8000';
+            if (spd < 60)  return '#38b000';
+            return '#00509d';
+        }
 
-        // Función para crear o actualizar el marcador
-        window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId) {
-            // Determinar qué imagen y tamaño usar según el ángulo
-            var imageUrl = '';
-            var iconSize = [42, 25]; // Tamaño por defecto
-            
-            // Tamaños configurados desde React Native
-            var verticalSize = ${JSON.stringify(iconSizes.vertical)};
-            var horizontalSize = ${JSON.stringify(iconSizes.horizontal)};
-            
-            if (heading >= 0 && heading <= 22.5) {
-                imageUrl = window.imageUrls.up;
-                iconSize = verticalSize;
-            } else if (heading > 22.5 && heading <= 67.5) {
-                imageUrl = window.imageUrls.topright;
-                iconSize = horizontalSize;
-            } else if (heading > 67.5 && heading <= 112.5) {
-                imageUrl = window.imageUrls.right;
-                iconSize = horizontalSize;
-            } else if (heading > 112.5 && heading <= 157.5) {
-                imageUrl = window.imageUrls.downright;
-                iconSize = horizontalSize;
-            } else if (heading > 157.5 && heading <= 202.5) {
-                imageUrl = window.imageUrls.down;
-                iconSize = verticalSize;
-            } else if (heading > 202.5 && heading <= 247.5) {
-                imageUrl = window.imageUrls.downleft;
-                iconSize = horizontalSize;
-            } else if (heading > 247.5 && heading <= 292.5) {
-                imageUrl = window.imageUrls.left;
-                iconSize = horizontalSize;
-            } else if (heading > 292.5 && heading <= 337.5) {
-                imageUrl = window.imageUrls.topleft;
-                iconSize = horizontalSize;
-            } else {
-                imageUrl = window.imageUrls.up;
-                iconSize = verticalSize;
-            }
-            
-            // Determinar color del radar según velocidad
-            var radarColor = '';
-            if (speed === 0) {
-                radarColor = '#ef4444'; // ROJO
-            } else if (speed > 0 && speed < 11) {
-                radarColor = '#ff8000'; // AMARILLO
-            } else if (speed >= 11 && speed < 60) {
-                radarColor = '#38b000'; // VERDE
-            } else {
-                radarColor = '#00509d'; // AZUL
-            }
+        // Crea el ícono UNA sola vez con contenedor fijo CW x CH
+        function buildIcon(imageUrl, imgW, imgH, radarColor) {
+            var ps = 'position:absolute;width:20px;height:20px;border-radius:50%;left:-10px;top:-10px;pointer-events:none;background-color:' + radarColor + ';';
+            var imgLeft = (CW - imgW) / 2;
+            var imgTop  = (CH - imgH) / 2;
+            var html =
+                '<div style="position:relative;width:' + CW + 'px;height:' + CH + 'px;overflow:visible;">' +
+                    '<div style="position:absolute;left:50%;top:50%;width:0;height:0;">' +
+                        '<div class="radar-pulse" style="' + ps + '"></div>' +
+                        '<div class="radar-pulse" style="' + ps + 'animation-delay:1s;"></div>' +
+                        '<div class="radar-pulse" style="' + ps + 'animation-delay:2s;"></div>' +
+                    '</div>' +
+                    '<img src="' + imageUrl + '" style="position:absolute;left:' + imgLeft + 'px;top:' + imgTop + 'px;width:' + imgW + 'px;height:' + imgH + 'px;" />' +
+                '</div>';
+            return L.divIcon({
+                html: html,
+                iconSize: [CW, CH],
+                iconAnchor: [CW / 2, CH / 2],
+                popupAnchor: [0, ${popupOffset}],
+                className: ''
+            });
+        }
 
-            var statusColor = statusText === 'Movimiento' ? '#38b000' : '#ef4444';
-            
-        var popupContent = \`
-         <div style="font-family: Arial, sans-serif; text-align: left; white-space: nowrap; min-width: 190px;">
+        // imageUrl, imgW, imgH vienen de React Native en cada llamada → sin dependencia de window.imageUrls
+        window.updateMarkerPosition = function(lat, lng, heading, speed, statusText, deviceName, deviceId, imageUrl, imgW, imgH) {
+            var radarColor = getSpeedColor(speed);
 
-            <div style="font-weight: 800; font-size: 13px; color: #000; text-transform: uppercase;">\${deviceName}</div>
-              <div style="font-size: 12px; color: #555;">\${statusText} · \${speed.toFixed(0)} Km/h · \${obtenerDireccion(heading)}</div>
-         </div>
-        \`;
+            var popupContent = \`
+                <div style="font-family:Arial,sans-serif;text-align:left;white-space:nowrap;min-width:190px;">
+                    <div style="font-weight:800;font-size:13px;color:#000;text-transform:uppercase;">\${deviceName}</div>
+                    <div style="font-size:12px;color:#555;">\${statusText} · \${speed.toFixed(0)} Km/h · \${obtenerDireccion(heading)}</div>
+                </div>\`;
 
-            // Si es la primera vez, crear el marcador Y el radar como capa separada
             if (marker === null) {
-                // Crear overlay SVG para el radar (permanente)
-                var RadarOverlay = L.Layer.extend({
-                    onAdd: function(map) {
-                        this._map = map;
-                        this._container = L.DomUtil.create('div', 'radar-overlay');
-                        this._container.style.position = 'absolute';
-                        this._container.style.pointerEvents = 'none';
-                        this._container.style.width = '100%';
-                        this._container.style.height = '100%';
-                        this._container.style.top = '0';
-                        this._container.style.left = '0';
-                        this._container.style.zIndex = '400';
-                        
-                        this._container.innerHTML = '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute;"></div>' +
-                            '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute; animation-delay: 1s;"></div>' +
-                            '<div class="radar-pulse" style="background-color: ' + radarColor + '; position: absolute; animation-delay: 2s;"></div>';
-                        
-                        map.getPanes().overlayPane.appendChild(this._container);
-                        this._update();
-                        map.on('viewreset zoom move', this._update, this);
-                    },
-                    
-                    onRemove: function(map) {
-                        L.DomUtil.remove(this._container);
-                        map.off('viewreset zoom move', this._update, this);
-                    },
-                    
-                    _update: function() {
-                        if (!this._map || !marker) return;
-                        var point = this._map.latLngToLayerPoint(marker.getLatLng());
-                        var pulses = this._container.getElementsByClassName('radar-pulse');
-                        for (var i = 0; i < pulses.length; i++) {
-                            pulses[i].style.left = (point.x - 10) + 'px';
-                            pulses[i].style.top = (point.y - 10) + 'px';
-                        }
-                    },
-                    
-                    updateColor: function(color) {
-                        var pulses = this._container.getElementsByClassName('radar-pulse');
-                        for (var i = 0; i < pulses.length; i++) {
-                            pulses[i].style.backgroundColor = color;
-                        }
-                    }
-                });
-                
-                window.radarLayer = new RadarOverlay().addTo(map);
-                
-                // Crear marcador simple sin radar
-                var vehicleIcon = L.divIcon({
-                    html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
-                    iconSize: iconSize,
-                    iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
-                    popupAnchor: [0, ${popupOffset}],
-                    className: 'custom-vehicle-icon'
-                });
-                
                 marker = L.marker([lat, lng], {
-                    icon: vehicleIcon,
+                    icon: buildIcon(imageUrl, imgW, imgH, radarColor),
                     autoPan: false
                 }).addTo(map);
-                
-         
                 marker.bindPopup(popupContent, {
-    autoPan: false,
-    closeButton: true,
-    autoClose: false,
-    closeOnClick: false
-}).openPopup();
-
-marker.on('popupclose', function() {
-    userClosedPopup = true;
-});
-marker.on('popupopen', function() {
-    userClosedPopup = false;
-});
-                
+                    autoPan: false, closeButton: true, autoClose: false, closeOnClick: false
+                }).openPopup();
+                marker.on('popupclose', function() { userClosedPopup = true; });
+                marker.on('popupopen',  function() { userClosedPopup = false; });
+                marker.lastSpeedColor = radarColor;
                 map.setView([lat, lng], 16);
             } else {
-                // Actualizar imagen solo si cambió la dirección
-                if (!marker.lastHeading || Math.abs(marker.lastHeading - heading) > 22.5) {
-                    var vehicleIcon = L.divIcon({
-                        html: '<img src="' + imageUrl + '" style="width: ' + iconSize[0] + 'px; height: ' + iconSize[1] + 'px;" />',
-                        iconSize: iconSize,
-                        iconAnchor: [iconSize[0] / 2, iconSize[1] / 2],
-                        popupAnchor: [0, ${popupOffset}], 
-                        className: 'custom-vehicle-icon'
-                    });
-                    marker.setIcon(vehicleIcon);
-                    marker.lastHeading = heading;
+                // Actualizar DOM directamente — NUNCA se llama setIcon()
+                if (marker._icon) {
+                    var imgEl = marker._icon.querySelector('img');
+                    if (imgEl) {
+                        imgEl.src          = imageUrl;
+                        imgEl.style.width  = imgW + 'px';
+                        imgEl.style.height = imgH + 'px';
+                        imgEl.style.left   = ((CW - imgW) / 2) + 'px';
+                        imgEl.style.top    = ((CH - imgH) / 2) + 'px';
+                    }
+                    if (marker.lastSpeedColor !== radarColor) {
+                        var pulses = marker._icon.querySelectorAll('.radar-pulse');
+                        for (var i = 0; i < pulses.length; i++) {
+                            pulses[i].style.backgroundColor = radarColor;
+                        }
+                        marker.lastSpeedColor = radarColor;
+                    }
                 }
-                
-                // Actualizar posición
                 marker.setLatLng([lat, lng]);
-                
-                // Actualizar color del radar si cambió
-                var oldColor = marker.lastSpeed === 0 ? '#ef4444' : 
-                              (marker.lastSpeed > 0 && marker.lastSpeed < 11) ? '#fbbf24' :
-                              (marker.lastSpeed >= 11 && marker.lastSpeed < 60) ? '#10b981' : '#3b82f6';
-                
-                if (oldColor !== radarColor && window.radarLayer) {
-                    window.radarLayer.updateColor(radarColor);
+                marker.getPopup().setContent(popupContent);
+                map.setView([lat, lng], map.getZoom());
+                if (!userClosedPopup && !marker.isPopupOpen()) {
+                    marker.openPopup();
                 }
-                marker.lastSpeed = speed;
-                
-                // Actualizar posición del radar
-                if (window.radarLayer) {
-                    window.radarLayer._update();
-                }
-                
-               marker.getPopup().setContent(popupContent);
-map.setView([lat, lng], map.getZoom());
-
-if (!userClosedPopup && !marker.isPopupOpen()) {
-    marker.openPopup();
-}
             }
         };
+
+        map.on('focus', function() { map.scrollWheelZoom.enable(); });
+        map.on('blur',  function() { map.scrollWheelZoom.disable(); });
 
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden && map) {
