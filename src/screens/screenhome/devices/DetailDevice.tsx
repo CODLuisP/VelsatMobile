@@ -347,15 +347,13 @@ const DetailDevice = () => {
         return {
           baseUrl:
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          // ✅ Cambiado: OSM Francia en lugar de OSM estándar
-          overlayUrl: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
-          attribution: '&copy; Esri &copy; OpenStreetMap',
+          overlayUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri',
         };
       default:
-        // ✅ Cambiado: OSM Francia en lugar de OSM estándar
         return {
-          url: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
-          attribution: '&copy; OpenStreetMap contributors',
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri',
         };
     }
   };
@@ -651,13 +649,14 @@ const DetailDevice = () => {
         <>
           <WebView
             ref={webViewRef}
-            source={{ html: leafletHTML }}
+            source={{ html: leafletHTML, baseUrl: 'https://unpkg.com' }}
             style={styles.map}
             javaScriptEnabled={true}
             domStorageEnabled={true}
             startInLoadingState={true}
             scalesPageToFit={true}
             mixedContentMode="compatibility"
+            originWhitelist={['*']}
             onMessage={event => {
               if (event.nativeEvent.data === 'webview-ready') {
                 setIsWebViewReady(true);
