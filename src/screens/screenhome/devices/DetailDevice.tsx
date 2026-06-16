@@ -211,7 +211,10 @@ const DetailDevice = () => {
       if (!isMountedRef.current) return;
 
       if (data?.vehiculo) {
-        setVehicleData(data.vehiculo);
+        setVehicleData({
+          ...data.vehiculo,
+          lastGPSTimestamp: data.vehiculo.lastGPSTimestamp * 1000, // segundos → ms
+        });
         setConnectionStatus('connected');
       } else {
         setConnectionStatus('error');
@@ -309,8 +312,18 @@ const DetailDevice = () => {
     setIsInfoExpanded(!isInfoExpanded);
   };
 
+  const changeMapType = (type: 'standard' | 'satellite' | 'hybrid') => {
+    if (Platform.OS === 'android') {
+      setIsWebViewReady(false);
+    }
+    setMapType(type);
+  };
+
   const latitude = vehicleData?.lastValidLatitude || -12.0464;
   const longitude = vehicleData?.lastValidLongitude || -77.0428;
+
+  const coordsRef = useRef({ lat: latitude, lng: longitude });
+  coordsRef.current = { lat: latitude, lng: longitude };
   const speed = vehicleData?.lastValidSpeed || 0;
   const address = vehicleData?.direccion || 'Cargando ubicación...';
   const heading = vehicleData?.lastValidHeading || 0;
@@ -334,15 +347,13 @@ const DetailDevice = () => {
         return {
           baseUrl:
             'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          // ✅ Cambiado: OSM Francia en lugar de OSM estándar
-          overlayUrl: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
-          attribution: '&copy; Esri &copy; OpenStreetMap',
+          overlayUrl: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri',
         };
       default:
-        // ✅ Cambiado: OSM Francia en lugar de OSM estándar
         return {
-          url: 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
-          attribution: '&copy; OpenStreetMap contributors',
+          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+          attribution: '&copy; Esri',
         };
     }
   };
@@ -369,9 +380,10 @@ const DetailDevice = () => {
         mapType,
         tileConfig,
         pinType,
-        DIRECTION_IMAGES,
         iconSizes,
         popupOffset,
+        initialLat: coordsRef.current.lat,
+        initialLng: coordsRef.current.lng,
       }),
     [mapType, tileConfig, pinType, iconSizes, popupOffset],
   );
@@ -388,7 +400,11 @@ const DetailDevice = () => {
       isWebViewReady
     ) {
       setTimeout(() => {
-        const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${status}', '${device}', '${device}'); true;`;
+        const imgData = getDirectionImageData(heading);
+        const isVertical = imgData.name === 'up.png' || imgData.name === 'down.png';
+        const [imgW, imgH] = isVertical ? iconSizes.vertical : iconSizes.horizontal;
+        const imageUrl = DIRECTION_IMAGES[pinType as 's' | 'p' | 'c'][imgData.name];
+        const script = `window.updateMarkerPosition(${latitude},${longitude},${heading},${speed},'${status}','${device}','${device}','${imageUrl}',${imgW},${imgH}); true;`;
         webViewRef.current?.injectJavaScript(script);
       }, 100);
     }
@@ -582,7 +598,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'standard' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('standard')}
+              onPress={() => changeMapType('standard')}
             >
               <Text
                 style={[
@@ -598,7 +614,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'satellite' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('satellite')}
+              onPress={() => changeMapType('satellite')}
             >
               <Text
                 style={[
@@ -614,7 +630,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'hybrid' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('hybrid')}
+              onPress={() => changeMapType('hybrid')}
             >
               <Text
                 style={[
@@ -633,13 +649,14 @@ const DetailDevice = () => {
         <>
           <WebView
             ref={webViewRef}
-            source={{ html: leafletHTML }}
+            source={{ html: leafletHTML, baseUrl: 'https://unpkg.com' }}
             style={styles.map}
             javaScriptEnabled={true}
             domStorageEnabled={true}
             startInLoadingState={true}
             scalesPageToFit={true}
             mixedContentMode="compatibility"
+            originWhitelist={['*']}
             onMessage={event => {
               if (event.nativeEvent.data === 'webview-ready') {
                 setIsWebViewReady(true);
@@ -657,7 +674,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'standard' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('standard')}
+              onPress={() => changeMapType('standard')}
             >
               <Text
                 style={[
@@ -673,7 +690,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'satellite' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('satellite')}
+              onPress={() => changeMapType('satellite')}
             >
               <Text
                 style={[
@@ -689,7 +706,7 @@ const DetailDevice = () => {
                 styles.mapTypeButton,
                 mapType === 'hybrid' && styles.mapTypeButtonActive,
               ]}
-              onPress={() => setMapType('hybrid')}
+              onPress={() => changeMapType('hybrid')}
             >
               <Text
                 style={[
@@ -720,6 +737,50 @@ const DetailDevice = () => {
   };
 
   const connectionDisplay = getConnectionDisplay();
+
+  // Agrega esta función antes del return
+  const getDisplayTime = () => {
+    if (!vehicleData) return formatDateTime(currentTime);
+
+    const now = currentTime.getTime();
+    const gpsTime = vehicleData.lastGPSTimestamp;
+    const diffMinutes = (now - gpsTime) / 1000 / 60;
+
+    const formatGPSTime = (timestamp: number) => {
+      const PERU_OFFSET_MS = -5 * 60 * 60 * 1000;
+      const gpsDate = new Date(timestamp + PERU_OFFSET_MS);
+      const day = String(gpsDate.getUTCDate()).padStart(2, '0');
+      const month = String(gpsDate.getUTCMonth() + 1).padStart(2, '0');
+      const year = gpsDate.getUTCFullYear();
+      const hours = String(gpsDate.getUTCHours()).padStart(2, '0');
+      const minutes = String(gpsDate.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(gpsDate.getUTCSeconds()).padStart(2, '0');
+      return `Fecha: ${day}/${month}/${year} Hora: ${hours}:${minutes}:${seconds}`;
+    };
+
+    if (user?.username === 'oloasac') {
+      return formatGPSTime(gpsTime);
+    }
+
+    // GPS reciente (menos de 8 min) y en movimiento → mostrar lastGPSTimestamp
+    if (diffMinutes < 8 && speed > 4) {
+      return formatGPSTime(gpsTime);
+    }
+
+    // GPS antiguo (9+ min) → evaluar velocidad
+    if (diffMinutes >= 9) {
+      if (speed > 5) {
+        // Sigue reportando velocidad pero GPS desactualizado → mostrar lastGPSTimestamp
+        return formatGPSTime(gpsTime);
+      } else {
+        // Detenido → mostrar hora actual (se actualiza con useEffect)
+        return formatDateTime(currentTime);
+      }
+    }
+
+    // Entre 8 y 9 minutos → zona gris, mostrar hora actual
+    return formatDateTime(currentTime);
+  };
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace - 2 }]}>
@@ -884,9 +945,7 @@ const DetailDevice = () => {
               <View style={styles.dateContainer}>
                 <Clock size={14} color="#6b7280" />
                 <View>
-                  <Text style={styles.dateText}>
-                    {formatDateTime(currentTime)}
-                  </Text>
+                  <Text style={styles.dateText}>{getDisplayTime()}</Text>
                   <Text style={styles.lastReportText}>Último reporte</Text>
                 </View>
               </View>

@@ -26,8 +26,8 @@ android {
         applicationId "com.velsat.mobile"        
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 89
-        versionName "1.0.89"
+        versionCode 95
+        versionName "1.0.95"
     }
     signingConfigs {
         debug {

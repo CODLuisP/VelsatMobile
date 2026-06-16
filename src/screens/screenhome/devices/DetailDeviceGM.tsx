@@ -206,7 +206,10 @@ const DetailDeviceGM = () => {
       if (!isMountedRef.current) return;
 
       if (data?.vehiculo) {
-        setVehicleData(data.vehiculo);
+        setVehicleData({
+          ...data.vehiculo,
+          lastGPSTimestamp: data.vehiculo.lastGPSTimestamp * 1000, // segundos → ms
+        });
         setConnectionStatus('connected');
       } else {
         setConnectionStatus('error');
@@ -510,111 +513,63 @@ const DetailDeviceGM = () => {
                 <Callout tooltip={true}>
                   <View
                     style={{
-                      padding: 12,
-                      minWidth: 230,
+                      marginTop: 50,
+                      paddingHorizontal: 14,
+                      paddingVertical: 6,
+                      minWidth: 220,
                       backgroundColor: '#fff',
-                      borderRadius: 12,
+                      borderRadius: 10,
                       shadowColor: '#000',
                       shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.25,
+                      shadowOpacity: 0.2,
                       shadowRadius: 4,
                       elevation: 5,
                     }}
                   >
-                    <TouchableOpacity
-                      onPress={() => {
-                        markerRef.current?.hideCallout();
-                        setCalloutVisible(false);
-                      }}
+                    {/* Fila título + X */}
+                    <View
                       style={{
-                        position: 'absolute',
-                        top: 6,
-                        right: 10,
-                        zIndex: 10,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: 1,
                       }}
                     >
                       <Text
                         style={{
-                          fontSize: 12,
-                          color: '#999',
                           fontWeight: 'bold',
+                          fontSize: 15,
+                          color: '#111',
+                          flex: 1,
                         }}
                       >
-                        ✕
+                        {toUpperCaseText(device)}
                       </Text>
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          markerRef.current?.hideCallout();
+                          setCalloutVisible(false);
+                        }}
+                        style={{ marginLeft: 10, padding: 2 }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            color: '#aaa',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {'✕'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
 
-                    <Text
-                      style={{
-                        fontWeight: 'bold',
-                        fontSize: 15,
-                        color: '#e07b00',
-                        textAlign: 'center',
-                        marginBottom: 8,
-                      }}
-                    >
-                      {toUpperCaseText(device)}
+                    {/* Info con puntos separadores */}
+                    <Text style={{ color: '#666', fontSize: 13 }}>
+                      {`${status} · ${formatThreeDecimals(
+                        speed,
+                      )} Km/h · ${obtenerDireccion(heading)}`}
                     </Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Estado:
-                      </Text>
-                      <Text
-                        style={{
-                          color: status === 'Detenido' ? '#ef4444' : '#16a34a',
-                          fontWeight: '600',
-                        }}
-                      >
-                        {status}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Velocidad:
-                      </Text>
-                      <Text style={{ color: '#333' }}>
-                        {formatThreeDecimals(speed)} Km/h
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Dirección:
-                      </Text>
-                      <Text style={{ color: '#333' }}>
-                        {obtenerDireccion(heading)}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Text style={{ color: '#333', fontWeight: '600' }}>
-                        Conexión:
-                      </Text>
-                      <Text style={{ color: '#16a34a', fontWeight: '600' }}>
-                        Online
-                      </Text>
-                    </View>
                   </View>
                 </Callout>
               </Marker>
@@ -753,6 +708,44 @@ const DetailDeviceGM = () => {
   };
 
   const connectionDisplay = getConnectionDisplay();
+
+  // Agrega esta función antes del return
+  const getDisplayTime = () => {
+    if (!vehicleData) return formatDateTime(currentTime);
+
+    const now = currentTime.getTime();
+    const gpsTime = vehicleData.lastGPSTimestamp;
+    const diffMinutes = (now - gpsTime) / 1000 / 60;
+
+    const formatGPSTime = (timestamp: number) => {
+      const PERU_OFFSET_MS = -5 * 60 * 60 * 1000;
+      const gpsDate = new Date(timestamp + PERU_OFFSET_MS);
+      const day = String(gpsDate.getUTCDate()).padStart(2, '0');
+      const month = String(gpsDate.getUTCMonth() + 1).padStart(2, '0');
+      const year = gpsDate.getUTCFullYear();
+      const hours = String(gpsDate.getUTCHours()).padStart(2, '0');
+      const minutes = String(gpsDate.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(gpsDate.getUTCSeconds()).padStart(2, '0');
+      return `Fecha: ${day}/${month}/${year} Hora: ${hours}:${minutes}:${seconds}`;
+    };
+
+    // GPS reciente (menos de 8 min) y en movimiento → mostrar lastGPSTimestamp
+    if (diffMinutes < 8 && speed > 4) {
+      return formatGPSTime(gpsTime);
+    }
+
+    // GPS antiguo (9+ min) → evaluar velocidad
+    if (diffMinutes >= 9) {
+      if (speed > 5) {
+        return formatGPSTime(gpsTime);
+      } else {
+        return formatDateTime(currentTime);
+      }
+    }
+
+    // Entre 8 y 9 min (zona gris) → hora actual
+    return formatDateTime(currentTime);
+  };
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace - 2 }]}>
@@ -920,9 +913,7 @@ const DetailDeviceGM = () => {
               <View style={styles.dateContainer}>
                 <Clock size={14} color="#6b7280" />
                 <View>
-                  <Text style={styles.dateText}>
-                    {formatDateTime(currentTime)}
-                  </Text>
+                  <Text style={styles.dateText}>{getDisplayTime()}</Text>
                   <Text style={styles.lastReportText}>Último reporte</Text>
                 </View>
               </View>
