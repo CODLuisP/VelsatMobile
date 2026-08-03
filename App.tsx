@@ -5,6 +5,7 @@ import { View, StatusBar } from 'react-native';
 import Profile from './src/screens/screenhome/Profile';
 import ServicesDriver from './src/screens/screenhomedp/ServicesDriver';
 import ServicesPassenger from './src/screens/screenhomedp/ServicesPassenger';
+import ServicesTurismo from './src/screens/screenhomedp/ServicesTurismo';
 import ServicesDetailDriver from './src/screens/screenhomedp/ServicesDetailDriver';
 import ServicesDetailPassenger from './src/screens/screenhomedp/ServicesDetailPassenger';
 import RastreoMobile from './src/screens/screentracking/RastreoMobile';
@@ -177,6 +178,7 @@ export type RootStackParamList = {
   FAQ: undefined;
   ServicesDriver: undefined;
   ServicesPassenger: undefined;
+  ServicesTurismo: undefined;
   ServicesDetailDriver: {
     serviceData: Service;
   };
@@ -251,7 +253,7 @@ const App = () => {
                   component={
                     tipo === 'n'
                       ? Home
-                      : tipo === 'c' || tipo === 'p' || tipo === 'r'
+                      : tipo === 'c' || tipo === 'p' || tipo === 'r' || tipo === 't'
                       ? HomeDriverPassenger
                       : Home
                   }
@@ -284,6 +286,7 @@ const App = () => {
                 />
                 <Stack.Screen name="ServicesDriver" component={ServicesDriver} />
                 <Stack.Screen name="ServicesPassenger" component={ServicesPassenger} />
+                <Stack.Screen name="ServicesTurismo" component={ServicesTurismo} />
                 <Stack.Screen name="ServicesDetailDriver" component={ServicesDetailDriver} />
                 <Stack.Screen name="ServicesDetailPassenger" component={ServicesDetailPassenger} />
                 <Stack.Screen

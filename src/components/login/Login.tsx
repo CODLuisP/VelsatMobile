@@ -46,13 +46,11 @@ import { styles } from '../../styles/login';
 import { useFocusEffect } from '@react-navigation/native';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 
-import SystemNavigationBar from 'react-native-system-navigation-bar';
 import {
   getBottomSpace,
   useNavigationMode,
 } from '../../hooks/useNavigationMode';
 import LinearGradient from 'react-native-linear-gradient';
-import ModalAlert from '../ModalAlert';
 import { Text, TextInput } from '../ScaledComponents';
 
 const { width, height } = Dimensions.get('window');
@@ -454,6 +452,7 @@ const Login = () => {
             loginData.username.slice(1),
           description: loginData.account.description,
           codigo: loginData.account.codigo,
+          brevete: loginData.account.brevete,
         };
 
         setUser(userObj);

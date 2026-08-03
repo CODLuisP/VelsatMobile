@@ -1,0 +1,288 @@
+import { Platform, StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    marginTop: Platform.OS === 'ios' ? -70 : 0,
+    height: Platform.OS === 'ios' ? 210 : 130,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: -5,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitleBlock: {
+    flex: 1,
+  },
+  headerMainTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginLeft: 12,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.75)',
+    marginLeft: 12,
+    marginTop: 2,
+  },
+  contentList: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    marginTop: -25,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  formContainer: {
+    marginTop: 15,
+    paddingHorizontal: 15,
+  },
+
+  swipeWrapper: {
+    marginBottom: 16,
+    justifyContent: 'center',
+  },
+  swipeBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#e2f7ea',
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  swipeBackgroundText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0b7a3b',
+  },
+  swipeHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#f0fbf4',
+  },
+  swipeHintText: {
+    fontSize: 11,
+    color: '#0b7a3b',
+    fontWeight: '600',
+  },
+  serviceHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(126, 240, 168, 0.15)',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#7ef0a8',
+  },
+  avisoBanner: {
+    backgroundColor: '#fdecea',
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#d93025',
+    padding: 10,
+    marginBottom: 12,
+  },
+  avisoBannerText: {
+    fontSize: 12,
+    color: '#a52217',
+    fontWeight: '600',
+  },
+
+  serviceCard: {
+    backgroundColor: '#f8fbffff',
+    borderRadius: 10,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#032660ff',
+  },
+  serviceHeader: {
+    backgroundColor: '#032660ff',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 8,
+  },
+  serviceHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  serviceTime: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  serviceDate: {
+    fontSize: 11,
+    color: '#c9d6f0ff',
+  },
+  chevron: {
+    marginLeft: 8,
+  },
+  serviceBody: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 8,
+  },
+  infoColumn: {
+    flex: 1,
+  },
+  infoLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  infoLabel: {
+    fontSize: 11,
+    color: '#666',
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 13,
+    color: '#000',
+    fontWeight: '600',
+  },
+  routeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eef3ffff',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+    gap: 8,
+  },
+  routeTextBlock: {
+    flex: 1,
+  },
+
+  clickPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    gap: 6,
+    paddingVertical: 7,
+    backgroundColor: '#edf5ffff',
+  },
+  clickPromptText: {
+    fontSize: 13,
+    color: '#032660ff',
+    fontWeight: '600',
+  },
+
+  detailContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    padding: 12,
+    gap: 10,
+  },
+  detailSectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#032660ff',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  detailGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  detailItem: {
+    width: '50%',
+    marginBottom: 8,
+    paddingRight: 8,
+  },
+  detailLabel: {
+    fontSize: 10,
+    color: '#888',
+    fontWeight: '500',
+  },
+  detailValue: {
+    fontSize: 12,
+    color: '#222',
+    fontWeight: '600',
+  },
+  notesBox: {
+    backgroundColor: '#fff8ecff',
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 2,
+  },
+
+  emptyStateContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(227, 100, 20, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  iconCircleLarge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 20,
+  },
+  emptyStateTitle: {
+    color: '#00296b',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyStateTitleDark: {
+    color: '#1a237e',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyStateSubtitle: {
+    color: '#212529',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptyStateDescription: {
+    color: '#666',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

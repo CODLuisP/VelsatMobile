@@ -11,6 +11,8 @@ export interface User {
   name?: string;
   description?: string;
   codigo?: string;
+  // Conductor de turismo (tipo === 't'): identifica al conductor en servturismo (no hay FK, se busca por brevete).
+  brevete?: string;
 }
 
 // Configuración biométrica
@@ -48,6 +50,7 @@ interface AuthState {
     tipo: string | null;
     description: string | null;
     codigo: string | null;
+    brevete: string | null;
   };
 
   // Estados de PIN
@@ -59,6 +62,7 @@ interface AuthState {
     tipo: string | null;
     description: string | null;
     codigo: string | null;
+    brevete: string | null;
   };
 
   // Actions existentes
@@ -116,6 +120,7 @@ export const useAuthStore = create<AuthState>()(
         tipo: null,
         description: null,
         codigo: null,
+        brevete: null,
       },
 
       // Estados iniciales de PIN
@@ -130,6 +135,7 @@ export const useAuthStore = create<AuthState>()(
         tipo: null,
         description: null,
         codigo: null,
+        brevete: null,
       },
 
       // Actions existentes
@@ -155,10 +161,11 @@ export const useAuthStore = create<AuthState>()(
                 tipo: newState.tipo!,
                 description: user.description || null,
                 codigo: user.codigo || null,
+                brevete: user.brevete || null,
               },
             }));
           }
-          
+
           // Guardar credenciales de PIN
           if (newState.pin.isEnabled && newState.token && newState.server && newState.tipo) {
             set((currentState) => ({
@@ -170,6 +177,7 @@ export const useAuthStore = create<AuthState>()(
                 tipo: newState.tipo!,
                 description: user.description || null,
                 codigo: user.codigo || null,
+                brevete: user.brevete || null,
               },
             }));
           }
@@ -269,13 +277,14 @@ export const useAuthStore = create<AuthState>()(
                   tipo: currentState.tipo,
                   description: currentState.user!.description || null,
                   codigo: currentState.user!.codigo || null,
+                  brevete: currentState.user!.brevete || null,
                 },
               }));
             }
-            
+
             return true;
           }
-          
+
           return false;
         } catch (error) {
           return false;
@@ -316,8 +325,8 @@ export const useAuthStore = create<AuthState>()(
           });
 
           if (success) {
-            const { username, token, server, tipo, description, codigo } = state.biometricCredentials;
-            
+            const { username, token, server, tipo, description, codigo, brevete } = state.biometricCredentials;
+
             set({
               server,
               token,
@@ -329,6 +338,7 @@ export const useAuthStore = create<AuthState>()(
                 name: username!.charAt(0).toUpperCase() + username!.slice(1),
                 description: description || undefined,
                 codigo: codigo || undefined,
+                brevete: brevete || undefined,
               },
               isAuthenticated: true,
               isLoading: false,
@@ -361,6 +371,7 @@ export const useAuthStore = create<AuthState>()(
               tipo: state.tipo,
               description: state.user?.description || null,
               codigo: state.user?.codigo || null,
+              brevete: state.user?.brevete || null,
             },
           }));
         }
@@ -375,6 +386,7 @@ export const useAuthStore = create<AuthState>()(
             tipo: null,
             description: null,
             codigo: null,
+            brevete: null,
           },
         }));
       },
@@ -425,10 +437,11 @@ export const useAuthStore = create<AuthState>()(
                 tipo: currentState.tipo,
                 description: currentState.user!.description || null,
                 codigo: currentState.user!.codigo || null,
+                brevete: currentState.user!.brevete || null,
               },
             }));
           }
-          
+
           return true;
         } catch (error) {
           return false;
@@ -459,6 +472,7 @@ export const useAuthStore = create<AuthState>()(
               tipo: state.tipo,
               description: state.user?.description || null,
               codigo: state.user?.codigo || null,
+              brevete: state.user?.brevete || null,
             },
           }));
         }
@@ -473,6 +487,7 @@ export const useAuthStore = create<AuthState>()(
             tipo: null,
             description: null,
             codigo: null,
+            brevete: null,
           },
         }));
       },
@@ -506,8 +521,8 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const { username, token, server, tipo, description, codigo } = state.pinCredentials;
-          
+          const { username, token, server, tipo, description, codigo, brevete } = state.pinCredentials;
+
           set({
             server,
             token,
@@ -519,6 +534,7 @@ export const useAuthStore = create<AuthState>()(
               name: username!.charAt(0).toUpperCase() + username!.slice(1),
               description: description || undefined,
               codigo: codigo || undefined,
+              brevete: brevete || undefined,
             },
             isAuthenticated: true,
             isLoading: false,
