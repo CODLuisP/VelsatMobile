@@ -6,12 +6,14 @@ export const toUpperCaseText = (text: any) => {
 };
 
 export const formatDateTime = (date: Date) => {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const PERU_OFFSET_MS = -5 * 60 * 60 * 1000;
+  const peruDate = new Date(date.getTime() + PERU_OFFSET_MS);
+  const day = String(peruDate.getUTCDate()).padStart(2, '0');
+  const month = String(peruDate.getUTCMonth() + 1).padStart(2, '0');
+  const year = peruDate.getUTCFullYear();
+  const hours = String(peruDate.getUTCHours()).padStart(2, '0');
+  const minutes = String(peruDate.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(peruDate.getUTCSeconds()).padStart(2, '0');
 
   return `Fecha: ${day}/${month}/${year}  Hora: ${hours}:${minutes}:${seconds}`;
 };

@@ -111,14 +111,16 @@ export const ImageViewerModal = ({
       setDownloading(true);
       if (Platform.OS === 'android') {
         const androidVersion = Platform.Version as number;
-        const permission = androidVersion >= 33
-          ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-          : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-        const granted = await PermissionsAndroid.request(permission);
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Permiso denegado', 'Habilita el permiso de galería en Configuración.');
-          return;
+        if (androidVersion < 33) {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          );
+          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            Alert.alert('Permiso denegado', 'Habilita el permiso de galería en Configuración.');
+            return;
+          }
         }
+        // Android 13+ (API 33+): CameraRoll/MediaStore guarda sin permisos adicionales
       }
       let localUri = displayUri;
       if (displayUri.startsWith('http')) {

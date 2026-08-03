@@ -483,7 +483,7 @@ const DetailDeviceGM = () => {
               <Marker
                 ref={markerRef}
                 key={`marker-${device}`}
-                anchor={{ x: 0.5, y: 0.2 }}
+                anchor={{ x: 0.5, y: 0.5 }}
                 coordinate={{ latitude, longitude }}
                 tracksViewChanges={true}
                 onPress={() => {
@@ -515,7 +515,7 @@ const DetailDeviceGM = () => {
                     style={{
                       marginTop: 50,
                       paddingHorizontal: 14,
-                      paddingVertical: 10,
+                      paddingVertical: 6,
                       minWidth: 220,
                       backgroundColor: '#fff',
                       borderRadius: 10,
@@ -532,7 +532,7 @@ const DetailDeviceGM = () => {
                         flexDirection: 'row',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: 4,
+                        marginBottom: 1,
                       }}
                     >
                       <Text
@@ -718,13 +718,14 @@ const DetailDeviceGM = () => {
     const diffMinutes = (now - gpsTime) / 1000 / 60;
 
     const formatGPSTime = (timestamp: number) => {
-      const gpsDate = new Date(timestamp);
-      const day = String(gpsDate.getDate()).padStart(2, '0');
-      const month = String(gpsDate.getMonth() + 1).padStart(2, '0');
-      const year = gpsDate.getFullYear();
-      const hours = String(gpsDate.getHours()).padStart(2, '0');
-      const minutes = String(gpsDate.getMinutes()).padStart(2, '0');
-      const seconds = String(gpsDate.getSeconds()).padStart(2, '0');
+      const PERU_OFFSET_MS = -5 * 60 * 60 * 1000;
+      const gpsDate = new Date(timestamp + PERU_OFFSET_MS);
+      const day = String(gpsDate.getUTCDate()).padStart(2, '0');
+      const month = String(gpsDate.getUTCMonth() + 1).padStart(2, '0');
+      const year = gpsDate.getUTCFullYear();
+      const hours = String(gpsDate.getUTCHours()).padStart(2, '0');
+      const minutes = String(gpsDate.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(gpsDate.getUTCSeconds()).padStart(2, '0');
       return `Fecha: ${day}/${month}/${year} Hora: ${hours}:${minutes}:${seconds}`;
     };
 

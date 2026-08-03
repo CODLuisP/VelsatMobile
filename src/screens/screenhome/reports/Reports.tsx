@@ -135,6 +135,7 @@ const Reports: React.FC = () => {
       icon: BarChart3,
       description: 'Análisis completo de la actividad',
       gradient: ['#ffffffff', '#ffffffff'],
+      eos: 'https://res.cloudinary.com/db8efdixd/image/upload/v1764991360/rgeneral_gkmeve.jpg',
     },
     {
       id: 1,
@@ -195,6 +196,12 @@ const Reports: React.FC = () => {
   useEffect(() => {
     fetchUnits();
   }, [user]);
+
+  useEffect(() => {
+    reportTypes.forEach(report => {
+      if (report.eos) Image.prefetch(report.eos);
+    });
+  }, []);
 
   useEffect(() => {
     if (selectedReport !== 2) setSpeedValue('');
