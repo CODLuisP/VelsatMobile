@@ -81,7 +81,7 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      if ((tipo === 'n' || tipo === 'c' || tipo === 'p') && user?.username) {
+      if ((tipo === 'n' || tipo === 'c' || tipo === 'p' || tipo === 't') && user?.username) {
         setLoading(true);
         try {
           const response = await axios.get<UserDetailsResponse>(
@@ -215,7 +215,7 @@ const Profile = () => {
                   </Text>
                 </View>
               </>
-            ) : tipo === 'c' && userDetails ? (
+            ) : (tipo === 'c' || tipo === 't') && userDetails ? (
               <>
                 <View style={styles.infoItem}>
                   <User size={16} color="#1e3a8a" />
@@ -273,7 +273,7 @@ const Profile = () => {
                   </Text>
                 </View>
               </>
-            ) : tipo === 'n' || tipo === 'c' || tipo === 'p' ? (
+            ) : tipo === 'n' || tipo === 'c' || tipo === 'p' || tipo === 't' ? (
               <>
                 <View style={styles.infoItem}>
                   <User size={16} color="#1e3a8a" />
@@ -289,7 +289,7 @@ const Profile = () => {
                   <Smartphone size={16} color="#1e3a8a" />
                   <Text style={styles.infoText}>-</Text>
                 </View>
-                {(tipo === 'c' || tipo === 'p') && (
+                {(tipo === 'c' || tipo === 'p' || tipo === 't') && (
                   <View style={styles.infoItem}>
                     <Smartphone size={16} color="#999" />
                     <Text style={styles.infoText}>-</Text>
@@ -317,7 +317,7 @@ const Profile = () => {
 <View style={styles.scrollContent}>
   <View style={styles.scrollContentContainer}>
     <View style={styles.menuSection}>
-      {tipo != 'c' && tipo != 'p' && (
+      {tipo != 'c' && tipo != 'p' && tipo != 't' && (
         <>
           <Text style={styles.sectionTitle}>GENERAL</Text>
 

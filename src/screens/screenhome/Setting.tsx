@@ -95,10 +95,11 @@ const Setting = () => {
 
   const handleUpdateData = async () => {
     if (!updateData.usuario.trim()) { setModalVisible(true); return; }
-    if ((tipo === 'c' || tipo === 'p') && !updateData.correo.trim()) { setModalUsuarioVisible(true); return; }
+    if ((tipo === 'c' || tipo === 'p' || tipo === 't') && !updateData.correo.trim()) { setModalUsuarioVisible(true); return; }
     if (tipo === 'n' && updateData.correo.trim() && !validateEmail(updateData.correo)) { setModalEmailErrorVisible(true); return; }
     if (tipo === 'n') await updateUserTypeN();
     else if (tipo === 'c') await updateUserTypeC();
+    else if (tipo === 't') await updateUserTypeT();
     else if (tipo === 'p') await updateUserTypeP();
   };
 
@@ -116,6 +117,16 @@ const Setting = () => {
     setLoading(true);
     try {
       await axios.put(`${server}/api/User/MobileUpdateUser?tipo=c`, { accountID: user?.username || '', apellidos: updateData.usuario, login: updateData.correo, telefono: updateData.celular }, { headers: { 'Content-Type': 'application/json' } });
+      setModalUpdateSuccessVisible(true);
+      setUpdateData({ usuario: '', correo: '', celular: '' });
+    } catch { setModalPasswordErrorVisible(true); }
+    finally { setLoading(false); }
+  };
+
+  const updateUserTypeT = async () => {
+    setLoading(true);
+    try {
+      await axios.put(`${server}/api/User/MobileUpdateUser?tipo=t`, { accountID: user?.username || '', apellidos: updateData.usuario, login: updateData.correo, telefono: updateData.celular }, { headers: { 'Content-Type': 'application/json' } });
       setModalUpdateSuccessVisible(true);
       setUpdateData({ usuario: '', correo: '', celular: '' });
     } catch { setModalPasswordErrorVisible(true); }
@@ -264,7 +275,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
                     <View style={styles.inputGroup}>
                       <Text style={styles.inputLabel}>
                         {tipo === 'n' ? 'Correo asociado' : 'Usuario'}
-                        {(tipo === 'c' || tipo === 'p') && <Text style={styles.requiredAsterisk}> *</Text>}
+                        {(tipo === 'c' || tipo === 'p' || tipo === 't') && <Text style={styles.requiredAsterisk}> *</Text>}
                       </Text>
                       <View style={styles.inputContainer}>
                         {tipo === 'n'
