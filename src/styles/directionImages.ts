@@ -31,7 +31,7 @@ export const DIRECTION_IMAGES = {
   },
 } as const;
 
-export type VehiclePinType = 's' | 'p' | 'c';
+export type VehiclePinType = 's' | 'p' | 'c' | 't';
 export type DirectionImageName = keyof typeof DIRECTION_IMAGES.s;
 
 export interface DirectionImageData {
@@ -58,5 +58,6 @@ const getDirectionImageName = (angle: number): DirectionImageName => {
 
 export const getDirectionImage = (angle: number, pinType: VehiclePinType = 's') => {
   const imageName = getDirectionImageName(angle);
-  return { uri: DIRECTION_IMAGES[pinType][imageName] };
+  const resolvedPinType = pinType === 't' ? 'c' : pinType;
+  return { uri: DIRECTION_IMAGES[resolvedPinType][imageName] };
 };
