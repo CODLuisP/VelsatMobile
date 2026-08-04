@@ -135,6 +135,10 @@ const HomeDriverPassenger: React.FC = () => {
     navigation.navigate('ServicesPassenger');
   };
 
+  const handleNavigateToServicesTurismo = () => {
+    navigation.navigate('ServicesTurismo');
+  };
+
   const handleNavigateToRastreo = () => {
     navigation.navigate('RastreoMobile'); // Cambiar por el nombre correcto
   };
@@ -777,8 +781,19 @@ const HomeDriverPassenger: React.FC = () => {
               activeOpacity={0.9}
             />
 
-            {/* Condición para mostrar Servicios o algo diferente según el tipo */}
-            {tipo !== 'r' ? (
+            {/* Condición para mostrar Servicios, Servicios Turismo, o Transmisión según el tipo */}
+            {tipo === 't' ? (
+              <OptionCard
+                onPress={handleNavigateToServicesTurismo}
+                colors={['#05255dff', '#093f86ff']}
+                badge="TURISMO"
+                category="Programación"
+                title="Servicios Turismo"
+                description="Conoce tus servicios de turismo programados para hoy."
+                icon={Car}
+                activeOpacity={0.7}
+              />
+            ) : tipo !== 'r' ? (
               <OptionCard
                 onPress={
                   tipo === 'c'
