@@ -4,8 +4,6 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  FlatList,
-  SafeAreaView,
 } from 'react-native';
 import {
   ChevronLeft,
@@ -18,6 +16,10 @@ import {
   Megaphone,
   Pin,
   Mail,
+  Building2,
+  IdCard,
+  AtSign,
+  LucideIcon,
 } from 'lucide-react-native';
 import { styles } from '../../styles/profile';
 import { useAuthStore } from '../../store/authStore';
@@ -75,7 +77,7 @@ const Profile = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#ffffff', true);
+      NavigationBarColor('#eef1f6', true);
     }, []),
   );
 
@@ -121,9 +123,12 @@ const Profile = () => {
   const topSpace = insets.top + 10;
 
   const shouldShowMarkerAndNotifications = tipo === 'n';
+  const shouldShowSettings = tipo !== 'c' && tipo !== 'p';
+  const shouldShowGeneral =
+    shouldShowSettings || shouldShowMarkerAndNotifications;
 
   const getFirstEmail = (emailString: string | null | undefined): string => {
-    if (!emailString || emailString.trim() === '') return '-';
+    if (!emailString || emailString.trim() === '') return '';
     const emails = emailString.split(';');
     return emails[0].trim();
   };
@@ -135,14 +140,118 @@ const Profile = () => {
     const parts = [];
     if (apellidos) parts.push(apellidos.trim());
     if (nombres) parts.push(nombres.trim());
-    return parts.length > 0 ? parts.join(' ') : 'Sin nombre';
+    return parts.join(' ');
   };
 
   const getLast8Digits = (codlan: string | null | undefined): string => {
-    if (!codlan) return '-';
+    if (!codlan) return '';
     const digits = codlan.replace(/\D/g, '');
     return digits.length >= 8 ? digits.slice(-8) : digits;
   };
+
+  type InfoRow = {
+    key: string;
+    Icon: LucideIcon;
+    label: string;
+    value: string | null | undefined;
+  };
+
+  const buildInfoRows = (): InfoRow[] => {
+    let rows: InfoRow[] = [];
+
+    if (tipo === 'n' && userDetails) {
+      rows = [
+        {
+          key: 'nombre',
+          Icon: Building2,
+          label: 'Razón social',
+          value: userDetails.description,
+        },
+        { key: 'ruc', Icon: IdCard, label: 'RUC', value: userDetails.ruc },
+        {
+          key: 'email',
+          Icon: Mail,
+          label: 'Correo',
+          value: getFirstEmail(userDetails.contactEmail),
+        },
+        {
+          key: 'telefono',
+          Icon: Smartphone,
+          label: 'Celular',
+          value: userDetails.contactPhone,
+        },
+      ];
+    } else if (tipo === 'c' && userDetails) {
+      rows = [
+        {
+          key: 'nombre',
+          Icon: User,
+          label: 'Nombres',
+          value: getFullName(userDetails.apellidos, userDetails.nombres),
+        },
+        { key: 'dni', Icon: IdCard, label: 'DNI', value: userDetails.dni },
+        {
+          key: 'telefono',
+          Icon: Smartphone,
+          label: 'Celular',
+          value: userDetails.telefono,
+        },
+        {
+          key: 'login',
+          Icon: AtSign,
+          label: 'Usuario',
+          value: userDetails.login,
+        },
+      ];
+    } else if (tipo === 'p' && userDetails) {
+      rows = [
+        {
+          key: 'nombre',
+          Icon: User,
+          label: 'Nombres',
+          value: getFullName(userDetails.apellidos, userDetails.nombres),
+        },
+        {
+          key: 'dni',
+          Icon: IdCard,
+          label: 'DNI',
+          value: getLast8Digits(userDetails.codlan),
+        },
+        {
+          key: 'telefono',
+          Icon: Smartphone,
+          label: 'Celular',
+          value: userDetails.telefono,
+        },
+        {
+          key: 'codlan',
+          Icon: AtSign,
+          label: 'Usuario',
+          value: userDetails.codlan,
+        },
+        {
+          key: 'empresa',
+          Icon: Building2,
+          label: 'Empresa',
+          value: userDetails.empresa,
+        },
+      ];
+    } else if (tipo === 'n' || tipo === 'c' || tipo === 'p') {
+      rows = [
+        {
+          key: 'nombre',
+          Icon: tipo === 'n' ? Building2 : User,
+          label: tipo === 'n' ? 'Razón social' : 'Nombres',
+          value: user?.description,
+        },
+      ];
+    }
+
+    return rows.filter(row => !!row.value && row.value.trim() !== '');
+  };
+
+  const infoRows = buildInfoRows();
+  const showInfoSection = loading || infoRows.length > 0;
 
   return (
 
@@ -155,7 +264,7 @@ const Profile = () => {
          colors={['#05194fff', '#05194fff', '#18223dff']}
        start={{ x: 0, y: 0 }}
        end={{ x: 0, y: 1 }}
-         style={[styles.header, { paddingTop: topSpace  }]}
+         style={[styles.header, { paddingTop: topSpace }]}
        >
 
         <TouchableOpacity
@@ -179,133 +288,37 @@ const Profile = () => {
           {toUpperCaseText(user?.description || user?.name || 'Usuario')}
         </Text>
 
-         <View style={styles.infoSection}>
-        <View style={styles.infoHeader}>
-          <Text style={styles.infoTitle}>Información</Text>
-        </View>
+        {showInfoSection && (
+          <View style={styles.infoSection}>
+            <View style={styles.infoHeader}>
+              <View style={styles.infoAccent} />
+              <Text style={styles.infoTitle}>Información</Text>
+            </View>
 
-        {loading ? (
-          <View style={{ padding: 20, alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#e36414" />
-          </View>
-        ) : (
-          <View style={styles.infoContent}>
-            {tipo === 'n' && userDetails ? (
-              <>
-                <View style={styles.infoItem}>
-                  <User size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.description || 'Sin nombre'}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Clipboard size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>{userDetails.ruc || '-'}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Mail size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {getFirstEmail(userDetails.contactEmail)}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Smartphone size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.contactPhone || '-'}
-                  </Text>
-                </View>
-              </>
-            ) : tipo === 'c' && userDetails ? (
-              <>
-                <View style={styles.infoItem}>
-                  <User size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {getFullName(userDetails.apellidos, userDetails.nombres)}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Clipboard size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>{userDetails.dni || '-'}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Smartphone size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.telefono || '-'}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Smartphone size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.login || '-'}
-                  </Text>
-                </View>
-              </>
-            ) : tipo === 'p' && userDetails ? (
-              <>
-                <View style={styles.infoItem}>
-                  <User size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {getFullName(userDetails.apellidos, userDetails.nombres)}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Clipboard size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {getLast8Digits(userDetails.codlan)}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Smartphone size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.telefono || '-'}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Smartphone size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.codlan || '-'}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Clipboard size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {userDetails.empresa || '-'}
-                  </Text>
-                </View>
-              </>
-            ) : tipo === 'n' || tipo === 'c' || tipo === 'p' ? (
-              <>
-                <View style={styles.infoItem}>
-                  <User size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>
-                    {user?.description || 'Sin nombre'}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Clipboard size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>-</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Smartphone size={16} color="#1e3a8a" />
-                  <Text style={styles.infoText}>-</Text>
-                </View>
-                {(tipo === 'c' || tipo === 'p') && (
-                  <View style={styles.infoItem}>
-                    <Smartphone size={16} color="#999" />
-                    <Text style={styles.infoText}>-</Text>
+            {loading ? (
+              <View style={styles.infoLoading}>
+                <ActivityIndicator size="small" color="#e36414" />
+              </View>
+            ) : (
+              <View style={styles.infoContent}>
+                {infoRows.map(({ key, Icon, label, value }, index) => (
+                  <View key={key}>
+                    {index > 0 && <View style={styles.infoDivider} />}
+                    <View style={styles.infoItem}>
+                      <View style={styles.infoIcon}>
+                        <Icon size={12} color="#1e3a8a" />
+                      </View>
+                      <Text style={styles.infoLabel}>{label}</Text>
+                      <Text style={styles.infoText} numberOfLines={1}>
+                        {value}
+                      </Text>
+                    </View>
                   </View>
-                )}
-                {tipo === 'p' && (
-                  <View style={styles.infoItem}>
-                    <Clipboard size={16} color="#999" />
-                    <Text style={styles.infoText}>-</Text>
-                  </View>
-                )}
-              </>
-            ) : null}
+                ))}
+              </View>
+            )}
           </View>
         )}
-      </View>
 
         
       </LinearGradient>
@@ -313,119 +326,117 @@ const Profile = () => {
       {/* Information Section */}
      
 
-      {/* FlatList con menú */}
-<View style={styles.scrollContent}>
-  <View style={styles.scrollContentContainer}>
-    <View style={styles.menuSection}>
-      {tipo != 'c' && tipo != 'p' && (
-        <>
-          <Text style={styles.sectionTitle}>GENERAL</Text>
+      {/* Menú */}
+      <View style={styles.scrollContent}>
+        <View style={styles.scrollContentContainer}>
+          {shouldShowGeneral && (
+            <View style={styles.menuSection}>
+              <Text style={styles.sectionTitle}>GENERAL</Text>
 
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handleSettings}
-            activeOpacity={0.96}
-          >
-            <View style={styles.menuItemLeft}>
-              <View style={styles.iconContainer}>
-                <Settings size={22} color="#e36414" />
-              </View>
-              <View style={styles.menuTextContainer}>
-                <Text style={styles.menuText}>Configuración</Text>
-                <Text style={styles.menuSubtext}>
-                  Ajustes de la aplicación
-                </Text>
+              <View style={styles.menuCard}>
+                {shouldShowSettings && (
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={handleSettings}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.iconContainer}>
+                      <Settings size={19} color="#e36414" />
+                    </View>
+                    <View style={styles.menuTextContainer}>
+                      <Text style={styles.menuText}>Configuración</Text>
+                      <Text style={styles.menuSubtext}>
+                        Ajustes de la aplicación
+                      </Text>
+                    </View>
+                    <ChevronLeft
+                      size={18}
+                      color="#c3cbd8"
+                      style={styles.chevronRight}
+                    />
+                  </TouchableOpacity>
+                )}
+
+                {shouldShowMarkerAndNotifications && (
+                  <>
+                    {shouldShowSettings && <View style={styles.menuDivider} />}
+
+                    <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={handlePin}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.iconContainer}>
+                        <Pin size={19} color="#e36414" />
+                      </View>
+                      <View style={styles.menuTextContainer}>
+                        <Text style={styles.menuText}>Marcadores</Text>
+                        <Text style={styles.menuSubtext}>
+                          Contenido guardado
+                        </Text>
+                      </View>
+                      <ChevronLeft
+                        size={18}
+                        color="#c3cbd8"
+                        style={styles.chevronRight}
+                      />
+                    </TouchableOpacity>
+
+                    <View style={styles.menuDivider} />
+
+                    <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={handleNotifications}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.iconContainer}>
+                        <Megaphone size={19} color="#e36414" />
+                      </View>
+                      <View style={styles.menuTextContainer}>
+                        <Text style={styles.menuText}>Notificaciones</Text>
+                        <Text style={styles.menuSubtext}>Alertas y avisos</Text>
+                      </View>
+                      <ChevronLeft
+                        size={18}
+                        color="#c3cbd8"
+                        style={styles.chevronRight}
+                      />
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             </View>
-            <ChevronLeft
-              size={20}
-              color="#999"
-              style={styles.chevronRight}
-            />
-          </TouchableOpacity>
-        </>
-      )}
+          )}
 
-      {shouldShowMarkerAndNotifications && (
-        <>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={handlePin}
-            activeOpacity={0.96}
-          >
-            <View style={styles.menuItemLeft}>
-              <View style={styles.iconContainer}>
-                <Pin size={22} color="#e36414" />
-              </View>
-              <View style={styles.menuTextContainer}>
-                <Text style={styles.menuText}>Marcadores</Text>
-                <Text style={styles.menuSubtext}>
-                  Contenido guardado
-                </Text>
-              </View>
+          <View style={styles.menuSection}>
+            <Text style={styles.sectionTitle}>CUENTA</Text>
+
+            <View style={styles.menuCard}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleLogout}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.iconContainer, styles.logoutIconContainer]}>
+                  <LogOut size={19} color="#dc2626" />
+                </View>
+                <View style={styles.menuTextContainer}>
+                  <Text style={[styles.menuText, styles.logoutText]}>
+                    Cerrar sesión
+                  </Text>
+                  <Text style={styles.menuSubtext}>Salir de la aplicación</Text>
+                </View>
+                <ChevronLeft
+                  size={18}
+                  color="#dc2626"
+                  style={styles.chevronRight}
+                />
+              </TouchableOpacity>
             </View>
-            <ChevronLeft
-              size={20}
-              color="#999"
-              style={styles.chevronRight}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItemEnd}
-            onPress={handleNotifications}
-            activeOpacity={0.96}
-          >
-            <View style={styles.menuItemLeft}>
-              <View style={styles.iconContainer}>
-                <Megaphone size={22} color="#e36414" />
-              </View>
-              <View style={styles.menuTextContainer}>
-                <Text style={styles.menuText}>Notificaciones</Text>
-                <Text style={styles.menuSubtext}>Alertas y avisos</Text>
-              </View>
-            </View>
-            <ChevronLeft
-              size={20}
-              color="#999"
-              style={styles.chevronRight}
-            />
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
-
-    <View style={styles.menuSection}>
-      <Text style={styles.sectionTitle}>CUENTA</Text>
-
-      <TouchableOpacity
-        style={[styles.menuItemEnd]}
-        onPress={handleLogout}
-        activeOpacity={0.96}
-      >
-        <View style={styles.menuItemLeft}>
-          <View
-            style={[styles.iconContainer, styles.logoutIconContainer]}
-          >
-            <LogOut size={22} color="#dc2626" />
           </View>
-          <Text style={[styles.menuText, styles.logoutText]}>
-            Cerrar sesión
-          </Text>
         </View>
-        <ChevronLeft
-          size={20}
-          color="#dc2626"
-          style={styles.chevronRight}
-        />
-      </TouchableOpacity>
-    </View>
+      </View>
 
-
-
-  </View>
-</View>
-  
 
     </View>
   );

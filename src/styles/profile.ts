@@ -3,14 +3,13 @@ import { Platform, StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#eef1f6',
   },
-header: {
-
+  header: {
     height: Platform.OS === 'ios' ? 490 : 405,
     width: '100%',
     alignItems: 'center',
     marginTop: Platform.OS === 'ios' ? -85 : 0,
-    
   },
   backButton: {
     position: 'absolute',
@@ -52,54 +51,85 @@ header: {
   // Info Section
   infoSection: {
     backgroundColor: '#fff',
-    borderRadius: 15,
+    borderRadius: 18,
     width: '90%',
     marginTop: 15,
- 
+    paddingBottom: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    elevation: 6,
   },
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3be9dff',
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 7,
+    gap: 7,
+  },
+  infoAccent: {
+    width: 3,
+    height: 12,
+    borderRadius: 2,
+    backgroundColor: '#e36414',
   },
   infoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#e36414',
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#0f1b3d',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  infoLoading: {
+    paddingVertical: 22,
+    alignItems: 'center',
   },
   infoContent: {
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    marginBottom: 8
+    paddingHorizontal: 14,
+  },
+  infoDivider: {
+    height: 1,
+    backgroundColor: '#eef1f6',
+    marginLeft: 30,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
-    gap: 10,
+    paddingVertical: 2,
+  },
+  infoIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 7,
+    backgroundColor: 'rgba(30,58,138,0.09)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   infoLabel: {
-    fontSize: 16,
+    fontSize: 10.5,
+    color: '#9aa4b5',
+    fontWeight: '500',
     marginRight: 12,
-    width: 24,
-    textAlign: 'center',
   },
   infoText: {
-    fontSize: 13,
-    color: '#303030ff',
+    fontSize: 12,
+    color: '#0f1b3d',
+    fontWeight: '600',
     flex: 1,
+    textAlign: 'right',
   },
 
   // Scroll Content (igual que devicesList en Devices)
   scrollContent: {
-    backgroundColor: 'white',
+    flex: 1,
+    backgroundColor: '#eef1f6',
     borderTopLeftRadius: 35,
     borderTopRightRadius: 35,
     marginTop: -30,
-    paddingVertical: 20,
+    paddingTop: 22,
   },
   scrollContentContainer: {
     paddingVertical: 0,
@@ -107,43 +137,37 @@ header: {
 
   // Menu Section
   menuSection: {
-    backgroundColor: '#e36414',
     marginHorizontal: 20,
-    marginBottom: 16,
-    borderRadius: 15,
-
-
+    marginBottom: 18,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#8d97a8',
+    paddingHorizontal: 4,
     paddingBottom: 8,
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+  },
+  menuCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#0f1b3d',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: '#efeeecff',
-
-
+    paddingVertical: 11,
+    paddingHorizontal: 14,
   },
-
-  menuItemEnd: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    backgroundColor: '#efececff',
-
-    borderBottomLeftRadius: 13,
-    borderBottomRightRadius: 13,
+  menuDivider: {
+    height: 1,
+    backgroundColor: '#eef1f6',
+    marginLeft: 62,
   },
   menuItemLeft: {
     flexDirection: 'row',
@@ -151,26 +175,26 @@ header: {
     flex: 1,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#efd2c4ff',
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    backgroundColor: 'rgba(227,100,20,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   menuTextContainer: {
     flex: 1,
   },
   menuText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#1a1a1a',
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: '#0f1b3d',
     marginBottom: 2,
   },
   menuSubtext: {
     fontSize: 11,
-    color: '#999',
+    color: '#9aa4b5',
   },
   chevronRight: {
     transform: [{ rotate: '180deg' }],
@@ -182,7 +206,7 @@ header: {
     borderBottomWidth: 0,
   },
   logoutIconContainer: {
-    backgroundColor: 'rgb(242, 202, 202)',
+    backgroundColor: 'rgba(220,38,38,0.10)',
   },
   logoutText: {
     color: '#dc2626',

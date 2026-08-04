@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   TouchableOpacity,
-  FlatList,
+  SectionList,
   ActivityIndicator,
   Linking,
   Platform,
@@ -10,15 +10,15 @@ import {
 import {
   ChevronLeft,
   MapPin,
-  Clock,
   Gauge,
-  Navigation,
-  Globe,
   Calendar,
   AlertCircle,
   FileX,
-  BarChart3,
-  Info,
+  Route,
+  TimerOff,
+  ParkingCircle,
+  Search,
+  ChevronDown,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -29,6 +29,7 @@ import {
 } from '@react-navigation/native';
 import axios from 'axios';
 import { styles } from '../../../styles/generalreport';
+import { bodyStyles } from '../../../styles/generalreportbody';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -53,6 +54,99 @@ interface ReportItem {
   longitude: number;
 }
 
+/** Un punto en movimiento, o una parada que agrupa varios pings seguidos con velocidad 0. */
+type Segment =
+  | { kind: 'move'; key: string; date: string; item: ReportItem }
+  | {
+      kind: 'stop';
+      key: string;
+      date: string;
+      start: ReportItem;
+      end: ReportItem;
+      count: number;
+      minutes: number | null;
+    };
+
+type Filter = 'all' | 'move' | 'stop';
+
+const DAYS = [
+  'domingo',
+  'lunes',
+  'martes',
+  'miércoles',
+  'jueves',
+  'viernes',
+  'sábado',
+];
+const MONTHS = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'setiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
+
+/** Acepta dd/MM/yyyy y yyyy-MM-dd; devuelve null si no puede interpretarla. */
+const parseDateTime = (date: string, time: string): Date | null => {
+  if (!date) return null;
+
+  const parts = date.includes('/') ? date.split('/') : date.split('-');
+  if (parts.length !== 3) return null;
+
+  const nums = parts.map(p => parseInt(p, 10));
+  if (nums.some(isNaN)) return null;
+
+  const [year, month, day] =
+    String(parts[0]).length === 4
+      ? [nums[0], nums[1], nums[2]]
+      : [nums[2], nums[1], nums[0]];
+
+  const [h = 0, m = 0, s = 0] = (time || '').split(':').map(p => {
+    const n = parseInt(p, 10);
+    return isNaN(n) ? 0 : n;
+  });
+
+  const parsed = new Date(year, month - 1, day, h, m, s);
+  return isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatDayTitle = (date: string): string => {
+  const parsed = parseDateTime(date, '');
+  if (!parsed) return date;
+  return `${DAYS[parsed.getDay()]} ${parsed.getDate()} de ${
+    MONTHS[parsed.getMonth()]
+  }`;
+};
+
+/** "HH:mm:ss" -> "HH:mm" */
+const shortTime = (time: string): string => (time || '').slice(0, 5);
+
+const formatDuration = (minutes: number | null): string => {
+  if (minutes === null) return '';
+  if (minutes < 1) return 'menos de 1 min';
+  if (minutes < 60) return `${Math.round(minutes)} min`;
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+};
+
+/** Versión corta para el resumen: { value: "2h 15", unit: "m" } */
+const compactDuration = (minutes: number): { value: string; unit: string } => {
+  if (minutes < 60) {
+    return { value: String(Math.round(minutes)), unit: ' min' };
+  }
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  return { value: `${h}h ${m}`, unit: ' m' };
+};
+
 const GeneralReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'GeneralReport'>>();
@@ -64,11 +158,13 @@ const GeneralReport = () => {
     insets,
     navigationDetection.hasNavigationBar,
   );
-  const { user, logout, server, tipo } = useAuthStore();
+  const { user, server } = useAuthStore();
 
   const [reportData, setReportData] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>('all');
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -140,115 +236,384 @@ const GeneralReport = () => {
     navigation.goBack();
   };
 
-  
+  const openStreetView = async (item: ReportItem) => {
+    const { latitude, longitude } = item;
 
-const handleReportItemPress = async (item: ReportItem) => {
-  const { latitude, longitude } = item;
+    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
 
-  const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
-  
-  const supported = await Linking.canOpenURL(googleMapsUrl);
-  if (supported) {
-    await Linking.openURL(googleMapsUrl);
-  }
-};
-
-  const getSpeedColor = (speed: number) => {
-    if (speed === 0) return '#FF4444';
-    if (speed <= 10) return '#fb8500';
-    if (speed <= 30) return '#00AA00';
-    return '#0066FF';
+    const supported = await Linking.canOpenURL(googleMapsUrl);
+    if (supported) {
+      await Linking.openURL(googleMapsUrl);
+    }
   };
 
-  const renderReportItem = ({
-    item,
-    index,
-  }: {
-    item: ReportItem;
-    index: number;
-  }) => {
-    const isFirst = index === 0;
-    const isLast = index === reportData.length - 1;
+  const toggleExpanded = (key: string) => {
+    setExpandedKey(current => (current === key ? null : key));
+  };
+
+  // Agrupa los pings seguidos con velocidad 0 en una sola parada.
+  const segments = useMemo<Segment[]>(() => {
+    const result: Segment[] = [];
+    let i = 0;
+
+    while (i < reportData.length) {
+      const current = reportData[i];
+
+      if (current.speed === 0) {
+        let last = i;
+        while (
+          last + 1 < reportData.length &&
+          reportData[last + 1].speed === 0 &&
+          reportData[last + 1].date === current.date
+        ) {
+          last++;
+        }
+
+        if (last > i) {
+          const start = reportData[i];
+          const end = reportData[last];
+          const from = parseDateTime(start.date, start.time);
+          const to = parseDateTime(end.date, end.time);
+
+          result.push({
+            kind: 'stop',
+            key: `stop-${start.id}`,
+            date: start.date,
+            start,
+            end,
+            count: last - i + 1,
+            minutes:
+              from && to ? (to.getTime() - from.getTime()) / 60000 : null,
+          });
+
+          i = last + 1;
+          continue;
+        }
+      }
+
+      result.push({
+        kind: 'move',
+        key: `move-${current.id}`,
+        date: current.date,
+        item: current,
+      });
+      i++;
+    }
+
+    return result;
+  }, [reportData]);
+
+  const counts = useMemo(
+    () => ({
+      all: segments.length,
+      move: segments.filter(s => s.kind === 'move').length,
+      stop: segments.filter(s => s.kind === 'stop').length,
+    }),
+    [segments],
+  );
+
+  const stats = useMemo(() => {
+    if (reportData.length === 0) {
+      return { distance: 0, maxSpeed: 0, stops: 0, idleMinutes: 0 };
+    }
+
+    const odometers = reportData.map(i => i.odometer);
+    const idleMinutes = segments.reduce(
+      (acc, s) => (s.kind === 'stop' ? acc + (s.minutes ?? 0) : acc),
+      0,
+    );
+
+    return {
+      distance: Math.max(...odometers) - Math.min(...odometers),
+      maxSpeed: Math.max(...reportData.map(i => i.speed)),
+      stops: counts.stop,
+      idleMinutes,
+    };
+  }, [reportData, segments, counts.stop]);
+
+  const sections = useMemo(() => {
+    const visible =
+      filter === 'all' ? segments : segments.filter(s => s.kind === filter);
+
+    const byDay = new Map<string, Segment[]>();
+    visible.forEach(segment => {
+      const list = byDay.get(segment.date);
+      if (list) {
+        list.push(segment);
+      } else {
+        byDay.set(segment.date, [segment]);
+      }
+    });
+
+    return Array.from(byDay, ([date, data]) => ({
+      title: formatDayTitle(date),
+      date,
+      data,
+    }));
+  }, [segments, filter]);
+
+  const renderDetail = (item: ReportItem) => (
+    <View style={bodyStyles.detail}>
+      <View style={bodyStyles.detailRow}>
+        <Text style={bodyStyles.detailLabel}>Odómetro</Text>
+        <Text style={bodyStyles.detailValue}>
+          {item.odometer.toFixed(2)} km
+        </Text>
+      </View>
+      <View style={bodyStyles.detailRow}>
+        <Text style={bodyStyles.detailLabel}>Coordenadas</Text>
+        <Text style={bodyStyles.detailValue}>
+          {item.latitude.toFixed(6)}, {item.longitude.toFixed(6)}
+        </Text>
+      </View>
+      <View style={bodyStyles.detailRow}>
+        <Text style={bodyStyles.detailLabel}>Registro</Text>
+        <Text style={bodyStyles.detailValue}>N° {item.number}</Text>
+      </View>
+      <TouchableOpacity
+        style={bodyStyles.mapButton}
+        onPress={() => openStreetView(item)}
+        activeOpacity={0.85}
+      >
+        <Search size={13} color="#fff" />
+        <Text style={bodyStyles.mapButtonText}>Ver el lugar en 3D</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderSegment = ({ item: segment }: { item: Segment }) => {
+    const expanded = expandedKey === segment.key;
+
+    if (segment.kind === 'stop') {
+      return (
+        <TouchableOpacity
+          style={bodyStyles.row}
+          onPress={() => toggleExpanded(segment.key)}
+          activeOpacity={0.8}
+        >
+          <View style={bodyStyles.timeCol}>
+            <Text style={bodyStyles.time}>{shortTime(segment.start.time)}</Text>
+          </View>
+
+          <View style={bodyStyles.railCol}>
+            <View style={bodyStyles.rail} />
+            <View style={[bodyStyles.dot, bodyStyles.dotStop]}>
+              <ParkingCircle size={12} color="#fff" />
+            </View>
+          </View>
+
+          <View style={bodyStyles.content}>
+            <View style={bodyStyles.stopCard}>
+              <View style={bodyStyles.stopTitleRow}>
+                <Text style={bodyStyles.stopTitle}>
+                  Detenido {formatDuration(segment.minutes)}
+                </Text>
+                <Text style={bodyStyles.stopRange}>
+                  {shortTime(segment.start.time)} –{' '}
+                  {shortTime(segment.end.time)}
+                </Text>
+              </View>
+              <Text style={[bodyStyles.address, bodyStyles.addressMuted]}>
+                {segment.start.location}
+              </Text>
+              <View style={bodyStyles.metaRow}>
+                <Text style={bodyStyles.metaText}>
+                  {segment.count} registros agrupados
+                </Text>
+                <ChevronDown
+                  size={12}
+                  color="#c98a55"
+                  style={{
+                    transform: [{ rotate: expanded ? '180deg' : '0deg' }],
+                  }}
+                />
+              </View>
+            </View>
+
+            {expanded && renderDetail(segment.start)}
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
+    const { item } = segment;
+    const stopped = item.speed === 0;
+    const isMax = stats.maxSpeed > 0 && item.speed === stats.maxSpeed;
 
     return (
       <TouchableOpacity
-        style={[
-          styles.reportItem,
-          isFirst && styles.reportItemFirst,
-          isLast && styles.reportItemLast,
-        ]}
-        onPress={() => handleReportItemPress(item)}
-        activeOpacity={0.7}
+        style={bodyStyles.row}
+        onPress={() => toggleExpanded(segment.key)}
+        activeOpacity={0.8}
       >
-        <View style={styles.reportContent}>
-          {/* Número del reporte */}
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>{item.number}.</Text>
+        <View style={bodyStyles.timeCol}>
+          <Text style={[bodyStyles.time, stopped && bodyStyles.timeMuted]}>
+            {shortTime(item.time)}
+          </Text>
+        </View>
+
+        <View style={bodyStyles.railCol}>
+          <View style={bodyStyles.rail} />
+          <View
+            style={[
+              bodyStyles.dot,
+              !stopped && bodyStyles.dotMoving,
+              isMax && bodyStyles.dotFast,
+            ]}
+          />
+        </View>
+
+        <View style={bodyStyles.content}>
+          <Text style={bodyStyles.address} numberOfLines={expanded ? 4 : 2}>
+            {item.location}
+          </Text>
+
+          <View style={bodyStyles.metaRow}>
+            <View
+              style={[
+                bodyStyles.badge,
+                stopped && bodyStyles.badgeIdle,
+                isMax && bodyStyles.badgeFast,
+              ]}
+            >
+              <Gauge
+                size={10}
+                color={stopped ? '#8d97a8' : isMax ? '#e36414' : '#1e3a8a'}
+              />
+              <Text
+                style={[
+                  bodyStyles.badgeText,
+                  stopped && bodyStyles.badgeTextIdle,
+                  isMax && bodyStyles.badgeTextFast,
+                ]}
+              >
+                {stopped ? 'Detenido' : `${item.speed} km/h`}
+              </Text>
+            </View>
+            {isMax && <Text style={bodyStyles.metaText}>máxima del rango</Text>}
           </View>
 
-          {/* Contenido principal */}
-          <View style={styles.mainContent}>
-            {/* Fila superior con dos columnas */}
-            <View style={styles.topRowContent}>
-              {/* Sección izquierda - Fecha y velocidad */}
-              <View style={styles.leftSection}>
-                <View style={styles.dateTimeContainer}>
-                  <Clock size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>Fecha y hora</Text>
-                </View>
-                <Text style={styles.dateTimeText}>
-                  {item.date} {item.time}
-                </Text>
-
-                <View style={styles.speedContainer}>
-                  <Gauge size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>Velocidad</Text>
-                </View>
-                <Text
-                  style={[
-                    styles.speedText,
-                    { color: getSpeedColor(item.speed) },
-                  ]}
-                >
-                  {item.speed} Km/h
-                </Text>
-              </View>
-
-              {/* Sección derecha - Odómetro y coordenadas */}
-              <View style={styles.rightSection}>
-                <View style={styles.odometerContainer}>
-                  <Navigation size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>Odómetro</Text>
-                </View>
-                <Text style={styles.odometerText}>
-                  {item.odometer.toFixed(2)} km
-                </Text>
-
-                <View style={styles.coordinatesContainer}>
-                  <Globe size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>Latitud y Longitud</Text>
-                </View>
-                <Text style={styles.coordinatesText}>
-                  {item.latitude.toFixed(6)}, {item.longitude.toFixed(6)}
-                </Text>
-              </View>
-            </View>
-
-            {/* Fila inferior - Ubicación ocupa todo el ancho */}
-            <View style={styles.bottomRowContent}>
-              <View style={styles.locationContainer}>
-                <MapPin size={14} color="#666" />
-                <Text style={styles.sectionLabel}>Ubicación</Text>
-              </View>
-              <Text style={styles.locationText}>{item.location}</Text>
-            </View>
-          </View>
+          {expanded && renderDetail(item)}
         </View>
       </TouchableOpacity>
     );
   };
 
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+  const idle = compactDuration(stats.idleMinutes);
+
+  const renderListHeader = () => (
+    <>
+      <View style={bodyStyles.summaryWrap}>
+        <View style={bodyStyles.summaryCard}>
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(30,58,138,0.10)' },
+              ]}
+            >
+              <Route size={14} color="#1e3a8a" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {stats.distance.toFixed(1)}
+              <Text style={bodyStyles.summaryUnit}> km</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>Recorrido</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(227,100,20,0.12)' },
+              ]}
+            >
+              <Gauge size={14} color="#e36414" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {stats.maxSpeed}
+              <Text style={bodyStyles.summaryUnit}> km/h</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>Vel. máxima</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(30,58,138,0.10)' },
+              ]}
+            >
+              <ParkingCircle size={14} color="#1e3a8a" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>{stats.stops}</Text>
+            <Text style={bodyStyles.summaryLabel}>Paradas</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(227,100,20,0.12)' },
+              ]}
+            >
+              <TimerOff size={14} color="#e36414" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {idle.value}
+              <Text style={bodyStyles.summaryUnit}>{idle.unit}</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>Detenido</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={bodyStyles.filterRow}>
+        {(
+          [
+            { key: 'all', label: 'Todo el recorrido' },
+            { key: 'move', label: 'En movimiento' },
+            { key: 'stop', label: 'Paradas' },
+          ] as { key: Filter; label: string }[]
+        ).map(option => {
+          const active = filter === option.key;
+          return (
+            <TouchableOpacity
+              key={option.key}
+              style={[bodyStyles.chip, active && bodyStyles.chipActive]}
+              onPress={() => setFilter(option.key)}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  bodyStyles.chipText,
+                  active && bodyStyles.chipTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+              <Text
+                style={[
+                  bodyStyles.chipCount,
+                  active && bodyStyles.chipCountActive,
+                ]}
+              >
+                {counts[option.key]}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </>
+  );
+
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
     <LinearGradient
@@ -257,11 +622,14 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -277,15 +645,8 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
         </View>
       </View>
 
-      {/* Contenedor para la lista o estados */}
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'white',
-          borderTopLeftRadius: 25,
-          borderTopRightRadius: 25,
-        }}
-      >
+      {/* Cuerpo */}
+      <View style={bodyStyles.body}>
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#1e3a8a" />
@@ -310,146 +671,42 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
             </Text>
           </View>
         ) : (
-          <>
-            {/* Card con dos columnas: Total de Registros y Consejo */}
-            <View style={inlineStyles.statsCard}>
-              {/* Columna izquierda - Total de Registros */}
-              <View style={inlineStyles.leftColumn}>
-                <View style={inlineStyles.statsIconContainer}>
-                  <BarChart3 size={22} color="#1e3a8a" />
-                </View>
-                <View style={inlineStyles.statsTextContainer}>
-                  <Text style={inlineStyles.statsLabel}>Total de Registros</Text>
-                  <Text style={inlineStyles.statsNumber}>{reportData.length}</Text>
-                </View>
+          <SectionList
+            sections={sections}
+            keyExtractor={segment => segment.key}
+            renderItem={renderSegment}
+            renderSectionHeader={({ section }) => (
+              <View style={bodyStyles.dayHeader}>
+                <Text style={bodyStyles.dayTitle}>{section.title}</Text>
+                <Text style={bodyStyles.dayCount}>
+                  {section.data.length}{' '}
+                  {section.data.length === 1 ? 'punto' : 'puntos'}
+                </Text>
               </View>
-
-              {/* Separador vertical */}
-              <View style={inlineStyles.verticalDivider} />
-
-              {/* Columna derecha - Consejo */}
-              <View style={inlineStyles.rightColumn}>
-                <View style={inlineStyles.tipIconWrapper}>
-                  <Info size={18} color="#d57004ff" />
-                </View>
-                <View style={inlineStyles.tipTextContainer}>
-                  <Text style={inlineStyles.tipTitle}>Consejo</Text>
-                  <Text style={inlineStyles.tipText}>
-                    Toca cualquier registro para vista 3D
-                  </Text>
-                </View>
+            )}
+            ListHeaderComponent={renderListHeader}
+            ListEmptyComponent={
+              <View style={bodyStyles.filterEmpty}>
+                <MapPin size={34} color="#c3cbd8" />
+                <Text style={bodyStyles.filterEmptyText}>
+                  {filter === 'stop'
+                    ? 'La unidad no registró paradas en este rango'
+                    : 'No hay puntos en movimiento en este rango'}
+                </Text>
               </View>
-
-
-            </View>
-
-            {/* Lista de reportes */}
-            <FlatList
-              data={reportData}
-              keyExtractor={item => item.id}
-              renderItem={({ item, index }) => renderReportItem({ item, index })}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.reportsListContent}
-              style={{ paddingHorizontal: 10, paddingVertical: 10 }}
-            />
-          </>
+            }
+            contentContainerStyle={bodyStyles.listContent}
+            stickySectionHeadersEnabled
+            showsVerticalScrollIndicator={false}
+            initialNumToRender={14}
+            maxToRenderPerBatch={12}
+            windowSize={9}
+            removeClippedSubviews={Platform.OS === 'android'}
+          />
         )}
       </View>
     </LinearGradient>
   );
-};
-
-// Estilos inline para los nuevos componentes
-const inlineStyles = {
-  statsCard: {
-    flexDirection: 'row' as const,
-    marginHorizontal: 15,
-    marginTop: 15,
-    marginBottom: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e0e7ff',
-    shadowColor: '#1e3a8a',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
-    overflow: 'hidden' as const,
-
-  },
-  leftColumn: {
-    flex: 1,
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    backgroundColor: '#f0f9ff',
-    paddingHorizontal: 10,
-    paddingVertical: 10
-
-
-  },
-  statsIconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: '#dbeafe',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginRight: 10,
-  },
-  statsTextContainer: {
-    flex: 1,
-  },
-  statsLabel: {
-    fontSize: 11,
-    color: '#64748b',
-    fontWeight: '500' as const,
-    marginBottom: 3,
-  },
-  statsNumber: {
-    fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#1e3a8a',
-  },
-  verticalDivider: {
-    width: 1,
-    backgroundColor: '#e0e7ff',
-  },
-  rightColumn: {
-    flex: 1,
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    backgroundColor: '#fff6edff',
-    paddingHorizontal: 10,
-    paddingVertical: 10
-
-  },
-  tipIconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#ffd0a0ff',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginRight: 10,
-  },
-  tipTextContainer: {
-    flex: 1,
-  },
-  tipTitle: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: '#d57004ff',
-    marginBottom: 2,
-  },
-  tipText: {
-    fontSize: 11,
-    color: '#d57004ff',
-    lineHeight: 15,
-    fontWeight: '500' as const,
-  },
 };
 
 export default GeneralReport;
