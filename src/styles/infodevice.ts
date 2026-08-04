@@ -3,195 +3,278 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e3a8a',
+    backgroundColor: '#eef1f6',
   },
 
-  // Header Styles - Fixed
+  // ── Hero navy ──────────────────────────────────────────
+  hero: {
+    backgroundColor: '#0a2560',
+    paddingHorizontal: 18,
+    paddingBottom: 90,
+    position: 'relative',
+  },
+  heroClip: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
+  heroBg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  heroOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(6,22,58,0.74)',
+  },
+  heroCarWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  heroCar: {
+    width: '78%',
+    height: 130,
+  },
   header: {
-    paddingBottom: 16,
-    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 1000,
+    justifyContent: 'space-between',
+    height:40,
   },
-
-  // Scrollable content
-  scrollContent: {
-    flex: 1,
-    backgroundColor: '#ffffffff',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+  nameBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 0,
   },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-    marginLeft:-10,
   },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  iconButtonAccent: {
+    backgroundColor: '#e36414',
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
-  headerBadges: {
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    marginTop: 10,
   },
-  statusStopped: {
-  color: '#ef4444', 
-  fontWeight: 'bold',
-},
-statusMoving: {
-  color: '#008000', 
-  fontWeight: 'bold',
-},
-  temperatureBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 6,
-    borderRadius: 6,
+  vehicleName: {
+    color: '#fff',
+    fontSize: 21,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
-  fuelBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 6,
-    borderRadius: 6,
-  },
-  settingsBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: 6,
-    borderRadius: 6,
-  },
-  onlineBadge: {
-    backgroundColor: 'rgba(76, 175, 80, 0.9)',
-    paddingHorizontal: 8,
+  onlinePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(34,197,94,0.18)',
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 100,
+    marginLeft: 8,
+  },
+  onlineDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#22c55e',
+    marginRight: 6,
   },
   onlineText: {
-    color: '#fff',
+    color: '#4ade80',
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '700',
   },
 
-  // Vehicle Image Styles
-  imageContainer: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    height: 130,
-    padding: 20,
+  // ── Scroll body ────────────────────────────────────────
+  scroll: {
+    flex: 1,
+    backgroundColor: '#eef1f6',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    top: -24,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 56,
+    paddingBottom: 16,
   },
 
-  vehicleImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-  },
-
-  infoSection: {
-    marginHorizontal: 16,
-    marginTop: 0,
-    borderRadius: 12,
-    padding: 16,
-   
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  infoItem: {
+  // ── Grid de stats ──────────────────────────────────────
+  statsRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    gap: 8,
     marginBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e1e1ff',
+    marginTop: 10,
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
+  statTile: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    shadowColor: '#0f1b3d',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  statIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    backgroundColor: 'rgba(30,58,138,0.10)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginBottom: 6,
   },
-  infoContent: {
-    flex: 1,
+  statValue: {
+    color: '#0f1b3d',
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 1,
   },
-  infoLabel: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 2,
+  statLabel: {
+    color: '#9aa4b5',
+    fontSize: 10,
+    fontWeight: '500',
   },
 
-  speedText: {
-    color: '#333',
-    fontWeight: '400',
+  // ── Sección detalle ────────────────────────────────────
+  sectionTitle: {
+    color: '#0f1b3d',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 8,
+    marginLeft: 2,
   },
-  infoValue: {
-    fontSize: 14,
-    color: '#333',
+  // ── Bento grid ─────────────────────────────────────────
+  bento: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  bentoTile: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    shadowColor: '#0f1b3d',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  bentoFull: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  bentoHalf: {
+    width: '48.5%',
+    flexGrow: 1,
+  },
+  bentoText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  bentoIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(30,58,138,0.10)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 7,
+  },
+  bentoLabel: {
+    color: '#9aa4b5',
+    fontSize: 11,
     fontWeight: '500',
     marginBottom: 2,
   },
-  infoSubtitle: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '400',
+  bentoValue: {
+    color: '#1e2a44',
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 17,
+  },
+  // ── Mini mapa ──────────────────────────────────────────
+  mapTile: {
+    padding: 0,
+    overflow: 'hidden',
+  },
+  miniMap: {
+    width: '100%',
+    height: 130,
+  },
+  miniMapPlaceholder: {
+    width: '100%',
+    height: 130,
+    backgroundColor: '#f4f6fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapMarker: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#1e3a8a',
+    borderWidth: 2,
+    borderColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
   },
 
-  // Button Styles
-  buttonContainer: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 0,
-    marginBottom: 32,
-    gap: 12,
-  },
-  eventsButton: {
-    backgroundColor: '#f97316',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    flex: 1,
+  // ── Eventos (tile de navegación) ───────────────────────
+  eventsTile: {
     alignItems: 'center',
-    flexDirection: 'row',
+  },
+  eventsIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#e36414',
     justifyContent: 'center',
-    gap: 8,
-  },
-  eventsButtonText: {
-    color: '#ffffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  shareButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
   },
-  shareButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  eventsTitle: {
+    color: '#0f1b3d',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 1,
   },
 });

@@ -10,16 +10,18 @@ import {
 } from 'react-native';
 import {
   ChevronLeft,
-  Settings,
+  ChevronRight,
   MapPin,
   Navigation,
   Gauge,
   Calendar,
   Share as ShareIcon,
   SatelliteDish,
-  BatteryFull,
   TriangleAlert,
+  Crosshair,
+  Activity,
 } from 'lucide-react-native';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import {
   RouteProp,
   useRoute,
@@ -29,7 +31,7 @@ import {
 } from '@react-navigation/native';
 import { RootStackParamList } from '../../../../App';
 import { styles } from '../../../styles/infodevice';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import {
   getBottomSpace,
   useNavigationMode,
@@ -81,6 +83,7 @@ const InfoDevice = () => {
   );
 
   const [vehiculoData, setVehiculoData] = useState<VehiculoData | null>(null);
+  const [heroHeight, setHeroHeight] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const [modalAlertVisible, setModalAlertVisible] = useState(false);
@@ -101,7 +104,7 @@ const InfoDevice = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      NavigationBarColor('#00296b', false);
+      NavigationBarColor('#eef1f6', true);
     }, []),
   );
 
@@ -219,200 +222,193 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
     ? vehiculoData.lastOdometerKM.toFixed(0)
     : '0.000';
 
+  const isStopped = estado === 'Detenido';
+  const statusColor = isStopped ? '#ef4444' : '#22c55e';
+  const BLUE = '#1e3a8a';
+
   return (
-    <LinearGradient
-      colors={['#021e4bff', '#183890ff', '#032660ff']}
-      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
-      <View style={[styles.header, { paddingTop: topSpace }]}>
-        <TouchableOpacity
-          onPress={handleGoBack}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <ChevronLeft size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Unidad: {deviceName}</Text>
-          <View style={styles.headerBadges}>
-            <View style={styles.fuelBadge}>
-              <BatteryFull size={16} color="#ffffffff" />
-            </View>
-            <View style={styles.settingsBadge}>
-              <SatelliteDish size={16} color="#ffffffff" />
-            </View>
-            <View style={styles.onlineBadge}>
-              <Text style={styles.onlineText}>Online</Text>
-            </View>
-          </View>
+    <SafeAreaView style={[styles.container, { paddingBottom: bottomSpace - 2 }]}>
+      {/* Header navy con nombre de unidad */}
+      <View
+        style={[
+          styles.hero,
+          { marginTop: -insets.top, paddingTop: insets.top },
+        ]}
+        onLayout={e => setHeroHeight(e.nativeEvent.layout.height)}
+      >
+        {/* Imagen de fondo + overlay navy (recortada a las esquinas) */}
+        <View style={styles.heroClip}>
+          <Image
+            source={require('../../../../assets/fondoheader.jpg')}
+            style={styles.heroBg}
+            resizeMode="cover"
+          />
+          <View style={styles.heroOverlay} />
+        </View>
+
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.iconButton}
+            activeOpacity={0.7}
+          >
+            <ChevronLeft size={22} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Detalle de unidad</Text>
+          <TouchableOpacity
+            onPress={handleShare}
+            style={[styles.iconButton, styles.iconButtonAccent]}
+            activeOpacity={0.8}
+          >
+            <ShareIcon size={18} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.nameBlock}>
+          <Text style={styles.vehicleName}>{deviceName}</Text>
         </View>
       </View>
-      {/* Scrollable Content */}
-      <ScrollView
-        style={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Vehicle Image */}
-        <View style={styles.imageContainer}>
+
+      {/* Carro flotando sobre el borde (por encima del header y del panel) */}
+      {heroHeight > 0 && (
+        <View
+          style={[styles.heroCarWrap, { top: heroHeight - insets.top - 35 }]}
+          pointerEvents="none"
+        >
           <Image
-             source={require('../../../../assets/Car.jpg')}
-            style={styles.vehicleImage}
+            source={require('../../../../assets/Car.jpg')}
+            style={styles.heroCar}
+            resizeMode="contain"
           />
         </View>
+      )}
 
-        {/* Vehicle Information Section */}
-        <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Información vehicular</Text>
-
-          {/* Status Item */}
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Gauge size={20} color="#666" />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Grid de estado en tiempo real */}
+        <View style={styles.statsRow}>
+          <View style={styles.statTile}>
+            <View style={styles.statIcon}>
+              <Activity size={17} color={BLUE} strokeWidth={2.4} />
             </View>
-            <View style={styles.infoContent}>
-              {loading && !vehiculoData ? (
-                <ActivityIndicator size="small" color="#666" />
-              ) : (
-                <>
-                  <Text style={styles.infoLabel}>
-                    <Text
-                      style={
-                        estado === 'Detenido'
-                          ? styles.statusStopped
-                          : styles.statusMoving
-                      }
-                    >
-                      {estado}
-                    </Text>
-                    <Text style={styles.speedText}>
-                      {' '}
-                      ({vehiculoData?.lastValidSpeed.toFixed(0) || 0} km/h)
-                    </Text>
-                  </Text>
-                  <Text style={styles.infoSubtitle}>Estado y velocidad</Text>
-                </>
-              )}
-            </View>
+            <Text style={[styles.statValue, { color: statusColor }]} numberOfLines={1}>
+              {loading && !vehiculoData ? '—' : estado}
+            </Text>
+            <Text style={styles.statLabel}>Estado</Text>
           </View>
-
-          {/* Date and Time Item */}
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Calendar size={20} color="#666" />
+          <View style={styles.statTile}>
+            <View style={styles.statIcon}>
+              <Gauge size={17} color={BLUE} strokeWidth={2.4} />
             </View>
-            <View style={styles.infoContent}>
-              {loading && !vehiculoData ? (
-                <ActivityIndicator size="small" color="#666" />
-              ) : (
-                <>
-                  <Text style={styles.infoValue}>{fechaHoraActual}</Text>
-                  <Text style={styles.infoSubtitle}>Fecha y hora</Text>
-                </>
-              )}
-            </View>
+            <Text style={styles.statValue} numberOfLines={1}>
+              {vehiculoData?.lastValidSpeed.toFixed(0) || 0} km/h
+            </Text>
+            <Text style={styles.statLabel}>Velocidad</Text>
           </View>
-
-          {/* Coordinates Item */}
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Settings size={20} color="#666" />
+          <View style={styles.statTile}>
+            <View style={styles.statIcon}>
+              <Navigation size={17} color={BLUE} strokeWidth={2.4} />
             </View>
-            <View style={styles.infoContent}>
-              {loading && !vehiculoData ? (
-                <ActivityIndicator size="small" color="#666" />
-              ) : (
-                <>
-                  <Text style={styles.infoValue}>
-                    {vehiculoData?.lastValidLatitude.toFixed(5) || '0.00000'},{' '}
-                    {vehiculoData?.lastValidLongitude.toFixed(5) || '0.00000'}
-                  </Text>
-                  <Text style={styles.infoSubtitle}>Latitud y longitud</Text>
-                </>
-              )}
-            </View>
-          </View>
-
-          {/* Location Item */}
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <MapPin size={20} color="#666" />
-            </View>
-            <View style={styles.infoContent}>
-              {loading && !vehiculoData ? (
-                <ActivityIndicator size="small" color="#666" />
-              ) : (
-                <>
-                  <Text style={styles.infoValue}>
-                    {vehiculoData?.direccion || 'Cargando ubicación...'}
-                  </Text>
-                  <Text style={styles.infoSubtitle}>Ubicación actual</Text>
-                </>
-              )}
-            </View>
-          </View>
-
-          {/* Direction Item */}
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Navigation size={20} color="#666" />
-            </View>
-            <View style={styles.infoContent}>
-              {loading && !vehiculoData ? (
-                <ActivityIndicator size="small" color="#666" />
-              ) : (
-                <>
-                  <Text style={styles.infoValue}>{direccion}</Text>
-                  <Text style={styles.infoSubtitle}>Dirección</Text>
-                </>
-              )}
-            </View>
-          </View>
-
-          {/* Odometer Item */}
-          {/* <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Gauge size={20} color="#666" />
-            </View>
-            <View style={styles.infoContent}>
-              {loading && !vehiculoData ? (
-                <ActivityIndicator size="small" color="#666" />
-              ) : (
-                <>
-                  <Text style={styles.infoValue}>{kilometraje} Km</Text>
-                  <Text style={styles.infoSubtitle}>Kilometraje actual</Text>
-                </>
-              )}
-            </View>
-          </View> */}
-
-          {/* Daily Distance Item */}
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <SatelliteDish size={20} color="#666" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoValue}>
-                Conectado al sistema de rastreo
-              </Text>
-              <Text style={styles.infoSubtitle}>
-                Velsat Mobile - Sistema GPS
-              </Text>
-            </View>
+            <Text style={styles.statValue} numberOfLines={1}>
+              {loading && !vehiculoData ? '—' : direccion}
+            </Text>
+            <Text style={styles.statLabel}>Dirección</Text>
           </View>
         </View>
 
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.eventsButton} onPress={handleEvents}>
-            <TriangleAlert color="#fff" />
-            <Text style={styles.eventsButtonText}>Eventos</Text>
-          </TouchableOpacity>
+        {/* Bento grid: información + acciones */}
+        <Text style={styles.sectionTitle}>Información</Text>
+        <View style={styles.bento}>
+          {/* Ubicación - ancho completo */}
+          <View style={[styles.bentoTile, styles.bentoFull]}>
+            <View style={styles.bentoIcon}>
+              <MapPin size={18} color={BLUE} />
+            </View>
+            <View style={styles.bentoText}>
+              <Text style={styles.bentoLabel}>Ubicación actual</Text>
+              <Text style={styles.bentoValue}>
+                {loading && !vehiculoData
+                  ? 'Cargando ubicación...'
+                  : vehiculoData?.direccion || 'Sin datos'}
+              </Text>
+            </View>
+          </View>
 
-          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-            <ShareIcon size={20} color="#fff" />
-            <Text style={styles.shareButtonText}>Compartir</Text>
+          {/* Fecha - mitad */}
+          <View style={[styles.bentoTile, styles.bentoHalf]}>
+            <View style={styles.bentoIcon}>
+              <Calendar size={18} color={BLUE} />
+            </View>
+            <Text style={styles.bentoLabel}>Fecha y hora</Text>
+            <Text style={styles.bentoValue}>{fechaHoraActual}</Text>
+          </View>
+
+          {/* Coordenadas - mitad */}
+          <View style={[styles.bentoTile, styles.bentoHalf]}>
+            <View style={styles.bentoIcon}>
+              <Crosshair size={18} color={BLUE} />
+            </View>
+            <Text style={styles.bentoLabel}>Coordenadas</Text>
+            <Text style={styles.bentoValue}>
+              {vehiculoData?.lastValidLatitude.toFixed(5) || '0.00000'},{'\n'}
+              {vehiculoData?.lastValidLongitude.toFixed(5) || '0.00000'}
+            </Text>
+          </View>
+
+          {/* Mini mapa con la ubicación actual */}
+          <View style={[styles.bentoTile, styles.bentoFull, styles.mapTile]}>
+            {vehiculoData ? (
+              <MapView
+                provider={PROVIDER_DEFAULT}
+                style={styles.miniMap}
+                scrollEnabled={true}
+                zoomEnabled={true}
+                rotateEnabled={true}
+                pitchEnabled={true}
+                initialRegion={{
+                  latitude: vehiculoData.lastValidLatitude,
+                  longitude: vehiculoData.lastValidLongitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: vehiculoData.lastValidLatitude,
+                    longitude: vehiculoData.lastValidLongitude,
+                  }}
+                >
+                  <View style={styles.mapMarker}>
+                    <Navigation size={14} color="#fff" fill="#fff" />
+                  </View>
+                </Marker>
+              </MapView>
+            ) : (
+              <View style={styles.miniMapPlaceholder}>
+                <SatelliteDish size={20} color="#c2c9d6" />
+              </View>
+            )}
+          </View>
+
+          {/* Eventos - navega a otra pantalla */}
+          <TouchableOpacity
+            style={[styles.bentoTile, styles.bentoFull, styles.eventsTile]}
+            onPress={handleEvents}
+            activeOpacity={0.85}
+          >
+            <View style={styles.eventsIcon}>
+              <TriangleAlert size={20} color="#fff" />
+            </View>
+            <View style={styles.bentoText}>
+              <Text style={styles.eventsTitle}>Eventos</Text>
+              <Text style={styles.bentoLabel}>
+                Alertas y notificaciones de la unidad
+              </Text>
+            </View>
+            <ChevronRight size={22} color="#c2c9d6" />
           </TouchableOpacity>
         </View>
 
@@ -424,7 +420,7 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
           color={alertConfig.color}
         />
       </ScrollView>
-    </LinearGradient>
+    </SafeAreaView>
   );
 };
 

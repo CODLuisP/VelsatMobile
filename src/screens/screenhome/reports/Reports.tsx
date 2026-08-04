@@ -21,6 +21,7 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  FileSpreadsheet,
 } from 'lucide-react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { styles } from '../../../styles/reports';
@@ -855,12 +856,8 @@ const Reports: React.FC = () => {
                 <Text style={styles.buttonText}>Descargando...</Text>
               </View>
             ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Image
-                  source={require('../../../../assets/excel.png')}
-                  style={{ width: 20, height: 20 }}
-                  resizeMode="contain"
-                />
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <FileSpreadsheet size={18} color="#fff" />
                 <Text style={styles.buttonText}>Descargar Excel</Text>
               </View>
             )}
