@@ -29,7 +29,7 @@ import {
 } from '@react-navigation/native';
 import axios from 'axios';
 import { styles } from '../../../styles/generalreport';
-import { bodyStyles } from '../../../styles/generalreportbody';
+import { bodyStyles } from '../../../styles/reportbody';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -38,6 +38,13 @@ import {
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
+import {
+  compactDuration,
+  formatDayTitle,
+  formatDuration,
+  minutesBetween,
+  shortTime,
+} from '../../../utils/reportUtils';
 import { useAuthStore } from '../../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text } from '../../../components/ScaledComponents';
@@ -68,84 +75,6 @@ type Segment =
     };
 
 type Filter = 'all' | 'move' | 'stop';
-
-const DAYS = [
-  'domingo',
-  'lunes',
-  'martes',
-  'miércoles',
-  'jueves',
-  'viernes',
-  'sábado',
-];
-const MONTHS = [
-  'enero',
-  'febrero',
-  'marzo',
-  'abril',
-  'mayo',
-  'junio',
-  'julio',
-  'agosto',
-  'setiembre',
-  'octubre',
-  'noviembre',
-  'diciembre',
-];
-
-/** Acepta dd/MM/yyyy y yyyy-MM-dd; devuelve null si no puede interpretarla. */
-const parseDateTime = (date: string, time: string): Date | null => {
-  if (!date) return null;
-
-  const parts = date.includes('/') ? date.split('/') : date.split('-');
-  if (parts.length !== 3) return null;
-
-  const nums = parts.map(p => parseInt(p, 10));
-  if (nums.some(isNaN)) return null;
-
-  const [year, month, day] =
-    String(parts[0]).length === 4
-      ? [nums[0], nums[1], nums[2]]
-      : [nums[2], nums[1], nums[0]];
-
-  const [h = 0, m = 0, s = 0] = (time || '').split(':').map(p => {
-    const n = parseInt(p, 10);
-    return isNaN(n) ? 0 : n;
-  });
-
-  const parsed = new Date(year, month - 1, day, h, m, s);
-  return isNaN(parsed.getTime()) ? null : parsed;
-};
-
-const formatDayTitle = (date: string): string => {
-  const parsed = parseDateTime(date, '');
-  if (!parsed) return date;
-  return `${DAYS[parsed.getDay()]} ${parsed.getDate()} de ${
-    MONTHS[parsed.getMonth()]
-  }`;
-};
-
-/** "HH:mm:ss" -> "HH:mm" */
-const shortTime = (time: string): string => (time || '').slice(0, 5);
-
-const formatDuration = (minutes: number | null): string => {
-  if (minutes === null) return '';
-  if (minutes < 1) return 'menos de 1 min';
-  if (minutes < 60) return `${Math.round(minutes)} min`;
-  const h = Math.floor(minutes / 60);
-  const m = Math.round(minutes % 60);
-  return m === 0 ? `${h} h` : `${h} h ${m} min`;
-};
-
-/** Versión corta para el resumen: { value: "2h 15", unit: "m" } */
-const compactDuration = (minutes: number): { value: string; unit: string } => {
-  if (minutes < 60) {
-    return { value: String(Math.round(minutes)), unit: ' min' };
-  }
-  const h = Math.floor(minutes / 60);
-  const m = Math.round(minutes % 60);
-  return { value: `${h}h ${m}`, unit: ' m' };
-};
 
 const GeneralReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -272,8 +201,6 @@ const GeneralReport = () => {
         if (last > i) {
           const start = reportData[i];
           const end = reportData[last];
-          const from = parseDateTime(start.date, start.time);
-          const to = parseDateTime(end.date, end.time);
 
           result.push({
             kind: 'stop',
@@ -282,8 +209,7 @@ const GeneralReport = () => {
             start,
             end,
             count: last - i + 1,
-            minutes:
-              from && to ? (to.getTime() - from.getTime()) / 60000 : null,
+            minutes: minutesBetween(start.date, start.time, end.date, end.time),
           });
 
           i = last + 1;

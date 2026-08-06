@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
-  FlatList,
+  SectionList,
   Image,
   ActivityIndicator,
   Platform,
@@ -11,15 +10,12 @@ import {
 import {
   ChevronLeft,
   Calendar,
-  Car,
-  MapPin,
   AlertCircle,
   FileX,
-  Navigation,
-  TrendingUp,
-  TrendingDown,
-  BarChart3,
+  Route,
+  Car,
   Target,
+  CircleSlash,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -30,6 +26,7 @@ import {
 } from '@react-navigation/native';
 import axios from 'axios';
 import { styles } from '../../../styles/mileagereport';
+import { bodyStyles } from '../../../styles/reportbody';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -40,42 +37,16 @@ import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
 import { useAuthStore } from '../../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../../components/ScaledComponents';
 
 interface VehicleReport {
   id: string;
   itemNumber: number;
   unitName: string;
   mileage: number;
-  carImage: any;
 }
 
-interface Statistics {
-  maxMileage: VehicleReport | null;
-  minMileage: VehicleReport | null;
-  totalMileage: number;
-  averageMileage: number;
-  totalVehicles: number;
-}
-
-const GradientWrapper: React.FC<{
-  colors: string[];
-  style: any;
-  children: React.ReactNode;
-}> = ({ colors, style, children }) => {
-  if (Platform.OS === 'ios') {
-    return <View style={[style, { backgroundColor: colors[0] }]}>{children}</View>;
-  }
-  return (
-    <LinearGradient
-      colors={colors}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={style}
-    >
-      {children}
-    </LinearGradient>
-  );
-};
+type SortKey = 'mileage' | 'name';
 
 const MileageReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -93,9 +64,9 @@ const MileageReport = () => {
   const { user, server } = useAuthStore();
 
   const [vehicleData, setVehicleData] = useState<VehicleReport[]>([]);
-  const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortKey>('mileage');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -107,38 +78,7 @@ const MileageReport = () => {
     fetchReportData();
   }, []);
 
-  const calculateStatistics = (data: VehicleReport[]): Statistics => {
-    if (data.length === 0) {
-      return {
-        maxMileage: null,
-        minMileage: null,
-        totalMileage: 0,
-        averageMileage: 0,
-        totalVehicles: 0,
-      };
-    }
-
-    const maxVehicle = data.reduce((max, vehicle) =>
-      vehicle.mileage > max.mileage ? vehicle : max
-    );
-
-    const minVehicle = data.reduce((min, vehicle) =>
-      vehicle.mileage < min.mileage ? vehicle : min
-    );
-
-    const total = data.reduce((sum, vehicle) => sum + vehicle.mileage, 0);
-    const average = total / data.length;
-
-    return {
-      maxMileage: maxVehicle,
-      minMileage: minVehicle,
-      totalMileage: parseFloat(total.toFixed(2)),
-      averageMileage: parseFloat(average.toFixed(2)),
-      totalVehicles: data.length,
-    };
-  };
-
-const fetchReportData = async () => {
+  const fetchReportData = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -182,15 +122,9 @@ const fetchReportData = async () => {
             itemNumber: item.item,
             unitName: item.deviceId,
             mileage: parseFloat(item.kilometros.toFixed(2)),
-            carImage: require('../../../../assets/Car.jpg'),
           }));
 
         setVehicleData(transformedData);
-
-        if (isAllUnits) {
-          const stats = calculateStatistics(transformedData);
-          setStatistics(stats);
-        }
       } else {
         setError('No se encontraron datos');
       }
@@ -205,167 +139,262 @@ const fetchReportData = async () => {
     navigation.goBack();
   };
 
-  const handleVehiclePress = (vehicle: VehicleReport) => {
-  };
-
-  const renderStatistics = () => {
-    if (!isAllUnits || !statistics || statistics.totalVehicles === 0) {
-      return null;
+  const stats = useMemo(() => {
+    if (vehicleData.length === 0) {
+      return { total: 0, units: 0, average: 0, idle: 0, max: 0 };
     }
 
+    const total = vehicleData.reduce((sum, v) => sum + v.mileage, 0);
+
+    return {
+      total,
+      units: vehicleData.length,
+      average: total / vehicleData.length,
+      idle: vehicleData.filter(v => v.mileage <= 0).length,
+      max: Math.max(...vehicleData.map(v => v.mileage)),
+    };
+  }, [vehicleData]);
+
+  const ranked = useMemo(() => {
+    const copy = [...vehicleData];
+    return sortBy === 'mileage'
+      ? copy.sort((a, b) => b.mileage - a.mileage)
+      : copy.sort((a, b) => a.unitName.localeCompare(b.unitName));
+  }, [vehicleData, sortBy]);
+
+  // Una sola sección para que "Detalle por unidad" quede fijo al hacer scroll.
+  const sections = useMemo(
+    () => [{ title: 'Detalle por unidad', data: ranked }],
+    [ranked],
+  );
+
+  const renderVehicleItem = ({
+    item,
+    index,
+  }: {
+    item: VehicleReport;
+    index: number;
+  }) => {
+    const idle = item.mileage <= 0;
+    const isTop = sortBy === 'mileage' && index === 0 && !idle;
+    const share = stats.max > 0 ? (item.mileage / stats.max) * 100 : 0;
+
     return (
-      <View style={styles.statisticsContainer}>
-   
-
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <GradientWrapper
-              colors={['#10b981', '#059669']}
-              style={styles.statGradient}
-            >
-              <View style={styles.statIconContainer}>
-                <TrendingUp size={18} color="#fff" />
-              </View>
-              <Text style={styles.statLabel}>Mayor Recorrido</Text>
-              <Text style={styles.statValue}>
-                {statistics.maxMileage?.mileage} km
-              </Text>
-              <Text style={styles.statSubtext}>
-                {statistics.maxMileage?.unitName}
-              </Text>
-            </GradientWrapper>
-          </View>
-
-          <View style={styles.statCard}>
-            <GradientWrapper
-              colors={['#ff9f1c', '#d97706']}
-              style={styles.statGradient}
-            >
-              <View style={styles.statIconContainer}>
-                <TrendingDown size={18} color="#fff" />
-              </View>
-              <Text style={styles.statLabel}>Menor Recorrido</Text>
-              <Text style={styles.statValue}>
-                {statistics.minMileage?.mileage} km
-              </Text>
-              <Text style={styles.statSubtext}>
-                {statistics.minMileage?.unitName}
-              </Text>
-            </GradientWrapper>
-          </View>
+      <View style={bodyStyles.rankRow}>
+        <View style={[bodyStyles.rankBadge, isTop && bodyStyles.rankBadgeTop]}>
+          <Text
+            style={[
+              bodyStyles.rankBadgeText,
+              isTop && bodyStyles.rankBadgeTextTop,
+            ]}
+          >
+            {sortBy === 'mileage' ? index + 1 : item.itemNumber}
+          </Text>
         </View>
 
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <GradientWrapper
-              colors={['#4285f4', '#1967d2']}
-              style={styles.statGradient}
+        <View style={bodyStyles.rankBody}>
+          <View style={bodyStyles.rankTopRow}>
+            <Text style={bodyStyles.rankName} numberOfLines={1}>
+              {item.unitName}
+            </Text>
+            <Text
+              style={[bodyStyles.rankValue, idle && bodyStyles.rankValueIdle]}
             >
-              <View style={styles.statIconContainer}>
-                <Navigation size={18} color="#fff" />
-              </View>
-              <Text style={styles.statLabel}>Total Recorrido</Text>
-              <Text style={styles.statValue}>{statistics.totalMileage} km</Text>
-              <Text style={styles.statSubtext}>
-                {statistics.totalVehicles} unidades
-              </Text>
-            </GradientWrapper>
+              {item.mileage}
+              <Text style={bodyStyles.rankUnit}> km</Text>
+            </Text>
           </View>
 
-          <View style={styles.statCard}>
-            <GradientWrapper
-              colors={['#8b5cf6', '#7c3aed']}
-              style={styles.statGradient}
-            >
-              <View style={styles.statIconContainer}>
-                <Target size={18} color="#fff" />
-              </View>
-              <Text style={styles.statLabel}>Promedio</Text>
-              <Text style={styles.statValue}>
-                {statistics.averageMileage} km
-              </Text>
-              <Text style={styles.statSubtext}>por unidad</Text>
-            </GradientWrapper>
+          <View style={bodyStyles.rankBar}>
+            <View
+              style={[
+                bodyStyles.rankBarFill,
+                isTop && bodyStyles.rankBarFillTop,
+                { width: `${Math.max(share, 0)}%` },
+              ]}
+            />
           </View>
-        </View>
 
-        <View style={styles.statisticsDivider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Detalle por Unidad</Text>
-          <View style={styles.dividerLine} />
+          {idle && (
+            <Text style={bodyStyles.rankIdleTag}>
+              No registró movimiento en el rango
+            </Text>
+          )}
         </View>
       </View>
     );
   };
 
-  const renderVehicleItem = ({ item }: { item: VehicleReport }) => (
-    <TouchableOpacity
-      style={styles.vehicleCard}
-      onPress={() => handleVehiclePress(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.cardHeader}>
-        <View style={styles.badgeContainer}>
-          <GradientWrapper
-            colors={['#ff8c00', '#ff6b00']}
-            style={styles.itemBadge}
-          >
-            <Text style={styles.itemBadgeText}>N° {item.itemNumber}</Text>
-          </GradientWrapper>
+  // Una sola unidad: no hay con qué comparar, así que el dato va grande y se
+  // acompaña del promedio diario, que sí da contexto al número.
+  const renderSingleUnit = () => {
+    const days = Math.max(
+      1,
+      Math.round(
+        (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+      ),
+    );
+    const perDay = stats.total / days;
+
+    return (
+      <View style={bodyStyles.heroCard}>
+        <View style={bodyStyles.heroImageWrap}>
+          <Image
+            source={require('../../../../assets/Car.jpg')}
+            style={bodyStyles.heroImage}
+            resizeMode="contain"
+          />
         </View>
 
-        <View style={styles.unitInfoContainer}>
-          <View style={styles.carIconBadge}>
-            <Car size={14} color="#4285f4" />
-          </View>
-          <View style={styles.unitTextContainer}>
-            <Text style={styles.unitLabel}>Unidad</Text>
-            <Text style={styles.unitName}>{item.unitName}</Text>
-          </View>
-        </View>
-      </View>
+        <View style={bodyStyles.heroBody}>
+          <Text style={bodyStyles.heroValue}>
+            {stats.total.toFixed(2)}
+            <Text style={bodyStyles.heroUnit}> km</Text>
+          </Text>
+          <Text style={bodyStyles.heroLabel}>
+            Distancia recorrida en el rango
+          </Text>
 
-      <View style={styles.cardDivider} />
+          <View style={bodyStyles.heroFooter}>
+            <View style={bodyStyles.heroFooterTile}>
+              <Text style={bodyStyles.heroFooterValue}>
+                {perDay.toFixed(1)}
+                <Text style={bodyStyles.heroFooterUnit}> km</Text>
+              </Text>
+              <Text style={bodyStyles.heroFooterLabel}>Promedio por día</Text>
+            </View>
 
-      <View style={styles.cardBody}>
-        <View style={styles.vehicleImageSection}>
-          <View style={styles.imageContainer}>
-            <Image
-              source={item.carImage}
-              style={styles.vehicleImage}
-              defaultSource={require('../../../../assets/Car.jpg')}
-            />
-          </View>
-        </View>
+            <View style={bodyStyles.heroFooterDivider} />
 
-        <View style={styles.mileageSection}>
-          <View style={styles.mileageCard}>
-           
-            <View style={styles.mileageInfo}>
-              <Text style={styles.mileageLabel}>Distancia recorrida</Text>
-              <View style={styles.mileageValueContainer}>
-                <Text style={styles.mileageValue}>{item.mileage}</Text>
-                <Text style={styles.mileageUnit}>km</Text>
-              </View>
+            <View style={bodyStyles.heroFooterTile}>
+              <Text style={bodyStyles.heroFooterValue}>{days}</Text>
+              <Text style={bodyStyles.heroFooterLabel}>
+                {days === 1 ? 'Día del rango' : 'Días del rango'}
+              </Text>
             </View>
           </View>
-
         </View>
       </View>
-    </TouchableOpacity>
+    );
+  };
+
+  const renderListHeader = () => (
+    <>
+      <View style={bodyStyles.summaryWrap}>
+        <View style={bodyStyles.summaryCard}>
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(227,100,20,0.12)' },
+              ]}
+            >
+              <Route size={14} color="#e36414" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {stats.total.toFixed(0)}
+              <Text style={bodyStyles.summaryUnit}> km</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>Total de la flota</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(30,58,138,0.10)' },
+              ]}
+            >
+              <Car size={14} color="#1e3a8a" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>{stats.units}</Text>
+            <Text style={bodyStyles.summaryLabel}>Unidades</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(30,58,138,0.10)' },
+              ]}
+            >
+              <Target size={14} color="#1e3a8a" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {stats.average.toFixed(0)}
+              <Text style={bodyStyles.summaryUnit}> km</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>Promedio</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(227,100,20,0.12)' },
+              ]}
+            >
+              <CircleSlash size={14} color="#e36414" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>{stats.idle}</Text>
+            <Text style={bodyStyles.summaryLabel}>Sin movimiento</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={bodyStyles.filterRow}>
+        {(
+          [
+            { key: 'mileage', label: 'Mayor recorrido' },
+            { key: 'name', label: 'Por unidad' },
+          ] as { key: SortKey; label: string }[]
+        ).map(option => {
+          const active = sortBy === option.key;
+          return (
+            <TouchableOpacity
+              key={option.key}
+              style={[bodyStyles.chip, active && bodyStyles.chipActive]}
+              onPress={() => setSortBy(option.key)}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  bodyStyles.chipText,
+                  active && bodyStyles.chipTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </>
   );
 
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
-    <GradientWrapper
+    <LinearGradient
       colors={['#021e4bff', '#183890ff', '#032660ff']}
       style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
     >
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
-            <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={handleGoBack}
+              style={styles.backButton}
+              activeOpacity={0.7}
+            >
               <ChevronLeft size={24} color="#fff" />
             </TouchableOpacity>
             <View style={styles.headerTextContainer}>
@@ -410,19 +439,33 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
               No hay datos disponibles para el rango de fechas seleccionado
             </Text>
           </View>
+        ) : !isAllUnits ? (
+          renderSingleUnit()
         ) : (
-          <FlatList
-            data={vehicleData}
+          <SectionList
+            sections={sections}
             keyExtractor={item => item.id}
             renderItem={renderVehicleItem}
+            renderSectionHeader={({ section }) => (
+              <View style={bodyStyles.dayHeader}>
+                <Text style={bodyStyles.dayTitle}>{section.title}</Text>
+                <Text style={bodyStyles.dayCount}>
+                  {stats.units} {stats.units === 1 ? 'unidad' : 'unidades'}
+                </Text>
+              </View>
+            )}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            ListHeaderComponent={renderStatistics}
+            contentContainerStyle={bodyStyles.listContent}
+            ListHeaderComponent={renderListHeader}
+            stickySectionHeadersEnabled
+            initialNumToRender={14}
+            maxToRenderPerBatch={12}
+            windowSize={9}
+            removeClippedSubviews={Platform.OS === 'android'}
           />
         )}
       </View>
-    </GradientWrapper>
+    </LinearGradient>
   );
 };
 

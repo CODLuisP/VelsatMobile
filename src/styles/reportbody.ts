@@ -66,6 +66,7 @@ export const bodyStyles = StyleSheet.create({
   // ── Filtros ────────────────────────────────────────────
   filterRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     paddingHorizontal: 14,
     paddingTop: 12,
@@ -119,7 +120,6 @@ export const bodyStyles = StyleSheet.create({
     fontWeight: '700',
     color: '#0f1b3d',
     letterSpacing: 0.3,
-    textTransform: 'capitalize',
   },
   dayCount: {
     fontSize: 10.5,
@@ -236,7 +236,7 @@ export const bodyStyles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // ── Bloque de parada ───────────────────────────────────
+  // ── Bloque de evento (parada / exceso) ─────────────────
   stopCard: {
     backgroundColor: '#fff8f2',
     borderRadius: 12,
@@ -260,6 +260,23 @@ export const bodyStyles = StyleSheet.create({
     fontSize: 10.5,
     color: '#c98a55',
     fontWeight: '600',
+  },
+  excessSpeed: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#c25708',
+  },
+  excessUnit: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#c25708',
+  },
+  limitNote: {
+    fontSize: 10.5,
+    color: '#8d97a8',
+    fontWeight: '500',
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
 
   // ── Detalle expandido ──────────────────────────────────
@@ -300,6 +317,165 @@ export const bodyStyles = StyleSheet.create({
     fontSize: 11.5,
     fontWeight: '700',
     color: '#ffffff',
+  },
+
+  // ── Ranking (kilometraje por unidad) ───────────────────
+  rankRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  rankBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    backgroundColor: '#f2f5fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  rankBadgeTop: {
+    backgroundColor: '#e36414',
+  },
+  rankBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#8d97a8',
+  },
+  rankBadgeTextTop: {
+    color: '#ffffff',
+  },
+  rankBody: {
+    flex: 1,
+  },
+  rankTopRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  rankName: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#0f1b3d',
+    flex: 1,
+    marginRight: 8,
+  },
+  rankValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f1b3d',
+  },
+  rankValueIdle: {
+    color: '#aab3c2',
+  },
+  rankUnit: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#8d97a8',
+  },
+  rankBar: {
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#eef1f6',
+    overflow: 'hidden',
+  },
+  rankBarFill: {
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#1e3a8a',
+  },
+  rankBarFillTop: {
+    backgroundColor: '#e36414',
+  },
+  rankIdleTag: {
+    fontSize: 10,
+    color: '#aab3c2',
+    fontWeight: '500',
+    marginTop: 4,
+  },
+
+  // ── Unidad única (hero) ────────────────────────────────
+  heroCard: {
+    marginHorizontal: 14,
+    marginTop: 16,
+    // El auto de assets/Car.jpg es un PNG con fondo transparente: se ve el plomo.
+    backgroundColor: '#f2f5fa',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e8edf5',
+    overflow: 'hidden',
+    shadowColor: '#0f1b3d',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  heroImageWrap: {
+    height: 150,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroBody: {
+    alignItems: 'center',
+    paddingTop: 18,
+    paddingBottom: 14,
+  },
+  heroValue: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#0f1b3d',
+    letterSpacing: -0.8,
+  },
+  heroUnit: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#8d97a8',
+  },
+  heroLabel: {
+    fontSize: 11.5,
+    color: '#8d97a8',
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  heroFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#e3e9f2',
+    marginTop: 16,
+    paddingTop: 14,
+    width: '100%',
+  },
+  heroFooterTile: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  heroFooterValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f1b3d',
+  },
+  heroFooterUnit: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#8d97a8',
+  },
+  heroFooterLabel: {
+    fontSize: 10,
+    color: '#8d97a8',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  heroFooterDivider: {
+    width: 1,
+    alignSelf: 'stretch',
+    backgroundColor: '#e3e9f2',
   },
 
   // ── Vacío por filtro ───────────────────────────────────
