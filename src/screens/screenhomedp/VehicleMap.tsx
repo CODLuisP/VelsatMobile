@@ -6,8 +6,9 @@ import {
   DIRECTION_IMAGES,
   getDirectionImage,
   getDirectionImageData,
+  VehiclePinType,
 } from '../../styles/directionImages';
-import { MapPin, TriangleAlert, Maximize2, X } from 'lucide-react-native';
+import { TriangleAlert, Maximize2, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface VehicleMapProps {
@@ -84,11 +85,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
       }
 
       const data: ApiResponse = await response.json();
-      console.log('Respuesta completa de la API:', data);
-      console.log('Datos del vehículo - Lat:', data.vehiculo.lastValidLatitude, 'Lng:', data.vehiculo.lastValidLongitude, 'Heading:', data.vehiculo.lastValidHeading, 'Speed:', data.vehiculo.lastValidSpeed);
 
-      // Solo actualizar si el componente está montado
-      // Importante: extraer el objeto vehiculo de la respuesta
       if (isMountedRef.current) {
         setVehicleData(data.vehiculo);
         setConnectionStatus('connected');
@@ -163,7 +160,9 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
   };
 
   // Tipo de vehículo siempre 's' como especificaste
-  const pinType = 's';
+  const pinType: VehiclePinType = 's';
+  // 't' usa las mismas imágenes que 'c'
+  const resolvedPinType: VehiclePinType = pinType === 't' ? 'c' : pinType;
 
   // Tamaños de iconos según el tipo
   const iconSizes = {
@@ -174,7 +173,6 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
   const popupOffset = -20;
 
   const getLeafletHTML = (isFullscreenView = false) => {
-    const radarColor = getRadarColor();
     const viewId = isFullscreenView ? 'fullscreen-map' : 'map';
     
     return `
@@ -224,14 +222,14 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
 
             // Guardar todas las URLs de imágenes
             window.imageUrls = {
-                up: '${DIRECTION_IMAGES[pinType]['up.png']}',
-                topright: '${DIRECTION_IMAGES[pinType]['topright.png']}',
-                right: '${DIRECTION_IMAGES[pinType]['right.png']}',
-                downright: '${DIRECTION_IMAGES[pinType]['downright.png']}',
-                down: '${DIRECTION_IMAGES[pinType]['down.png']}',
-                downleft: '${DIRECTION_IMAGES[pinType]['downleft.png']}',
-                left: '${DIRECTION_IMAGES[pinType]['left.png']}',
-                topleft: '${DIRECTION_IMAGES[pinType]['topleft.png']}'
+                up: '${DIRECTION_IMAGES[resolvedPinType]['up.png']}',
+                topright: '${DIRECTION_IMAGES[resolvedPinType]['topright.png']}',
+                right: '${DIRECTION_IMAGES[resolvedPinType]['right.png']}',
+                downright: '${DIRECTION_IMAGES[resolvedPinType]['downright.png']}',
+                down: '${DIRECTION_IMAGES[resolvedPinType]['down.png']}',
+                downleft: '${DIRECTION_IMAGES[resolvedPinType]['downleft.png']}',
+                left: '${DIRECTION_IMAGES[resolvedPinType]['left.png']}',
+                topleft: '${DIRECTION_IMAGES[resolvedPinType]['topleft.png']}'
             };
 
             var marker = null;
@@ -425,9 +423,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     if (Platform.OS === 'android' && webViewRef.current && vehicleData && isWebViewReady) {
       const radarColor = getRadarColor();
       const direccion = vehicleData.direccion || 'Sin dirección';
-      
-      console.log('🔄 Actualizando WebView - Lat:', latitude, 'Lng:', longitude, 'Heading:', heading, 'Speed:', speed);
-      
+            
       setTimeout(() => {
         const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}', '${direccion.replace(/'/g, "\\'")}'); true;`;
         webViewRef.current?.injectJavaScript(script);
@@ -440,9 +436,7 @@ const VehicleMap: React.FC<VehicleMapProps> = ({
     if (Platform.OS === 'android' && fullscreenWebViewRef.current && vehicleData && isFullscreen) {
       const radarColor = getRadarColor();
       const direccion = vehicleData.direccion || 'Sin dirección';
-      
-      console.log('🔄 Actualizando WebView fullscreen - Lat:', latitude, 'Lng:', longitude);
-      
+            
       setTimeout(() => {
         const script = `window.updateMarkerPosition(${latitude}, ${longitude}, ${heading}, ${speed}, '${radarColor}', '${direccion.replace(/'/g, "\\'")}'); true;`;
         fullscreenWebViewRef.current?.injectJavaScript(script);
