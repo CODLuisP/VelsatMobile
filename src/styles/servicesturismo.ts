@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: -5,
+    marginTop: Platform.OS === 'ios' ? -5 : 10,
   },
   backButton: {
     width: 44,
