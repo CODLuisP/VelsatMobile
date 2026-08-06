@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
-  FlatList,
+  SectionList,
   ActivityIndicator,
   Linking,
   Platform,
@@ -11,14 +10,15 @@ import {
 import {
   ChevronLeft,
   MapPin,
-  Clock,
-  Timer,
-  Globe,
   Calendar,
   AlertCircle,
   FileX,
-  BarChart3,
-  Info,
+  ParkingCircle,
+  TimerOff,
+  Timer,
+  Hourglass,
+  Search,
+  ChevronDown,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -29,6 +29,7 @@ import {
 } from '@react-navigation/native';
 import axios from 'axios';
 import { styles } from '../../../styles/generalreport';
+import { bodyStyles } from '../../../styles/reportbody';
 import { RootStackParamList } from '../../../../App';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -37,8 +38,18 @@ import {
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
+import {
+  compactDuration,
+  formatDayTitle,
+  formatDuration,
+  formatShortDate,
+  minutesBetween,
+  parseDuration,
+  shortTime,
+} from '../../../utils/reportUtils';
 import { useAuthStore } from '../../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
+import { Text } from '../../../components/ScaledComponents';
 
 interface ReportItem {
   id: string;
@@ -52,6 +63,14 @@ interface ReportItem {
   latitude: number;
   longitude: number;
 }
+
+/** Parada con su duración ya resuelta en minutos. */
+type Stop = ReportItem & { minutes: number | null };
+
+type Filter = 'all' | 'long' | 'veryLong';
+
+const LONG_STOP = 15; // minutos
+const VERY_LONG_STOP = 60; // minutos
 
 const StopReport = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -69,6 +88,8 @@ const StopReport = () => {
   const [reportData, setReportData] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>('all');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -100,7 +121,9 @@ const StopReport = () => {
       };
 
       // Formatear las fechas para la API
-      const formattedStartDate = encodeURIComponent(formatDateForAPI(startDate));
+      const formattedStartDate = encodeURIComponent(
+        formatDateForAPI(startDate),
+      );
       const formattedEndDate = encodeURIComponent(formatDateForAPI(endDate));
 
       const url = `${server}/api/Reporting/stops/${formattedStartDate}/${formattedEndDate}/${plate}/${username}`;
@@ -120,7 +143,7 @@ const StopReport = () => {
             location: item.address,
             latitude: item.latitude,
             longitude: item.longitude,
-          })
+          }),
         );
 
         setReportData(transformedData);
@@ -138,113 +161,322 @@ const StopReport = () => {
     navigation.goBack();
   };
 
-const handleReportItemPress = async (item: ReportItem) => {
-  const { latitude, longitude } = item;
+  const openStreetView = async (item: ReportItem) => {
+    const { latitude, longitude } = item;
 
-  const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
-  
-  const supported = await Linking.canOpenURL(googleMapsUrl);
-  if (supported) {
-    await Linking.openURL(googleMapsUrl);
-  }
-};
+    const googleMapsUrl = `https://www.google.com/maps/@${latitude},${longitude},3a,75y,0h,90t/data=!3m6!1e1!3m4!1s!2e0!7i16384!8i8192?entry=ttu`;
 
-  const renderReportItem = ({
-    item,
-    index,
-  }: {
-    item: ReportItem;
-    index: number;
-  }) => {
-    const isFirst = index === 0;
-    const isLast = index === reportData.length - 1;
+    const supported = await Linking.canOpenURL(googleMapsUrl);
+    if (supported) {
+      await Linking.openURL(googleMapsUrl);
+    }
+  };
+
+  const toggleExpanded = (id: string) => {
+    setExpandedId(current => (current === id ? null : id));
+  };
+
+  // La duración sale del rango inicio-fin; si el API manda fechas que no se
+  // pueden leer, se cae al campo totalTime.
+  const stops = useMemo<Stop[]>(
+    () =>
+      reportData.map(item => ({
+        ...item,
+        minutes:
+          minutesBetween(
+            item.startDate,
+            item.startTime,
+            item.endDate,
+            item.endTime,
+          ) ?? parseDuration(item.totalTime),
+      })),
+    [reportData],
+  );
+
+  const counts = useMemo(
+    () => ({
+      all: stops.length,
+      long: stops.filter(s => (s.minutes ?? 0) >= LONG_STOP).length,
+      veryLong: stops.filter(s => (s.minutes ?? 0) >= VERY_LONG_STOP).length,
+    }),
+    [stops],
+  );
+
+  const stats = useMemo(() => {
+    const durations = stops
+      .map(s => s.minutes)
+      .filter((m): m is number => m !== null);
+
+    const total = durations.reduce((acc, m) => acc + m, 0);
+
+    return {
+      total: stops.length,
+      idleMinutes: total,
+      longest: durations.length > 0 ? Math.max(...durations) : 0,
+      average: durations.length > 0 ? total / durations.length : 0,
+    };
+  }, [stops]);
+
+  const sections = useMemo(() => {
+    const threshold =
+      filter === 'long' ? LONG_STOP : filter === 'veryLong' ? VERY_LONG_STOP : 0;
+    const visible =
+      threshold === 0
+        ? stops
+        : stops.filter(s => (s.minutes ?? 0) >= threshold);
+
+    const byDay = new Map<string, Stop[]>();
+    visible.forEach(stop => {
+      const list = byDay.get(stop.startDate);
+      if (list) {
+        list.push(stop);
+      } else {
+        byDay.set(stop.startDate, [stop]);
+      }
+    });
+
+    return Array.from(byDay, ([date, data]) => ({
+      title: formatDayTitle(date),
+      date,
+      data,
+    }));
+  }, [stops, filter]);
+
+  const renderStop = ({ item }: { item: Stop }) => {
+    const expanded = expandedId === item.id;
+    const isLongest = stats.longest > 0 && item.minutes === stats.longest;
+    const crossesDay = item.endDate !== item.startDate;
 
     return (
       <TouchableOpacity
-        style={[
-          styles.reportItem,
-          isFirst && styles.reportItemFirst,
-          isLast && styles.reportItemLast,
-        ]}
-        onPress={() => handleReportItemPress(item)}
-        activeOpacity={0.7}
+        style={bodyStyles.row}
+        onPress={() => toggleExpanded(item.id)}
+        activeOpacity={0.8}
       >
-        <View style={styles.reportContent}>
-          {/* Número del reporte */}
-          <View style={styles.numberContainer}>
-            <Text style={styles.numberText}>{item.number}.</Text>
-          </View>
+        <View style={bodyStyles.timeCol}>
+          <Text style={bodyStyles.time}>{shortTime(item.startTime)}</Text>
+        </View>
 
-          {/* Contenido principal */}
-          <View style={styles.mainContent}>
-            {/* Fila superior con dos columnas */}
-            <View style={styles.topRowContent}>
-              {/* Sección izquierda - Fecha y hora de inicio */}
-              <View style={styles.leftSection}>
-                <View style={styles.dateTimeContainer}>
-                  <Clock size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>
-                    Fecha y hora de inicio
+        <View style={bodyStyles.railCol}>
+          <View style={bodyStyles.rail} />
+          <View style={[bodyStyles.dot, bodyStyles.dotStop]}>
+            <ParkingCircle size={12} color="#fff" />
+          </View>
+        </View>
+
+        <View style={bodyStyles.content}>
+          <View style={bodyStyles.stopCard}>
+            <View style={bodyStyles.stopTitleRow}>
+              <Text style={bodyStyles.stopTitle}>
+                Detenido{' '}
+                {item.minutes !== null
+                  ? formatDuration(item.minutes)
+                  : item.totalTime}
+              </Text>
+              <Text style={bodyStyles.stopRange}>
+                {shortTime(item.startTime)} – {shortTime(item.endTime)}
+                {crossesDay ? ` (${formatShortDate(item.endDate)})` : ''}
+              </Text>
+            </View>
+
+            <Text style={[bodyStyles.address, bodyStyles.addressMuted]}>
+              {item.location}
+            </Text>
+
+            <View style={bodyStyles.metaRow}>
+              {isLongest && (
+                <View style={[bodyStyles.badge, bodyStyles.badgeFast]}>
+                  <Hourglass size={10} color="#e36414" />
+                  <Text style={[bodyStyles.badgeText, bodyStyles.badgeTextFast]}>
+                    La más larga
                   </Text>
                 </View>
-                <Text style={styles.dateTimeText}>
-                  {item.startDate} {item.startTime}
-                </Text>
+              )}
+              <Text style={bodyStyles.metaText}>Parada N° {item.number}</Text>
+              <ChevronDown
+                size={12}
+                color="#c98a55"
+                style={{
+                  transform: [{ rotate: expanded ? '180deg' : '0deg' }],
+                }}
+              />
+            </View>
+          </View>
 
-                <View style={styles.speedContainer}>
-                  <Clock size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>Fecha y hora final</Text>
-                </View>
-                <Text style={styles.speedText}>
-                  {item.endDate} {item.endTime}
+          {expanded && (
+            <View style={bodyStyles.detail}>
+              <View style={bodyStyles.detailRow}>
+                <Text style={bodyStyles.detailLabel}>Llegada</Text>
+                <Text style={bodyStyles.detailValue}>
+                  {item.startDate} {shortTime(item.startTime)}
                 </Text>
               </View>
-
-              {/* Sección derecha - Tiempo total y coordenadas */}
-              <View style={styles.rightSection}>
-                <View style={styles.odometerContainer}>
-                  <Timer size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>Tiempo Total</Text>
-                </View>
-                <Text style={styles.odometerText}>{item.totalTime}</Text>
-
-                <View style={styles.coordinatesContainer}>
-                  <Globe size={14} color="#666" />
-                  <Text style={styles.sectionLabel}>Latitud y Longitud</Text>
-                </View>
-                <Text style={styles.coordinatesText}>
+              <View style={bodyStyles.detailRow}>
+                <Text style={bodyStyles.detailLabel}>Salida</Text>
+                <Text style={bodyStyles.detailValue}>
+                  {item.endDate} {shortTime(item.endTime)}
+                </Text>
+              </View>
+              <View style={bodyStyles.detailRow}>
+                <Text style={bodyStyles.detailLabel}>Tiempo total</Text>
+                <Text style={bodyStyles.detailValue}>{item.totalTime}</Text>
+              </View>
+              <View style={bodyStyles.detailRow}>
+                <Text style={bodyStyles.detailLabel}>Coordenadas</Text>
+                <Text style={bodyStyles.detailValue}>
                   {item.latitude.toFixed(6)}, {item.longitude.toFixed(6)}
                 </Text>
               </View>
+              <TouchableOpacity
+                style={bodyStyles.mapButton}
+                onPress={() => openStreetView(item)}
+                activeOpacity={0.85}
+              >
+                <Search size={13} color="#fff" />
+                <Text style={bodyStyles.mapButtonText}>
+                  Ver el lugar en 3D
+                </Text>
+              </TouchableOpacity>
             </View>
-
-            {/* Fila inferior - Ubicación ocupa todo el ancho */}
-            <View style={styles.bottomRowContent}>
-              <View style={styles.locationContainer}>
-                <MapPin size={14} color="#666" />
-                <Text style={styles.sectionLabel}>Ubicación</Text>
-              </View>
-              <Text style={styles.locationText}>{item.location}</Text>
-            </View>
-          </View>
+          )}
         </View>
       </TouchableOpacity>
     );
   };
 
-const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
+  const idle = compactDuration(stats.idleMinutes);
+  const longest = compactDuration(stats.longest);
+  const average = compactDuration(stats.average);
+
+  const renderListHeader = () => (
+    <>
+      <View style={bodyStyles.summaryWrap}>
+        <View style={bodyStyles.summaryCard}>
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(30,58,138,0.10)' },
+              ]}
+            >
+              <ParkingCircle size={14} color="#1e3a8a" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>{stats.total}</Text>
+            <Text style={bodyStyles.summaryLabel}>Paradas</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(227,100,20,0.12)' },
+              ]}
+            >
+              <TimerOff size={14} color="#e36414" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {idle.value}
+              <Text style={bodyStyles.summaryUnit}>{idle.unit}</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>Tiempo detenido</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(227,100,20,0.12)' },
+              ]}
+            >
+              <Hourglass size={14} color="#e36414" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {longest.value}
+              <Text style={bodyStyles.summaryUnit}>{longest.unit}</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>La más larga</Text>
+          </View>
+
+          <View style={bodyStyles.summaryDivider} />
+
+          <View style={bodyStyles.summaryTile}>
+            <View
+              style={[
+                bodyStyles.summaryIcon,
+                { backgroundColor: 'rgba(30,58,138,0.10)' },
+              ]}
+            >
+              <Timer size={14} color="#1e3a8a" />
+            </View>
+            <Text style={bodyStyles.summaryValue}>
+              {average.value}
+              <Text style={bodyStyles.summaryUnit}>{average.unit}</Text>
+            </Text>
+            <Text style={bodyStyles.summaryLabel}>Promedio</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={bodyStyles.filterRow}>
+        {(
+          [
+            { key: 'all', label: 'Todas' },
+            { key: 'long', label: `Más de ${LONG_STOP} min` },
+            { key: 'veryLong', label: 'Más de 1 h' },
+          ] as { key: Filter; label: string }[]
+        ).map(option => {
+          const active = filter === option.key;
+          return (
+            <TouchableOpacity
+              key={option.key}
+              style={[bodyStyles.chip, active && bodyStyles.chipActive]}
+              onPress={() => setFilter(option.key)}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  bodyStyles.chipText,
+                  active && bodyStyles.chipTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+              <Text
+                style={[
+                  bodyStyles.chipCount,
+                  active && bodyStyles.chipCountActive,
+                ]}
+              >
+                {counts[option.key]}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </>
+  );
+
+  const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
     <LinearGradient
-     colors={['#021e4bff', '#183890ff', '#032660ff']}
-             style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
+      colors={['#021e4bff', '#183890ff', '#032660ff']}
+      style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topSpace }]}>
         <View style={styles.headerTop}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleGoBack}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
             <ChevronLeft size={26} color="#fff" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
@@ -260,15 +492,8 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
         </View>
       </View>
 
-      {/* Contenedor para la lista o estados */}
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'white',
-          borderTopLeftRadius: 25,
-          borderTopRightRadius: 25,
-        }}
-      >
+      {/* Cuerpo */}
+      <View style={bodyStyles.body}>
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#1e3a8a" />
@@ -293,143 +518,42 @@ const topSpace = Platform.OS === 'ios' ? insets.top -5 : insets.top + 5;
             </Text>
           </View>
         ) : (
-          <>
-            {/* Card con dos columnas: Total de Registros y Consejo */}
-            <View style={inlineStyles.statsCard}>
-              {/* Columna izquierda - Total de Registros */}
-              <View style={inlineStyles.leftColumn}>
-                <View style={inlineStyles.statsIconContainer}>
-                  <BarChart3 size={22} color="#1e3a8a" />
-                </View>
-                <View style={inlineStyles.statsTextContainer}>
-                  <Text style={inlineStyles.statsLabel}>Total de Paradas</Text>
-                  <Text style={inlineStyles.statsNumber}>{reportData.length}</Text>
-                </View>
+          <SectionList
+            sections={sections}
+            keyExtractor={stop => stop.id}
+            renderItem={renderStop}
+            renderSectionHeader={({ section }) => (
+              <View style={bodyStyles.dayHeader}>
+                <Text style={bodyStyles.dayTitle}>{section.title}</Text>
+                <Text style={bodyStyles.dayCount}>
+                  {section.data.length}{' '}
+                  {section.data.length === 1 ? 'parada' : 'paradas'}
+                </Text>
               </View>
-
-              {/* Separador vertical */}
-              <View style={inlineStyles.verticalDivider} />
-
-              {/* Columna derecha - Consejo */}
-              <View style={inlineStyles.rightColumn}>
-                          <View style={inlineStyles.tipIconWrapper}>
-                            <Info size={18} color="#d57004ff" />
-                          </View>
-                          <View style={inlineStyles.tipTextContainer}>
-                            <Text style={inlineStyles.tipTitle}>Consejo</Text>
-                            <Text style={inlineStyles.tipText}>
-                              Toca cualquier registro para vista 3D
-                            </Text>
-                          </View>
-                        </View>
-
-
-            </View>
-
-            {/* Lista de reportes */}
-            <FlatList
-              data={reportData}
-              keyExtractor={item => item.id}
-              renderItem={({ item, index }) => renderReportItem({ item, index })}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.reportsListContent}
-              style={{ paddingHorizontal: 10, paddingVertical: 10 }}
-            />
-          </>
+            )}
+            ListHeaderComponent={renderListHeader}
+            ListEmptyComponent={
+              <View style={bodyStyles.filterEmpty}>
+                <MapPin size={34} color="#c3cbd8" />
+                <Text style={bodyStyles.filterEmptyText}>
+                  {filter === 'veryLong'
+                    ? 'Ninguna parada superó la hora'
+                    : `Ninguna parada superó los ${LONG_STOP} minutos`}
+                </Text>
+              </View>
+            }
+            contentContainerStyle={bodyStyles.listContent}
+            stickySectionHeadersEnabled
+            showsVerticalScrollIndicator={false}
+            initialNumToRender={14}
+            maxToRenderPerBatch={12}
+            windowSize={9}
+            removeClippedSubviews={Platform.OS === 'android'}
+          />
         )}
       </View>
     </LinearGradient>
   );
-};
-
-// Estilos inline para los nuevos componentes
-const inlineStyles = {
-  statsCard: {
-    flexDirection: 'row' as const,
-    backgroundColor: '#ffffff',
-    marginHorizontal: 15,
-    marginTop: 15,
-    marginBottom: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e0e7ff',
-    shadowColor: '#1e3a8a',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
-    overflow: 'hidden' as const,
-  },
-  leftColumn: {
-    flex: 1,
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    backgroundColor: '#f0f9ff',
-   paddingHorizontal: 10,
-    paddingVertical: 10
-  },
-  statsIconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: '#dbeafe',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginRight: 10,
-  },
-  statsTextContainer: {
-    flex: 1,
-  },
-  statsLabel: {
-    fontSize: 11,
-    color: '#64748b',
-    fontWeight: '500' as const,
-    marginBottom: 3,
-  },
-  statsNumber: {
-    fontSize: 24,
-    fontWeight: '700' as const,
-    color: '#1e3a8a',
-  },
-  verticalDivider: {
-    width: 1,
-    backgroundColor: '#e0e7ff',
-  },
-  rightColumn: {
-    flex: 1,
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    backgroundColor: '#fff6edff',
-     paddingHorizontal: 10,
-    paddingVertical: 10
-  },
-  tipIconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#ffd0a0ff',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginRight: 10,
-  },
-  tipTextContainer: {
-    flex: 1,
-  },
-  tipTitle: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: '#d57004ff',
-    marginBottom: 2,
-  },
-  tipText: {
-    fontSize: 11,
-    color: '#d57004ff',
-    lineHeight: 15,
-    fontWeight: '500' as const,
-  },
 };
 
 export default StopReport;

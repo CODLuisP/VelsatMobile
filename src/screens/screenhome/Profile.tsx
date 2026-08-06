@@ -83,7 +83,7 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      if ((tipo === 'n' || tipo === 'c' || tipo === 'p') && user?.username) {
+      if ((tipo === 'n' || tipo === 'c' || tipo === 'p' || tipo === 't') && user?.username) {
         setLoading(true);
         try {
           const response = await axios.get<UserDetailsResponse>(
@@ -123,7 +123,7 @@ const Profile = () => {
   const topSpace = insets.top + 10;
 
   const shouldShowMarkerAndNotifications = tipo === 'n';
-  const shouldShowSettings = tipo !== 'c' && tipo !== 'p';
+  const shouldShowSettings = tipo !== 'c' && tipo !== 'p' && tipo !== 't';
   const shouldShowGeneral =
     shouldShowSettings || shouldShowMarkerAndNotifications;
 
@@ -181,7 +181,7 @@ const Profile = () => {
           value: userDetails.contactPhone,
         },
       ];
-    } else if (tipo === 'c' && userDetails) {
+    } else if ((tipo === 'c' || tipo === 't') && userDetails) {
       rows = [
         {
           key: 'nombre',
@@ -236,7 +236,7 @@ const Profile = () => {
           value: userDetails.empresa,
         },
       ];
-    } else if (tipo === 'n' || tipo === 'c' || tipo === 'p') {
+    } else if (tipo === 'n' || tipo === 'c' || tipo === 'p' || tipo === 't') {
       rows = [
         {
           key: 'nombre',
