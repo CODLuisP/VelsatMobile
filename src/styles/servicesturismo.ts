@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: -5,
+    marginTop: Platform.OS === 'ios' ? -5 : 10,
   },
   backButton: {
     width: 44,
@@ -21,6 +21,36 @@ export const styles = StyleSheet.create({
   },
   headerTitleBlock: {
     flex: 1,
+  },
+  headerCountBadge: {
+    minWidth: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#e36414',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    marginRight: 14,
+    marginTop: 14,
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  headerCountBadgeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  headerCountBadgeLabel: {
+    fontSize: 8,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: -2,
+    textTransform: 'uppercase',
   },
   headerMainTitle: {
     fontSize: 18,
@@ -33,6 +63,43 @@ export const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.75)',
     marginLeft: 12,
     marginTop: 2,
+  },
+  dayGroup: {
+    marginBottom: 4,
+  },
+  dayGroupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#eceef1',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 16,
+  },
+  dayGroupHeaderText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#6b7280',
+  },
+  dayGroupHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  dayCountBadge: {
+    minWidth: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#1f7aeb',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 7,
+  },
+  dayCountBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   contentList: {
     flex: 1,
@@ -52,17 +119,36 @@ export const styles = StyleSheet.create({
   },
   swipeBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#e2f7ea',
     borderRadius: 10,
     flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  swipeSideLeft: {
+    flex: 1,
+    backgroundColor: '#fdecea',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 6,
+    paddingHorizontal: 16,
+  },
+  swipeSideRight: {
+    flex: 1,
+    backgroundColor: '#e2f7ea',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 6,
     paddingHorizontal: 16,
   },
   swipeBackgroundText: {
     fontSize: 12,
     fontWeight: '700',
     color: '#0b7a3b',
+  },
+  swipeBackgroundTextFinalizar: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#b3261e',
   },
   swipeHint: {
     flexDirection: 'row',
@@ -71,12 +157,20 @@ export const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: '#f0fbf4',
+    backgroundColor: '#f5f6f8',
   },
   swipeHintText: {
     fontSize: 11,
-    color: '#0b7a3b',
+    color: '#555',
     fontWeight: '600',
+  },
+  swipeHintTextConfirmar: {
+    color: '#0b7a3b',
+    fontWeight: '700',
+  },
+  swipeHintTextFinalizar: {
+    color: '#b3261e',
+    fontWeight: '700',
   },
   serviceHeaderRight: {
     flexDirection: 'row',
@@ -96,6 +190,20 @@ export const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: '#7ef0a8',
+  },
+  statusBadgeFinalizado: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#b3261e',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  statusBadgeFinalizadoText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
   },
   avisoBanner: {
     backgroundColor: '#fdecea',
@@ -118,6 +226,10 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#032660ff',
   },
+  serviceCardPasado: {
+    borderColor: '#c7cad1',
+    backgroundColor: '#f4f5f7',
+  },
   serviceHeader: {
     backgroundColor: '#032660ff',
     flexDirection: 'row',
@@ -125,10 +237,27 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
   },
+  serviceHeaderPasado: {
+    backgroundColor: '#8b8f99',
+  },
   serviceHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  serviceNumberBadge: {
+    minWidth: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  serviceNumberBadgeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   serviceTime: {
     fontSize: 15,
