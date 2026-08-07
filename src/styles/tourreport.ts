@@ -110,6 +110,22 @@ export const styles = StyleSheet.create({
     elevation: 3,
   },
 
+  // Pin de inicio / fin del recorrido
+  edgePin: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#ffffff',
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0f1b3d',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6,
+  },
+
   // ── Panel inferior ─────────────────────────────────────
   sheet: {
     position: 'absolute',

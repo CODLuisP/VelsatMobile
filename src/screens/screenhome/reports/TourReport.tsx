@@ -17,7 +17,7 @@ import {
   Route,
   Clock,
   Flag,
-  Play,
+  CarFront,
   FileX,
   Maximize,
   Eye,
@@ -69,6 +69,13 @@ const COLOR_FAST = '#3b82f6'; // 60+ km/h
 /** Colores de marca, para el trazo y los pines de inicio/fin. */
 const NAVY = '#1e3a8a';
 const ORANGE = '#e36414';
+
+/** Los mismos íconos de lucide, en SVG, para los pines del WebView Android. */
+const carSvg = (color: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>`;
+
+const flagSvg = (color: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="${color}" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/></svg>`;
 
 const getSpeedColor = (speed: number): string => {
   if (speed === 0) return COLOR_IDLE;
@@ -405,17 +412,15 @@ const TourReport = () => {
         #map { height: 100vh; width: 100vw; }
 
         .edge-pin {
-          width: 30px;
-          height: 30px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #fff;
-          font-size: 11px;
-          font-weight: 700;
-          border: 3px solid #fff;
-          box-shadow: 0 2px 8px rgba(15,27,61,0.35);
+          background: #ffffff;
+          border: 3px solid;
+          box-shadow: 0 3px 10px rgba(15,27,61,0.3);
         }
 
         .leaflet-top.leaflet-left {
@@ -496,12 +501,12 @@ const TourReport = () => {
           }
         }
 
-        function edgeIcon(color, label) {
+        function edgeIcon(color, svg) {
           return L.divIcon({
-            html: '<div class="edge-pin" style="background:' + color + ';">' + label + '</div>',
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-            popupAnchor: [0, -18],
+            html: '<div class="edge-pin" style="border-color:' + color + ';">' + svg + '</div>',
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+            popupAnchor: [0, -21],
             className: ''
           });
         }
@@ -570,11 +575,13 @@ const TourReport = () => {
           }
 
           L.marker([firstPoint.latitude, firstPoint.longitude], {
-            icon: edgeIcon('${ORANGE}', 'A'), zIndexOffset: 1000
+            icon: edgeIcon('${ORANGE}', ${JSON.stringify(carSvg(ORANGE))}),
+            zIndexOffset: 1000
           }).bindPopup('<b>Inicio del recorrido</b><br>' + firstPoint.date + ' ' + firstPoint.time).addTo(map);
 
           L.marker([lastPoint.latitude, lastPoint.longitude], {
-            icon: edgeIcon('${NAVY}', 'B'), zIndexOffset: 1000
+            icon: edgeIcon('${NAVY}', ${JSON.stringify(flagSvg(NAVY))}),
+            zIndexOffset: 1000
           }).bindPopup('<b>Fin del recorrido</b><br>' + lastPoint.date + ' ' + lastPoint.time).addTo(map);
 
           // Deja aire abajo para que la ruta no quede tapada por el panel.
@@ -697,26 +704,15 @@ const TourReport = () => {
               >
                 {isEdge ? (
                   <View
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 14,
-                      backgroundColor: index === 0 ? ORANGE : NAVY,
-                      borderWidth: 3,
-                      borderColor: '#fff',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      shadowColor: '#0f1b3d',
-                      shadowOpacity: 0.35,
-                      shadowRadius: 5,
-                      shadowOffset: { width: 0, height: 2 },
-                      elevation: 6,
-                    }}
+                    style={[
+                      styles.edgePin,
+                      { borderColor: index === 0 ? ORANGE : NAVY },
+                    ]}
                   >
                     {index === 0 ? (
-                      <Play size={11} color="#fff" fill="#fff" />
+                      <CarFront size={18} color={ORANGE} />
                     ) : (
-                      <Flag size={11} color="#fff" />
+                      <Flag size={17} color={NAVY} fill={NAVY} />
                     )}
                   </View>
                 ) : (
@@ -998,12 +994,12 @@ const TourReport = () => {
                         <Text style={styles.legendText}>60+ km/h</Text>
                       </View>
                       <View style={styles.legendItem}>
-                        <Play size={9} color="#0f1b3d" fill="#0f1b3d" />
+                        <CarFront size={11} color={ORANGE} />
                         <Text style={styles.legendText}>Inicio</Text>
                       </View>
                       <View style={styles.legendItem}>
-                        <Flag size={9} color="#0f1b3d" />
-                        <Text style={styles.legendText}>Fin</Text>
+                        <Flag size={10} color={NAVY} fill={NAVY} />
+                        <Text style={styles.legendText}>Meta</Text>
                       </View>
                     </View>
                   </>
