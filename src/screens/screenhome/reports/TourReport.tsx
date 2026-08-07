@@ -1,22 +1,25 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
-  Text,
   View,
   TouchableOpacity,
   Platform,
   ActivityIndicator,
-  ScrollView,
   TextInput,
-  Alert,
-  TouchableWithoutFeedback,
-  KeyboardAvoidingView,
   Keyboard,
 } from 'react-native';
 import {
   ChevronLeft,
-  Calendar,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
   MapPin,
+  Route,
+  Clock,
+  Gauge,
+  Flag,
+  Play,
+  FileX,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -37,9 +40,15 @@ import {
 } from '../../../hooks/useNavigationMode';
 import NavigationBarColor from 'react-native-navigation-bar-color';
 import { formatDate } from '../../../utils/converUtils';
+import {
+  formatDuration,
+  minutesBetween,
+  shortTime,
+} from '../../../utils/reportUtils';
 import { useAuthStore } from '../../../store/authStore';
 import LinearGradient from 'react-native-linear-gradient';
 import ModalAlert from '../../../components/ModalAlert';
+import { Text } from '../../../components/ScaledComponents';
 
 interface RoutePoint {
   date: string;
@@ -49,78 +58,21 @@ interface RoutePoint {
   latitude: number;
 }
 
-// Marcador simple y optimizado - sin animaciones pesadas
-const SimpleMarker = React.memo(
-  ({ children }: { children: React.ReactNode }) => {
-    return <View>{children}</View>;
-  },
-);
+/** Escala de velocidad de los puntos: rojo, amarillo, verde y azul. */
+const COLOR_IDLE = '#ef4444'; // 0 km/h
+const COLOR_SLOW = '#eab308'; // 1 - 10 km/h
+const COLOR_NORMAL = '#22c55e'; // 11 - 59 km/h
+const COLOR_FAST = '#3b82f6'; // 60+ km/h
 
-// Función para simplificar la ruta usando el algoritmo Ramer-Douglas-Peucker
-const simplifyRoute = (
-  points: RoutePoint[],
-  tolerance: number = 0.0001,
-): RoutePoint[] => {
-  if (points.length <= 2) return points;
+/** Colores de marca, para el trazo y los pines de inicio/fin. */
+const NAVY = '#1e3a8a';
+const ORANGE = '#e36414';
 
-  const getPerpendicularDistance = (
-    point: RoutePoint,
-    lineStart: RoutePoint,
-    lineEnd: RoutePoint,
-  ): number => {
-    const dx = lineEnd.longitude - lineStart.longitude;
-    const dy = lineEnd.latitude - lineStart.latitude;
-    const mag = Math.sqrt(dx * dx + dy * dy);
-    if (mag > 0.0) {
-      const u =
-        ((point.longitude - lineStart.longitude) * dx +
-          (point.latitude - lineStart.latitude) * dy) /
-        (mag * mag);
-      const intersectionX = lineStart.longitude + u * dx;
-      const intersectionY = lineStart.latitude + u * dy;
-      const pdx = point.longitude - intersectionX;
-      const pdy = point.latitude - intersectionY;
-      return Math.sqrt(pdx * pdx + pdy * pdy);
-    }
-    const pdx = point.longitude - lineStart.longitude;
-    const pdy = point.latitude - lineStart.latitude;
-    return Math.sqrt(pdx * pdx + pdy * pdy);
-  };
-
-  const simplify = (
-    points: RoutePoint[],
-    first: number,
-    last: number,
-    tolerance: number,
-    simplified: RoutePoint[],
-  ) => {
-    let maxDistance = 0;
-    let index = 0;
-
-    for (let i = first + 1; i < last; i++) {
-      const distance = getPerpendicularDistance(
-        points[i],
-        points[first],
-        points[last],
-      );
-      if (distance > maxDistance) {
-        maxDistance = distance;
-        index = i;
-      }
-    }
-
-    if (maxDistance > tolerance) {
-      simplify(points, first, index, tolerance, simplified);
-      simplified.push(points[index]);
-      simplify(points, index, last, tolerance, simplified);
-    }
-  };
-
-  const simplified: RoutePoint[] = [points[0]];
-  simplify(points, 0, points.length - 1, tolerance, simplified);
-  simplified.push(points[points.length - 1]);
-
-  return simplified;
+const getSpeedColor = (speed: number): string => {
+  if (speed === 0) return COLOR_IDLE;
+  if (speed < 11) return COLOR_SLOW;
+  if (speed < 60) return COLOR_NORMAL;
+  return COLOR_FAST;
 };
 
 const TourReport = () => {
@@ -130,13 +82,13 @@ const TourReport = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'TourReport'>>();
   const { unit, startDate, endDate } = route.params;
 
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [sidebarCompact, setSidebarCompact] = useState(false);
   const [routeData, setRouteData] = useState<RoutePoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<string>('');
   const [focusedPoint, setFocusedPoint] = useState<number | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const mapRef = useRef<MapView>(null);
   const webViewRef = useRef<WebView>(null);
@@ -169,6 +121,25 @@ const TourReport = () => {
   useEffect(() => {
     fetchRouteData();
   }, []);
+
+  // En iOS sube solo el panel; en Android lo resuelve el adjustResize del sistema.
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+
+    const show = Keyboard.addListener('keyboardWillShow', event => {
+      setKeyboardHeight(
+        Math.max(event.endCoordinates.height - bottomSpace, 0),
+      );
+    });
+    const hide = Keyboard.addListener('keyboardWillHide', () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [bottomSpace]);
 
   const fetchRouteData = async () => {
     try {
@@ -208,25 +179,24 @@ const TourReport = () => {
     }
   };
 
-  const getSpeedColor = (speed: number): string => {
-    if (speed === 0) return '#ef4444';
-    if (speed > 0 && speed < 11) return '#eab308';
-    if (speed >= 11 && speed < 60) return '#22c55e';
-    return '#3b82f6';
-  };
-
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  const toggleSidebar = () => {
-    setSidebarVisible(!sidebarVisible);
-    setSidebarCompact(false);
-  };
+  const stats = useMemo(() => {
+    if (routeData.length === 0) {
+      return { points: 0, minutes: null as number | null, max: 0 };
+    }
 
-  const toggleSidebarCompact = () => {
-    setSidebarCompact(!sidebarCompact);
-  };
+    const first = routeData[0];
+    const last = routeData[routeData.length - 1];
+
+    return {
+      points: routeData.length,
+      minutes: minutesBetween(first.date, first.time, last.date, last.time),
+      max: Math.max(...routeData.map(p => p.speed)),
+    };
+  }, [routeData]);
 
   const focusOnPoint = (pointIndex: number) => {
     if (pointIndex < 0 || pointIndex >= routeData.length) {
@@ -254,13 +224,15 @@ const TourReport = () => {
         (function() {
           try {
             if (typeof map !== 'undefined' && map && typeof markers !== 'undefined') {
-              // Centrar el mapa en el punto
               map.setView([${point.latitude}, ${point.longitude}], 17, {
                 animate: true,
                 duration: 1
               });
-              
-              // Buscar y abrir el popup del marcador específico
+
+              if (typeof highlightPoint === 'function') {
+                highlightPoint(${pointIndex});
+              }
+
               var targetMarker = markers[${pointIndex}];
               if (targetMarker) {
                 setTimeout(function() {
@@ -279,7 +251,7 @@ const TourReport = () => {
   };
 
   const handlePointInput = () => {
-    const pointNum = parseInt(selectedPoint.trim());
+    const pointNum = parseInt(selectedPoint.trim(), 10);
 
     if (selectedPoint.trim() === '') {
       handleShowAlert(
@@ -304,12 +276,22 @@ const TourReport = () => {
       return;
     }
 
-    const arrayIndex = pointNum - 1;
-    focusOnPoint(arrayIndex);
+    Keyboard.dismiss();
+    focusOnPoint(pointNum - 1);
     setSelectedPoint('');
   };
 
-  // HTML optimizado sin clustering - todos los puntos visibles con mejor rendimiento
+  const step = (delta: number) => {
+    Keyboard.dismiss();
+    const current = focusedPoint ?? -1;
+    focusOnPoint(current + delta);
+  };
+
+  /**
+   * Android (Leaflet): los puntos intermedios son circleMarker sobre canvas —
+   * mucho más liviano que un divIcon numerado por punto. Solo inicio, fin y el
+   * punto enfocado llevan pin.
+   */
   const leafletHTML = `
     <!DOCTYPE html>
     <html>
@@ -320,64 +302,30 @@ const TourReport = () => {
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
       <style>
-        body { 
-          margin: 0; 
-          padding: 0; 
-          overflow: hidden;
-          background: #f0f0f0;
-        }
-        #map { 
-          height: 100vh; 
-          width: 100vw; 
-        }
-        
-        /* Marcador GPS optimizado con forma de pin */
-        .gps-marker-container {
-          position: relative;
-          width: 50px;
-          height: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          flex-direction: column;
-        }
+        body { margin: 0; padding: 0; overflow: hidden; background: #eef1f6; }
+        #map { height: 100vh; width: 100vw; }
 
-        .gps-marker-pin {
-          width: 28px;
-          height: 28px;
+        .edge-pin {
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: bold;
-          font-size: 10px;
-          color: white;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          margin-top: 8px;
-          z-index: 10;
-          position: relative;
-        }
-
-        .gps-marker-tip {
-          width: 0;
-          height: 0;
-          border-left: 7px solid transparent;
-          border-right: 7px solid transparent;
-          border-top: 10px solid;
-          margin-top: -2px;
-          z-index: 10;
+          color: #fff;
+          font-size: 11px;
+          font-weight: 700;
+          border: 3px solid #fff;
+          box-shadow: 0 2px 8px rgba(15,27,61,0.35);
         }
 
         .leaflet-top.leaflet-left {
           left: auto !important;
-          right: 5px !important;
-          top: 25px !important;
+          right: 8px !important;
+          top: 60px !important;
         }
-        
-        /* Ocultar algunos controles para mejorar rendimiento */
-        .leaflet-control-attribution {
-          display: none;
-        }
+        .leaflet-control-attribution { display: none; }
+        .leaflet-popup-content { font-family: -apple-system, Roboto, Arial, sans-serif; font-size: 12px; }
       </style>
     </head>
     <body>
@@ -386,182 +334,137 @@ const TourReport = () => {
         var routeData = ${JSON.stringify(routeData)};
         var map;
         var markers = [];
-        var polyline;
-        
-        // Función para simplificar la ruta (Ramer-Douglas-Peucker) solo para la línea
+        var highlighted = null;
+
         function simplifyRoute(points, tolerance) {
           if (points.length <= 2) return points;
-          
+
           function getPerpendicularDistance(point, lineStart, lineEnd) {
             var dx = lineEnd.longitude - lineStart.longitude;
             var dy = lineEnd.latitude - lineStart.latitude;
             var mag = Math.sqrt(dx * dx + dy * dy);
             if (mag > 0.0) {
-              var u = ((point.longitude - lineStart.longitude) * dx + 
+              var u = ((point.longitude - lineStart.longitude) * dx +
                        (point.latitude - lineStart.latitude) * dy) / (mag * mag);
-              var intersectionX = lineStart.longitude + u * dx;
-              var intersectionY = lineStart.latitude + u * dy;
-              var pdx = point.longitude - intersectionX;
-              var pdy = point.latitude - intersectionY;
-              return Math.sqrt(pdx * pdx + pdy * pdy);
+              var ix = lineStart.longitude + u * dx;
+              var iy = lineStart.latitude + u * dy;
+              return Math.sqrt(Math.pow(point.longitude - ix, 2) + Math.pow(point.latitude - iy, 2));
             }
-            var pdx = point.longitude - lineStart.longitude;
-            var pdy = point.latitude - lineStart.latitude;
-            return Math.sqrt(pdx * pdx + pdy * pdy);
+            return Math.sqrt(Math.pow(point.longitude - lineStart.longitude, 2) +
+                             Math.pow(point.latitude - lineStart.latitude, 2));
           }
-          
+
           function douglasPeucker(points, first, last, tolerance, simplified) {
-            var maxDistance = 0;
-            var index = 0;
-            
+            var maxDistance = 0, index = 0;
             for (var i = first + 1; i < last; i++) {
               var distance = getPerpendicularDistance(points[i], points[first], points[last]);
-              if (distance > maxDistance) {
-                maxDistance = distance;
-                index = i;
-              }
+              if (distance > maxDistance) { maxDistance = distance; index = i; }
             }
-            
             if (maxDistance > tolerance) {
               douglasPeucker(points, first, index, tolerance, simplified);
               simplified.push(points[index]);
               douglasPeucker(points, index, last, tolerance, simplified);
             }
           }
-          
+
           var simplified = [points[0]];
           douglasPeucker(points, 0, points.length - 1, tolerance, simplified);
           simplified.push(points[points.length - 1]);
           return simplified;
         }
-        
+
         function getSpeedColor(speed) {
-          if (speed === 0) return '#ef4444';
-          if (speed > 0 && speed < 11) return '#eab308';
-          if (speed >= 11 && speed < 60) return '#22c55e';
-          return '#3b82f6';
+          if (speed === 0) return '${COLOR_IDLE}';
+          if (speed < 11) return '${COLOR_SLOW}';
+          if (speed < 60) return '${COLOR_NORMAL}';
+          return '${COLOR_FAST}';
         }
-        
+
+        function highlightPoint(index) {
+          if (highlighted !== null && markers[highlighted] && markers[highlighted].setStyle) {
+            markers[highlighted].setStyle({ radius: 5, weight: 1.5 });
+          }
+          if (markers[index] && markers[index].setStyle) {
+            markers[index].setStyle({ radius: 9, weight: 3 });
+            highlighted = index;
+          }
+        }
+
+        function edgeIcon(color, label) {
+          return L.divIcon({
+            html: '<div class="edge-pin" style="background:' + color + ';">' + label + '</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -18],
+            className: ''
+          });
+        }
+
         if (routeData.length === 0) {
-          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;color:#666;">No hay datos de ruta</div>';
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;color:#8d97a8;">No hay datos de ruta</div>';
         } else {
           var firstPoint = routeData[0];
-          
-          // Inicializar mapa con configuración super optimizada para Canvas
+          var lastPoint = routeData[routeData.length - 1];
+
           map = L.map('map', {
             preferCanvas: true,
-            renderer: L.canvas({ 
-              padding: 0.5,
-              tolerance: 10  // Aumentar tolerancia de click para mejor rendimiento
-            }),
+            renderer: L.canvas({ padding: 0.5, tolerance: 10 }),
             zoomControl: true,
             attributionControl: false,
             zoomAnimation: true,
             fadeAnimation: false,
             markerZoomAnimation: false
           }).setView([firstPoint.latitude, firstPoint.longitude], 15);
-          
-          // Tiles optimizados
-          L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { 
+
+          L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
             maxZoom: 20,
             updateWhenIdle: true,
             updateWhenZooming: false,
             keepBuffer: 2,
             minZoom: 3
           }).addTo(map);
-          
-          // Simplificar la ruta SOLO para la polilínea (visual)
-          var simplifiedRoute = routeData;
-          if (routeData.length > 200) {
-            simplifiedRoute = simplifyRoute(routeData, 0.00008);
+
+          var simplifiedRoute = routeData.length > 200
+            ? simplifyRoute(routeData, 0.00008)
+            : routeData;
+
+          var polyline = L.polyline(
+            simplifiedRoute.map(function(p) { return [p.latitude, p.longitude]; }),
+            { color: '${NAVY}', weight: 3, opacity: 0.55, smoothFactor: 3, interactive: false }
+          ).addTo(map);
+
+          // Puntos como círculos en canvas: soporta miles sin trabarse.
+          for (var i = 0; i < routeData.length; i++) {
+            var p = routeData[i];
+            var marker = L.circleMarker([p.latitude, p.longitude], {
+              radius: 5,
+              color: '#ffffff',
+              weight: 1.5,
+              fillColor: getSpeedColor(p.speed),
+              fillOpacity: 1
+            }).bindPopup(
+              '<b>Punto ' + (i + 1) + ' de ' + routeData.length + '</b><br>' +
+              p.date + ' ' + p.time + '<br>' +
+              (p.speed === 0 ? 'Detenido' : p.speed.toFixed(0) + ' km/h'),
+              { autoPan: false, closeButton: true }
+            );
+            marker.addTo(map);
+            markers.push(marker);
           }
-          
-          // Dibujar polilínea simplificada
-          var latlngs = simplifiedRoute.map(function(p) { 
-            return [p.latitude, p.longitude]; 
+
+          L.marker([firstPoint.latitude, firstPoint.longitude], {
+            icon: edgeIcon('${ORANGE}', 'A'), zIndexOffset: 1000
+          }).bindPopup('<b>Inicio del recorrido</b><br>' + firstPoint.date + ' ' + firstPoint.time).addTo(map);
+
+          L.marker([lastPoint.latitude, lastPoint.longitude], {
+            icon: edgeIcon('${NAVY}', 'B'), zIndexOffset: 1000
+          }).bindPopup('<b>Fin del recorrido</b><br>' + lastPoint.date + ' ' + lastPoint.time).addTo(map);
+
+          // Deja aire abajo para que la ruta no quede tapada por el panel.
+          map.fitBounds(polyline.getBounds(), {
+            paddingTopLeft: [40, 70],
+            paddingBottomRight: [40, 230]
           });
-          
-          polyline = L.polyline(latlngs, { 
-            color: '#1e3a8a', 
-            weight: 2.5, 
-            opacity: 0.65,
-            smoothFactor: 3,
-            interactive: false  // No interactivo = mejor rendimiento
-          }).addTo(map);
-          
-          // Añadir TODOS los marcadores (no simplificados) con carga optimizada
-          var batchSize = 100;  // Lotes más grandes
-          var currentIndex = 0;
-          var frameDelay = 0;  // Sin delay entre frames para carga más rápida
-          
-          function addMarkersBatch() {
-            var startTime = performance.now();
-            var endIndex = Math.min(currentIndex + batchSize, routeData.length);
-            
-            for (var i = currentIndex; i < endIndex; i++) {
-              var p = routeData[i];
-              var color = getSpeedColor(p.speed);
-              
-              // Marcador GPS con forma de pin optimizado
-              var markerHTML = 
-                '<div class="gps-marker-container">' +
-                  '<div class="gps-marker-pin" style="background-color: ' + color + ';">' +
-                    (i + 1) +
-                  '</div>' +
-                  '<div class="gps-marker-tip" style="border-top-color: ' + color + ';"></div>' +
-                '</div>';
-              
-              var customIcon = L.divIcon({
-                html: markerHTML,
-                iconSize: [50, 60],
-                iconAnchor: [25, 50],
-                popupAnchor: [0, -45],
-                className: ''
-              });
-              
-              var marker = L.marker([p.latitude, p.longitude], { 
-                icon: customIcon,
-                riseOnHover: false,
-                bubblingMouseEvents: false
-              }).bindPopup(
-                '<b>Punto ' + (i + 1) + '</b><br>' +
-                'Fecha: ' + p.date + ' ' + p.time + '<br>' +
-                'Velocidad: ' + p.speed.toFixed(0) + ' km/h',
-                {
-                  autoPan: false,
-                  closeButton: true
-                }
-              );
-              
-              marker.addTo(map);
-              markers.push(marker);
-              
-              // Si el batch toma más de 16ms, pausar para no bloquear UI
-              if (performance.now() - startTime > 16 && i < endIndex - 1) {
-                currentIndex = i + 1;
-                requestAnimationFrame(addMarkersBatch);
-                return;
-              }
-            }
-            
-            currentIndex = endIndex;
-            
-            // Si quedan más marcadores, continuar
-            if (currentIndex < routeData.length) {
-              // Mostrar progreso en consola
-              if (currentIndex % 200 === 0) {
-                console.log('Cargados ' + currentIndex + ' de ' + routeData.length + ' puntos...');
-              }
-              requestAnimationFrame(addMarkersBatch);
-            } else {
-              // Todos los marcadores añadidos
-              console.log('Todos los ' + routeData.length + ' puntos cargados!');
-              map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-            }
-          }
-          
-          // Iniciar carga de marcadores
-          requestAnimationFrame(addMarkersBatch);
         }
       </script>
     </body>
@@ -581,6 +484,7 @@ const TourReport = () => {
     if (error || routeData.length === 0) {
       return (
         <View style={styles.errorContainer}>
+          <FileX size={54} color="#c3cbd8" />
           <Text style={styles.errorText}>
             {error || 'No hay datos de ruta disponibles'}
           </Text>
@@ -588,7 +492,6 @@ const TourReport = () => {
       );
     }
 
-    // iOS: Mantener implementación actual
     if (Platform.OS === 'ios') {
       const coordinates = routeData.map(point => ({
         latitude: point.latitude,
@@ -603,25 +506,15 @@ const TourReport = () => {
       const minLng = Math.min(...longitudes);
       const maxLng = Math.max(...longitudes);
 
-      const centerLat = (minLat + maxLat) / 2;
-      const centerLng = (minLng + maxLng) / 2;
-      const deltaLat = (maxLat - minLat) * 1.3;
-      const deltaLng = (maxLng - minLng) * 1.3;
+      const initialRegion = {
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLng + maxLng) / 2,
+        // 1.6 en vez de 1.3: el panel inferior tapa parte del mapa.
+        latitudeDelta: Math.max((maxLat - minLat) * 1.6, 0.01),
+        longitudeDelta: Math.max((maxLng - minLng) * 1.6, 0.01),
+      };
 
-      const initialRegion =
-        routeData.length > 0
-          ? {
-              latitude: centerLat,
-              longitude: centerLng,
-              latitudeDelta: Math.max(deltaLat, 0.01),
-              longitudeDelta: Math.max(deltaLng, 0.01),
-            }
-          : {
-              latitude: -12.0464,
-              longitude: -77.0428,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            };
+      const lastIndex = routeData.length - 1;
 
       return (
         <MapView
@@ -636,104 +529,101 @@ const TourReport = () => {
         >
           <Polyline
             coordinates={coordinates}
-            strokeColor="#1e3a8a"
-            strokeWidth={4}
+            strokeColor="rgba(30,58,138,0.55)"
+            strokeWidth={3}
           />
-          {routeData.map((point, index) => (
-            <Marker
-              key={`marker-${index}`}
-              coordinate={{
-                latitude: point.latitude,
-                longitude: point.longitude,
-              }}
-              title={`Punto ${index + 1}`}
-              description={`Fecha: ${point.date} ${point.time} - ${point.speed} km/h`}
-              centerOffset={{ x: 0, y: -12 }}
-              tracksViewChanges={false}
-            >
-              <SimpleMarker>
-                <View
-                  style={{
-                    width: 70,
-                    height: 80,
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                  }}
-                >
+
+          {routeData.map((point, index) => {
+            const isEdge = index === 0 || index === lastIndex;
+            const isFocused = focusedPoint === index;
+            const color = getSpeedColor(point.speed);
+
+            return (
+              <Marker
+                key={`marker-${index}`}
+                coordinate={{
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                }}
+                title={
+                  index === 0
+                    ? 'Inicio del recorrido'
+                    : index === lastIndex
+                    ? 'Fin del recorrido'
+                    : `Punto ${index + 1} de ${routeData.length}`
+                }
+                description={`${point.date} ${point.time} · ${
+                  point.speed === 0 ? 'Detenido' : `${point.speed} km/h`
+                }`}
+                anchor={{ x: 0.5, y: 0.5 }}
+                tracksViewChanges={false}
+                zIndex={isEdge || isFocused ? 10 : 1}
+                onPress={() => setFocusedPoint(index)}
+              >
+                {isEdge ? (
                   <View
                     style={{
-                      width: 34,
-                      height: 34,
-                      backgroundColor: getSpeedColor(point.speed),
-                      borderRadius: 17,
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      backgroundColor: index === 0 ? ORANGE : NAVY,
+                      borderWidth: 3,
+                      borderColor: '#fff',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      shadowColor: '#000',
-                      shadowOpacity: 0.4,
-                      shadowRadius: 6,
+                      shadowColor: '#0f1b3d',
+                      shadowOpacity: 0.35,
+                      shadowRadius: 5,
                       shadowOffset: { width: 0, height: 2 },
-                      elevation: 8,
-                      marginTop: 10,
+                      elevation: 6,
                     }}
                   >
-                    <Text
-                      style={{
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: 11,
-                      }}
-                    >
-                      {index + 1}
-                    </Text>
+                    {index === 0 ? (
+                      <Play size={11} color="#fff" fill="#fff" />
+                    ) : (
+                      <Flag size={11} color="#fff" />
+                    )}
                   </View>
-
+                ) : (
                   <View
                     style={{
-                      width: 0,
-                      height: 0,
-                      backgroundColor: 'transparent',
-                      borderStyle: 'solid',
-                      borderLeftWidth: 9,
-                      borderRightWidth: 9,
-                      borderTopWidth: 12,
-                      borderLeftColor: 'transparent',
-                      borderRightColor: 'transparent',
-                      borderTopColor: getSpeedColor(point.speed),
-                      marginTop: -3,
+                      width: isFocused ? 20 : 12,
+                      height: isFocused ? 20 : 12,
+                      borderRadius: 10,
+                      backgroundColor: color,
+                      borderWidth: isFocused ? 3 : 1.5,
+                      borderColor: '#fff',
                     }}
                   />
-                </View>
-              </SimpleMarker>
-            </Marker>
-          ))}
+                )}
+              </Marker>
+            );
+          })}
         </MapView>
       );
-    } else {
-      // Android: WebView optimizado con clustering
-      return (
-        <WebView
-          ref={webViewRef}
-          source={{ html: leafletHTML }}
-          style={styles.map}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          scalesPageToFit={true}
-          mixedContentMode="compatibility"
-          androidLayerType="hardware"
-        />
-      );
     }
+
+    return (
+      <WebView
+        ref={webViewRef}
+        source={{ html: leafletHTML }}
+        style={styles.map}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        startInLoadingState={true}
+        scalesPageToFit={true}
+        mixedContentMode="compatibility"
+        androidLayerType="hardware"
+      />
+    );
   };
 
+  const current = focusedPoint !== null ? routeData[focusedPoint] : null;
+  const hasData = !loading && !error && routeData.length > 0;
   const topSpace = Platform.OS === 'ios' ? insets.top - 5 : insets.top + 5;
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <LinearGradient
+    <LinearGradient
         colors={['#021e4bff', '#183890ff', '#032660ff']}
         style={[styles.container, { paddingBottom: bottomSpace - 2 }]}
         start={{ x: 0, y: 0 }}
@@ -764,142 +654,156 @@ const TourReport = () => {
         <View style={styles.content}>
           <View style={styles.mapContainer}>{renderMap()}</View>
 
-          {!sidebarVisible && (
-            <TouchableOpacity
-              style={styles.showSidebarButton}
-              onPress={toggleSidebar}
-            >
-              <ChevronRight size={20} color="#fff" />
-            </TouchableOpacity>
-          )}
-
-          {sidebarVisible && (
-            <View
-              style={[styles.sidebar, sidebarCompact && styles.sidebarCompact]}
-            >
-              <View
-                style={[
-                  styles.sidebarHeader,
-                  sidebarCompact && styles.sidebarCompactHeader,
-                ]}
-              >
-                {!sidebarCompact ? (
-                  <>
-                    <View style={styles.sidebarHeaderContent}>
-                      <Text style={styles.sidebarTitle}>LEYENDA</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row' }}>
-                      <TouchableOpacity
-                        style={styles.hideSidebarButton}
-                        onPress={toggleSidebar}
-                      >
-                        <ChevronLeft size={20} color="#fff" />
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                ) : (
-                  <>
-                    <TouchableOpacity
-                      style={{ flex: 1 }}
-                      onPress={toggleSidebarCompact}
-                    >
-                      <Text style={styles.sidebarCompactTitle}>L</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.hideSidebarButton}
-                      onPress={toggleSidebar}
-                    >
-                      <ChevronLeft size={16} color="#fff" />
-                    </TouchableOpacity>
-                  </>
+          {hasData && (
+            <>
+              {/* Resumen flotante sobre el mapa */}
+              <View style={styles.statsBar} pointerEvents="none">
+                <View style={styles.statPill}>
+                  <Route size={12} color="#1e3a8a" />
+                  <Text style={styles.statPillText}>{stats.points} puntos</Text>
+                </View>
+                {stats.minutes !== null && (
+                  <View style={styles.statPill}>
+                    <Clock size={12} color="#1e3a8a" />
+                    <Text style={styles.statPillText}>
+                      {formatDuration(stats.minutes)}
+                    </Text>
+                  </View>
                 )}
+                <View style={styles.statPill}>
+                  <Gauge size={12} color="#e36414" />
+                  <Text style={styles.statPillText}>{stats.max} km/h</Text>
+                </View>
               </View>
 
-              {!sidebarCompact && (
-                <ScrollView
-                  style={styles.sidebarContent}
-                  keyboardShouldPersistTaps="handled"
+              {/* Panel inferior */}
+              <View
+                style={[
+                  styles.sheet,
+                  // Crece hacia abajo en vez de despegarse: el blanco sigue
+                  // hasta el borde y el contenido queda sobre el teclado.
+                  { paddingBottom: 14 + keyboardHeight },
+                ]}
+              >
+                <TouchableOpacity
+                  style={styles.sheetHandleArea}
+                  onPress={() => setSheetOpen(!sheetOpen)}
+                  activeOpacity={0.7}
                 >
-                  <View style={styles.sidebarSection}>
-                    <Text style={styles.sidebarSectionTitle}>UNIDAD</Text>
-                    <Text style={styles.sidebarText}>{unit.plate}</Text>
-                  </View>
+                  <View style={styles.sheetHandle} />
+                </TouchableOpacity>
 
-                  {routeData.length > 0 && (
-                    <View style={styles.sidebarSection}>
-                      <Text style={styles.sidebarSectionTitle}>IR A PUNTO</Text>
+                <View style={styles.pointCard}>
+                  {current ? (
+                    <>
                       <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          marginTop: 8,
-                        }}
+                        style={[
+                          styles.pointDot,
+                          { backgroundColor: getSpeedColor(current.speed) },
+                        ]}
                       >
-                        <TextInput
-                          style={{
-                            flex: 1,
-                            backgroundColor: '#fcefdeff',
-                            borderRadius: 6,
-                            paddingHorizontal: 12,
-                            paddingVertical: 8,
-                            color: '#1e3a8a',
-                            fontSize: 14,
-                            marginRight: 8,
-                            fontWeight: '600',
-                          }}
-                          placeholder={`1-${routeData.length}`}
-                          placeholderTextColor="#495057"
-                          keyboardType="numeric"
-                          value={selectedPoint}
-                          onChangeText={setSelectedPoint}
-                          onSubmitEditing={handlePointInput}
-                        />
-                        <TouchableOpacity
-                          style={{
-                            backgroundColor: '#e36414',
-                            borderRadius: 6,
-                            paddingHorizontal: 16,
-                            paddingVertical: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                          }}
-                          onPress={handlePointInput}
-                        >
-                          <MapPin size={16} color="#fff" />
-                          <Text
-                            style={{
-                              color: '#fff',
-                              fontWeight: 'bold',
-                              marginLeft: 4,
-                            }}
-                          >
-                            IR
-                          </Text>
-                        </TouchableOpacity>
+                        <MapPin size={15} color="#fff" />
                       </View>
-                      <Text
-                        style={{
-                          color: '#94a3b8',
-                          fontSize: 11,
-                          marginTop: 4,
-                          fontStyle: 'italic',
-                        }}
-                      >
-                        Ingresa un número de punto y presiona IR
+                      <View style={styles.pointInfo}>
+                        <Text style={styles.pointTitle}>
+                          Punto {(focusedPoint ?? 0) + 1} de {routeData.length}
+                        </Text>
+                        <Text style={styles.pointMeta}>
+                          {current.date} · {shortTime(current.time)}
+                        </Text>
+                      </View>
+                      <Text style={styles.pointSpeed}>
+                        {current.speed === 0 ? (
+                          <Text style={styles.pointSpeedUnit}>Detenido</Text>
+                        ) : (
+                          <>
+                            {current.speed}
+                            <Text style={styles.pointSpeedUnit}> km/h</Text>
+                          </>
+                        )}
                       </Text>
-                    </View>
+                    </>
+                  ) : (
+                    <>
+                      <View
+                        style={[
+                          styles.pointDot,
+                          { backgroundColor: '#e8edf5' },
+                        ]}
+                      >
+                        <MapPin size={15} color="#8d97a8" />
+                      </View>
+                      <Text style={styles.pointEmpty}>
+                        Toca un punto del mapa o usa las flechas para recorrer
+                        la ruta
+                      </Text>
+                    </>
                   )}
+                </View>
 
-                  <View style={styles.sidebarSection}>
-                    <Text style={styles.sidebarSectionTitle}>
-                      RANGO VELOCIDAD
-                    </Text>
-                    <View style={styles.sidebarRago}>
+                {sheetOpen && (
+                  <>
+                    <View style={styles.navRow}>
+                      <TouchableOpacity
+                        style={[
+                          styles.navButton,
+                          (focusedPoint === null || focusedPoint === 0) &&
+                            styles.navButtonDisabled,
+                        ]}
+                        onPress={() => step(-1)}
+                        disabled={focusedPoint === null || focusedPoint === 0}
+                        activeOpacity={0.7}
+                      >
+                        <ChevronLeft size={18} color="#0f1b3d" />
+                      </TouchableOpacity>
+
+                      <TextInput
+                        style={styles.navInput}
+                        placeholder={`1 - ${routeData.length}`}
+                        placeholderTextColor="#aab3c2"
+                        keyboardType="number-pad"
+                        value={selectedPoint}
+                        onChangeText={setSelectedPoint}
+                        onSubmitEditing={handlePointInput}
+                        allowFontScaling={false}
+                        returnKeyType="go"
+                        // Sin esto iOS muestra la barra de AutoFill sobre el teclado
+                        textContentType="none"
+                        autoComplete="off"
+                        autoCorrect={false}
+                        spellCheck={false}
+                        importantForAutofill="no"
+                      />
+
+                      <TouchableOpacity
+                        style={styles.goButton}
+                        onPress={handlePointInput}
+                        activeOpacity={0.85}
+                      >
+                        <MapPin size={14} color="#fff" />
+                        <Text style={styles.goButtonText}>IR</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[
+                          styles.navButton,
+                          focusedPoint === routeData.length - 1 &&
+                            styles.navButtonDisabled,
+                        ]}
+                        onPress={() => step(1)}
+                        disabled={focusedPoint === routeData.length - 1}
+                        activeOpacity={0.7}
+                      >
+                        <ChevronRight size={18} color="#0f1b3d" />
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.legendRow}>
                       <View style={styles.legendItem}>
                         <View
                           style={[
                             styles.legendDot,
-                            { backgroundColor: '#ef4444' },
+                            { backgroundColor: COLOR_IDLE },
                           ]}
                         />
                         <Text style={styles.legendText}>0 km/h</Text>
@@ -908,7 +812,7 @@ const TourReport = () => {
                         <View
                           style={[
                             styles.legendDot,
-                            { backgroundColor: '#eab308' },
+                            { backgroundColor: COLOR_SLOW },
                           ]}
                         />
                         <Text style={styles.legendText}>1 - 10 km/h</Text>
@@ -917,7 +821,7 @@ const TourReport = () => {
                         <View
                           style={[
                             styles.legendDot,
-                            { backgroundColor: '#22c55e' },
+                            { backgroundColor: COLOR_NORMAL },
                           ]}
                         />
                         <Text style={styles.legendText}>11 - 59 km/h</Text>
@@ -926,27 +830,36 @@ const TourReport = () => {
                         <View
                           style={[
                             styles.legendDot,
-                            { backgroundColor: '#3b82f6' },
+                            { backgroundColor: COLOR_FAST },
                           ]}
                         />
-                        <Text style={styles.legendText}>&gt;= 60 km/h</Text>
+                        <Text style={styles.legendText}>60+ km/h</Text>
+                      </View>
+                      <View style={styles.legendItem}>
+                        <Play size={9} color="#0f1b3d" fill="#0f1b3d" />
+                        <Text style={styles.legendText}>Inicio</Text>
+                      </View>
+                      <View style={styles.legendItem}>
+                        <Flag size={9} color="#0f1b3d" />
+                        <Text style={styles.legendText}>Fin</Text>
                       </View>
                     </View>
-                  </View>
+                  </>
+                )}
 
-                  {routeData.length > 0 && (
-                    <View style={styles.sidebarSection}>
-                      <Text style={styles.sidebarSectionTitle}>
-                        PUNTOS DE RUTA
-                      </Text>
-                      <Text style={styles.sidebarText}>
-                        Total: {routeData.length} puntos
-                      </Text>
-                    </View>
+                <TouchableOpacity
+                  style={{ alignItems: 'center', paddingTop: 8 }}
+                  onPress={() => setSheetOpen(!sheetOpen)}
+                  activeOpacity={0.7}
+                >
+                  {sheetOpen ? (
+                    <ChevronDown size={16} color="#c3cbd8" />
+                  ) : (
+                    <ChevronUp size={16} color="#c3cbd8" />
                   )}
-                </ScrollView>
-              )}
-            </View>
+                </TouchableOpacity>
+              </View>
+            </>
           )}
         </View>
 
@@ -957,8 +870,7 @@ const TourReport = () => {
           message={alertConfig.message}
           color={alertConfig.color}
         />
-      </LinearGradient>
-    </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
