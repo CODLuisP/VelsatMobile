@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -7,6 +7,7 @@ import {
   RefreshControl,
   Animated,
   PanResponder,
+  Alert,
 } from 'react-native';
 import axios from 'axios';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -26,6 +27,7 @@ import {
   Check,
   CheckCheck,
   ChevronsLeftRight,
+  FlagTriangleRight,
 } from 'lucide-react-native';
 import { Text } from '../../components/ScaledComponents';
 import { getBottomSpace, useNavigationMode } from '../../hooks/useNavigationMode';
@@ -64,15 +66,24 @@ interface ServicioTurismo {
   ejecutivo: string | null;
   cotizacion: string | null;
   // Acuse de recibo del conductor (reemplaza el doble check azul de WhatsApp).
+  // Cada estado es una columna booleana independiente (ya no un texto "estado" combinado):
   // visto: se marca solo al mostrarse el servicio en pantalla.
-  // confirmado: se marca cuando el conductor desliza la tarjeta.
+  // confirmado: se marca cuando el conductor desliza la tarjeta hacia la izquierda.
+  // finalizado: se marca cuando el conductor desliza hacia la derecha y confirma el modal
+  // de advertencia; es el estado final e irreversible del servicio.
+  // reprogramado: se marca cuando el conductor (o despacho) cambia la fecha del servicio. No tiene
+  // badge propio en la app: el backend limpia visto/confirmado/finalizado al reprogramar, así que
+  // la tarjeta simplemente vuelve a mostrarse sin badge hasta que el conductor la confirme/finalice
+  // de nuevo con la nueva fecha.
   visto: number | null;
   confirmado: number | null;
+  finalizado: number | null;
+  reprogramado: number | null;
 }
 
 // Endpoints dedicados de acuse de recibo; son idempotentes, así que reintentar es seguro.
-async function marcarAcuse(idservicio: number, campo: 'visto' | 'confirmado') {
-  await axios.patch(`${API_SERVTURISMO}/${idservicio}/${campo}`, null, {
+async function marcarAcuse(idservicio: number, endpoint: 'visto' | 'confirmado' | 'finalizar') {
+  await axios.patch(`${API_SERVTURISMO}/${idservicio}/${endpoint}`, null, {
     timeout: 10000,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -80,12 +91,31 @@ async function marcarAcuse(idservicio: number, campo: 'visto' | 'confirmado') {
 
 const esVerdadero = (valor: number | null | undefined) => Number(valor) === 1;
 
-function getFechaHoyDdMmYyyy(): string {
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, '0');
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yyyy = now.getFullYear();
+function formatearDdMmYyyy(fecha: Date): string {
+  const dd = String(fecha.getDate()).padStart(2, '0');
+  const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+  const yyyy = fecha.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
+}
+
+function getFechaHoyDdMmYyyy(): string {
+  return formatearDdMmYyyy(new Date());
+}
+
+const DIAS_HISTORIAL = 30;
+
+function getFechaInicioHistorialDdMmYyyy(): string {
+  const fecha = new Date();
+  fecha.setDate(fecha.getDate() - DIAS_HISTORIAL);
+  return formatearDdMmYyyy(fecha);
+}
+
+// Convierte dd/mm/yyyy a yyyy-mm-dd para poder ordenar y comparar fechas como texto.
+function aClaveOrdenable(fechaDdMmYyyy: string | null): string {
+  if (!fechaDdMmYyyy) return '';
+  const [dd, mm, yyyy] = fechaDdMmYyyy.split('/');
+  if (!dd || !mm || !yyyy) return fechaDdMmYyyy;
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function combinarPlaca(bus: string | null, placa: string | null): string {
@@ -110,18 +140,27 @@ const UMBRAL_CONFIRMACION = 90;
 
 interface ServicioCardProps {
   servicio: ServicioTurismo;
+  numero: number | null;
   expandido: boolean;
+  // Solo el día de hoy admite deslizar para confirmar/finalizar; los servicios de otras
+  // fechas se muestran de solo lectura (ya no hay nada que el conductor deba hacer ahí).
+  permiteAcciones: boolean;
   onToggle: () => void;
   onConfirmar: () => void;
+  onFinalizar: () => void;
 }
 
 const ServicioCard: React.FC<ServicioCardProps> = ({
   servicio,
+  numero,
   expandido,
+  permiteAcciones,
   onToggle,
   onConfirmar,
+  onFinalizar,
 }) => {
   const confirmado = esVerdadero(servicio.confirmado);
+  const finalizado = esVerdadero(servicio.finalizado);
   const placaCombinada = combinarPlaca(servicio.bus, servicio.placa);
   const hayNotas =
     servicio.instrucciones || servicio.indicaciones || servicio.observaciones;
@@ -129,21 +168,44 @@ const ServicioCard: React.FC<ServicioCardProps> = ({
   const translateX = useRef(new Animated.Value(0)).current;
   // El PanResponder se crea una sola vez; leemos el estado actual por ref
   // para no capturar valores viejos en los callbacks.
-  const estadoRef = useRef({ confirmado, onConfirmar });
-  estadoRef.current = { confirmado, onConfirmar };
+  const estadoRef = useRef({ confirmado, finalizado, permiteAcciones, onConfirmar, onFinalizar });
+  estadoRef.current = { confirmado, finalizado, permiteAcciones, onConfirmar, onFinalizar };
+
+  const confirmarFinalizacion = () => {
+    Alert.alert(
+      'Finalizar servicio',
+      'Esta acción marcará el servicio como finalizado y no se puede revertir. ¿Deseas continuar?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Finalizar',
+          style: 'destructive',
+          onPress: () => estadoRef.current.onFinalizar(),
+        },
+      ],
+    );
+  };
 
   const panResponder = useRef(
     PanResponder.create({
       // Solo tomamos el gesto si es claramente horizontal, para no romper el scroll.
+      // Si ya está confirmado, no se captura el gesto hacia la izquierda (nada que hacer ahí);
+      // el de la derecha (finalizar) sigue disponible.
       onMoveShouldSetPanResponder: (_evt, gesture) =>
-        !estadoRef.current.confirmado &&
+        estadoRef.current.permiteAcciones &&
+        !estadoRef.current.finalizado &&
         Math.abs(gesture.dx) > 12 &&
-        Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.5,
+        Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.5 &&
+        !(gesture.dx < 0 && estadoRef.current.confirmado),
       onPanResponderMove: (_evt, gesture) => {
         translateX.setValue(gesture.dx);
       },
       onPanResponderRelease: (_evt, gesture) => {
-        if (Math.abs(gesture.dx) > UMBRAL_CONFIRMACION) {
+        if (gesture.dx > UMBRAL_CONFIRMACION) {
+          // Derecha: acción irreversible, siempre pasa por el modal de advertencia.
+          confirmarFinalizacion();
+        } else if (gesture.dx < -UMBRAL_CONFIRMACION && !estadoRef.current.confirmado) {
+          // Izquierda: se mantiene igual que antes, sin modal.
           estadoRef.current.onConfirmar();
         }
         Animated.spring(translateX, {
@@ -164,22 +226,34 @@ const ServicioCard: React.FC<ServicioCardProps> = ({
 
   return (
     <View style={styles.swipeWrapper}>
-      {!confirmado && (
+      {permiteAcciones && !finalizado && (
         <View style={styles.swipeBackground}>
-          <Check size={18} color="#0b7a3b" />
-          <Text style={styles.swipeBackgroundText}>Confirmar recepción</Text>
-          <Check size={18} color="#0b7a3b" />
+          <View style={styles.swipeSideLeft}>
+            <FlagTriangleRight size={16} color="#b3261e" />
+            <Text style={styles.swipeBackgroundTextFinalizar}>Finalizar</Text>
+          </View>
+          {!confirmado && (
+            <View style={styles.swipeSideRight}>
+              <Text style={styles.swipeBackgroundText}>Confirmar</Text>
+              <Check size={18} color="#0b7a3b" />
+            </View>
+          )}
         </View>
       )}
 
       <Animated.View
         style={{ transform: [{ translateX }] }}
-        {...(confirmado ? {} : panResponder.panHandlers)}
+        {...(permiteAcciones && !finalizado ? panResponder.panHandlers : {})}
       >
-        <View style={styles.serviceCard}>
+        <View style={[styles.serviceCard, !permiteAcciones && styles.serviceCardPasado]}>
           <TouchableOpacity onPress={onToggle} activeOpacity={0.8}>
-            <View style={styles.serviceHeader}>
+            <View style={[styles.serviceHeader, !permiteAcciones && styles.serviceHeaderPasado]}>
               <View style={styles.serviceHeaderLeft}>
+                {numero !== null && (
+                  <View style={styles.serviceNumberBadge}>
+                    <Text style={styles.serviceNumberBadgeText}>{numero}</Text>
+                  </View>
+                )}
                 <Clock3 size={16} color="#fff" />
                 <View>
                   <Text style={styles.serviceTime}>
@@ -191,7 +265,12 @@ const ServicioCard: React.FC<ServicioCardProps> = ({
                 </View>
               </View>
               <View style={styles.serviceHeaderRight}>
-                {confirmado ? (
+                {!permiteAcciones ? null : finalizado ? (
+                  <View style={styles.statusBadgeFinalizado}>
+                    <FlagTriangleRight size={13} color="#fff" />
+                    <Text style={styles.statusBadgeFinalizadoText}>Finalizado</Text>
+                  </View>
+                ) : confirmado ? (
                   <View style={styles.statusBadge}>
                     <CheckCheck size={13} color="#7ef0a8" />
                     <Text style={styles.statusBadgeText}>Confirmado</Text>
@@ -291,12 +370,21 @@ const ServicioCard: React.FC<ServicioCardProps> = ({
             </View>
           )}
 
-          {!confirmado && (
+          {permiteAcciones && !finalizado && (
             <View style={styles.swipeHint}>
-              <ChevronsLeftRight size={14} color="#0b7a3b" />
-              <Text style={styles.swipeHintText}>
-                Desliza la tarjeta para confirmar que recibiste el servicio
-              </Text>
+              <ChevronsLeftRight size={14} color="#666" />
+              {confirmado ? (
+                <Text style={styles.swipeHintText}>
+                  Desliza hacia la derecha para{' '}
+                  <Text style={styles.swipeHintTextFinalizar}>finalizar</Text> el servicio
+                </Text>
+              ) : (
+                <Text style={styles.swipeHintText}>
+                  Desliza a la izquierda para{' '}
+                  <Text style={styles.swipeHintTextConfirmar}>confirmar</Text>, a la derecha para{' '}
+                  <Text style={styles.swipeHintTextFinalizar}>finalizar</Text>
+                </Text>
+              )}
             </View>
           )}
 
@@ -331,6 +419,14 @@ const ServicesTurismo: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [expandidoId, setExpandidoId] = useState<number | null>(null);
+  // Fechas cuyo grupo de servicios anteriores está desplegado (estilo WhatsApp).
+  const [diasExpandidos, setDiasExpandidos] = useState<Set<string>>(new Set());
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  // Posición del grupo de hoy dentro del scroll, para enfocarlo al entrar aunque
+  // haya varios días de historial arriba.
+  const hoyOffsetYRef = useRef(0);
+  const yaEnfocoHoyRef = useRef(false);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -355,8 +451,9 @@ const ServicesTurismo: React.FC = () => {
     setError(null);
 
     try {
-      const fecha = getFechaHoyDdMmYyyy();
-      const url = `${API_SERVTURISMO}?fechaInicio=${fecha}&fechaFin=${fecha}&brevete=${encodeURIComponent(brevete)}`;
+      const fechaFin = getFechaHoyDdMmYyyy();
+      const fechaInicio = getFechaInicioHistorialDdMmYyyy();
+      const url = `${API_SERVTURISMO}?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&brevete=${encodeURIComponent(brevete)}`;
 
       const response = await axios.get(url, {
         timeout: 10000,
@@ -380,6 +477,18 @@ const ServicesTurismo: React.FC = () => {
   useEffect(() => {
     fetchServicios();
   }, [fetchServicios]);
+
+  // Enfoca el grupo de hoy al terminar de cargar, sin importar cuántos días
+  // de historial queden por encima. Solo la primera vez, para no pelear con
+  // el scroll manual del conductor en refrescos posteriores.
+  useEffect(() => {
+    if (isLoading || yaEnfocoHoyRef.current || hoyOffsetYRef.current === 0) return;
+    yaEnfocoHoyRef.current = true;
+    const timeoutId = setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: hoyOffsetYRef.current, animated: false });
+    }, 50);
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, servicios]);
 
   // Al quedar los servicios en pantalla los damos por vistos (equivale al
   // doble check azul de WhatsApp). Se marca una sola vez por servicio.
@@ -435,6 +544,24 @@ const ServicesTurismo: React.FC = () => {
     }
   }, []);
 
+  const finalizarServicio = useCallback(async (idservicio: number) => {
+    // Optimista: el conductor ve el estado final al instante, tras confirmar el modal.
+    setServicios(prev =>
+      prev.map(s => (s.idservicio === idservicio ? { ...s, finalizado: 1 } : s)),
+    );
+
+    try {
+      await marcarAcuse(idservicio, 'finalizar');
+    } catch {
+      setServicios(prev =>
+        prev.map(s =>
+          s.idservicio === idservicio ? { ...s, finalizado: 0 } : s,
+        ),
+      );
+      setAviso('No se pudo finalizar el servicio. Inténtalo nuevamente.');
+    }
+  }, []);
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchServicios();
@@ -444,9 +571,41 @@ const ServicesTurismo: React.FC = () => {
     setExpandidoId(prev => (prev === idservicio ? null : idservicio));
   };
 
+  const toggleDia = (fecha: string) => {
+    setDiasExpandidos(prev => {
+      const siguiente = new Set(prev);
+      if (siguiente.has(fecha)) {
+        siguiente.delete(fecha);
+      } else {
+        siguiente.add(fecha);
+      }
+      return siguiente;
+    });
+  };
+
   const handleGoBack = () => {
     navigation.goBack();
   };
+
+  const hoy = getFechaHoyDdMmYyyy();
+
+  // Agrupa los servicios por fecha y ordena los grupos del más reciente al más antiguo,
+  // igual que WhatsApp muestra primero la conversación de hoy.
+  const gruposPorFecha = useMemo(() => {
+    const mapa = new Map<string, ServicioTurismo[]>();
+    servicios.forEach(s => {
+      const clave = s.fechainicio || 'Sin fecha';
+      const lista = mapa.get(clave) || [];
+      lista.push(s);
+      mapa.set(clave, lista);
+    });
+
+    return Array.from(mapa.entries()).sort(
+      (a, b) => aClaveOrdenable(a[0]).localeCompare(aClaveOrdenable(b[0])),
+    );
+  }, [servicios]);
+
+  const serviciosHoyCount = gruposPorFecha.find(([fecha]) => fecha === hoy)?.[1].length ?? 0;
 
   return (
     <View style={[styles.container, { paddingBottom: bottomSpace }]}>
@@ -470,10 +629,19 @@ const ServicesTurismo: React.FC = () => {
               {user?.description || user?.username} · Hoy {getFechaHoyDdMmYyyy()}
             </Text>
           </View>
+          {!isLoading && !error && (
+            <View style={styles.headerCountBadge}>
+              <Text style={styles.headerCountBadgeText}>{serviciosHoyCount}</Text>
+              <Text style={styles.headerCountBadgeLabel}>
+                {serviciosHoyCount === 1 ? 'serv.' : 'servs.'}
+              </Text>
+            </View>
+          )}
         </View>
       </LinearGradient>
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.contentList}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
@@ -523,15 +691,55 @@ const ServicesTurismo: React.FC = () => {
               </Text>
             </View>
           ) : (
-            servicios.map(servicio => (
-              <ServicioCard
-                key={servicio.idservicio}
-                servicio={servicio}
-                expandido={expandidoId === servicio.idservicio}
-                onToggle={() => toggleExpandido(servicio.idservicio)}
-                onConfirmar={() => confirmarServicio(servicio.idservicio)}
-              />
-            ))
+            gruposPorFecha.map(([fecha, serviciosDelDia]) => {
+              const esHoy = fecha === hoy;
+              const desplegado = esHoy || diasExpandidos.has(fecha);
+
+              return (
+                <View
+                  key={fecha}
+                  style={styles.dayGroup}
+                  onLayout={
+                    esHoy
+                      ? e => {
+                          hoyOffsetYRef.current = e.nativeEvent.layout.y;
+                        }
+                      : undefined
+                  }
+                >
+                  {!esHoy && (
+                    <TouchableOpacity
+                      style={styles.dayGroupHeader}
+                      onPress={() => toggleDia(fecha)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dayGroupHeaderText}>{fecha}</Text>
+                      <View style={styles.dayGroupHeaderRight}>
+                        {desplegado ? (
+                          <ChevronUp size={18} color="#6b7280" />
+                        ) : (
+                          <ChevronDown size={18} color="#6b7280" />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  )}
+
+                  {desplegado &&
+                    serviciosDelDia.map((servicio, index) => (
+                      <ServicioCard
+                        key={servicio.idservicio}
+                        servicio={servicio}
+                        numero={esHoy ? index + 1 : null}
+                        expandido={expandidoId === servicio.idservicio}
+                        permiteAcciones={esHoy}
+                        onToggle={() => toggleExpandido(servicio.idservicio)}
+                        onConfirmar={() => confirmarServicio(servicio.idservicio)}
+                        onFinalizar={() => finalizarServicio(servicio.idservicio)}
+                      />
+                    ))}
+                </View>
+              );
+            })
           )}
         </View>
       </ScrollView>
