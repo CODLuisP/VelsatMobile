@@ -90,6 +90,25 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0f1b3d',
   },
+  statPillOff: {
+    backgroundColor: 'rgba(15,27,61,0.88)',
+  },
+  statPillTextOff: {
+    color: '#ffffff',
+  },
+  fitButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0f1b3d',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.14,
+    shadowRadius: 7,
+    elevation: 3,
+  },
 
   // ── Panel inferior ─────────────────────────────────────
   sheet: {

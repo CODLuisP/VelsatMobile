@@ -16,10 +16,12 @@ import {
   MapPin,
   Route,
   Clock,
-  Gauge,
   Flag,
   Play,
   FileX,
+  Maximize,
+  Eye,
+  EyeOff,
 } from 'lucide-react-native';
 import {
   NavigationProp,
@@ -89,9 +91,24 @@ const TourReport = () => {
   const [focusedPoint, setFocusedPoint] = useState<number | null>(null);
   const [sheetOpen, setSheetOpen] = useState(true);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [showPoints, setShowPoints] = useState(true);
 
   const mapRef = useRef<MapView>(null);
   const webViewRef = useRef<WebView>(null);
+  // Refs de cada marcador de iOS, para poder abrir su globo al navegar.
+  const markerRefs = useRef<Array<InstanceType<typeof Marker> | null>>([]);
+  // Timer del globo: si quedan varios pendientes, uno viejo abre el globo de
+  // otro punto y MapKit desplaza el mapa para mostrarlo (queda descentrado).
+  const calloutTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelPendingCallout = () => {
+    if (calloutTimer.current) {
+      clearTimeout(calloutTimer.current);
+      calloutTimer.current = null;
+    }
+  };
+
+  useEffect(() => cancelPendingCallout, []);
 
   const insets = useSafeAreaInsets();
   const navigationDetection = useNavigationMode();
@@ -185,7 +202,7 @@ const TourReport = () => {
 
   const stats = useMemo(() => {
     if (routeData.length === 0) {
-      return { points: 0, minutes: null as number | null, max: 0 };
+      return { points: 0, minutes: null as number | null };
     }
 
     const first = routeData[0];
@@ -194,7 +211,6 @@ const TourReport = () => {
     return {
       points: routeData.length,
       minutes: minutesBetween(first.date, first.time, last.date, last.time),
-      max: Math.max(...routeData.map(p => p.speed)),
     };
   }, [routeData]);
 
@@ -208,17 +224,31 @@ const TourReport = () => {
     const point = routeData[pointIndex];
 
     if (Platform.OS === 'ios') {
-      setTimeout(() => {
-        mapRef.current?.animateToRegion(
-          {
-            latitude: point.latitude,
-            longitude: point.longitude,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
-          },
-          1000,
-        );
-      }, 100);
+      cancelPendingCallout();
+
+      // Cierra el globo anterior antes de mover la cámara.
+      if (focusedPoint !== null && focusedPoint !== pointIndex) {
+        markerRefs.current[focusedPoint]?.hideCallout();
+      }
+
+      // setCamera y no animateCamera: la animación se cortaba a medias en cada
+      // salto y el acercamiento iba quedando distinto punto a punto. Así cae
+      // siempre a la misma altura. MapKit usa `altitude` en metros; `zoom` solo
+      // lo lee Google Maps (Android).
+      mapRef.current?.setCamera({
+        center: {
+          latitude: point.latitude,
+          longitude: point.longitude,
+        },
+        altitude: 500,
+        zoom: 17,
+      });
+
+      // El globo, una vez que la cámara ya está en su sitio.
+      calloutTimer.current = setTimeout(() => {
+        markerRefs.current[pointIndex]?.showCallout();
+        calloutTimer.current = null;
+      }, 250);
     } else {
       const jsCode = `
         (function() {
@@ -279,6 +309,75 @@ const TourReport = () => {
     Keyboard.dismiss();
     focusOnPoint(pointNum - 1);
     setSelectedPoint('');
+  };
+
+  /** Aleja el mapa hasta que entre todo el recorrido. */
+  const fitWholeRoute = (animated: boolean = true) => {
+    Keyboard.dismiss();
+
+    if (routeData.length === 0) return;
+
+    // Vuelve al estado inicial: sin punto seleccionado, para que la siguiente
+    // flecha arranque otra vez desde el punto 1.
+    cancelPendingCallout();
+    if (focusedPoint !== null) {
+      markerRefs.current[focusedPoint]?.hideCallout();
+    }
+    setFocusedPoint(null);
+    setSelectedPoint('');
+
+    if (Platform.OS === 'ios') {
+      mapRef.current?.fitToCoordinates(
+        routeData.map(p => ({
+          latitude: p.latitude,
+          longitude: p.longitude,
+        })),
+        {
+          // Deja aire para la barra de resumen y el panel inferior.
+          edgePadding: { top: 70, right: 40, bottom: 240, left: 40 },
+          animated,
+        },
+      );
+    } else {
+      webViewRef.current?.injectJavaScript(`
+        (function() {
+          try {
+            if (map && map.closePopup) { map.closePopup(); }
+            if (typeof clearHighlight === 'function') { clearHighlight(); }
+            if (typeof fitRoute === 'function') { fitRoute(${animated}); }
+          } catch(e) {}
+        })();
+        true;
+      `);
+    }
+  };
+
+  /** Muestra u oculta los puntos para dejar solo el trazo del recorrido. */
+  const togglePoints = () => {
+    const next = !showPoints;
+    setShowPoints(next);
+
+    if (!next) {
+      cancelPendingCallout();
+      if (focusedPoint !== null) {
+        markerRefs.current[focusedPoint]?.hideCallout();
+      }
+      setFocusedPoint(null);
+      setSelectedPoint('');
+    }
+
+    if (Platform.OS !== 'ios') {
+      webViewRef.current?.injectJavaScript(`
+        (function() {
+          try {
+            if (map && map.closePopup) { map.closePopup(); }
+            if (typeof clearHighlight === 'function') { clearHighlight(); }
+            if (typeof togglePoints === 'function') { togglePoints(${next}); }
+          } catch(e) {}
+        })();
+        true;
+      `);
+    }
   };
 
   const step = (delta: number) => {
@@ -380,6 +479,13 @@ const TourReport = () => {
           return '${COLOR_FAST}';
         }
 
+        window.clearHighlight = function() {
+          if (highlighted !== null && markers[highlighted] && markers[highlighted].setStyle) {
+            markers[highlighted].setStyle({ radius: 5, weight: 1.5 });
+          }
+          highlighted = null;
+        };
+
         function highlightPoint(index) {
           if (highlighted !== null && markers[highlighted] && markers[highlighted].setStyle) {
             markers[highlighted].setStyle({ radius: 5, weight: 1.5 });
@@ -430,8 +536,19 @@ const TourReport = () => {
 
           var polyline = L.polyline(
             simplifiedRoute.map(function(p) { return [p.latitude, p.longitude]; }),
-            { color: '${NAVY}', weight: 3, opacity: 0.55, smoothFactor: 3, interactive: false }
+            { color: '${ORANGE}', weight: 4, opacity: 1, smoothFactor: 3, interactive: false }
           ).addTo(map);
+
+          // Los puntos van en su propia capa para poder ocultarlos de golpe.
+          var pointsLayer = L.layerGroup().addTo(map);
+
+          window.togglePoints = function(show) {
+            if (show) {
+              pointsLayer.addTo(map);
+            } else {
+              map.removeLayer(pointsLayer);
+            }
+          };
 
           // Puntos como círculos en canvas: soporta miles sin trabarse.
           for (var i = 0; i < routeData.length; i++) {
@@ -448,7 +565,7 @@ const TourReport = () => {
               (p.speed === 0 ? 'Detenido' : p.speed.toFixed(0) + ' km/h'),
               { autoPan: false, closeButton: true }
             );
-            marker.addTo(map);
+            marker.addTo(pointsLayer);
             markers.push(marker);
           }
 
@@ -461,10 +578,15 @@ const TourReport = () => {
           }).bindPopup('<b>Fin del recorrido</b><br>' + lastPoint.date + ' ' + lastPoint.time).addTo(map);
 
           // Deja aire abajo para que la ruta no quede tapada por el panel.
-          map.fitBounds(polyline.getBounds(), {
-            paddingTopLeft: [40, 70],
-            paddingBottomRight: [40, 230]
-          });
+          window.fitRoute = function(animated) {
+            map.fitBounds(polyline.getBounds(), {
+              paddingTopLeft: [40, 70],
+              paddingBottomRight: [40, 230],
+              animate: animated !== false
+            });
+          };
+
+          fitRoute(false);
         }
       </script>
     </body>
@@ -506,12 +628,17 @@ const TourReport = () => {
       const minLng = Math.min(...longitudes);
       const maxLng = Math.max(...longitudes);
 
+      // Aproxima el encuadre de fitWholeRoute para que el primer frame ya salga
+      // casi en su sitio: más zoom out y el centro corrido al sur, porque el
+      // panel inferior tapa parte del mapa.
+      const latitudeDelta = Math.max((maxLat - minLat) * 1.9, 0.01);
+      const longitudeDelta = Math.max((maxLng - minLng) * 1.4, 0.01);
+
       const initialRegion = {
-        latitude: (minLat + maxLat) / 2,
+        latitude: (minLat + maxLat) / 2 - latitudeDelta * 0.14,
         longitude: (minLng + maxLng) / 2,
-        // 1.6 en vez de 1.3: el panel inferior tapa parte del mapa.
-        latitudeDelta: Math.max((maxLat - minLat) * 1.6, 0.01),
-        longitudeDelta: Math.max((maxLng - minLng) * 1.6, 0.01),
+        latitudeDelta,
+        longitudeDelta,
       };
 
       const lastIndex = routeData.length - 1;
@@ -526,11 +653,13 @@ const TourReport = () => {
           loadingEnabled={true}
           loadingIndicatorColor="#1e3a8a"
           loadingBackgroundColor="#ffffff"
+          // Mismo encuadre que el botón, pero sin animación: entra ya centrado.
+          onMapReady={() => setTimeout(() => fitWholeRoute(false), 60)}
         >
           <Polyline
             coordinates={coordinates}
-            strokeColor="rgba(30,58,138,0.55)"
-            strokeWidth={3}
+            strokeColor={ORANGE}
+            strokeWidth={4}
           />
 
           {routeData.map((point, index) => {
@@ -538,9 +667,15 @@ const TourReport = () => {
             const isFocused = focusedPoint === index;
             const color = getSpeedColor(point.speed);
 
+            // Con los puntos ocultos solo quedan inicio y fin: se ve el trazo.
+            if (!showPoints && !isEdge) return null;
+
             return (
               <Marker
                 key={`marker-${index}`}
+                ref={ref => {
+                  markerRefs.current[index] = ref;
+                }}
                 coordinate={{
                   latitude: point.latitude,
                   longitude: point.longitude,
@@ -657,23 +792,50 @@ const TourReport = () => {
           {hasData && (
             <>
               {/* Resumen flotante sobre el mapa */}
-              <View style={styles.statsBar} pointerEvents="none">
-                <View style={styles.statPill}>
+              <View style={styles.statsBar} pointerEvents="box-none">
+                <View style={styles.statPill} pointerEvents="none">
                   <Route size={12} color="#1e3a8a" />
                   <Text style={styles.statPillText}>{stats.points} puntos</Text>
                 </View>
                 {stats.minutes !== null && (
-                  <View style={styles.statPill}>
+                  <View style={styles.statPill} pointerEvents="none">
                     <Clock size={12} color="#1e3a8a" />
                     <Text style={styles.statPillText}>
                       {formatDuration(stats.minutes)}
                     </Text>
                   </View>
                 )}
-                <View style={styles.statPill}>
-                  <Gauge size={12} color="#e36414" />
-                  <Text style={styles.statPillText}>{stats.max} km/h</Text>
-                </View>
+                <TouchableOpacity
+                  style={[styles.statPill, !showPoints && styles.statPillOff]}
+                  onPress={togglePoints}
+                  activeOpacity={0.7}
+                  accessibilityLabel={
+                    showPoints ? 'Ocultar los puntos' : 'Mostrar los puntos'
+                  }
+                >
+                  {showPoints ? (
+                    <Eye size={12} color="#1e3a8a" />
+                  ) : (
+                    <EyeOff size={12} color="#ffffff" />
+                  )}
+                  <Text
+                    style={[
+                      styles.statPillText,
+                      !showPoints && styles.statPillTextOff,
+                    ]}
+                  >
+                    Puntos
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.fitButton}
+                  onPress={() => fitWholeRoute(true)}
+                  activeOpacity={0.7}
+                  accessibilityLabel="Ver todo el recorrido"
+                >
+                  <Maximize size={15} color="#1e3a8a" />
+                </TouchableOpacity>
               </View>
 
               {/* Panel inferior */}
